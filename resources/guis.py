@@ -25,21 +25,23 @@ import urllib
 import xbmc
 import xbmcaddon
 import xbmcgui
-import xbmcplugin
+from xbmcgui import ControlButton
+#import xbmcplugin
 
 addon = xbmcaddon.Addon()
 addon_path = addon.getAddonInfo('path')
 addon_name = addon.getAddonInfo('name')
 
 def dump(obj):
-   for attr in dir(obj):
-       if hasattr( obj, attr ):
-           log( "obj.%s = %s" % (attr, getattr(obj, attr)))
+    for attr in dir(obj):
+        if hasattr( obj, attr ):
+            log( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
 class cGUI(xbmcgui.WindowXML):
     # view_461_comments.xml   
     include_parent_directory_entry=True
     title_bar_text=""
+    gui_listbox_SelectedPosition=0
     
     #plot_font="a" #font used for 'plot' <- where the image or comment description is stored ### cannot set font size.
     #CONTROL_ID_FOR_PLOT_TEXTBOX=65591
@@ -56,6 +58,10 @@ class cGUI(xbmcgui.WindowXML):
     def onInit(self):
         
         self.gui_listbox = self.getControl(self.main_control_id)
+        #important to reset the listbox. when control comes back to this GUI(after calling another gui). 
+        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
+        self.gui_listbox.reset()
+        
         if self.title_bar_text:
             self.ctl_title_bar = self.getControl(1)
             self.ctl_title_bar.setLabel(self.title_bar_text)
@@ -70,23 +76,29 @@ class cGUI(xbmcgui.WindowXML):
         #url="http://i.imgur.com/ARdeL4F.mp4"
         if self.include_parent_directory_entry:
             back_image='DefaultFolderBackSquare.png'
-            listitem = xbmcgui.ListItem(label='..', label2="<", iconImage=back_image)
+            listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
             #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
-            listitem.setArt({"thumb": back_image, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
+            listitem.setArt({"thumb": back_image }) #, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
             #listitem.setPath(url)
             self.gui_listbox.addItem(listitem)
         
+        
+        
         self.gui_listbox.addItems(self.listing)
         self.setFocus(self.gui_listbox)
+        
+        if self.gui_listbox_SelectedPosition > 0:
+            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
+        
         pass
 
     def onClick(self, controlID):
         
         if controlID == self.main_control_id:
-            num = self.gui_listbox.getSelectedPosition()
+            self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
 
-            if num == 0:
+            if self.gui_listbox_SelectedPosition == 0:
                 #log( "  %d clicked on %d" %(self.pluginhandle, num ) )
                 #xbmcplugin.setResolvedUrl(self.pluginhandle, True, item)   #<-- for testing the first item added in onInit() 
                 if self.include_parent_directory_entry: 
@@ -95,22 +107,29 @@ class cGUI(xbmcgui.WindowXML):
                 #name = item.getLabel()
                 try:di_url=item.getProperty('url') #this property is created when assembling the kwargs.get("listing") for this class
                 except:di_url=""
+                item_type=item.getProperty('item_type').lower()
                 
-                log( "  clicked on %d   url=%s " %( num, di_url )   )
-                if di_url:
-                    modes=['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
-                    if any(x in di_url for x in modes):
-                        #playSlideshow uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
-                        #   use RunPlugin to avoid this issue
-                        log( "  playslideshow"  )
-                        xbmc.executebuiltin('RunPlugin(%s)' %di_url )
-                    else:
+                log( "  clicked on %d IsPlayable=%s  url=%s " %( self.gui_listbox_SelectedPosition, item_type, di_url )   )
+                if item_type=='playable':
                         #a big thank you to spoyser (http://forum.kodi.tv/member.php?action=profile&uid=103929) for this help
                         pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                         pl.clear()
                         pl.add(di_url, item)
-                        xbmc.Player().play(pl, windowed=True)
+                        xbmc.Player().play(pl, windowed=False)
                         #self.close()
+                elif item_type=='script':
+                    #"script.web.viewer, http://m.reddit.com/login"
+                    #log(  di_url )
+                    xbmc.executebuiltin("ActivateWindow(busydialog)")
+                    xbmc.executebuiltin( di_url  )
+                    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                    
+                    #modes=['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
+                    #if any(x in di_url for x in modes):
+                        #playSlideshow uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
+                        #   use RunPlugin to avoid this issue
+                        
+
                     
                     #xbmcplugin.setResolvedUrl(self.pluginhandle, True, item)
                     #xbmc.executebuiltin('RunPlugin(%s)' %di_url )  #works for showing image(with gui) but doesn't work for videos(Attempt to use invalid handle -1)
@@ -128,6 +147,76 @@ class cGUI(xbmcgui.WindowXML):
         elif controlID == 7:
             pass
 
+
+class listSubRedditGUI(cGUI):
+
+    def onAction(self, action):
+
+        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+            self.close()
+
+        try:focused_control=self.getFocusId()
+        except:focused_control=0
+        
+        if focused_control==self.main_control_id:  #main_control_id is the listbox
+        
+            self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
+            item = self.gui_listbox.getSelectedItem()
+                        
+            if action == xbmcgui.ACTION_MOVE_LEFT:
+                item_type   =item.getProperty('item_type').lower()
+                comments_action=item.getProperty('comments_action')
+                
+                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
+                
+                xbmc.executebuiltin( comments_action  )
+                
+                #xbmc.sleep(5000)
+                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+
+        pass 
+            
+class commentsGUI(cGUI):
+    
+    def onInit(self):
+        
+        #aa=self.getControl(77)
+        
+        self.gui_listbox = self.getControl(self.main_control_id)
+        #important to reset the listbox. when control comes back to this GUI(after calling another gui). 
+        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
+        self.gui_listbox.reset()
+        
+        if self.title_bar_text:
+            self.ctl_title_bar = self.getControl(1)
+            self.ctl_title_bar.setLabel(self.title_bar_text)
+            
+
+        if self.include_parent_directory_entry:
+            back_image='DefaultFolderBackSquare.png'
+            listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
+            #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
+            listitem.setArt({"thumb": back_image, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
+            #listitem.setPath(url)
+            self.gui_listbox.addItem(listitem)
+        
+    
+        #txbx = ControlTextBox()
+        #aa = xbmcgui.ControlButton(800,200,200, 50, 'Status', font='font14')
+        #bb = xbmcgui.ControlGroupList(100, 250, 125, 75)
+        #self.addControl(aa)
+        
+        
+        self.gui_listbox.addItems(self.listing)
+        self.setFocus(self.gui_listbox)
+        
+        if self.gui_listbox_SelectedPosition > 0:
+            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
+        
+        pass
+
+    
 
 class qGUI(xbmcgui.WindowXMLDialog):
     #called by playSlideshow

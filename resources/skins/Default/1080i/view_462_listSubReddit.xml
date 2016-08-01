@@ -8,35 +8,185 @@
 	<controls>
 		<!--BEGIN include name="DefaultBackground"-->
 			<control type="group">
-				<animation effect="zoom" center="960,540" end="102,102" time="0" condition="Integer.IsGreater(System.StereoscopicMode,0)">conditional</animation>
-				<control type="image">
-					<depth>DepthBackground</depth>
-					<!--include>FullScreenDimensions</include-->
-					<aspectratio>scale</aspectratio>
-					<animation effect="fade" start="100" end="bg_alpha" time="0" condition="Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))">Conditional</animation>
-					<animation effect="fade" start="0" end="100" time="300" condition="Window.Previous(fullscreenvideo) | Window.Previous(startup)">WindowOpen</animation>
-					<texture fallback="SKINDEFAULT.jpg">$VAR[GlobalFanartVar]</texture>
+
+				    
+				<control type="image" id="200">
+					<centerright>520</centerright>
+					<centertop>540</centertop>
+					<width>380</width>
+					<height>380</height>
+					<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
+					<aspectratio scalediffuse="true">keep</aspectratio>
+					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
+					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
+
+
 				<control type="image">
-					<depth>DepthBackground</depth>
-					<!--include>FullScreenDimensions</include-->
-					<aspectratio>scale</aspectratio>
-					<fadetime>400</fadetime>
-					<animation effect="fade" start="0" end="100" time="400">WindowOpen</animation>
-					<animation effect="fade" start="100" end="0" time="300">WindowClose</animation>
-					<animation effect="fade" time="400">VisibleChange</animation>
-					<texture background="true" colordiffuse="35FFFFFF">$VAR[MediaFanartVar]</texture>
+					<centerright>520</centerright>
+					<centertop>540</centertop>
+					<width>1020</width>
+					<height>1080</height>
+					<aspectratio scalediffuse="true">keep</aspectratio>
+					<colordiffuse>FFFFFFFF</colordiffuse>
+					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
+				</control>
+
+				<!-- control type="image">
+					<centerright>540</centerright>
+					<centertop>540</centertop>
+					<width>1020</width>
+					<height>1080</height>
+					<aspectratio scalediffuse="true">keep</aspectratio>
+					<colordiffuse>33FFFFFF</colordiffuse>
+					<texture>$INFO[Container(55).ListItem.Art(poster)]</texture>
+				</control-->
+
+
+		        <control type="image">
+		        	<top>-100</top>
+		            <description>The spinning animation in the background</description>
+		            <aspectratio align="center" aligny="center" >center</aspectratio>
+		            <texture>busy.gif</texture>
+		            <visible>false</visible>
+		            <!-- animation effect="fade" time="200" delay="500" reversible="false">Visible</animation-->
+		        </control>
+
+				<control type="image" id="201">
+					<visible>![Control.IsVisible(202)|Control.IsVisible(203)|Control.IsVisible(204)|Control.IsVisible(205)]</visible>
+					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
+					<texture>$INFO[Container(55).ListItem.Art(landscape)]</texture>
 					<visible>!Player.HasMedia | !String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))</visible>
+					<visible>false</visible>
+					<!-- fadetime>200</fadetime-->
 				</control>
 			</control>
 		<!--END include name="DefaultBackground"-->
 
 	<!--BEGIN include>View_55_WideList</include -->
 
+	
+		<control type="group">
+			<left>13</left>
+			<top>82</top>
+			<visible>true</visible>
+			<control type="list" id="55">
+				<left>2</left>
+				<top>3</top>
+				<width>980</width>
+				<height>920</height>
+				<scrolltime tween="cubic" easing="out">500</scrolltime>
+				<orientation>vertical</orientation>
+				<pagecontrol>55600</pagecontrol>
+				<!-- onleft>RunAddon(script.reddit.reader,?mode=comments_gui&url=[$INFO[ListItem.Label]])</onleft         $INFO[ListItem.Label] does not work              -->
+				<onleft>9000</onleft>
+				<onright>55600</onright>
+				<onup>55</onup>
+				<ondown>55</ondown>
+				<viewtype label="$LOCALIZE[31107]">list</viewtype>
+				<visible>true</visible>
+				<focusedlayout height="83" >
+					<control type="image">
+						<width>1096</width>
+						<height>83</height>
+						<texture>separator.png</texture>
+						<visible>!Control.HasFocus(55)</visible>
+					</control>
+					<control type="image">
+						<width>1396</width>
+						<height>81</height>
+						<texture colordiffuse="9933EEEE">focus.png</texture>
+						<visible>Control.HasFocus(55)</visible>
+					</control>
+					<control type="image">
+						<width>140</width>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture bordersize="2">$INFO[ListItem.Art(thumb)]</texture>
+					</control>
+					
+					<control type="group">
+						<control type="textbox"><!-- ListItem.Label -->
+							<left>150</left>
+							<top>0</top>
+							<height>61</height>
+							<width>810</width>
+							<aligny>center</aligny>
+							<font>fontContextMenu</font>
+							<scrolltime>200</scrolltime>
+	   						<autoscroll delay="1000" time="1000" repeat="2000">!Control.HasFocus(13)</autoscroll>						
+	   						<label>$INFO[ListItem.Label]</label>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+						<control type="label"><!-- ListItem.Label2 -->
+							<left>150</left>
+							<top>50</top>
+							<height>43</height>
+							<width>810</width>
+							<aligny>center</aligny>
+							<font>font12</font>
+							<label>$INFO[ListItem.Label2]</label>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+					</control>
+					
+				</focusedlayout>
+				<itemlayout height="83" >
+					<control type="image">
+						<width>1396</width>
+						<height>83</height>
+						<texture>separator.png</texture>
+					</control>
+					<control type="image">
+						<width>140</width>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture>$INFO[ListItem.Art(thumb)]</texture>
+					</control>
+					<control type="group">
+
+						<control type="textbox"><!-- ListItem.Label -->
+							<left>150</left>
+							<top>0</top>
+							<height>61</height>
+							<width>810</width>
+							<aligny>center</aligny>
+							<font>fontContextMenu</font>
+							<label>$INFO[ListItem.Label]</label>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+						<control type="label"><!-- ListItem.Label2 -->
+							<left>150</left>
+							<top>50</top>
+							<height>43</height>
+							<width>810</width>
+							<aligny>center</aligny>
+							<font>font12</font>
+							<label>$INFO[ListItem.Label2]</label>
+							<textcolor>grey</textcolor>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+					</control>
+				</itemlayout>
+			</control>
+			<!-- control type="scrollbar" id="55600">
+				<left>457</left>
+				<top>0</top>
+				<width>12</width>
+				<height>830</height>
+				<onleft>55</onleft>
+				<onright>55</onright>
+				<orientation>vertical</orientation>
+			</control-->
+			
+		</control>
+	<!--END include>View_55_WideList</include -->
+
+
 	<!--BEGIN include name="UpDownArrows"-->
 		<control type="button" id="55588">
 			<left>30</left>
-			<top>910</top>
+			<top>970</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="button_focus">overlays/arrowdown.png</texturefocus>
@@ -51,7 +201,7 @@
 		</control>
 		<control type="button" id="55589">
 			<left>30</left>
-			<top>134</top>
+			<top>104</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="button_focus" flipy="true">overlays/arrowdown.png</texturefocus>
@@ -65,208 +215,52 @@
 			<visible>true</visible>
 		</control>
 	<!--END include name="UpDownArrows"-->
-	
-		<control type="group">
-			<include>OpenClose_Right</include><!-- just animation -->
-			<left>93</left>
-			<top>122</top>
-			<visible>true</visible>
-			<include>Visible_Right</include><!-- just animation -->
-			<control type="image">
-				<description>background image</description>
-				<left>-20</left>
-				<top>-20</top>
-				<width>498</width>
-				<height>870</height>
-				<texture border="22">dialog-bg.png</texture>
-			</control>
-			<control type="list" id="55">
-				<left>2</left>
-				<top>3</top>
-				<width>430</width>
-				<height>820</height>
-				<scrolltime tween="cubic" easing="out">500</scrolltime>
-				<orientation>vertical</orientation>
-				<pagecontrol>55600</pagecontrol>
-				<onleft>9000</onleft>
-				<onright>55600</onright>
-				<onup>55</onup>
-				<ondown>55</ondown>
-				<viewtype label="$LOCALIZE[31107]">list</viewtype>
-				<visible>true</visible>
-				<focusedlayout height="43" condition="Container.Content(artists) | Container.Content(albums) | Container.Content(actors) | Container.Content(directors) | Container.Content(files) | Container.Content(mixed) | Container.Content(videos)">
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1096</width>
-						<height>37</height>
-						<texture>separator.png</texture>
-						<visible>!Control.HasFocus(55)</visible>
-					</control>
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1396</width>
-						<height>43</height>
-						<texture colordiffuse="9933EEEE">focus.png</texture>
-						<visible>Control.HasFocus(55)</visible>
-					</control>
-					<control type="label"><!-- the little square(bullet) on the right of list gets replaced by 'year' -->
-						<left>10</left>
-						<top>2</top>
-						<height>43</height>
-						<width>60</width>
-						<aligny>center</aligny>
-						<align>right</align>
-						<font>font12</font>
-						<label>$INFO[ListItem.votes]</label>
-						<shadowcolor>text_shadow</shadowcolor>
-					</control>
-					<control type="label"><!-- ListItem.Label -->
-						<left>80</left>
-						<top>0</top>
-						<height>43</height>
-						<width>410</width>
-						<aligny>center</aligny>
-						<font>fontContextMenu</font>
-						<scroll>true</scroll>
-						<scrollspeed>50</scrollspeed>
-						<label>$INFO[ListItem.Label]</label>
-						<shadowcolor>text_shadow</shadowcolor>
-					</control>
-					<!-- control type="label">
-						<left>90</left>
-						<top>0</top>
-						<height>43</height>
-						<width>1090</width>
-						<align>right</align>
-						<aligny>center</aligny>
-						<font>font12</font>
-						<label>$INFO[ListItem.Label2]</label>
-						<shadowcolor>text_shadow</shadowcolor>
-					</control-->
-				</focusedlayout>
-				<itemlayout height="43" condition="Container.Content(artists) | Container.Content(albums) | Container.Content(actors) | Container.Content(directors) | Container.Content(files) | Container.Content(mixed) | Container.Content(videos)">
-					<control type="image">
-						<left>0</left>
-						<top>0</top>
-						<width>1396</width>
-						<height>37</height>
-						<texture>separator.png</texture>
-					</control>
-					<control type="label"><!-- the little square(bullet) on the right of list gets replaced by 'year' -->
-						<left>10</left>
-						<top>2</top>
-						<height>43</height>
-						<width>60</width>
-						<aligny>center</aligny>
-						<align>right</align>
-						<font>font12</font>
-						<label>$INFO[ListItem.votes]</label>
-						<textcolor>9933EEEE</textcolor><!-- button_focus removed for isengard compatibility -->
-						<shadowcolor>text_shadow</shadowcolor>
-					</control>
-					<control type="label"><!-- ListItem.Label -->
-						<left>80</left>
-						<top>0</top>
-						<height>43</height>
-						<width>410</width>
-						<aligny>center</aligny>
-						<font>fontContextMenu</font>
-						<label>$INFO[ListItem.Label]</label>
-						<shadowcolor>text_shadow</shadowcolor>
-					</control>
-					<!-- control type="label">
-						<left>90</left>
-						<top>0</top>
-						<height>43</height>
-						<width>1090</width>
-						<align>right</align>
-						<aligny>center</aligny>
-						<font>font12</font>
-						<label>$INFO[ListItem.Label2]</label>
-						<textcolor>grey</textcolor>
-						<shadowcolor>text_shadow</shadowcolor>
-					</control-->
-				</itemlayout>
-			</control>
-			<control type="scrollbar" id="55600">
-				<left>457</left>
-				<top>0</top>
-				<width>12</width>
-				<height>830</height>
-				<onleft>55</onleft>
-				<onright>55</onright>
-				<orientation>vertical</orientation>
-			</control>
-			
-		</control>
-	<!--END include>View_55_WideList</include -->
+
 
 		<control type="group">
 			<description>Right side panel. this is where the comment and preview is shown</description>
 			<include>OpenClose_Left</include>
 			<include>Visible_Left</include>
-			<visible>Control.IsVisible(55)</visible>
 
 				<include>OpenClose_Right</include>
 				<visible>true</visible>
 				<include>Visible_Right</include>
 				
 				<control type="image">
-					<left>580</left>
+					<left>780</left>
 					<top>102</top>
 					<width>1270</width>
 					<height>870</height>
+					<visible>false</visible>
 					<texture border="22">dialog-bg.png</texture>
 				</control>
 				
 				<control type="textbox" id="65591">
 					<description>if thumb is empty this bigger textbox is visible</description>
-					<left>612</left>
+					<left>982</left>
 					<top>128</top>
-					<width>1210</width>
+					<width>910</width>
 					<height>810</height>
 					<font>font14</font>
 					<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-					<visible>isEmpty(Container(55).ListItem.Art(thumb))</visible>
-					<visible>!Player.HasMedia</visible>
-					<label>$INFO[Container(55).ListItem.Plot]</label>					<!-- label>$INFO[ListItem.Label]</label-->
+					<visible>isEmpty(Container(55).ListItem.Art(banner)</visible>
+					<label>big $INFO[Container(55).ListItem.Plot]</label>					
 				</control>
 				
 				<control type="textbox" id="65592">
-					<left>612</left>
+					<left>982</left>
 					<top>128</top>
-					<width>1210</width>
-					<height>156</height>
+					<width>910</width>
+					<height>356</height>
 					<font>font13</font>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
 					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<visible>!Control.IsVisible(65591)</visible>
 					
-					<label>$INFO[Container(55).ListItem.Plot]</label>					
+					<label>smal $INFO[Container(55).ListItem.Plot]</label>					
 				</control>
-				
-				<control type="image">
-					<left>602</left>
-					<top>184</top>
-					<width>1226</width>
-					<height>766</height>
-					<aspectratio>scale</aspectratio>
-					<fadetime>300</fadetime>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible>
-					<visible>!Player.HasMedia</visible>
-					<texture background="true" fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
-				</control>
-				<control type="videowindow">
-					<left>602</left>
-					<top>184</top>
-					<width>1226</width>
-					<height>766</height>
-					<!-- doesnt work aligny>bottom</aligny-->
-				</control>
-				
 		</control>
+
 
 
 		<!--BEGIN include name="TopBar"-->
@@ -305,7 +299,8 @@
 					<left>85</left>
 					<width>1500</width>
 					<height>100</height>
-					<orientation>horizontal</orientation>
+					<orientation>vertical</orientation>
+					<itemgap>10</itemgap>
 					<usecontrolcoords>true</usecontrolcoords>
 					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
 					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
@@ -448,7 +443,6 @@
 				<control type="group"><description>middle portion</description>
 					<left>450</left>
 					<top>1005</top>
-					<visible>Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))</visible>
 					<animation effect="fade" time="200">VisibleChange</animation>
 					<control type="grouplist">
 						<orientation>horizontal</orientation>
@@ -466,7 +460,7 @@
 							<texture colordiffuse="button_focus">$VAR[NowPlayingIconVar]</texture>
 						</control>
 						<control type="label">
-							<label>$VAR[NowPlayingMainlabelVar]</label>
+							<label>$INFO[Container(55).ListItem.Studio]</label>
 							<font>font13_title</font>
 							<shadowcolor>text_shadow</shadowcolor>
 							<height>35</height>

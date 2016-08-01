@@ -10,9 +10,10 @@ import json
 
 #sys.setdefaultencoding("utf-8")
 
-from default import addon, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
+from default import addon, addonID, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log
 
+from default import build_script, ytdl_psites_file, ytdl_sites_file
 
 
 show_youtube     = addon.getSetting("show_youtube") == "true"
@@ -40,13 +41,13 @@ show_imageLink   = addon.getSetting("show_imageLink") == "true"
 show_flickr      = addon.getSetting("show_flickr") == "true"
 
 
-site00 = [show_youtube      , "playVideo"          ,'YouTube'      ,'(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})'    ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , "site:youtu.be OR site:youtube.com" ]
+site00 = [show_youtube      , "playVideo"          ,'YouTube'      ,'(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})'    ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , "playable" ]
 #ite01 = [show_youtube      , "playVideo"          ,'YouTube'      ,'https?://www.youtube.com/attribution_link\?a=(.*)&'                                                          ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , ""                      ] #leave the second site filter blank
-site01 = [show_giphy        , "direct"             ,'Giphy'        ,'https?://(?:.+).giphy.com/'     ,"(not used)##vidID##"                                                   , "site:giphy.com"        ] 
-site02 = [show_vimeo        , "playVideo"          ,'Vimeo'        ,'vimeo.com/(.*)'                 ,"plugin://plugin.video.vimeo/play/?video_id=##vidID##"                  , "site:vimeo.com"        ]
-site03 = [show_dailymotion  , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/video/(.*)_?'   ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , "site:dailymotion.com"  ]
-site04 = [show_dailymotion  , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]
-site05 = [show_liveleak     , "playLiveLeakVideo"  ,'LiveLeak'     ,'liveleak.com/view\\?i=(.*)'     ,"##vidID##"                                                             , "site:liveleak.com"     ]
+site01 = [show_giphy        , "direct"             ,'Giphy'        ,'https?://(?:.+).giphy.com/'     ,"giphy links are direct playable. replace .gif to .mp4"                 , "playable"        ] 
+site02 = [show_vimeo        , "playVideo"          ,'Vimeo'        ,'vimeo.com/(.*)'                 ,"plugin://plugin.video.vimeo/play/?video_id=##vidID##"                  , "playable"        ]
+site03 = [False             , "playYTDLVideo"      ,'DailyMotion'        ,'dailymotion.com/video/(.*)_?'   ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , "script"  ]
+site04 = [False             , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]
+site05 = [False             , "playLiveLeakVideo"  ,'LiveLeak'     ,'liveleak.com/view\\?i=(.*)'     ,"##vidID##"                                                             , "site:liveleak.com"     ]
 site06 = [show_gfycat       , "playGfycatVideo"    ,'Gfycat'       ,'gfycat.com/(.*)'                ,"##vidID##"                                                             , "site:gfycat.com"       ]
 site07 = [show_imgur        , "playImgurVideo"     ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "site:imgur.com"        ]
 site08 = [show_imageLink    , "playSlideshow"      ,'Redd.it'      ,'i.redd.it\/(.*)'                ,"##vidID##"                                                             , "site:redd.it"        ]
@@ -59,12 +60,12 @@ site14 = [show_blogspot     , "playSlideshow"      ,'Blogspot'     ,'(https?://.
 site15 = [show_reddit_com   , "playReddit"         ,'Reddit.com'   ,'reddit.com'                     ,"(not used)##vidID##"                                                   , "site:reddit.com"        ]
 site16 = [show_tumblr       , "done in code"       ,'Tumblr'       ,'tumblr.com'                     ,"(not used)##vidID##"                                                   , "site:tumblr.com"        ]
 site17 = [show_gyazo        , "done in code"       ,'Gyazo'        ,'gyazo.com'                      ,"(not used)##vidID##"                                                   , "site:gyazo.com"        ]
-site18 = [show_flickr       , "playFlickr"         ,'Flickr'       ,'flickr.com'                     ,"(not used)##vidID##"                                                   , "site:flickr.com"        ]
+site18 = [show_flickr       , "playFlickr"         ,'Flickr'       ,'flickr.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
 site28 = [show_videoLink    , "direct"             ,'video link'   ,"\.(mp4|webm|gifv)(?:\?|$)"      ,"(not used) ##vidID##"                                                   , ""        ]
 site29 = [show_imageLink    , "playSlideshow"      ,'image link'   ,"\.(jpg|jpeg|png|gif)(?:\?|$)"   ,"(not used) ##vidID##"                                                   , ""        ]
-site30 = [show_ytdl_misc    , "playYTDLVideo"      ,'misc1'        ,"(nbcsports.com)|(nbcnews.com)|(nbc\.com\/.+\/video\/)|(mlb.com/video)|(localnews8.com)|(ellentv.com/videos)|(video.cnbc.com)|(canalplus.fr)|(allocine.fr)|(spiegel.tv)","(not used) ##vidID##", ""        ]
-site31 = [show_ytdl_misc    , "playYTDLVideo"      ,'misc2'        ,"(pandora.tv)|(ora.tv)|(on.aol.com/video)|(ok.ru/video)|(npo.nl)|(nowvideo.sx/video)|(nick.com/videos)|(nerdcubed.co.uk/videos)|(tvcast.naver.com/v)|(MySpass.de)|(mva.microsoft.com)|(musicplayon.com)|(mtv.com/videos)|(mpora.com/videos)|(moviezine.se)|(allmyvideos.net)|(mojvideo.com)|(miomio.tv)|(mgtv.com)|(mgoon.com)|(maker.tv/video)|(makerschannel.com)|(lynda.com)|(alfa.lt/visi-video)|(life.ru/video)|(ku6.com)|(kontrtube.ru)|(konserthusetplay.se)|(khanacademy.org)|(keek.com)|(kaltura.com)|(jwplatform.com)|(jpopsuki.tv)|(jove.com/video)|(jeuxvideo.com/videos)|(izlesene.com)|(iqiyi.com/v_)|(iprima.cz)|(indavideo.hu)|(ina.fr/video)|(ign.com/videos)|(historicfilms.com)|(godtube.com)|(gdcvault.com)|(gamekings.tv/videos)|(freespeech.org/video)|(footyroom.com)|(fernsehkritik.tv)|(myaidol.net)|(c48.org)|(show48.com)|(dai.ly)|(features.aol.com)|(video.esri.com)|(escapistmagazine.com/videos)|(ebaumsworld.com/videos)|(video.aktualne.cz)|(dotsub.com)|(discovery.com)|(dbtv.no)|(csnne.com/video)|(collegerama.tudelft.nl)|(cnn.com)|(clubic.com/video)|(closertotruth.com)|(clipsyndicate.com)|(clipfish.de)|(chilloutzone.net/video)|(channel9.msdn.com)|(carambatv.ru)|(canvas.net)|(brightcove.com)|(bilibili.com)|(bambuser.com)|(arte.tv)|(ardmediathek.de)|(aparat.com)|(air.mozilla.org)|(tv.adobe.com)|(vevo.com)|(cc.com)|(comediansincarsgettingcoffee.com)|(trailers.apple.com)|(devour.com)|(funnyclips.me)|(engagemedia.org)|(videosift.com)|(break.com)|(veoh.com)|(viddler.com)|(schooltube.com)|(videos.sapo.pt)|(funnyordie.com)","(not used) ##vidID##", ""        ]
-site32 = [show_pornsites    , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", ""        ]
+site30 = [False             , "playYTDLVideo"      ,'misc1'        ,"(liveleak.com)|(dailymotion.com)|(nbcsports.com)|(nbcnews.com)|(nbc\.com\/.+\/video\/)|(mlb.com/video)|(localnews8.com)|(ellentv.com/videos)|(video.cnbc.com)|(canalplus.fr)|(allocine.fr)|(spiegel.tv)","(not used) ##vidID##", "script"        ]
+site31 = [False             , "playYTDLVideo"      ,'misc2'        ,"(pandora.tv)|(ora.tv)|(on.aol.com/video)|(ok.ru/video)|(npo.nl)|(nowvideo.sx/video)|(nick.com/videos)|(nerdcubed.co.uk/videos)|(tvcast.naver.com/v)|(MySpass.de)|(mva.microsoft.com)|(musicplayon.com)|(mtv.com/videos)|(mpora.com/videos)|(moviezine.se)|(allmyvideos.net)|(mojvideo.com)|(miomio.tv)|(mgtv.com)|(mgoon.com)|(maker.tv/video)|(makerschannel.com)|(lynda.com)|(alfa.lt/visi-video)|(life.ru/video)|(ku6.com)|(kontrtube.ru)|(konserthusetplay.se)|(khanacademy.org)|(keek.com)|(kaltura.com)|(jwplatform.com)|(jpopsuki.tv)|(jove.com/video)|(jeuxvideo.com/videos)|(izlesene.com)|(iqiyi.com/v_)|(iprima.cz)|(indavideo.hu)|(ina.fr/video)|(ign.com/videos)|(historicfilms.com)|(godtube.com)|(gdcvault.com)|(gamekings.tv/videos)|(freespeech.org/video)|(footyroom.com)|(fernsehkritik.tv)|(myaidol.net)|(c48.org)|(show48.com)|(dai.ly)|(features.aol.com)|(video.esri.com)|(escapistmagazine.com/videos)|(ebaumsworld.com/videos)|(video.aktualne.cz)|(dotsub.com)|(discovery.com)|(dbtv.no)|(csnne.com/video)|(collegerama.tudelft.nl)|(cnn.com)|(clubic.com/video)|(closertotruth.com)|(clipsyndicate.com)|(clipfish.de)|(chilloutzone.net/video)|(channel9.msdn.com)|(carambatv.ru)|(canvas.net)|(brightcove.com)|(bilibili.com)|(bambuser.com)|(arte.tv)|(ardmediathek.de)|(aparat.com)|(air.mozilla.org)|(tv.adobe.com)|(vevo.com)|(cc.com)|(comediansincarsgettingcoffee.com)|(trailers.apple.com)|(devour.com)|(funnyclips.me)|(engagemedia.org)|(videosift.com)|(break.com)|(veoh.com)|(viddler.com)|(schooltube.com)|(videos.sapo.pt)|(funnyordie.com)","(not used) ##vidID##", "script"        ]
+site32 = [False             , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", "script"        ]
 site99 = [0,''              , "video" ,''          ,''             ,""                                                                      , ""                      ]
 #to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com   
 supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site16,site17,site18,site28,site29,site30,site31,site32]
@@ -84,6 +85,8 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'context_menu'       # ...
       ]
 
+
+ytdl_sites=[]
 
 
 class ClassImgur:
@@ -950,12 +953,12 @@ def ret_Instagram_thumbnail( media_url, thumbnail_type='m'):
 
 
 
-def make_addon_url_from(media_url, assume_is_video=True ):
+def make_addon_url_from(media_url, assume_is_video=True):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
 
-    pluginUrl=""     #resolved media url
+    pluginUrl=""     #'url=' param to use for our plugin 'mode=' will determine how we deal with the url
     hoster=None
     videoID=""
     modecommand=""   #string used by this plugin to determine which functionality to call
@@ -964,8 +967,9 @@ def make_addon_url_from(media_url, assume_is_video=True ):
     replace_url_for_DirectoryItem=None
     url_for_DirectoryItem = ""
     isFolder=False
-    flag_media_not_supported=False
-    
+    flag_media_not_supported=True
+    link_type=""  #tells how the gui will handle this link when clicked. playable or script
+    ytdl_match=False
     
     setInfo_type='video'  #this used to be for the directoryItem but now we're abandoning the idea of using this addon as pictures addon.
                           #it is now used to determine if media is image and gets the [IMG] tag. we used to use 'playSlideShow' for this purpose but tumblr & instagram can have video, album or images that need to be processed later. 
@@ -992,22 +996,29 @@ def make_addon_url_from(media_url, assume_is_video=True ):
     #             try: media_type=  ie._ITEM_TYPE 
     #             except: media_type=""
     #             break
+    if media_url: pass
+    else: return '', '', '', '', '', '', '', '',''
 
-
+    if ytdl_sites:  pass
+    else: load_ytdl_sites()
+    
+    #log( "ytdl sites len=" + str( len(ytdl_sites)) )
 
     log( "    Checking link %s" %media_url) 
     if media_url :
+        flag_media_not_supported=False
 
         #search our supported_sites[] to see if media_url can be handled by plugin
         for site in supported_sites :
             if site[0]:  #site[0]  is the show_youtube/show_vimeo/show_dailymotion/... global variables taken from settings file
                 match = re.compile( site[3]  , re.DOTALL).findall( media_url )
                 if match : break
-    
+                
         if match:
             #log("  make_addon_url_from:match on hoster="+site[2])
             hoster = site[2]
             modecommand = site[1]  #
+            link_type = site[5]
             #vimeo and liveleak sometimes have extra string after the video ID, we process
             if   hoster==site02[2] : videoID = match[0].replace("#", "").split("?")[0]  #'vimeo'
             elif hoster==site05[2] : videoID = match[0].split("#")[0]                   #'liveleak': 
@@ -1039,9 +1050,7 @@ def make_addon_url_from(media_url, assume_is_video=True ):
     
                     if 'media' in media_url:
                         media_url=media_url.replace('gif','mp4')
-                    replace_url_for_DirectoryItem=media_url
-                    modecommand='direct'  #no need to call plugin with a 'mode' just have xbmc handle the stream directly
-                                     
+                    pluginUrl=media_url
     
                 elif hoster=="Vimeo":
                     #get thumbnail here then parse reply ['thumbnail_medium'] 
@@ -1060,7 +1069,7 @@ def make_addon_url_from(media_url, assume_is_video=True ):
                     pluginUrl= site[4].replace('##vidID##', videoID)
     
                 elif hoster=="Imgur":
-                    from resources.domains import ClassImgur
+                    
                     c=ClassImgur()
                     #thumb_url=c.ret_thumb_url( media_url )
                     #log('thumb_url '+thumb_url)
@@ -1240,46 +1249,62 @@ def make_addon_url_from(media_url, assume_is_video=True ):
                     from urlparse import urlparse
                     hoster=urlparse(media_url).netloc
                     setProperty_IsPlayable='true'
-                elif hoster in ['Instagram','porn','misc1','misc2']:   #everything here is handled by the Youtube_dl plugin by ruuk
-                    #log('YTDL:'+hoster)
-                    pluginUrl=media_url 
-                    modecommand='playYTDLVideo'
-                    if hoster == 'Instagram':  #instagram is a little special coz it has a siteXX definition
-                        thumb_url=ret_Instagram_thumbnail(media_url)
-                        #poster_url=thumb_url  #ret_Instagram_thumbnail(media_url,'l')  #doesn't display
-                        #log("  thumb: "+poster_url)
-                        if assume_is_video==False:  #we determined that this is not a video accdg. to reddit json
-                            modecommand='playInstagram'
-                            #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
-                            setInfo_type='pictures'
-                            setProperty_IsPlayable='false' 
-                    elif hoster in ['porn','misc1','misc2']: #hoster will show in description. we replace it with the match to inform user where video is hosted
-                        #log('pr0n')
-                        for n in match[0]:
-                            if n:
-                                hoster=str( n )
+                elif hoster in ['Instagram']:   
+                    #instagram video is handled by ytdl addon but we still figure out image/album 
+                    pluginUrl=media_url
+                    thumb_url=ret_Instagram_thumbnail(media_url)
+                    #poster_url=thumb_url  #ret_Instagram_thumbnail(media_url,'l')  #doesn't display
+                    #log("  thumb: "+poster_url)
+                    if assume_is_video==False:  #we determined that this is not a video accdg. to reddit json
+                        modecommand='playInstagram'
+                        #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
+                        setInfo_type='pictures'
+                        setProperty_IsPlayable='false' 
+
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
-                
                 flag_media_not_supported=True
-                                
+
             #log ("  replace direct: "+replace_url_for_DirectoryItem)
-            if replace_url_for_DirectoryItem:
-                url_for_DirectoryItem = replace_url_for_DirectoryItem
-                #log ("  direct link: "+url_for_DirectoryItem)
+#             if replace_url_for_DirectoryItem:
+#                 url_for_DirectoryItem = replace_url_for_DirectoryItem
+#                 #log ("  direct link: "+url_for_DirectoryItem)
+#             else:
+#                 pass
+                #sys.argv[0] = default.py for scripts 
+                #url_for_DirectoryItem = addonID+"?url="+ urllib.quote_plus(pluginUrl) +"&mode="+str(modecommand)  #sys.argv[0] is "plugin://plugin.video.reddit_viewer/"
+                
+        else:  # if match #everything here is handled by the Youtube_dl plugin by ruuk
+            #originally ytdl sites were matched in supported sites[] but it is getting so big that it is moved to a separate configurable file.
+            #check if it matches ytdl sites
+            for rex in ytdl_sites:
+                if rex in media_url:
+                    log( "    " + rex +" matched IN>"+ media_url)
+                    hoster=rex
+                    ytdl_match=True
+                    break
+                #regex is much slower than the method above.. left here in case needed in the future 
+                # match = re.compile( "(%s)" %rex  , re.DOTALL).findall( media_url )
+                # if match : log( "matched ytdl:"+ rex);  break
+            if ytdl_match:
+                link_type ='script'
+                pluginUrl=media_url
+                modecommand='playYTDLVideo'
             else:
-                url_for_DirectoryItem = sys.argv[0]+"?url="+ urllib.quote_plus(pluginUrl) +"&mode="+str(modecommand)  #sys.argv[0] is "plugin://plugin.video.reddit_viewer/"
-    
-        else:  # if match:
-            flag_media_not_supported=True
+                flag_media_not_supported=True
             
+
+        if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
+            url_for_DirectoryItem = build_script(modecommand, pluginUrl)
+        elif link_type =='playable':
+            url_for_DirectoryItem = pluginUrl
         
     if flag_media_not_supported:  #caller checks for the returned DirectoryItem_url. if it is blank, it is unsupported.
         log("    unsupported [%s]" %media_url)
         url_for_DirectoryItem = "" 
      
-    #log( "    %s vid=%s playable=%s di_url=%s" %( hoster ,videoID, setProperty_IsPlayable, url_for_DirectoryItem)  )
-    return hoster, url_for_DirectoryItem, pluginUrl, modecommand, thumb_url, poster_url, isFolder, setInfo_type,setProperty_IsPlayable
+    log( "    %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
+    return hoster, url_for_DirectoryItem, pluginUrl, modecommand, thumb_url, poster_url, isFolder, setInfo_type,link_type
 
 
 def url_is_supported(url_to_check):
@@ -1307,6 +1332,31 @@ def parse_filename_and_ext_from_url(url=""):
         return filename, ext
     except:
         return "", ""
+
+def load_ytdl_sites():
+    log( '***************load_ytdl_sites '  )
+    #reads the ytdl supported sites file 
+    #http://stackoverflow.com/questions/1706198/python-how-to-ignore-comment-lines-when-reading-in-a-file
+    global ytdl_sites
+    with open(ytdl_sites_file) as f:   #ytdl_psites_file=special://profile/addon_data/script.reddit.reader/ytdl_psites_file
+        for line in f:
+            line = line.split('#', 1)[0]
+            line = line.rstrip()
+            ytdl_sites.append(line)
+    
+    with open(ytdl_psites_file) as f:   #ytdl_psites_file=special://profile/addon_data/script.reddit.reader/ytdl_psites_file
+        for line in f:
+            line = line.split('#', 1)[0]
+            line = line.rstrip()
+            ytdl_sites.append(line)
+
+
+def ytdl_hoster( url_to_check ):
+    pass
+
+#def build_script( mode, url, name="", type="", script_to_call=addonID):
+    #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
+#    return "RunAddon(%s,%s)" %(addonID, "?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
 
 
 '''

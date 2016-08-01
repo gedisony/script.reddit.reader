@@ -176,5 +176,7 @@
  - reorganize classes and functions
  - add custom ui for albums
  - update custom ui for comments
+ 0.1.1  (2016-07-27)
+ - convert to script.reddit.reader from plugin.video.reddit_viewer
  
  
