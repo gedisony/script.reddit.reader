@@ -95,6 +95,9 @@ viewMode             = str(addon.getSetting("viewMode"))
 comments_viewMode    = str(addon.getSetting("comments_viewMode"))
 album_viewMode       = str(addon.getSetting("album_viewMode"))
 
+show_nsfw            = addon.getSetting("show_nsfw") == "true"
+
+
 r_AccessToken         = addon.getSetting("r_AccessToken") 
 
 sitemsPerPage        = addon.getSetting("itemsPerPage")
@@ -151,7 +154,8 @@ if not os.path.isdir(addonUserDataFolder):
 #if not os.path.isdir(SlideshowCacheFolder):
 #    os.mkdir(SlideshowCacheFolder)
 
-if os.path.exists(nsfwFile):
+
+if show_nsfw:
     nsfw = ""
 else:
     nsfw = "nsfw:no+"
@@ -462,6 +466,7 @@ def index(url,name,type):
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
 
+    log( "  show_nsfw  "+str(show_nsfw) + "  [" + nsfw+"]")
 
     #log( "--------------------"+ addon.getAddonInfo('path') )
     #log( "--------------------"+ addon.getAddonInfo('profile') )
@@ -530,7 +535,7 @@ def index(url,name,type):
 
         #DirectoryItem_url = assemble_directory_item_url("listSubReddit",reddit_url,alias, "", ", ")  # xbmc.Player().play(pl, windowed=True) requires "script://" prepend to the url
 
-        liz = compose_list_item( alias, "", "script", build_script("listSubReddit",reddit_url,alias) )     
+        liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )     
            
 #         liz=xbmcgui.ListItem(label=alias, 
 #                              label2="",
@@ -540,13 +545,13 @@ def index(url,name,type):
 #         liz.setProperty('item_type', "script")  #item type "script" -> ('RunAddon(%s):' % di_url )
 #         
 #         #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } ) 
-#         liz.setProperty('url', addonID + DirectoryItem_url)
+#         liz.setProperty('onClick_action', addonID + DirectoryItem_url)
         
         #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": result, "studio": hoster, "votes": str(h[0]), "director": author } )
         #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
 
         #liz.setProperty('IsPlayable', setProperty_IsPlayable)
-        #liz.setProperty('url', DirectoryItem_url)  #<-- needed by the xml gui skin
+        #liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
         #liz.setPath(DirectoryItem_url) 
         
         #log( "  index adding " + liz.getLabel() )
@@ -572,7 +577,8 @@ def build_playable_param( mode, url, name="", type="", script_to_call=addonID):
     return "plugin://" +script_to_call+"?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type)
 
 #MODE listSubReddit(url, name, type)    --name not used
-def listSubReddit(url, name, subreddit_key):
+def listSubReddit(url, title_bar_name, type):
+    from resources.domains import parse_filename_and_ext_from_url
     #url=r'https://www.reddit.com/r/videos/search.json?q=nsfw:yes+site%3Ayoutu.be+OR+site%3Ayoutube.com+OR+site%3Avimeo.com+OR+site%3Aliveleak.com+OR+site%3Adailymotion.com+OR+site%3Agfycat.com&sort=relevance&restrict_sr=on&limit=5&t=week'
     #url='https://www.reddit.com/search.json?q=site%3Adailymotion&restrict_sr=&sort=relevance&t=week'
     #url='https://www.reddit.com/search.json?q=site%3A4tube&sort=relevance&t=all'
@@ -584,7 +590,15 @@ def listSubReddit(url, name, subreddit_key):
     credate = ""
     is_a_video=False
     title_line2=""
-    log("listSubReddit subreddit=%s url=%s" %(subreddit_key,url) )
+
+    thumb_w=0
+    thumb_h=0
+
+    #the +'s got removed by url conversion 
+    title_bar_name=title_bar_name.replace(' ','+')
+    log("  for %s " %(title_bar_name) )
+
+    log("listSubReddit subreddit=%s url=%s" %(title_bar_name,url) )
     t_on = translation(30071)  #"on"
     #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
     t_pts = u"\U00002709"  # translation(30072)   envelope symbol
@@ -592,15 +606,13 @@ def listSubReddit(url, name, subreddit_key):
     li=[]
 
     currentUrl = url
-    #xbmcplugin.setContent(pluginhandle, "movies") #files, songs, artists, albums, movies, tvshows, episodes, musicvideos
         
-    content = reddit_request(url)        
-    #content = opener.open(url).read()
+    content = reddit_request(url)  #content = opener.open(url).read()
     
     if not content:
         return
 
-    info_label={ "plot": translation(30013) }  #Automatically play videos
+#     info_label={ "plot": translation(30013) }  #Automatically play videos
 #     if showAllNewest:
 #         addDir("[B]- "+translation(30016)+"[/B]", url, 'autoPlay', "", "ALL_NEW", info_label)
 #     if showUnwatchedNewest:
@@ -627,6 +639,8 @@ def listSubReddit(url, name, subreddit_key):
     for idx, entry in enumerate(content['data']['children']):
         try:
             title = cleanTitle(entry['data']['title'].encode('utf-8'))
+            is_a_video = determine_if_video_media_from_reddit_json(entry)
+            if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             
             try:
                 description = cleanTitle(entry['data']['media']['oembed']['description'].encode('utf-8'))
@@ -658,7 +672,10 @@ def listSubReddit(url, name, subreddit_key):
             #if show_listSubReddit_debug :log("  SUBREDDIT"+str(idx)+"="+subreddit)
             try: author = entry['data']['author'].encode('utf-8')
             except: author = ""
-            #if show_listSubReddit_debug :log("     AUTHOR"+str(idx)+"="+author)
+            
+            try: domain= entry['data']['domain'].encode('utf-8')
+            except: domain = ""
+            #log("     DOMAIN%.2d=%s" %(idx,domain))
             
             ups = entry['data']['score']       #downs not used anymore
             try:num_comments = entry['data']['num_comments']
@@ -676,24 +693,38 @@ def listSubReddit(url, name, subreddit_key):
             #media_url=media_url.lower()  #!!! note: do not lowercase!!!     
             
             thumb = entry['data']['thumbnail'].encode('utf-8')
+            if thumb in ['default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
+                thumb=""               
+
             try:
+                #collect_thumbs(entry)
                 preview=entry['data']['preview']['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-                
                 #poster = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
                 #t=thumb.split('?')[0]
                 #can't preview gif thumbnail on thumbnail view, use alternate provided by reddit
                 #if t.endswith('.gif'):
                     #log('  thumb ends with .gif')
                 #    thumb = entry['data']['thumbnail'].encode('utf-8')
+                
+                filename,ext=parse_filename_and_ext_from_url(preview.split('?')[0])
+                if ext == 'gif': #we can't handle gif thumbnail
+                    preview=""
+                    thumb_w=0
+                    thumb_h=0
+                    #raise something
+                try:
+                    thumb_h = float( entry['data']['preview']['images'][0]['source']['height'] )
+                    thumb_w = float( entry['data']['preview']['images'][0]['source']['width'] )
+                except:
+                    thumb_w=0
+                    thumb_h=0
                 pass
-            except:
-                preview=thumb
-                #thumb = entry['data']['thumbnail'].encode('utf-8')
-                
-            collect_thumbs(entry)
+            except Exception as e:
+                #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+                thumb_w=0
+                thumb_h=0
+                preview="" #a blank preview image will be replaced with poster_url from make_addon_url_from() for domains that support it
 
-            is_a_video = determine_if_video_media_from_reddit_json(entry) 
-                
             try:
                 over_18 = entry['data']['over_18']
             except:
@@ -709,8 +740,6 @@ def listSubReddit(url, name, subreddit_key):
             title_line2 = "[I][COLOR dimgrey]%s %s [COLOR darkslategrey]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
             #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
 
-            #if show_listSubReddit_debug : log( ("v" if is_a_video else " ") +"     TITLE"+str(idx)+"="+title)
-            if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
             #if show_listSubReddit_debug :log("   IS_A_VIDEO"+str(idx)+"="+str(is_a_video))
             #if show_listSubReddit_debug :log("        THUMB"+str(idx)+"="+thumb)
@@ -723,6 +752,9 @@ def listSubReddit(url, name, subreddit_key):
                     title_line2=title_line2,
                     iconimage=thumb, 
                     previewimage=preview,
+                    preview_w=thumb_w,
+                    preview_h=thumb_h,
+                    domain=domain,
                     description=description, 
                     credate=credate, 
                     reddit_says_is_video=is_a_video, 
@@ -750,19 +782,20 @@ def listSubReddit(url, name, subreddit_key):
         #this part makes sure that you load the next page instead of just the first
         after=""
         after = content['data']['after']
-        if "&after=" in currentUrl:
-            nextUrl = currentUrl[:currentUrl.find("&after=")]+"&after="+after
-        else:
-            nextUrl = currentUrl+"&after="+after
+        if after: 
+            if "&after=" in currentUrl:
+                nextUrl = currentUrl[:currentUrl.find("&after=")]+"&after="+after
+            else:
+                nextUrl = currentUrl+"&after="+after
             
-        # plot shows up on estuary. etc. ( avoids the "No information available" message on description ) 
-        info_label={ "plot": translation(30004) } 
-         
-        #addDir(translation(30004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
-        
-        liz = compose_list_item( translation(30004), "", "script", build_script("listSubReddit",nextUrl,subreddit_key), {'plot': translation(30004)} )
-        
-        li.append(liz)
+            # plot shows up on estuary. etc. ( avoids the "No information available" message on description ) 
+            info_label={ "plot": translation(30004) } 
+             
+            #addDir(translation(30004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
+            
+            liz = compose_list_item( translation(30004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name), {'plot': translation(30004)} )
+            
+            li.append(liz)
         
         #if show_listSubReddit_debug :log("NEXT PAGE="+nextUrl) 
     except Exception as e:
@@ -770,26 +803,18 @@ def listSubReddit(url, name, subreddit_key):
         
         pass
     
-    #the +'s got removed by url conversion 
-    subreddit_key=subreddit_key.replace(' ','+')
-    viewID=WINDOW.getProperty( "viewid-"+subreddit_key )
-    #log("  custom viewid %s for %s " %(viewID,subreddit_key) )
 
-    if viewID:
-        log("  custom viewid %s for %s " %(viewID,subreddit_key) )
-        xbmc.executebuiltin('Container.SetViewMode(%s)' %viewID )
-    else:
-        if forceViewMode:
-            xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
-        
     #xbmcplugin.endOfDirectory(pluginhandle)
     
     from resources.guis import listSubRedditGUI    
     ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
-    ui.title_bar_text=subreddit_key
+    ui.title_bar_text=title_bar_name
     #ui.include_parent_directory_entry=True
 
     ui.doModal()
+    
+    #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
+    #xbmc.sleep(8000)
 
 def collect_thumbs( entry ):
     #collect the thumbs from reddit json
@@ -832,7 +857,7 @@ def collect_thumbs( entry ):
     return 
 
 
-def addLink(title, title_line2, iconimage, previewimage, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_index=1,post_total=1,many_subreddit=False ):
+def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_index=1,post_total=1,many_subreddit=False ):
     
     videoID=""
     post_title=title
@@ -845,15 +870,18 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
     
     ok = False    
     #DirectoryItem_url=""
-   
+
+    preview_ar=0.0
+    if preview_w==0 or preview_h==0:
+        preview_ar=0.0
+    else:
+        preview_ar=float(preview_w) / preview_h
+    
+    #log( "    w:%d h:%d ar:%f" %(preview_w,preview_h,preview_ar ))
+
     from resources.domains import make_addon_url_from
     hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video )
     
-    if iconimage in ["","nsfw", "default"]:
-        #log( title+ ' iconimage blank['+iconimage+']['+thumb_url+ ']link_url:'+link_url ) 
-        iconimage=thumb_url
-    if poster_url=="":
-        poster_url=iconimage
     #mode=mode_type #usually 'playVideo'
     if hoster: pass
     else:hoster="---"
@@ -872,8 +900,15 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
     post_title=title
     il_description=il_description
         
-    il={"title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+    il={"title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
+
+    log( '    reddit thumb[%s] reddit preview[%s] new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, thumb_url, poster_url, link_url ))
+    if iconimage in ["","nsfw", "default"]:
+         
+        iconimage=thumb_url
+    if poster_url=="":
+        poster_url=iconimage
     
     #log( "  PLOT:" +il_description )
     liz=xbmcgui.ListItem(label=n+post_title
@@ -882,11 +917,26 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
                          ,thumbnailImage=iconimage
                          ,path=DirectoryItem_url) 
 
-    #art_object
-    liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":previewimage, "fanart":poster_url, "landscape":poster_url   })
+    if previewimage=="":
+        #log("putting preview image")
+        liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
+    else:
+        liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":previewimage, "fanart":poster_url, "landscape":poster_url   })
+    
+
+    #----- assign actions
+    if preview_ar>0 and preview_ar <= 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
+        from resources.domains import link_url_is_playable
+        if link_url_is_playable(link_url):
+            liz.setProperty('right_button_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
+
+    liz.setProperty('comments_action', build_script('listLinksInComment', site ) )        
+    #----- assign actions
     
     liz.setInfo(type='video', infoLabels=il)
 
+    #use clearart to indicate if link is video, album or image. here, we default to unsupported.
+    liz.setArt({ "clearart": "type_unsupp.png"  }) 
     
     if DirectoryItem_url:
 
@@ -903,11 +953,19 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
                 #WINDOW.setProperty(videoID, description )
                 WINDOW.setProperty(videoID, il_description )
 
+
+        #use clearart to indicate if link is video, album or image 
+        liz.setArt({ "clearart":"type_video.png"  })
+        if mode_type in ['listImgurAlbum','listTumblrAlbum', 'listFlickrAlbum']:
+            liz.setArt({ "clearart":"type_album.png"  })    #post_title='[%s] %s' %(t_Album, post_title)
+        if setInfo_type=='pictures'  : 
+            liz.setArt({ "clearart":"type_image.png"  })    #post_title='[%s] %s' %(t_IMG, post_title)   
+        if mode_type=='listLinksInComment': 
+            liz.setArt({ "clearart":"changelog.png"  })    #post_title='[reddit] '+post_title  
+
+
+
         
-        if mode_type in ['listImgurAlbum','listTumblrAlbum', 'listFlickrAlbum']:post_title='[%s] %s' %(t_Album, post_title)
-        #if mode_type=='playSlideshow': post_title='[IMG] '+post_title   
-        if setInfo_type=='pictures'  : post_title='[%s] %s' %(t_IMG, post_title)   
-        if mode_type=='listLinksInComment': post_title='[reddit] '+post_title  
         
         #art_object
         #liz.setArt({ "poster":poster_url  })
@@ -915,12 +973,6 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
 
         #liz.setInfo(type=setInfo_type, infoLabels=il)
 
-        #log('    album_viewMode='+album_viewMode+ '  IsPlayable='+IsPlayable)
-        if album_viewMode=='450': #450 is my trigger to use a custom gui for showing album.
-            isFolder=False        #with custom gui, you need to set isFolder to false even if you're listing a folder.  
-            #IsPlayable="false"   #  set isPlayable to "false" too
-        
-        #liz.setProperty('IsPlayable', property_link_type)
         
         entries = [] #entries for listbox for when you type 'c' or rt-click 
 
@@ -970,14 +1022,13 @@ def addLink(title, title_line2, iconimage, previewimage, description, credate, r
 
         #xbmcplugin.addDirectoryItem(pluginhandle, DirectoryItem_url, listitem=liz, isFolder=isFolder, totalItems=post_total)
         liz.setProperty('item_type',property_link_type)
-        liz.setProperty('url',DirectoryItem_url)
+        liz.setProperty('onClick_action',DirectoryItem_url)
         
         
     else:
         #unsupported type here:
         pass
 
-    liz.setProperty('comments_action', build_script('listLinksInComment', site ) )        
     return liz
 #MODE listFavourites -  name, type not used
 # def listFavourites(subreddit, name, type):
@@ -1109,24 +1160,6 @@ def has_multiple_subreddits(content_data_children):
     return False
 
 
-
-
-def getYoutubeDownloadPluginUrl(id):
-    return "plugin://plugin.video.youtube/?path=/root/search&action=download&videoid=" + id
-
-def getVimeoDownloadPluginUrl(id):
-    return "plugin://plugin.video.vimeo/?path=/root/search/new/search&action=download&videoid=" + id
-
-def getDailymotionDownloadPluginUrl(id):
-    return "plugin://plugin.video.dailymotion_com/?mode=downloadVideo&url=" + id
-
-def getLiveleakDownloadPluginUrl(id):
-    return "%s?mode=downloadLiveLeakVideo&url=%s" %(sys.argv[0], id )
-
-def getGfycatDownloadPluginUrl(id):
-    return "%s?mode=downloadGfycatVideo&url=%s" %(sys.argv[0], id )
-
-
 def getLiveLeakStreamUrl(id):
     #log("getLiveLeakStreamUrl ID="+str(id) )
     #sometimes liveleak items are news articles and not video. 
@@ -1143,13 +1176,16 @@ def getLiveLeakStreamUrl(id):
 
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
+    #log("playVideo:"+url)
     if url :
-        #url='http://i.imgur.com/ARdeL4F.mp4'
-        #url='plugin://plugin.video.reddit_viewer/?mode=comments_gui'
-        listitem = xbmcgui.ListItem(path=url)
-        xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+        xbmc.Player().play(url, windowed=False)  #scripts play video like this.
+
+        #listitem = xbmcgui.ListItem(path=url)
+        #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) #plugins play video like this.
     else:
         log("playVideo(url) url is blank")
+        
+        
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
@@ -1242,15 +1278,16 @@ def playYTDLVideo(url, name, type):
         
                 stream_url = vid.streamURL()                         #This is what Kodi (XBMC) will play    
 
+                playVideo(stream_url, name, type)
                 
                 #pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                 #pl.clear()
                 #pl.add(stream_url)
-                xbmc.Player().play(stream_url, windowed=False)
+                #xbmc.Player().play(stream_url, windowed=False)
                 
-                    
-                listitem = xbmcgui.ListItem(path=stream_url)
-                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+                #plugins play video like below
+                #listitem = xbmcgui.ListItem(path=stream_url)
+                #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
             else:
                 #log("getVideoInfo failed==" )
                 xbmc.executebuiltin('XBMC.Notification("'+ translation(30192) +'", "Youtube_dl" )' )  
@@ -1261,12 +1298,20 @@ def playYTDLVideo(url, name, type):
 
 #MODE playGfycatVideo       - name, type not used
 def playGfycatVideo(id, name, type):
+    log( "  play gfycat video " + id )
     content = opener.open("http://gfycat.com/cajax/get/"+id).read()
     content = json.loads(content.replace('\\"', '\''))
     
-    if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
-        GfycatStreamUrl=content["gfyItem"]["mp4Url"]
     
+    if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
+        GfycatStreamUrl=content["gfyItem"]["webmUrl"]
+
+    if GfycatStreamUrl: pass
+    else:
+        if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
+            GfycatStreamUrl=content["gfyItem"]["mp4Url"]
+
+
     playVideo(GfycatStreamUrl, name, type)
 
 def listLinksInComment(url, name, type):
@@ -1312,9 +1357,9 @@ def listLinksInComment(url, name, type):
 
     #content = opener.open(url).read()  
     
-    #content = reddit_request(url)        
-    #if not content: return
-    content = r'[{"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t3", "data": {"domain": "liveleak.com", "banned_by": null, "media_embed": {"content": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "width": 600, "scrolling": false, "height": 338}, "subreddit": "redditviewertesting", "selftext_html": null, "selftext": "", "likes": true, "suggested_sort": null, "user_reports": [], "secure_media": null, "link_flair_text": null, "id": "4v8hk9", "from_kind": null, "gilded": 0, "archived": false, "clicked": false, "report_reasons": null, "author": "gsonide", "media": {"oembed": {"provider_url": "http://www.liveleak.com/", "description": "When this man was washing his car at 2am with his brother in the car, he was nearly attacked by two armed hijackers. However, the criminals were in for a surprise when he fought both of them off using", "title": "LiveLeak.com - Driver Thwarts Carjacking at Car Wash with Hose", "type": "video", "thumbnail_width": 1024, "height": 338, "width": 600, "html": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "version": "1.0", "provider_name": "LiveLeak.com", "thumbnail_url": "https://cdn.liveleak.com/80281E/ll_a_u/thumbs/2016/Jul/28/66d76ef92fcf_sf_7.jpg", "thumbnail_height": 432}, "type": "liveleak.com"}, "name": "t3_4v8hk9", "score": 1, "approved_by": null, "over_18": false, "hidden": false, "preview": {"images": [{"source": {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?s=0287a1da16226199bf58c83c9f6856d4", "width": 1024, "height": 432}, "resolutions": [{"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=eb4c7d7ddcf20711effcb1bf0fd8632a", "width": 108, "height": 45}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=216&amp;s=2e4b6493cfc10bd470e63547fea71f65", "width": 216, "height": 91}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=320&amp;s=d79e371f714793280e0e27f9814a77df", "width": 320, "height": 135}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=640&amp;s=aedbf13b14e888beedc139ee68dbe1d5", "width": 640, "height": 270}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=960&amp;s=f0e7c05d552988295183acacf70c6c01", "width": 960, "height": 405}], "variants": {}, "id": "2CuxKUAzLYIGh1jNwcszBt0Nanjz6wBZcggqVgo55KU"}]}, "thumbnail": "http://b.thumbs.redditmedia.com/swF6-vbvBHGNTfamh2vScWQ5iLwMXcZbbHEr-vbvEWQ.jpg", "subreddit_id": "t5_3fhy1", "edited": false, "link_flair_css_class": null, "author_flair_css_class": null, "downs": 0, "mod_reports": [], "secure_media_embed": {}, "saved": false, "removal_reason": null, "post_hint": "rich:video", "stickied": false, "from": null, "is_self": false, "from_id": null, "permalink": "/r/redditviewertesting/comments/4v8hk9/liveleakcom_test_1/", "locked": false, "hide_score": false, "created": 1469850739.0, "url": "http://www.liveleak.com/view?i=3b5_1469728820", "author_flair_text": null, "quarantine": false, "title": "liveleak.com test 1", "created_utc": 1469821939.0, "ups": 1, "upvote_ratio": 1.0, "num_comments": 4, "visited": false, "num_reports": null, "distinguished": null}}], "after": null, "before": null}}, {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0lq8", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 1: asdfsdf asdf asdf sadf asdf asdf asdf", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 1: asdfsdf asdf asdf sadf asdf asdf asdf&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0lq8", "score_hidden": false, "stickied": false, "created": 1469970764.0, "author_flair_text": null, "created_utc": 1469941964.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0mh9", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t1_d5y0ly6", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2-1: gsdfgsdfg  sdfgsdsdf gsdfgkl sdf dsfkglhsdflkj sdlfgjsdl lsdfg sdlfg sdfg sdflg sdfg sdfgljksdhf sdflgksd dflsgj sdflgjk fgsdfg sdfg sdfgsdfgsd mmmmmmm mmmmmmmmmmm mmmmmm asdfh asdlf asld asdf  aslddfkja asdlf asfdjdh asdf j df aasd  aksdjd ks djdhf adfjfaksd mm", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2-1: gsdfgsdfg  sdfgsdfgsdfg sdfg sdfgsdfgsd&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0mh9", "score_hidden": false, "stickied": false, "created": 1469970812.0, "author_flair_text": null, "created_utc": 1469942012.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}, "user_reports": [], "saved": false, "id": "d5y0ly6", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0ly6", "score_hidden": false, "stickied": false, "created": 1469970779.0, "author_flair_text": null, "created_utc": 1469941979.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0m5f", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0m5f", "score_hidden": false, "stickied": false, "created": 1469970792.0, "author_flair_text": null, "created_utc": 1469941992.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}]'
+    content = reddit_request(url)        
+    if not content: return
+    #content = r'[{"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t3", "data": {"domain": "liveleak.com", "banned_by": null, "media_embed": {"content": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "width": 600, "scrolling": false, "height": 338}, "subreddit": "redditviewertesting", "selftext_html": null, "selftext": "", "likes": true, "suggested_sort": null, "user_reports": [], "secure_media": null, "link_flair_text": null, "id": "4v8hk9", "from_kind": null, "gilded": 0, "archived": false, "clicked": false, "report_reasons": null, "author": "gsonide", "media": {"oembed": {"provider_url": "http://www.liveleak.com/", "description": "When this man was washing his car at 2am with his brother in the car, he was nearly attacked by two armed hijackers. However, the criminals were in for a surprise when he fought both of them off using", "title": "LiveLeak.com - Driver Thwarts Carjacking at Car Wash with Hose", "type": "video", "thumbnail_width": 1024, "height": 338, "width": 600, "html": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "version": "1.0", "provider_name": "LiveLeak.com", "thumbnail_url": "https://cdn.liveleak.com/80281E/ll_a_u/thumbs/2016/Jul/28/66d76ef92fcf_sf_7.jpg", "thumbnail_height": 432}, "type": "liveleak.com"}, "name": "t3_4v8hk9", "score": 1, "approved_by": null, "over_18": false, "hidden": false, "preview": {"images": [{"source": {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?s=0287a1da16226199bf58c83c9f6856d4", "width": 1024, "height": 432}, "resolutions": [{"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=eb4c7d7ddcf20711effcb1bf0fd8632a", "width": 108, "height": 45}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=216&amp;s=2e4b6493cfc10bd470e63547fea71f65", "width": 216, "height": 91}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=320&amp;s=d79e371f714793280e0e27f9814a77df", "width": 320, "height": 135}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=640&amp;s=aedbf13b14e888beedc139ee68dbe1d5", "width": 640, "height": 270}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=960&amp;s=f0e7c05d552988295183acacf70c6c01", "width": 960, "height": 405}], "variants": {}, "id": "2CuxKUAzLYIGh1jNwcszBt0Nanjz6wBZcggqVgo55KU"}]}, "thumbnail": "http://b.thumbs.redditmedia.com/swF6-vbvBHGNTfamh2vScWQ5iLwMXcZbbHEr-vbvEWQ.jpg", "subreddit_id": "t5_3fhy1", "edited": false, "link_flair_css_class": null, "author_flair_css_class": null, "downs": 0, "mod_reports": [], "secure_media_embed": {}, "saved": false, "removal_reason": null, "post_hint": "rich:video", "stickied": false, "from": null, "is_self": false, "from_id": null, "permalink": "/r/redditviewertesting/comments/4v8hk9/liveleakcom_test_1/", "locked": false, "hide_score": false, "created": 1469850739.0, "url": "http://www.liveleak.com/view?i=3b5_1469728820", "author_flair_text": null, "quarantine": false, "title": "liveleak.com test 1", "created_utc": 1469821939.0, "ups": 1, "upvote_ratio": 1.0, "num_comments": 4, "visited": false, "num_reports": null, "distinguished": null}}], "after": null, "before": null}}, {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0lq8", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 1: asdfsdf asdf asdf sadf asdf asdf asdf", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 1: asdfsdf asdf asdf sadf asdf asdf asdf&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0lq8", "score_hidden": false, "stickied": false, "created": 1469970764.0, "author_flair_text": null, "created_utc": 1469941964.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0mh9", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t1_d5y0ly6", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2-1: gsdfgsdfg  sdfgsdsdf gsdfgkl sdf dsfkglhsdflkj sdlfgjsdl lsdfg sdlfg sdfg sdflg sdfg sdfgljksdhf sdflgksd dflsgj sdflgjk fgsdfg sdfg sdfgsdfgsd mmmmmmm mmmmmmmmmmm mmmmmm asdfh asdlf asld asdf  aslddfkja asdlf asfdjdh asdf j df aasd  aksdjd ks djdhf adfjfaksd mm", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2-1: gsdfgsdfg  sdfgsdfgsdfg sdfg sdfgsdfgsd&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0mh9", "score_hidden": false, "stickied": false, "created": 1469970812.0, "author_flair_text": null, "created_utc": 1469942012.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}, "user_reports": [], "saved": false, "id": "d5y0ly6", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0ly6", "score_hidden": false, "stickied": false, "created": 1469970779.0, "author_flair_text": null, "created_utc": 1469941979.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0m5f", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0m5f", "score_hidden": false, "stickied": false, "created": 1469970792.0, "author_flair_text": null, "created_utc": 1469941992.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}]'
     
     #log(content)
     #content = json.loads(content.replace('\\"', '\''))  #some error here ?      TypeError: 'NoneType' object is not callable
@@ -1343,7 +1388,7 @@ def listLinksInComment(url, name, type):
         if comment_score < int_CommentTreshold:
             continue
         
-        hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, setProperty_IsPlayable =make_addon_url_from(h[2])
+        hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2])
     
         #mode_type #usually 'playVideo'
         kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.  
@@ -1366,29 +1411,25 @@ def listLinksInComment(url, name, type):
                 list_title=r"[I]Title [/I] %s" %( tab )
             
         desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+
+        #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
+        plot=h[3].replace('](', '] (')
+        plot=list_title + markdown_to_bbcode(plot)
         
         if DirectoryItem_url:
             #(score, link_desc, link_http, post_text, post_html, d, )
-            
             #list_item_name=str(h[0]).zfill(3)
             
             #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +h[2] + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
             #log( h[4] + ' -- videoID['+videoID+']' )
-            
-            #yt_thumb = ret_youtube_thumbnail(videoID,0)
-            #log("thumbnailImage:"+yt_thumb)
-            
             #log("sss:"+ supportedPluginUrl )
             
-            fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
-            result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
+            #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
+            #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
             
-            #helps the the textbox control treat [url description] and (url) as separate words. so that tehy can be separated into 2 lines 
-            result=result.replace('](', '] (')
-            result=markdown_to_bbcode(result)
-            #log(result)
+            plot= "[COLOR greenyellow]   *[%s] %s"%(hoster, plot )  + "[/COLOR]"
 
-            liz=xbmcgui.ListItem(label=     "[COLOR greenyellow]*"+     list_title+"[%s] %s"%(hoster, result.replace('\n',' ')[0:100])  + "[/COLOR]", 
+            liz=xbmcgui.ListItem(label=plot , #not used in gui
                                  label2="",
                                  iconImage="DefaultVideo.png", 
                                  thumbnailImage=thumb_url,
@@ -1400,25 +1441,24 @@ def listLinksInComment(url, name, type):
             else: thumb_url="DefaultVideo.png"
 
             
-            liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": result, "studio": hoster, "votes": str(h[0]), "director": author } )
+            liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
             liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
 
-            liz.setProperty('IsPlayable', setProperty_IsPlayable)
-            liz.setProperty('url', DirectoryItem_url)  #<-- needed by the xml gui skin
-            liz.setPath(DirectoryItem_url) 
+
+            liz.setProperty('item_type',property_link_type)   #script or playable
+            liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
+            #liz.setPath(DirectoryItem_url) 
 
             directory_items.append( (DirectoryItem_url, liz, isFolder,) )
             #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
         else:
             #this section are for comments that have no links or unsupported links
             if not ShowOnlyCommentsWithlink:
-                result=h[3].replace('](', '] (')
-                result=markdown_to_bbcode(result)
                 liz=xbmcgui.ListItem(label=list_title + desc100 , 
                                      label2="",
                                      iconImage="", 
                                      thumbnailImage="")
-                liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": result, "studio": hoster, "votes": str(h[0]), "director": author } )
+                liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
                 liz.setProperty('IsPlayable', 'false')
                 
                 directory_items.append( ("", liz, False,) )
@@ -1441,7 +1481,7 @@ def listLinksInComment(url, name, type):
         #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
         ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
         ui.title_bar_text=post_title
-        #ui.include_parent_directory_entry=True
+        ui.include_parent_directory_entry=False
 
         ui.doModal()
         del ui
@@ -1457,19 +1497,6 @@ def listLinksInComment(url, name, type):
 
 
 
-#for testing only
-def comments_gui(url, name, type):
-    from resources.guis import cGUI
-    log( 'comments gui %s-%s-%s' %(url, name, type))
-    li=[]
-
-    #ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-    #ui.addItems(li )
-    
-    #ui.doModal()
-    #del ui
-    
-    pass
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
@@ -1585,10 +1612,7 @@ def display_album_from(dictlist, album_name):
     directory_items=[]
     label=""
     
-    if album_viewMode=='450': #450 is my trigger to use a custom gui for showing album.
-        using_custom_gui=True
-    else:
-        using_custom_gui=False
+    using_custom_gui=True
     
     for idx, d in enumerate(dictlist):
         #log('li_label:'+d['li_label'] + "  pluginhandle:"+ str(pluginhandle))
@@ -1747,6 +1771,20 @@ def playFlickr(flickr_url, name, type):
     else:
         playSlideshow(media_url,"Flickr","")
         #log("  listTumblrAlbum can't process " + media_type)    
+
+def playImgurVideo(imgur_url, name, type):
+    from resources.domains import ClassImgur
+    log('play imgur '+ imgur_url)
+    f=ClassImgur( imgur_url )
+
+    media_url, media_type =f.get_playable_url(imgur_url, False)
+    if media_type=='album':
+        display_album_from( media_url, name )
+    elif media_type=='video':
+        playVideo(media_url, "", "")
+    elif media_type=='image':
+        playSlideshow(media_url,"Flickr","")
+        #log("  listTumblrAlbum can't process " + media_type)    
     
 #MODE downloadLiveLeakVideo       - name, type not used
 def downloadLiveLeakVideo(id, name, type):
@@ -1835,18 +1873,6 @@ def openSettings(id, name,type):
         addonY = xbmcaddon.Addon(id='plugin.video.dailymotion_com')
     addonY.openSettings()
 #MODE toggleNSFW     -- url, name, type not uised
-def toggleNSFW(url, name, type):
-#when you toggle the show nsfw in addon setting, the plugin is called and this function handles the dialog box
-    if os.path.exists(nsfwFile):
-        dialog = xbmcgui.Dialog()
-        if dialog.yesno(translation(30187), translation(30189)):
-            os.remove(nsfwFile)
-    else:
-        dialog = xbmcgui.Dialog()
-        if dialog.yesno(translation(30188), translation(30190)+"\n"+translation(30191)):
-            fh = open(nsfwFile, 'w')
-            fh.write("")
-            fh.close()
 
 def parameters_string_to_dict(parameters):
     paramDict = {}
@@ -1893,21 +1919,21 @@ def addDir(name, url, mode, iconimage, type="", listitem_infolabel=None, label2=
     ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=True)
     return ok
 
-def compose_list_item(label,label2,property_item_type, property_url, infolabels=None  ):
+def compose_list_item(label,label2,iconImage,property_item_type, property_url, infolabels=None  ):
     #build a listitem for use in our custom gui
     #if property_item_type=='script':
     #    property_url is the argument for RunAddon()  and it looks like this:   RunAddon( script.web.viewer, http://m.reddit.com/login )
     
     liz=xbmcgui.ListItem(label=label, 
                          label2=label2,
-                         iconImage="DefaultVideo.png", 
-                         thumbnailImage="",
+                         iconImage=iconImage, 
+                         thumbnailImage=iconImage,
                          path="") #<-- DirectoryItem_url is not used here by the xml gui
     liz.setProperty('item_type', property_item_type)  #item type "script" -> ('RunAddon(%s):' % di_url )
     
         
     #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } ) 
-    liz.setProperty('url', property_url)
+    liz.setProperty('onClick_action', property_url)
 
     if infolabels==None:
         pass
@@ -2078,6 +2104,135 @@ def empty_slideshow_folder():
         except Exception as e:
             log("empty_slideshow_folder error:"+e)    
 '''
+
+def zoom_n_slide(image, width, height):
+    #url=image, name=width, type=height
+    log( 'zoom_n_slide %s: %s,%s' %(image, width, height))
+    
+    try:
+        w=int(width)
+        h=int(height)
+        zoom,slide=calculate_zoom_slide(w,h)
+
+        newWindow=xbmcgui.Window()
+        newWindow.setCoordinateResolution(0)
+        #ctl3=xbmcgui.ControlImage(0, 0, 1920, 1080, 'http://i.imgur.com/E0qPa3D.jpg', aspectRatio=2)
+        ctl3=xbmcgui.ControlImage(0, 0, 1920, 1080, image, aspectRatio=2)
+        newWindow.addControl(ctl3)
+
+        scroll_time=int(height)*(int(height)/int(width))
+        
+        zoom_effect="effect=zoom loop=true center=960 end=%d time=1000" %zoom
+        fade_effect="condition=true effect=slide delay=1000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
+        
+        ctl3.setAnimations([('WindowOpen', zoom_effect), ('conditional', fade_effect,) ])
+        
+        #newWindow.show()
+        #xbmc.sleep(8000)
+        newWindow.doModal()
+        del newWindow
+    except Exception as e:
+        log("  EXCEPTION zoom_n_slide:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
+    
+
+def molest_xml(url, name, type):
+    #from resources.guis import cGUI
+    log( 'molest_xml %s-%s-%s' %(url, name, type))
+    #li=[]
+
+    CurrentWindow = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
+    #log( '  cwi:'+ str(CurrentWindow) )
+    
+    try:
+        ctl=CurrentWindow.getControl(65591)
+        log( 'setting visible' )
+        ctl.setVisible(True)
+        xbmc.sleep(5)
+        #win.addControl()
+        
+        ctl2=CurrentWindow.getControl(201)
+        #CurrentWindow.removeControl(ctl2)
+        #aa=ctl2.getProperty('width')
+        #log("  aa"+str(aa))
+        
+        #doesn't work
+        #ctl2.setImage('d:\\test.png')
+        #CurrentWindow.show()
+        
+        #works
+        #ctl3=xbmcgui.ControlLabel(200,200,100,50, "labellasdas", "font14")
+        #ctl3=xbmcgui.ControlImage(1200, 200, 500, 500, 'http://target.scene7.com/is/image/Target/15773403', aspectRatio=0)
+        #CurrentWindow.addControl(ctl3)
+        
+        
+        
+        
+        
+        
+        #read later:  Is it possible set animation windowopen via script ?      http://forum.kodi.tv/showthread.php?tid=210316
+        
+        
+        #ctl3.setAnimations([ ('WindowOpen', 'effect=zoom center=960 time=2000') , ('conditional', 'condition=true effect=slide delay=2000 start=10,10 end=1280,10 time=5000 loop=true',) ] )
+        #ctl3.setAnimations([ ('conditional','condition=true effect=slide delay=2000 start=10,10 end=10,510 time=5000 loop=true')  ] )
+        #ctl3.setAnimations([('conditional', 'condition=true effect=slide pulse=true delay=1000 start=10,10 end=1280,10 time=2000',)])
+        
+        #ctl3.setAnimations([('conditional', 'condition=true pulse=True effect=zoom end=150 time=2000'), ('conditional', 'condition=true effect=slide delay=2000 start=10,10 end=1280,10 time=5000 loop=true') ])
+        
+        
+    except Exception as e:
+        log("  EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
+        
+        
+    #ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
+    #ui.addItems(li )
+    
+    #ui.doModal()
+    #del ui
+    
+    pass
+
+def calculate_zoom_slide(img_w, img_h):
+    screen_w = 1920
+    screen_h = 1080
+    
+    startx=0
+    
+    #determine how much xbmc would shrink the image to fit screen
+    
+    shrink_percent = float(screen_h) / img_h
+    slide_end = float(img_h-screen_h) * shrink_percent
+
+    log("  shrink_percentage %f " %(shrink_percent) )
+
+    if img_w > screen_w:
+        #startx=0
+
+        #*** calc here needs adjustment
+                
+        #get the shrunked image width 
+        s_w=img_w*shrink_percent
+
+        #zoom percent needed to make the shrunked_img_w same as screen_w        
+        zoom_percent = (float(screen_w) / s_w) - shrink_percent 
+        log("  percent 2 zoom  %f " %(zoom_percent) )
+        
+        #shrunken img height is same as screen_h 
+        s_h=img_h*shrink_percent  #==screen_h
+        
+        #compute not-so-original image height 
+        nso_h=s_h* zoom_percent 
+        log("  img h  %f " %(nso_h) )
+        
+        slide_end = float(nso_h-screen_h) * 1/zoom_percent   #shrink_percent
+    else: 
+        #startx= (screen_w-img_w) / 2
+
+        #zoom this much to get original size
+        zoom_percent = float(1) / shrink_percent
+        log("  percent to zoom  %f " %(zoom_percent) )
+
+    return zoom_percent * 100, slide_end
+
 
 def send_email(recipient, Message):
     import smtplib
@@ -2546,8 +2701,8 @@ if __name__ == '__main__':
                     ,'removeFromFavs'       : removeFromFavs
                     ,'searchReddits'        : searchReddits          
                     ,'openSettings'         : openSettings        
-                    ,'toggleNSFW'           : toggleNSFW 
-                    ,'listImgurAlbum'       : listImgurAlbum    
+                    ,'listImgurAlbum'       : listImgurAlbum
+                    ,'playImgurVideo'       : playImgurVideo  
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playVineVideo'        : playVineVideo
@@ -2558,7 +2713,8 @@ if __name__ == '__main__':
                     ,'playInstagram'        : playInstagram
                     ,'playFlickr'           : playFlickr
                     ,'listFlickrAlbum'      : playFlickr 
-                    ,'comments_gui'         : comments_gui    #for testing 
+                    ,'molest_xml'           : molest_xml    #for testing 
+                    ,'zoom_n_slide'         : zoom_n_slide
                     ,'test_menu'            : test_menu 
                     ,'callwebviewer'        : callwebviewer
                     ,'get_refresh_token'    : reddit_get_refresh_token

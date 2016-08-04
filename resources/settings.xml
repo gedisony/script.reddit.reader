@@ -1,20 +1,20 @@
 <settings>
     <category label="30100">
         <setting id="itemsPerPage"          type="enum"   label="30101" values="10|25|50|75|100" default="2"/>
-        <setting id="TitleAddtlInfo"        type="bool"   label="30102" default="false"/>
+        <!-- setting id="TitleAddtlInfo"        type="bool"   label="30102" default="false"/-->
         <setting type="lsep"                              label="30103" enable="false" />
-        <setting id="HideImagePostsOnVideo" type="bool"   label="30104" default="false"/>
+        <!-- setting id="HideImagePostsOnVideo" type="bool"   label="30104" default="false"/-->
         <setting type="sep" />
     	<setting id="CommentTreshold"       type="select" label="30106" values="All|0|5|10|50|100"/>
-        <setting id="comments_viewMode"     type="number" label="30110" default="0"/>
+        <!-- setting id="comments_viewMode"     type="number" label="30110" default="0"/-->
         <setting type="sep" />
-        <setting label="30107"              type="action" action="RunAddon(script.reddit.reader,?mode=toggleNSFW)"/>
+        <setting id="show_nsfw"             type="bool"   label="30107" default="false"/>
         <setting type="sep" />
-    	<setting id="album_viewMode"        type="number" label="30105" default="0"/>
-        <setting id="forceViewMode"         type="bool"   label="30108" default="false"/>
-        <setting id="viewMode"              type="number" label="30109" default="504"/>
+    	<!-- setting id="album_viewMode"        type="number" label="30105" default="0"/-->
+        <!-- setting id="forceViewMode"         type="bool"   label="30108" default="false"/-->
+        <!-- setting id="viewMode"              type="number" label="30109" default="504"/-->
     </category>
-    <category label="30120">
+    <!-- category label="30120">
         <setting id="showAllNewest"         type="bool" label="30121" default="false"/>
         <setting id="showUnwatchedNewest"   type="bool" label="30122" default="true"/>
         <setting id="showUnfinishedNewest"  type="bool" label="30123" default="false"/>
@@ -47,9 +47,9 @@
         <setting id="show_blogspot"      type="bool" label="30356" default="true"/>
         <setting id="show_tumblr"        type="bool" label="30357" default="true"/>
         <setting id="show_gyazo"         type="bool" label="30358" default="true"/>
-    </category>
+    </category-->
 
-    <category label="30150">
+    <!-- category label="30150">
         <setting                  type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/>
         <setting                  type="action"      label="30152" action="RunAddon(script.reddit.reader,?mode=openSettings&url=vimeo)"/>
         <setting                  type="action"      label="30153" action="RunAddon(script.reddit.reader,?mode=openSettings&url=dailymotion)"/>
@@ -57,7 +57,7 @@
         <setting id="ll_downDir"  type="folder"      label="30155" default=""/>
         <setting id="gfy_downDir" type="folder"      label="30156" default=""/>
         <setting id="streamable_quality" type="enum" label="30157" values="full|mobile" default="1" />
-    </category>
+    </category-->
     <category label="30400"> 
     	<setting                              type="lsep"        label="30401"               enable="true"   />
 		<setting type="sep" />

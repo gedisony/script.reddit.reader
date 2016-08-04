@@ -105,7 +105,7 @@ class cGUI(xbmcgui.WindowXML):
                     self.close()  #include_parent_directory_entry means that we've added a ".." as the first item on the list onInit
             else:
                 #name = item.getLabel()
-                try:di_url=item.getProperty('url') #this property is created when assembling the kwargs.get("listing") for this class
+                try:di_url=item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
                 except:di_url=""
                 item_type=item.getProperty('item_type').lower()
                 
@@ -162,18 +162,36 @@ class listSubRedditGUI(cGUI):
         
             self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
+
+            item_type   =item.getProperty('item_type').lower()
+            
+            #xbmc.executebuiltin("ActivateWindow(busydialog)")
                         
             if action == xbmcgui.ACTION_MOVE_LEFT:
-                item_type   =item.getProperty('item_type').lower()
                 comments_action=item.getProperty('comments_action')
-                
-                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                    
                 log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
                 
                 xbmc.executebuiltin( comments_action  )
                 
+                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                
+            if action == xbmcgui.ACTION_MOVE_RIGHT:
+                right_button_action=item.getProperty('right_button_action')    
+                
+                log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
+            
+                xbmc.executebuiltin( right_button_action  )
+                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
+                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
+                
+                
+                
                 #xbmc.sleep(5000)
                 #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+
+                #ctl2=self.getControl(201)
+                #ctl2.setImage('d:\\test.png')
 
         pass 
             
