@@ -152,7 +152,7 @@
 						<visible>!Control.IsVisible(5501)</visible>
 						<scroll>true</scroll>
 						<scrolltime>200</scrolltime>
-						<autoscroll delay="1000" time="1000" repeat="2000">!Control.HasFocus(13)</autoscroll>
+						<autoscroll delay="3000" time="4000" repeat="5000">!Control.HasFocus(13)</autoscroll>
 						<label>$INFO[ListItem.Plot]</label>
 						<shadowcolor>text_shadow</shadowcolor>
                         <!-- animation effect="slide" start="0,-40" end="0,0" time="10">Focus</animation-->

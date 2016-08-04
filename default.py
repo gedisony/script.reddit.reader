@@ -200,14 +200,45 @@ def format_multihub(multihub):
     
     
 #MODE addSubreddit      - name, type not used
+
+def manage_subreddits(subreddit, name, type):
+    log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
+    
+    #http://forum.kodi.tv/showthread.php?tid=148568
+    dialog = xbmcgui.Dialog()
+    #funcs = (        addSubreddit,        editSubreddit,        removeSubreddit,    )
+    #elected_index = dialog.select(subreddit, ['add new subreddi', 'edit   subreddit', 'remove subreddit'])
+    selected_index = dialog.select(subreddit, [translation(30001), translation(30003), translation(30002)])
+
+    #the if statements below is not as elegant as autoselecting the func from funcs but more flexible in the case with add subreddit where we should not send a subreddit parameter
+    #    func = funcs[selected_index]
+    #     #assign item from funcs to func
+    #    func(subreddit, name, type)    
+    log('selected_index ' + str(selected_index))
+    if selected_index == 0:       # 0->first item
+        addSubreddit('','','')
+        pass
+    elif selected_index == 1:     # 1->second item
+        editSubreddit(subreddit,'','')
+        pass
+    elif selected_index == 2:     # 2-> third item
+        removeSubreddit(subreddit,'','')
+        pass
+    else:                         #-1 -> escape pressed or [cancel] 
+        pass
+    
 def addSubreddit(subreddit, name, type):
+    log( 'addSubreddit ' + subreddit)
     alreadyIn = False
     fh = open(subredditsFile, 'r')
     content = fh.readlines()
     fh.close()
+    
     if subreddit:
         for line in content:
-            if line.lower()==subreddit.lower():
+            #log('line=['+line+']toadd=['+subreddit+']')
+            if line.strip()==subreddit.strip():
+                #log('  MATCH '+line+'='+subreddit)
                 alreadyIn = True
         if not alreadyIn:
             fh = open(subredditsFile, 'a')
@@ -238,7 +269,8 @@ def addSubreddit(subreddit, name, type):
 
 #MODE removeSubreddit      - name, type not used
 def removeSubreddit(subreddit, name, type):
-    #note: calling code in addDirR() 
+    log( 'removeSubreddit ' + subreddit)
+     
     fh = open(subredditsFile, 'r')
     content = fh.readlines()
     fh.close()
@@ -253,7 +285,8 @@ def removeSubreddit(subreddit, name, type):
     xbmc.executebuiltin("Container.Refresh")
 
 def editSubreddit(subreddit, name, type):
-    #note: calling code in addDirR() 
+    log( 'editSubreddit ' + subreddit)
+     
     fh = open(subredditsFile, 'r')
     content = fh.readlines()
     fh.close()
@@ -319,8 +352,10 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
         else:
             if subreddit: 
                 url+= "/r/"+subreddit
-            else: 
-                url+= "/r/all"
+            #else: 
+                #default to front page instead of r/all
+                #url+= "/r/all"
+            #   pass
  
         site_filter=""
         if search_string:  #search string overrides our supported sites filter
@@ -328,17 +363,10 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
             url+= "/search.json?q=" + urllib.quote_plus(search_string)
         elif skip_site_filters: 
             url+= "/.json?"
-        else:            
-            #url+= "/.json?"
-            for site in supported_sites :
-                if site[0] and site[5]:  #site[0]  is the show_youtube/show_vimeo/show_dailymotion/... global variables taken from settings file
-                    site_filter += site[5] + " OR "
-            #remove the last ' OR '
-            if site_filter.endswith(" OR "):  site_filter = site_filter[:-4]
-            #log("FILTER_STRING="+site_filter)
-            #url += urllib.quote_plus(site_filter)
-            url+= "/search.json?q=" + urllib.quote_plus(site_filter)
-            #url += urllib.quote_plus(site_filter)
+        else:
+            #no more supported_sites filter OR... OR... OR...
+            url+= "/.json?"
+            pass            
 
     url+= "&"+nsfw       #nsfw = "nsfw:no+"
     
@@ -451,8 +479,12 @@ def create_default_subreddits():
 def index(url,name,type):
     ## this is where the __main screen is created
 
-    from resources.guis import cGUI
+    from resources.guis import indexGui
     li=[]
+
+    #ui = cGUI('DialogSelect.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    #ui.show()
+    #xbmc.sleep(2000)
 
 #     log( "sys.argv[0]="+ sys.argv[0] ) #plugin://plugin.video.reddit_viewer/
 #     log( "addonID=" + addonID )     #plugin.video.reddit_viewer
@@ -466,7 +498,9 @@ def index(url,name,type):
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
 
-    log( "  show_nsfw  "+str(show_nsfw) + "  [" + nsfw+"]")
+    #log( "  show_nsfw  "+str(show_nsfw) + "  [" + nsfw+"]")
+    #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
+    #listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
 
     #log( "--------------------"+ addon.getAddonInfo('path') )
     #log( "--------------------"+ addon.getAddonInfo('profile') )
@@ -535,7 +569,9 @@ def index(url,name,type):
 
         #DirectoryItem_url = assemble_directory_item_url("listSubReddit",reddit_url,alias, "", ", ")  # xbmc.Player().play(pl, windowed=True) requires "script://" prepend to the url
 
-        liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )     
+        liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )
+             
+        liz.setProperty('ACTION_MOVE_LEFT', build_script('manage_subreddits', subreddit_entry,"","" ) )
            
 #         liz=xbmcgui.ListItem(label=alias, 
 #                              label2="",
@@ -560,7 +596,7 @@ def index(url,name,type):
         
         
     #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-    ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text="Reddit Reader"
     #ui.include_parent_directory_entry=True
     
@@ -2716,6 +2752,7 @@ if __name__ == '__main__':
                     ,'molest_xml'           : molest_xml    #for testing 
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'test_menu'            : test_menu 
+                    ,'manage_subreddits'    : manage_subreddits
                     ,'callwebviewer'        : callwebviewer
                     ,'get_refresh_token'    : reddit_get_refresh_token
                     ,'get_access_token'     : reddit_get_access_token

@@ -147,7 +147,46 @@ class cGUI(xbmcgui.WindowXML):
         elif controlID == 7:
             pass
 
+class indexGui(cGUI):
+    
+    def onAction(self, action):
 
+        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+            self.close()
+
+        try:focused_control=self.getFocusId()
+        except:focused_control=0
+
+        if focused_control==self.main_control_id:  #main_control_id is the listbox
+        
+            self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
+            item = self.gui_listbox.getSelectedItem()
+
+            item_type   =item.getProperty('item_type').lower()
+            
+                        
+            if action == xbmcgui.ACTION_MOVE_LEFT:
+                comments_action=item.getProperty('ACTION_MOVE_LEFT')
+                log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
+                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                
+                xbmc.executebuiltin( comments_action  )
+                #xbmc.sleep(2000)
+                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                
+            if action == xbmcgui.ACTION_MOVE_RIGHT:
+                right_button_action=item.getProperty('right_button_action')    
+                
+                log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
+            
+                #xbmc.executebuiltin( right_button_action  )
+                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
+                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
+                
+                #ctl2=self.getControl(201)
+                #ctl2.setImage('d:\\test.png')
+    
+    
 class listSubRedditGUI(cGUI):
 
     def onAction(self, action):
@@ -165,16 +204,15 @@ class listSubRedditGUI(cGUI):
 
             item_type   =item.getProperty('item_type').lower()
             
-            #xbmc.executebuiltin("ActivateWindow(busydialog)")
                         
             if action == xbmcgui.ACTION_MOVE_LEFT:
                 comments_action=item.getProperty('comments_action')
-                    
                 log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
+                xbmc.executebuiltin("ActivateWindow(busydialog)")
                 
                 xbmc.executebuiltin( comments_action  )
-                
-                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                xbmc.sleep(2000)
+                xbmc.executebuiltin( "Dialog.Close(busydialog)" )
                 
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 right_button_action=item.getProperty('right_button_action')    
@@ -185,7 +223,7 @@ class listSubRedditGUI(cGUI):
                 #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
                 #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
                 
-                
+                    
                 
                 #xbmc.sleep(5000)
                 #xbmc.executebuiltin( "Dialog.Close(busydialog)" )

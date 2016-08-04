@@ -5,15 +5,15 @@ msgid ""
 msgstr ""
 
 msgctxt "#30001"
-msgid "Add Subreddit, Multireddit or Domain shortcut"
+msgid "Add a new Subreddit, Multireddit or Domain"
 msgstr ""
 
 msgctxt "#30002"
-msgid "Remove subreddit"
+msgid "Remove selected subreddit"
 msgstr ""
 
 msgctxt "#30003"
-msgid "Edit subreddit"
+msgid "Edit selected subreddit"
 msgstr ""
 
 msgctxt "#30004"
