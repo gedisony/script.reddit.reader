@@ -1,14 +1,15 @@
 <settings>
-    <category label="30100">
-        <setting id="itemsPerPage"          type="enum"   label="30101" values="10|25|50|75|100" default="2"/>
+    <category label="32100">
+        <setting id="itemsPerPage"          type="enum"   label="32101" values="10|25|50|75|100" default="2"/>
+        <setting id="default_frontpage"     type="text"   label="32102" values="" default=""/>
         <!-- setting id="TitleAddtlInfo"        type="bool"   label="30102" default="false"/-->
-        <setting type="lsep"                              label="30103" enable="false" />
+        <!-- setting type="lsep"                              label="32103" enable="false" /-->
         <!-- setting id="HideImagePostsOnVideo" type="bool"   label="30104" default="false"/-->
         <setting type="sep" />
-    	<setting id="CommentTreshold"       type="select" label="30106" values="All|0|5|10|50|100"/>
+    	<setting id="CommentTreshold"       type="select" label="32106" values="All|0|5|10|50|100"/>
         <!-- setting id="comments_viewMode"     type="number" label="30110" default="0"/-->
         <setting type="sep" />
-        <setting id="show_nsfw"             type="bool"   label="30107" default="false"/>
+        <setting id="show_nsfw"             type="bool"   label="32107" default="false"/>
         <setting type="sep" />
     	<!-- setting id="album_viewMode"        type="number" label="30105" default="0"/-->
         <!-- setting id="forceViewMode"         type="bool"   label="30108" default="false"/-->
@@ -58,20 +59,20 @@
         <setting id="gfy_downDir" type="folder"      label="30156" default=""/>
         <setting id="streamable_quality" type="enum" label="30157" values="full|mobile" default="1" />
     </category-->
-    <category label="30400"> 
-    	<setting                              type="lsep"        label="30401"               enable="true"   />
+    <category label="32400"> 
+    	<setting                              type="lsep"        label="32401"               enable="true"   />
 		<setting type="sep" />
-        <setting id="reddit_code"             type="text"        label="30402"  default=""                   />
-        <setting                              type="action"      label="30403"  action="RunAddon(script.reddit.reader,?mode=get_refresh_token)"/>
-        <setting id="reddit_refresh_token"    type="text"        label="30404"  default=""   enable="false"  />
-    	<setting                              type="lsep"        label="30405"               enable="true"   />
+        <setting id="reddit_code"             type="text"        label="32402"  default=""                   />
+        <setting                              type="action"      label="32403"  action="RunAddon(script.reddit.reader,?mode=get_refresh_token)"/>
+        <setting id="reddit_refresh_token"    type="text"        label="32404"  default=""   enable="false"  />
+    	<setting                              type="lsep"        label="32405"               enable="true"   />
         <setting type="sep" />
-		<setting                              type="action"      label="30406"  action="RunAddon(script.reddit.reader,?mode=get_access_token)"/>
-		<setting id="reddit_access_token"     type="text"        label="30407"  default=""   enable="false"  />
-		<setting id="reddit_access_token_scope"   type="text"    label="30408"  default=""   enable="false"  />
-		<setting id="reddit_access_token_expires" type="text"    label="30409"  default=""   enable="false"  />
+		<setting                              type="action"      label="32406"  action="RunAddon(script.reddit.reader,?mode=get_access_token)"/>
+		<setting id="reddit_access_token"     type="text"        label="32407"  default=""   enable="false"  />
+		<setting id="reddit_access_token_scope"   type="text"    label="32408"  default=""   enable="false"  />
+		<setting id="reddit_access_token_expires" type="text"    label="32409"  default=""   enable="false"  />
         <setting type="sep" />
-		<setting                              type="action"      label="30410"  action="RunAddon(script.reddit.reader,?mode=revoke_refresh_token)"/>
+		<setting                              type="action"      label="32410"  action="RunAddon(script.reddit.reader,?mode=revoke_refresh_token)"/>
     	
         
     </category>

@@ -92,9 +92,8 @@
 				<onright>55600</onright>
 				<onup>55</onup>
 				<ondown>55</ondown>
-				<viewtype label="$LOCALIZE[31107]">list</viewtype>
 				<visible>true</visible>
-				<focusedlayout height="43" condition="Container.Content(artists) | Container.Content(albums) | Container.Content(actors) | Container.Content(directors) | Container.Content(files) | Container.Content(mixed) | Container.Content(videos)">
+				<focusedlayout height="43">
 					<control type="image">
 						<left>0</left>
 						<top>0</top>
@@ -108,7 +107,7 @@
 						<top>0</top>
 						<width>1396</width>
 						<height>43</height>
-						<texture colordiffuse="9933EEEE">focus.png</texture>
+						<texture colordiffuse="FF12A8DA">focus.png</texture>
 						<visible>Control.HasFocus(55)</visible>
 					</control>
 					<control type="label"><!-- the little square(bullet) on the right of list gets replaced by 'year' -->
@@ -129,7 +128,7 @@
 						<width>410</width>
 						<aligny>center</aligny>
 						<font>fontContextMenu</font>
-						<scroll>true</scroll>
+						<scroll>false</scroll>
 						<scrollspeed>50</scrollspeed>
 						<label>$INFO[ListItem.Label]</label>
 						<shadowcolor>text_shadow</shadowcolor>
@@ -146,7 +145,7 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control-->
 				</focusedlayout>
-				<itemlayout height="43" condition="Container.Content(artists) | Container.Content(albums) | Container.Content(actors) | Container.Content(directors) | Container.Content(files) | Container.Content(mixed) | Container.Content(videos)">
+				<itemlayout height="43">
 					<control type="image">
 						<left>0</left>
 						<top>0</top>

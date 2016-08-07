@@ -83,12 +83,15 @@ urlMain = "https://www.reddit.com"
 #filterRating     = int(addon.getSetting("filterRating"))
 #filterThreshold  = int(addon.getSetting("filterThreshold"))
 
-showAll              = addon.getSetting("showAll") == "true"
-showUnwatched        = addon.getSetting("showUnwatched") == "true"
-showUnfinished       = addon.getSetting("showUnfinished") == "true"
-showAllNewest        = addon.getSetting("showAllNewest") == "true"
-showUnwatchedNewest  = addon.getSetting("showUnwatchedNewest") == "true"
-showUnfinishedNewest = addon.getSetting("showUnfinishedNewest") == "true"
+# settings for automatically play videos
+# showAll              = addon.getSetting("showAll") == "true"
+# showUnwatched        = addon.getSetting("showUnwatched") == "true"
+# showUnfinished       = addon.getSetting("showUnfinished") == "true"
+# showAllNewest        = addon.getSetting("showAllNewest") == "true"
+# showUnwatchedNewest  = addon.getSetting("showUnwatchedNewest") == "true"
+# showUnfinishedNewest = addon.getSetting("showUnfinishedNewest") == "true"
+
+default_frontpage    = addon.getSetting("default_frontpage") 
 
 forceViewMode        = addon.getSetting("forceViewMode") == "true"
 viewMode             = str(addon.getSetting("viewMode"))
@@ -203,12 +206,13 @@ def format_multihub(multihub):
 
 def manage_subreddits(subreddit, name, type):
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
+    #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list 
     
     #http://forum.kodi.tv/showthread.php?tid=148568
     dialog = xbmcgui.Dialog()
     #funcs = (        addSubreddit,        editSubreddit,        removeSubreddit,    )
     #elected_index = dialog.select(subreddit, ['add new subreddi', 'edit   subreddit', 'remove subreddit'])
-    selected_index = dialog.select(subreddit, [translation(30001), translation(30003), translation(30002)])
+    selected_index = dialog.select(subreddit, [translation(32001), translation(32003), translation(32002)])
 
     #the if statements below is not as elegant as autoselecting the func from funcs but more flexible in the case with add subreddit where we should not send a subreddit parameter
     #    func = funcs[selected_index]
@@ -226,6 +230,12 @@ def manage_subreddits(subreddit, name, type):
         pass
     else:                         #-1 -> escape pressed or [cancel] 
         pass
+    
+    #this is a hack to force the subreddit listing to refresh.
+    #   the calling gui needs to close after calling this function 
+    #   after we are done editing the subreddits file, we call index() (the start of program) again. 
+    index("","","")
+
     
 def addSubreddit(subreddit, name, type):
     log( 'addSubreddit ' + subreddit)
@@ -405,7 +415,7 @@ def parse_subreddit_entry(subreddit_entry_from_file):
     if any(x in subreddit for x in a):  #search for ':' or '/domain/'
         #log("domain "+ subreddit)
         domain=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
-        description=translation(30008) % domain            #"Show posts from"
+        description=translation(32008) % domain            #"Show posts from"
     
     #describe combined subreddits    
     if '+' in subreddit:
@@ -413,15 +423,11 @@ def parse_subreddit_entry(subreddit_entry_from_file):
 
     #describe multireddit or multihub
     if this_is_a_multihub(subreddit):
-        description=translation(30007)  #"Custom Multireddit"
+        description=translation(32007)  #"Custom Multireddit"
 
     #save that view id in our global mailbox (retrieved by listSubReddit)
     WINDOW.setProperty('viewid-'+subreddit, viewid)
 
-    if viewid:
-        #add it in the description
-        description+='[CR]%s %s' %(translation(30011),viewid)   #View ID:
-    
     return subreddit, alias, description
 
 def subreddit_alias( subreddit_entry_from_file ):
@@ -460,7 +466,7 @@ def create_default_subreddits():
     #create a default file and sites
     fh = open(subredditsFile, 'a')
     #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
-    fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(30006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
+    fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(32006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
     fh.write('Documentaries+ArtisanVideos+lectures+LearnUselessTalents\n')
     fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
     #fh.write('SlowMotion+timelapse+PerfectTiming\n')
@@ -499,8 +505,6 @@ def index(url,name,type):
         create_default_subreddits()
 
     #log( "  show_nsfw  "+str(show_nsfw) + "  [" + nsfw+"]")
-    #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
-    #listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
 
     #log( "--------------------"+ addon.getAddonInfo('path') )
     #log( "--------------------"+ addon.getAddonInfo('profile') )
@@ -519,90 +523,24 @@ def index(url,name,type):
         log( "default ytdl_sites file not found. copying from addon installation.")
         shutil.copy(default_ytdl_sites_file, ytdl_sites_file)
 
+    log( "   default_frontpage " +default_frontpage )
+    if default_frontpage:
+        #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
+        listSubReddit( assemble_reddit_filter_string("",default_frontpage) , default_frontpage, "") 
+    else:
+        listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
+    return
 
-    #liz = xbmcgui.ListItem(label="test", label2="label2", iconImage="DefaultFolder.png")
-    #u=sys.argv[0]+"?url=&mode=callwebviewer&type="
-    #xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=False)
-    
-    content = ""
-    entries = []
-    if os.path.exists(subredditsFile):
-        #log(subredditsFile) #....\Kodi\userdata\addon_data\plugin.video.reddit_viewer\subreddits
-        fh = open(subredditsFile, 'r')
-        content = fh.read()
-        fh.close()
-        spl = content.split('\n')
-        
-        for i in range(0, len(spl), 1):
-            if spl[i]:
-                subreddit = spl[i].strip()
-                
-                #entries.append(subreddit.title())  #this capitalizes the first letter of a word. looks nice but not necessary
-                entries.append(subreddit )
-    entries.sort()
-
-    #sys.argv[0] is plugin://plugin.video.reddit_viewer/
-    #addDir("testing", sys.argv[0], "reddit_login", "" )  #<--- for testing
-    
-    for subreddit_entry in entries:
-        #log(subreddit)
-        
-        #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
-        #subreddit, alias = subreddit_alias(subreddit_entry) 
-        subreddit, alias, shortcut_description=parse_subreddit_entry(subreddit_entry)
-        #log( subreddit + "   " + shortcut_description )
-
-        #url= urlMain+"/r/"+subreddit+"/.json?"+nsfw+allHosterQuery+"&limit="+itemsPerPage
-        reddit_url= assemble_reddit_filter_string("",subreddit, "yes")
-        #log("assembled================="+url)
-#         if subreddit.lower() == "all":  
-#             #   we're NOT asking reddit to filter the links for us.  
-#             #      we filter the supported sites in make_addon_url_from() to only show the supported sites to the user
-#             #   it is done this way because if we ask reddit to filter the links for us (search?q=site:youtube.com OR site:vimeo.com OR ... &restrict_sr=&sort=relevance&t=all )
-#             #      the results do not match the front page.
-#             addDir(subreddit, DirectoryItem_url, next_mode, "", subreddit, { "plot": translation(30009) } )  #Displays the currently most popular content from all of reddit....
-#         else:                           
-#             addDirR(alias, DirectoryItem_url, next_mode, "", subreddit, { "plot": shortcut_description }, subreddit_entry )
-
-#     addDir("[B]- "+translation(30001)+"[/B]", "", 'addSubreddit', "", "", { "plot": translation(30006) } ) #"Customize this list with your favorite subreddit."
-#     addDir("[B]- "+translation(30005)+"[/B]", "",'searchReddits', "", "", { "plot": translation(30010) } ) #"Search reddit for a particular post or topic
-
-        #DirectoryItem_url = assemble_directory_item_url("listSubReddit",reddit_url,alias, "", ", ")  # xbmc.Player().play(pl, windowed=True) requires "script://" prepend to the url
-
-        liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )
-             
-        liz.setProperty('ACTION_MOVE_LEFT', build_script('manage_subreddits', subreddit_entry,"","" ) )
-           
-#         liz=xbmcgui.ListItem(label=alias, 
-#                              label2="",
-#                              iconImage="DefaultVideo.png", 
-#                              thumbnailImage="",
-#                              path="") #<-- DirectoryItem_url is not used here by the xml gui
-#         liz.setProperty('item_type', "script")  #item type "script" -> ('RunAddon(%s):' % di_url )
-#         
-#         #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } ) 
-#         liz.setProperty('onClick_action', addonID + DirectoryItem_url)
-        
-        #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": result, "studio": hoster, "votes": str(h[0]), "director": author } )
-        #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
-
-        #liz.setProperty('IsPlayable', setProperty_IsPlayable)
-        #liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
-        #liz.setPath(DirectoryItem_url) 
-        
-        #log( "  index adding " + liz.getLabel() )
-        li.append(liz)
-    
-        
-        
-    #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-    ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    #subredditsFile loaded in gui    
+    ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
     ui.title_bar_text="Reddit Reader"
-    #ui.include_parent_directory_entry=True
-    
+    ui.include_parent_directory_entry=False
 
     ui.doModal()
     del ui
+
+    
+    return
     
 def build_script( mode, url, name="", type="", script_to_call=addonID):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
@@ -632,7 +570,7 @@ def listSubReddit(url, title_bar_name, type):
 
     #the +'s got removed by url conversion 
     title_bar_name=title_bar_name.replace(' ','+')
-    log("  for %s " %(title_bar_name) )
+    #log("  title_bar_name %s " %(title_bar_name) )
 
     log("listSubReddit subreddit=%s url=%s" %(title_bar_name,url) )
     t_on = translation(30071)  #"on"
@@ -825,11 +763,11 @@ def listSubReddit(url, title_bar_name, type):
                 nextUrl = currentUrl+"&after="+after
             
             # plot shows up on estuary. etc. ( avoids the "No information available" message on description ) 
-            info_label={ "plot": translation(30004) } 
+            info_label={ "plot": translation(32004) } 
              
-            #addDir(translation(30004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
+            #addDir(translation(32004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
             
-            liz = compose_list_item( translation(30004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name), {'plot': translation(30004)} )
+            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name), {'plot': translation(32004)} )
             
             li.append(liz)
         
@@ -843,7 +781,7 @@ def listSubReddit(url, title_bar_name, type):
     #xbmcplugin.endOfDirectory(pluginhandle)
     
     from resources.guis import listSubRedditGUI    
-    ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
     ui.title_bar_text=title_bar_name
     #ui.include_parent_directory_entry=True
 
@@ -1212,6 +1150,7 @@ def getLiveLeakStreamUrl(id):
 
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
+    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
     #log("playVideo:"+url)
     if url :
         xbmc.Player().play(url, windowed=False)  #scripts play video like this.
@@ -1450,7 +1389,8 @@ def listLinksInComment(url, name, type):
 
         #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
         plot=h[3].replace('](', '] (')
-        plot=list_title + markdown_to_bbcode(plot)
+        plot= markdown_to_bbcode(plot)
+        plot=unescape(plot)  #convert html entities e.g.:(&#39;)
         
         if DirectoryItem_url:
             #(score, link_desc, link_http, post_text, post_html, d, )
@@ -1475,7 +1415,6 @@ def listLinksInComment(url, name, type):
                 
             if thumb_url: pass
             else: thumb_url="DefaultVideo.png"
-
             
             liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
             liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
@@ -1514,8 +1453,8 @@ def listLinksInComment(url, name, type):
             #log( str(di[1] ) )
             li.append( di[1] )
             
-        #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-        ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+        ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+        #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
         ui.title_bar_text=post_title
         ui.include_parent_directory_entry=False
 
@@ -1880,7 +1819,7 @@ def removeFromFavs(url, name, subreddit):
 
 #searchReddits      --url, name, type not used
 def searchReddits(url, name, type):
-    keyboard = xbmc.Keyboard('sort=new&t=week&q=', translation(30005))
+    keyboard = xbmc.Keyboard('sort=new&t=week&q=', translation(32005))
     keyboard.doModal()
     if keyboard.isConfirmed() and keyboard.getText():  
         
@@ -1955,7 +1894,7 @@ def addDir(name, url, mode, iconimage, type="", listitem_infolabel=None, label2=
     ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=True)
     return ok
 
-def compose_list_item(label,label2,iconImage,property_item_type, property_url, infolabels=None  ):
+def compose_list_item(label,label2,iconImage,property_item_type, onClick_action, infolabels=None  ):
     #build a listitem for use in our custom gui
     #if property_item_type=='script':
     #    property_url is the argument for RunAddon()  and it looks like this:   RunAddon( script.web.viewer, http://m.reddit.com/login )
@@ -1969,7 +1908,7 @@ def compose_list_item(label,label2,iconImage,property_item_type, property_url, i
     
         
     #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } ) 
-    liz.setProperty('onClick_action', property_url)
+    liz.setProperty('onClick_action', onClick_action)
 
     if infolabels==None:
         pass
@@ -2424,7 +2363,7 @@ def reddit_get_refresh_token(url, name, type):
     if reddit_refresh_token and code:
         #log("  user already have refresh token:"+reddit_refresh_token)
         dialog = xbmcgui.Dialog()
-        if dialog.yesno(translation(30411), translation(30412), translation(30413), translation(30414) ):
+        if dialog.yesno(translation(32411), translation(32412), translation(32413), translation(32414) ):
             pass
         else:
             return
@@ -2602,6 +2541,35 @@ def reddit_revoke_refresh_token(url, name, type):
         log("  Revoking refresh token EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
     
 
+import re, htmlentitydefs
+
+## http://effbot.org/zone/re-sub.htm#unescape-html
+# Removes HTML or XML character references and entities from a text string.
+#
+# @param text The HTML (or XML) source text.
+# @return The plain text, as a Unicode string, if necessary.
+
+def unescape(text):
+    def fixup(m):
+        text = m.group(0)
+        if text[:2] == "&#":
+            # character reference
+            try:
+                if text[:3] == "&#x":
+                    return unichr(int(text[3:-1], 16))
+                else:
+                    return unichr(int(text[2:-1]))
+            except ValueError:
+                pass
+        else:
+            # named entity
+            try:
+                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
+            except KeyError:
+                pass
+        return text # leave as is
+    return re.sub("&#?\w+;", fixup, text)
+
 def markdown_to_bbcode(s):
     #https://gist.github.com/sma/1513929
     links = {}
@@ -2758,6 +2726,12 @@ if __name__ == '__main__':
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
                     }
+    
+    #'playYTDLVideo','listLinksInComment' takes a long time to complete. when these modes are called from the gui, a long xbmc.executebuiltin("ActivateWindow(busydialog)") is run
+    #   we close the busy dialog if running other modes 
+    #if not mode in ['playYTDLVideo','listLinksInComment']:
+    #    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+    
     #whenever a list item is clicked, this part handles it.
     plugin_modes[mode](url,name,typez)
 
