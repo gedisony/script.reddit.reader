@@ -390,10 +390,6 @@ class listSubRedditGUI(cGUI):
                 #if user clicked on 'next' we close this screen and load the next page. 
                 if 'mode=listSubReddit' in di_url:
                     self.busy_execute_sleep(di_url,500,True )
-                    #xbmc.executebuiltin("ActivateWindow(busydialog)")
-                    #RunAddon(script.reddit.reader,?mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
-                    #xbmc.executebuiltin( di_url  )
-                    #self.close()
                     
                 else:
                     self.busy_execute_sleep(di_url,5000,False )
