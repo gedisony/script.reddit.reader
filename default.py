@@ -92,6 +92,7 @@ urlMain = "https://www.reddit.com"
 # showUnfinishedNewest = addon.getSetting("showUnfinishedNewest") == "true"
 
 default_frontpage    = addon.getSetting("default_frontpage") 
+no_index_page        = addon.getSetting("no_index_page") == "true"
 
 forceViewMode        = addon.getSetting("forceViewMode") == "true"
 viewMode             = str(addon.getSetting("viewMode"))
@@ -426,7 +427,7 @@ def parse_subreddit_entry(subreddit_entry_from_file):
         description=translation(32007)  #"Custom Multireddit"
 
     #save that view id in our global mailbox (retrieved by listSubReddit)
-    WINDOW.setProperty('viewid-'+subreddit, viewid)
+    #WINDOW.setProperty('viewid-'+subreddit, viewid)
 
     return subreddit, alias, description
 
@@ -523,22 +524,21 @@ def index(url,name,type):
         log( "default ytdl_sites file not found. copying from addon installation.")
         shutil.copy(default_ytdl_sites_file, ytdl_sites_file)
 
-    log( "   default_frontpage " +default_frontpage )
-    if default_frontpage:
-        #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
-        listSubReddit( assemble_reddit_filter_string("",default_frontpage) , default_frontpage, "") 
+    if no_index_page:   
+        log( "   default_frontpage " +default_frontpage )
+        if default_frontpage:
+            #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
+            listSubReddit( assemble_reddit_filter_string("",default_frontpage) , default_frontpage, "") 
+        else:
+            listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
     else:
-        listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
-    return
-
-    #subredditsFile loaded in gui    
-    ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
-    ui.title_bar_text="Reddit Reader"
-    ui.include_parent_directory_entry=False
-
-    ui.doModal()
-    del ui
-
+        #subredditsFile loaded in gui    
+        ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
+        ui.title_bar_text="Reddit Reader"
+        ui.include_parent_directory_entry=False
+    
+        ui.doModal()
+        del ui
     
     return
     
@@ -670,6 +670,11 @@ def listSubReddit(url, title_bar_name, type):
             if thumb in ['default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""               
 
+            if thumb=="":
+                try: thumb = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8').replace('&amp;','&')
+                except: pass
+            
+            
             try:
                 #collect_thumbs(entry)
                 preview=entry['data']['preview']['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
@@ -876,10 +881,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
     il={"title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-
     log( '    reddit thumb[%s] reddit preview[%s] new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
-         
         iconimage=thumb_url
     if poster_url=="":
         poster_url=iconimage
@@ -925,7 +928,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                 #log("   parsed media_url:" +  media_url  )
                 #log("   parsed plugi_url:" +  videoID  )
                 #WINDOW.setProperty(videoID, description )
-                WINDOW.setProperty(videoID, il_description )
+                #WINDOW.setProperty(videoID, il_description )
+                pass
 
 
         #use clearart to indicate if link is video, album or image 
@@ -1155,8 +1159,8 @@ def playVideo(url, name, type):
     if url :
         xbmc.Player().play(url, windowed=False)  #scripts play video like this.
 
-        #listitem = xbmcgui.ListItem(path=url)
-        #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) #plugins play video like this.
+        #listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
+        #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
     else:
         log("playVideo(url) url is blank")
         
@@ -1168,8 +1172,8 @@ def playYTDLVideo(url, name, type):
     #url='https://www.youtube.com/shared?ci=W8n3GMW5RCY'
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
-    #url='http://www.4tube.com/videos/209271/hurry-fuck-i-bored'
-    #url='http://www.pbs.org/newshour/rundown/cubas-elian-gonzalez-now-college-graduate/'
+    #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
+    #url='http://pinoytrending.altervista.org/watch-sen-cayetano-responded-sen-de-limas-privilage-speech-extrajudicial-killings/'
     choices = []
 
 #these checks done in around May 2016
@@ -1236,6 +1240,7 @@ def playYTDLVideo(url, name, type):
 #     extractors.sort()
 #     for n in extractors: log("'%s'," %n)
 
+    #xbmc.executebuiltin("ActivateWindow(busydialog)")
     try:
         if YDStreamExtractor.mightHaveVideo(url,resolve_redirects=True):
             log('    YDStreamExtractor.mightHaveVideo[true]=' + url)
@@ -1269,6 +1274,8 @@ def playYTDLVideo(url, name, type):
     except Exception as e:
         #log( "zz   " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("Youtube_dl","%s")' %str(e)  )
+
+    #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         
 
 #MODE playGfycatVideo       - name, type not used
@@ -1633,9 +1640,9 @@ def display_album_from(dictlist, album_name):
     if using_custom_gui:
         from resources.guis import cGUI
      
-        msg=WINDOW.getProperty(url)
+        #msg=WINDOW.getProperty(url)
         #WINDOW.clearProperty( url )
-        log( '   msg=' + msg )
+        #log( '   msg=' + msg )
     
         #<label>$INFO[Window(10000).Property(foox)]</label>
         #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
@@ -1649,7 +1656,7 @@ def display_album_from(dictlist, album_name):
         ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
         
         ui.include_parent_directory_entry=False
-        ui.title_bar_text=WINDOW.getProperty(url)
+        #ui.title_bar_text=WINDOW.getProperty(url)
         
         ui.doModal()
         del ui
@@ -1740,12 +1747,16 @@ def playFlickr(flickr_url, name, type):
     log('play flickr '+ flickr_url)
     f=ClassFlickr( flickr_url )
 
-    media_url, media_type =f.get_playable_url(flickr_url, False)
-    if media_type=='album':
-        display_album_from( media_url, name )
-    else:
-        playSlideshow(media_url,"Flickr","")
-        #log("  listTumblrAlbum can't process " + media_type)    
+    try:
+        media_url, media_type =f.get_playable_url(flickr_url, False)
+        if media_type=='album':
+            display_album_from( media_url, name )
+        else:
+            playSlideshow(media_url,"Flickr","")
+            #log("  listTumblrAlbum can't process " + media_type)    
+    except Exception as e:
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )
+        
 
 def playImgurVideo(imgur_url, name, type):
     from resources.domains import ClassImgur
@@ -1988,10 +1999,10 @@ def playSlideshow(url, name, type):
 
     from resources.guis import cGUI
     
-    msg=WINDOW.getProperty(url)
-    WINDOW.clearProperty( url )
-    log( '   msg=' + msg )
-
+    #msg=WINDOW.getProperty(url)
+    #WINDOW.clearProperty( url )
+    #log( '   msg=' + msg )
+    msg=""
     li=[]
     liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=url)
     liz.setInfo( type='video', infoLabels={"plot": msg, } ) 

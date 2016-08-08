@@ -586,7 +586,7 @@
 					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
 					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32051]</label>
-				<label2>[B]$INFO[Container(55).ListItem.Genre][/B]</label2>
+				<label2>$INFO[Container(55).ListItem.Genre]</label2>
 				
 			</control>
 			<!-- control type="edit" id="19"><description>go to subreddit editbox </description>

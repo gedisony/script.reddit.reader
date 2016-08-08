@@ -1,6 +1,7 @@
 <settings>
     <category label="32100">
         <setting id="itemsPerPage"          type="enum"   label="32101" values="10|25|50|75|100" default="2"/>
+        <setting id="no_index_page"         type="bool"   label="32103" default="true" />
         <setting id="default_frontpage"     type="text"   label="32102" values="" default=""/>
         <!-- setting id="TitleAddtlInfo"        type="bool"   label="30102" default="false"/-->
         <!-- setting type="lsep"                              label="32103" enable="false" /-->

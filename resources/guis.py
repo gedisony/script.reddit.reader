@@ -366,7 +366,7 @@ class listSubRedditGUI(cGUI):
                 xbmc.sleep(3000)
                 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST]:   #6052 is the left hiding panel  550 is a list (subreddits) in the hiding panel
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT]:   #6052 is the left hiding panel  550 is a list (subreddits) in the hiding panel
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
@@ -384,7 +384,7 @@ class listSubRedditGUI(cGUI):
         pass 
 
     def onClick(self, controlID):
-
+        #log( ' clicked on control id %d'  %controlID )
         if controlID == self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
@@ -444,7 +444,10 @@ class listSubRedditGUI(cGUI):
             xbmc.sleep(5000)
             
             pass
-        elif controlID == 7:
+        elif controlID == self.BTN_GOTO_SUBREDDIT:
+            g=self.getControl(self.BTN_GOTO_SUBREDDIT)
+            
+            log( ' clicked on control l %s'  %g.getLabel2() )
             pass
         
             

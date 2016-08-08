@@ -202,8 +202,8 @@ msgctxt "#32102"
 msgid "Default subreddit on start (leave blank for reddit frontpage)"
 msgstr ""
 
-msgctxt "#30103"
-msgid "Go to subreddit"
+msgctxt "#32103"
+msgid "Skip subreddit selection screen"
 msgstr ""
 
 msgctxt "#30104"
