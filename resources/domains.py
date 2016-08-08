@@ -41,9 +41,9 @@ show_imageLink   = addon.getSetting("show_imageLink") == "true"
 show_flickr      = addon.getSetting("show_flickr") == "true"
 
 
-site00 = [show_youtube      , "playVideo"          ,'YouTube'      ,'(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})'    ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , "playable" ]
+site00 = [True              , "playVideo"          ,'YouTube'      ,'(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})'    ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , "playable" ]
 #ite01 = [show_youtube      , "playVideo"          ,'YouTube'      ,'https?://www.youtube.com/attribution_link\?a=(.*)&'                                                          ,"plugin://plugin.video.youtube/play/?video_id=##vidID##"                , ""                      ] #leave the second site filter blank
-site01 = [show_giphy        , "direct"             ,'Giphy'        ,'https?://(?:.+).giphy.com/'     ,"giphy links are direct playable. replace .gif to .mp4"                 , "playable"        ] 
+site01 = [True              , "direct"             ,'Giphy'        ,'https?://(?:.+).giphy.com/'     ,"giphy links are direct playable. replace .gif to .mp4"                 , "playable"        ] 
 site02 = [True              , "playVideo"          ,'Vimeo'        ,'vimeo.com/(.*)'                 ,"plugin://plugin.video.vimeo/play/?video_id=##vidID##"                  , "playable"        ]
 site03 = [False             , "playYTDLVideo"      ,'DailyMotion'  ,'dailymotion.com/video/(.*)_?'   ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , "script"  ]
 site04 = [False             , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]

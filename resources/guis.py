@@ -178,7 +178,17 @@ class cGUI(xbmcgui.WindowXML):
             
         return listing       
         
-
+    def busy_execute_sleep(self,executebuiltin, sleep=500, close=True):
+        #
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
+        #RunAddon(script.reddit.reader,?mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
+        xbmc.executebuiltin( executebuiltin  )
+        xbmc.sleep(sleep) #a sleep of 500 is enough for listing subreddit  use about 5000 for executing a link/playing video especially a ytdl video
+        if close:
+            self.close()
+        else:
+            xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+        pass
 
 class indexGui(cGUI):
     #this is the gui that handles the initial screen. 
@@ -196,38 +206,6 @@ class indexGui(cGUI):
             
         #load subreddit file directly here instead of the function that calls the gui.
         #   that way, this gui can refresh the list after the subreddit file modified
-
-#         entries = []
-#         if os.path.exists(self.file):
-#             #log(subredditsFile) #....\Kodi\userdata\addon_data\script.reddit.reader\subreddits
-#             fh = open(self.file, 'r')
-#             content = fh.read()
-#             fh.close()
-#             spl = content.split('\n')
-#             
-#             for i in range(0, len(spl), 1):
-#                 if spl[i]:
-#                     subreddit = spl[i].strip()
-#                     entries.append(subreddit )
-#         entries.sort()
-#         log( '  entries count ' + str( len( entries) ) )
-#         for subreddit_entry in entries:
-#             
-#             #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
-#             #subreddit, alias = subreddit_alias(subreddit_entry) 
-#             subreddit, alias, shortcut_description=parse_subreddit_entry(subreddit_entry)
-#             #log( subreddit + "   " + shortcut_description )
-#         
-#             reddit_url= assemble_reddit_filter_string("",subreddit, "yes")
-#     
-#             #DirectoryItem_url = assemble_directory_item_url("listSubReddit",reddit_url,alias, "", ", ")  # xbmc.Player().play(pl, windowed=True) requires "script://" prepend to the url
-#     
-#             liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )
-#                  
-#             liz.setProperty('ACTION_MOVE_LEFT', build_script('manage_subreddits', subreddit_entry,"","" ) )
-#                
-#             self.gui_listbox.addItem(liz)
-            
             self.gui_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
             
         self.setFocus(self.gui_listbox)
@@ -252,12 +230,12 @@ class indexGui(cGUI):
             item = self.gui_listbox.getSelectedItem()
 
             item_type   =item.getProperty('item_type').lower()
-            
                         
             if action == xbmcgui.ACTION_MOVE_LEFT:
                 ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
                 log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
                 #xbmc.executebuiltin("ActivateWindow(busydialog)")
+
                 
                 xbmc.executebuiltin( ACTION_manage_subreddits  )
                 
@@ -360,11 +338,13 @@ class listSubRedditGUI(cGUI):
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 comments_action=item.getProperty('comments_action')
                 log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
-                xbmc.executebuiltin("ActivateWindow(busydialog)")
                 
-                xbmc.executebuiltin( comments_action  )
-                xbmc.sleep(3000)
-                xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                self.busy_execute_sleep(comments_action,3000,False )
+                
+                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                #xbmc.executebuiltin( comments_action  )
+                #xbmc.sleep(3000)
+                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 
         if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT]:   #6052 is the left hiding panel  550 is a list (subreddits) in the hiding panel
             if action == xbmcgui.ACTION_MOVE_RIGHT:
@@ -376,11 +356,9 @@ class listSubRedditGUI(cGUI):
                 #log( "   left pressed  %d  url=%s " %(  self.gui_listbox_SelectedPosition, ACTION_manage_subreddits )   )
                 #xbmc.executebuiltin("ActivateWindow(busydialog)")
                 
-                xbmc.executebuiltin( ACTION_manage_subreddits  )
-                
-                self.close()
-            
-
+                self.busy_execute_sleep(ACTION_manage_subreddits, 50, True)
+                #xbmc.executebuiltin( ACTION_manage_subreddits  )
+                #self.close()
         pass 
 
     def onClick(self, controlID):
@@ -408,10 +386,12 @@ class listSubRedditGUI(cGUI):
             elif item_type=='script':
                 #"script.web.viewer, http://m.reddit.com/login"
                 #log(  di_url )
-                xbmc.executebuiltin("ActivateWindow(busydialog)")
-                xbmc.executebuiltin( di_url  )
-                xbmc.sleep(5000)
-                xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+
+                #if user clicked on 'next' we close this screen and load the next page. 
+                if 'mode=listSubReddit' in di_url:
+                    self.busy_execute_sleep(di_url,500,True )
+                else:
+                    self.busy_execute_sleep(di_url,5000,False )
                 
                 #modes=['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
                 #if any(x in di_url for x in modes):
@@ -437,18 +417,23 @@ class listSubRedditGUI(cGUI):
 
             try:di_url=item.getProperty('onClick_action') #this property was created in load_subreddits_file_into_a_listitem 
             except:di_url=""
-            item_type=item.getProperty('item_type').lower()
-            log( "  onClick_action=%s " %( di_url )   )
-            
-            xbmc.executebuiltin( di_url  )
-            xbmc.sleep(5000)
-            
+            #log( "  onClick_action=%s " %( di_url )   )
+            self.busy_execute_sleep(di_url )
+            #xbmc.executebuiltin("ActivateWindow(busydialog)")
+            #xbmc.executebuiltin( di_url  )
+            #xbmc.sleep(500)
+            #self.close()
             pass
         elif controlID == self.BTN_GOTO_SUBREDDIT:
             g=self.getControl(self.BTN_GOTO_SUBREDDIT)
             
-            log( ' clicked on control l %s'  %g.getLabel2() )
-            pass
+            item = self.gui_listbox.getSelectedItem()
+            goto_subreddit_action=item.getProperty('goto_subreddit_action')
+            #log( ' clicked on button %s item %s '  % (g.getLabel2(), item.getLabel() ) )
+            #log( ' Action=%s '  % ( goto_subreddit_action ) )
+            
+            self.busy_execute_sleep(goto_subreddit_action)
+            
         
             
 class commentsGUI(cGUI):

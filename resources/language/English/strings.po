@@ -257,35 +257,15 @@ msgstr ""
 #30127-30149 empty
 
 # settings category
-msgctxt "#30150"
-msgid "Download"
+msgctxt "#32150"
+msgid "Sites"
 msgstr ""
 
-msgctxt "#30151"
-msgid "Youtube: Quality / Directory"
-msgstr ""
-
-msgctxt "#30152"
-msgid "Vimeo: Quality / Directory"
-msgstr ""
-
-msgctxt "#30153"
-msgid "Dailymotion: Quality / Directory"
-msgstr ""
-
-msgctxt "#30154"
+msgctxt "#32154"
 msgid "Liveleak: Quality"
 msgstr ""
 
-msgctxt "#30155"
-msgid "Liveleak: Directory"
-msgstr ""
-
-msgctxt "#30156"
-msgid "Gfycat: Directory"
-msgstr ""
-
-msgctxt "#30157"
+msgctxt "#32157"
 msgid "Streamable.com Video Quality"
 msgstr ""
 

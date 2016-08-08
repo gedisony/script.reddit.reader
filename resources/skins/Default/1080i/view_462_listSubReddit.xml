@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">55</defaultcontrol>
-	<backgroundcolor>background</backgroundcolor>
+	<!-- defaultcontrol always="true">55</defaultcontrol-->
+	<backgroundcolor>black</backgroundcolor>
 
 	<menucontrol>9000</menucontrol>
     	
@@ -98,7 +98,7 @@
 							<height>61</height>
 							<width>960</width>
 							<aligny>center</aligny>
-							<font>fontContextMenu</font>
+							<font>font12</font>
 							<scrolltime>200</scrolltime>
 	   						<autoscroll delay="2000" time="2000" repeat="4000">!Control.HasFocus(13)</autoscroll>						
 	   						<label>$INFO[ListItem.Label]</label>
@@ -110,7 +110,7 @@
 							<height>43</height>
 							<width>960</width>
 							<aligny>center</aligny>
-							<font>font12</font>
+							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
@@ -125,7 +125,7 @@
 							<height>61</height>
 							<width>810</width>
 							<aligny>center</aligny>
-							<font>fontContextMenu</font>
+							<font>font12</font>
 							<scrolltime>200</scrolltime>
 	   						<autoscroll delay="2000" time="2000" repeat="4000">!Control.HasFocus(13)</autoscroll>						
 	   						<label>$INFO[ListItem.Label]</label>
@@ -137,7 +137,7 @@
 							<height>43</height>
 							<width>810</width>
 							<aligny>center</aligny>
-							<font>font12</font>
+							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
@@ -166,7 +166,8 @@
 							<height>61</height>
 							<width>960</width>
 							<aligny>center</aligny>
-							<font>fontContextMenu</font>
+							<scrolltime>0</scrolltime>
+							<font>font12</font>
 							<label>$INFO[ListItem.Label]</label>
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
@@ -176,7 +177,7 @@
 							<height>43</height>
 							<width>960</width>
 							<aligny>center</aligny>
-							<font>font12</font>
+							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
 							<textcolor>grey</textcolor>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -191,7 +192,8 @@
 							<height>61</height>
 							<width>810</width>
 							<aligny>center</aligny>
-							<font>fontContextMenu</font>
+							<scrolltime>0</scrolltime>
+							<font>font12</font>
 							<label>$INFO[ListItem.Label]</label>
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
@@ -201,7 +203,7 @@
 							<height>43</height>
 							<width>810</width>
 							<aligny>center</aligny>
-							<font>font12</font>
+							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
 							<textcolor>grey</textcolor>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -349,7 +351,7 @@
         				<label></label>
 					</control>
 				</control>
-				<control type="label"><description>fine text under the bigger text on Left side of top bar</description>
+				<!-- control type="label"><description>fine text under the bigger text on Left side of top bar</description>
 					<top>40</top>
 					<label>$INFO[Container.SortMethod,$LOCALIZE[31022]: ]</label>
 					<font>font10</font>
@@ -361,7 +363,7 @@
 					<animation effect="fade" time="150">VisibleChange</animation>
 					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
 					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-				</control>
+				</control-->
 				
 				<control type="group"><description>Right side of top bar</description>
 					<visible>!Window.IsVisible(extendedprogressdialog)</visible>
@@ -532,29 +534,7 @@
 			<top>80</top>
 			<width>484</width>
 			<height>920</height>
-			<texture>lists/panel.png</texture>
-		</control>
-		<control type="button" id="3">
-			<description>Viewtype Toggle</description>
-				<left>-3000</left>
-				<top>-3000</top>
-				<width>1</width>
-				<height>1</height>
-				<texturefocus>-</texturefocus>
-				<texturenofocus>-</texturenofocus>
-				<label>-</label>
-				<font>-</font>
-		</control>
-		<control type="button" id="4">
-			<description>Order Toggle</description>
-				<left>-3000</left>
-				<top>-3000</top>
-				<width>1</width>
-				<height>1</height>
-				<texturefocus>-</texturefocus>
-				<texturenofocus>-</texturenofocus>
-				<label>-</label>
-				<font>-</font>
+			<texture>panel.png</texture>
 		</control>
 	<!--  END include name="MediaMenuCommon" -->
 	
@@ -581,10 +561,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">lists/focus.png</texturefocus>
-					<texturenofocus border="30">lists/separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
-					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
+					<texturenofocus border="30">separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
+					<alttexturenofocus border="30">separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32051]</label>
 				<label2>$INFO[Container(55).ListItem.Genre]</label2>
 				

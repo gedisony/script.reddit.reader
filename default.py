@@ -232,6 +232,7 @@ def manage_subreddits(subreddit, name, type):
     else:                         #-1 -> escape pressed or [cancel] 
         pass
     
+    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
     #this is a hack to force the subreddit listing to refresh.
     #   the calling gui needs to close after calling this function 
     #   after we are done editing the subreddits file, we call index() (the start of program) again. 
@@ -795,47 +796,6 @@ def listSubReddit(url, title_bar_name, type):
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
 
-def collect_thumbs( entry ):
-    #collect the thumbs from reddit json
-    dictList = []
-    keys=['thumb','width','height']
-    e=[]
-    
-    try:
-        e=[ entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
-           ,entry['data']['media']['oembed']['thumbnail_width']
-           ,entry['data']['media']['oembed']['thumbnail_height']
-           ]
-        #log('  got 1')
-        dictList.append(dict(zip(keys, e)))
-    except Exception as e:
-        #log( "zz   " + str(e) ) 
-        pass
-    
-    try:
-        e=[ entry['data']['preview']['images'][0]['source']['url'].encode('utf-8')
-           ,entry['data']['preview']['images'][0]['source']['width']
-           ,entry['data']['preview']['images'][0]['source']['height']
-           ]
-        #log('  got 2')
-        dictList.append(dict(zip(keys, e)))
-    except: pass
-    
-    try:
-        e=[ entry['data']['thumbnail'].encode('utf-8')        #thumbnail is always in 140px wide (?)
-           ,140
-           ,0
-           ]
-        #log('  got 3')
-        dictList.append(dict(zip(keys, e)))
-    except: pass
-        
-    #log( json.dumps(dictList, indent=4)  )
-    #log( str(dictList)  )
-    
-    return 
-
-
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_index=1,post_total=1,many_subreddit=False ):
     
     videoID=""
@@ -908,6 +868,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setProperty('right_button_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
 
     liz.setProperty('comments_action', build_script('listLinksInComment', site ) )        
+    
+    liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
     #----- assign actions
     
     liz.setInfo(type='video', infoLabels=il)
@@ -1091,6 +1053,46 @@ def autoPlay(url, name, type):
         listitem = xbmcgui.ListItem(title)
         playlist.add(url, listitem)
     xbmc.Player().play(playlist)
+
+def collect_thumbs( entry ):
+    #collect the thumbs from reddit json
+    dictList = []
+    keys=['thumb','width','height']
+    e=[]
+    
+    try:
+        e=[ entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
+           ,entry['data']['media']['oembed']['thumbnail_width']
+           ,entry['data']['media']['oembed']['thumbnail_height']
+           ]
+        #log('  got 1')
+        dictList.append(dict(zip(keys, e)))
+    except Exception as e:
+        #log( "zz   " + str(e) ) 
+        pass
+    
+    try:
+        e=[ entry['data']['preview']['images'][0]['source']['url'].encode('utf-8')
+           ,entry['data']['preview']['images'][0]['source']['width']
+           ,entry['data']['preview']['images'][0]['source']['height']
+           ]
+        #log('  got 2')
+        dictList.append(dict(zip(keys, e)))
+    except: pass
+    
+    try:
+        e=[ entry['data']['thumbnail'].encode('utf-8')        #thumbnail is always in 140px wide (?)
+           ,140
+           ,0
+           ]
+        #log('  got 3')
+        dictList.append(dict(zip(keys, e)))
+    except: pass
+        
+    #log( json.dumps(dictList, indent=4)  )
+    #log( str(dictList)  )
+    
+    return 
 
 def determine_if_video_media_from_reddit_json( entry ):
     #reads the reddit json and determines if link is a video

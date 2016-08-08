@@ -51,15 +51,15 @@
         <setting id="show_gyazo"         type="bool" label="30358" default="true"/>
     </category-->
 
-    <!-- category label="30150">
-        <setting                  type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/>
-        <setting                  type="action"      label="30152" action="RunAddon(script.reddit.reader,?mode=openSettings&url=vimeo)"/>
-        <setting                  type="action"      label="30153" action="RunAddon(script.reddit.reader,?mode=openSettings&url=dailymotion)"/>
-        <setting id="ll_qualiy"   type="enum"        label="30154" values="480p|720p" default="1"/>
-        <setting id="ll_downDir"  type="folder"      label="30155" default=""/>
-        <setting id="gfy_downDir" type="folder"      label="30156" default=""/>
-        <setting id="streamable_quality" type="enum" label="30157" values="full|mobile" default="1" />
-    </category-->
+    <category label="32150">
+        <!-- setting                  type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/-->
+        <!-- setting                  type="action"      label="30152" action="RunAddon(script.reddit.reader,?mode=openSettings&url=vimeo)"/-->
+        <!-- setting                  type="action"      label="30153" action="RunAddon(script.reddit.reader,?mode=openSettings&url=dailymotion)"/-->
+        <setting id="ll_qualiy"   type="enum"        label="32154" values="480p|720p" default="1"/>
+        <!-- setting id="ll_downDir"  type="folder"      label="30155" default=""/-->
+        <!-- setting id="gfy_downDir" type="folder"      label="30156" default=""/-->
+        <setting id="streamable_quality" type="enum" label="32157" values="full|mobile" default="1" />
+    </category>
     <category label="32400"> 
     	<setting                              type="lsep"        label="32401"               enable="true"   />
 		<setting type="sep" />
