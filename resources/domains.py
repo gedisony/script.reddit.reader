@@ -1199,6 +1199,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         flag_media_not_supported=True
                     
                 elif hoster in ["Redd.it", "RedditUploads", "RedditMedia", "image link"]:
+                    
                     media_url=media_url.replace('&amp;','&')  #this replace is only for  RedditUploads but seems harmless for the others...
                     pluginUrl=media_url  
                     
@@ -1215,6 +1216,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         link_type ='playable'  #playable uses pluginUrl directly   
                         #thumb_url=media_url  can't use gifs as thumb
                     else:
+                        setInfo_type='pictures'
                         thumb_url=media_url
                         poster_url=media_url
                         link_type ='script' 
