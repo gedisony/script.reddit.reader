@@ -898,7 +898,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         if mode_type in ['listImgurAlbum','listTumblrAlbum', 'listFlickrAlbum']:
             liz.setArt({ "clearart":"type_album.png"  })    #post_title='[%s] %s' %(t_Album, post_title)
         if setInfo_type=='pictures'  : 
-            liz.setArt({ "clearart":"type_image.png"  })    #post_title='[%s] %s' %(t_IMG, post_title)   
+            liz.setArt({ "clearart":"type_image.png"  })    #post_title='[%s] %s' %(t_IMG, post_title)
+        if mode_type=='playYTDLVideo': 
+            liz.setArt({ "clearart":"type_ytdl.png"  })    #post_title='[reddit] '+post_title               
         if mode_type=='listLinksInComment': 
             liz.setArt({ "clearart":"changelog.png"  })    #post_title='[reddit] '+post_title  
 
