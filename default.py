@@ -1169,12 +1169,12 @@ def playVideo(url, name, type):
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
-    log("playYTDLVideo="+url)
+    #log("playYTDLVideo="+url)
     #url='https://www.youtube.com/shared?ci=W8n3GMW5RCY'
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://pinoytrending.altervista.org/watch-sen-cayetano-responded-sen-de-limas-privilage-speech-extrajudicial-killings/'
+    #url='http://pluzz.francetv.fr/videos/13h15_le_dimanche_,125793231.html'
     choices = []
 
 #these checks done in around May 2016
@@ -1185,7 +1185,7 @@ def playYTDLVideo(url, name, type):
 # userporn.com hdpornstar.com moviesand.com chumleaf.com fucktube.com fookgle.com pornative.com dailee.com pornsharia.com fux.com sluttyred.com pk5.net kuntfutube.com youpunish.com
 # vidxnet.com jizzbox.com bondagetube.tv spankingtube.tv pornheed.com pornwaiter.com lubetube.com porncor.com maxjizztube.com asianxtv.com analxtv.com yteenporn.com nurglestube.com yporn.tv
 # asiantubesex.com zuzandra.com moviesguy.com bustnow.com dirtydirtyangels.com yazum.com watchersweb.com voyeurweb.com zoig.com flingtube.com yourfreeporn.us foxgay.com goshgay.com
-# player.moviefap.com(www.moviefap.com works) nosvideo.com
+# player.moviefap.com(www.moviefap.com works) nosvideo.com played.to(site is gone)
 
 # also does not work (non porn)
 # rutube.ru  mail.ru  afreeca.com nicovideo.jp  videos.sapo.pt(many but not all) sciencestage.com vidoosh.tv metacafe.com vzaar.com videojug.com trilulilu.ro tudou.com video.yahoo.com blinkx.com blip.tv
@@ -1197,11 +1197,11 @@ def playYTDLVideo(url, name, type):
 # howcast.com HowStuffWorks.com hrt.hr iconosquare.com infoq.com  ivi.ru kamcord.com/v video.kankan.com karrierevideos.at KrasView.ru hlamer.ru kuwo.cn la7.it laola1.tv le.com
 # media.ccc.de metacritic.com mitele.es  moevideo.net,playreplay.net,videochart.net vidspot.net(might work, can't find recent post) movieclips.com mtv.de mtviggy.com muenchen.tv myspace.com
 # myvi.ru myvideo.de myvideo.ge 163.com netzkino.de nfb.ca nicovideo.jp  videohive.net normalboots.com nowness.com ntr.nl nrk.no ntv.ru/video ocw.mit.edu odnoklassniki.ru/video 
-# onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv pbs.org
+# onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv  periscope.tv play.fm pluzz.francetv.fr
 
 # news site (can't find sample to test) 
 # bleacherreport.com crooksandliars.com DailyMail.com channel5.com Funimation.com gamersyde.com gamespot.com gazeta.pl helsinki.fi hotnewhiphop.com lemonde.fr mnet.com motorsport.com MSN.com
-# n-tv.de ndr.de NDTV.com NextMedia.com noz.de
+# n-tv.de ndr.de NDTV.com NextMedia.com noz.de pcmag.com people.com idnes.cz lidovky.cz pluralsight.com plus.google.com
 
 
 # these sites have mixed media. can handle the video in these sites: 
