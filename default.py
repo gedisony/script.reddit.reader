@@ -510,20 +510,19 @@ def index(url,name,type):
 
     #log( "--------------------"+ addon.getAddonInfo('path') )
     #log( "--------------------"+ addon.getAddonInfo('profile') )
+     
         
-    if not os.path.exists(ytdl_psites_file): 
-        #copy over default file
-        #there is no os.copy() command. have to use shutil or just read and write to file ourself
-        #open(ytdl_psites_file, "w").write(open( default_ytdl_psites_file ).read())
-        log( "default ytdl_sites file not found. copying from addon installation.")
-        shutil.copy(default_ytdl_psites_file, ytdl_psites_file)
-
-    if not os.path.exists(ytdl_sites_file): 
-        #copy over default file
-        #there is no os.copy() command. have to use shutil or just read and write to file ourself
-        #open(ytdl_psites_file, "w").write(open( default_ytdl_psites_file ).read())
-        log( "default ytdl_sites file not found. copying from addon installation.")
-        shutil.copy(default_ytdl_sites_file, ytdl_sites_file)
+    #this part errors on android. comment out until feature is implemented
+#     if not os.path.exists(ytdl_psites_file): 
+#         #copy over default file
+#         #there is no os.copy() command. have to use shutil or just read and write to file ourself
+#         #open(ytdl_psites_file, "w").write(open( default_ytdl_psites_file ).read())
+#         log( "default ytdl_sites file not found. copying from addon installation.")
+#         shutil.copy(default_ytdl_psites_file, ytdl_psites_file)
+# 
+#     if not os.path.exists(ytdl_sites_file): 
+#         log( "default ytdl_sites file not found. copying from addon installation.")
+#         shutil.copy(default_ytdl_sites_file, ytdl_sites_file)
 
     if no_index_page:   
         log( "   default_frontpage " +default_frontpage )
