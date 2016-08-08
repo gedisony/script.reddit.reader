@@ -57,7 +57,7 @@ site11 = [True              , "playStreamable"     ,'Streamable'   ,'streamable\
 site12 = [True              , "playVidmeVideo"     ,'Vidme'        ,'https?://vid\.me/(?:e/)?(?P<id>[\da-zA-Z]*)' ,"(not used) ##vidID##"                                     , "script"        ]
 site13 = [True              , "playYTDLVideo"      ,'Instagram'    ,'(?P<url>https?://(?:www\.)?instagram\.com/p/(?P<id>[^/?#&]+))' ,"(not used) ##vidID##"                   , "script"        ]
 site14 = [True              , "playSlideshow"      ,'Blogspot'     ,'(https?://.*\.blogspot\.com/.*)(jpg|gif|png)'       ,"(not used) ##vidID##"                              , "script"        ]
-site15 = [False             , "playReddit"         ,'Reddit.com'   ,'reddit.com'                     ,"(not used)##vidID##"                                                   , "site:reddit.com"        ]
+site15 = [True              , "listLinksInComment" ,'Reddit.com'   ,'reddit.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
 site16 = [True              , "done in code"       ,'Tumblr'       ,'tumblr.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
 site17 = [True              , "done in code"       ,'Gyazo'        ,'gyazo.com'                      ,"(not used)##vidID##"                                                   , "script"        ]
 site18 = [True              , "playFlickr"         ,'Flickr'       ,'flickr.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
@@ -1225,16 +1225,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                          
                 elif hoster=="Reddit.com":
                     pluginUrl=media_url 
-                    modecommand='listLinksInComment'    #
-                    
-                    if comments_viewMode=='461':  #461 is my trigger to use a custom gui for showing comments. it is just an arbitrary number. i'm hoping there no skin will use the same viewid
-                        #if not using a custom gui, do the "else:" part. 
-                        #  make sure that kodi does not "wait" for directory to finish being built
-                        setProperty_IsPlayable='false'
-                        isFolder=False                                
-                    else:
-                        #setProperty_IsPlayable='false'
-                        isFolder=True                                 #<-- this is important. tells kodi that this will open another listing. fixes WARNING: Attempt to use invalid handle -1
+                    #modecommand='listLinksInComment'    #
     
                 elif hoster=="Flickr":
                     pluginUrl=media_url 

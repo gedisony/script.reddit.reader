@@ -902,7 +902,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         if mode_type=='playYTDLVideo': 
             liz.setArt({ "clearart":"type_ytdl.png"  })    #post_title='[reddit] '+post_title               
         if mode_type=='listLinksInComment': 
-            liz.setArt({ "clearart":"changelog.png"  })    #post_title='[reddit] '+post_title  
+            liz.setArt({ "clearart":"alienicon.png"  })    #post_title='[reddit] '+post_title  
 
 
 
