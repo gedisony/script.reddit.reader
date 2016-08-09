@@ -339,9 +339,10 @@ class listSubRedditGUI(cGUI):
                 
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 comments_action=item.getProperty('comments_action')
-                log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
+                log( "   RIGHT(comments) pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
+                if comments_action:
+                    self.busy_execute_sleep(comments_action,3000,False )
                 
-                self.busy_execute_sleep(comments_action,3000,False )
 
         if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
