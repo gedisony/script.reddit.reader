@@ -573,17 +573,19 @@ def listSubReddit(url, title_bar_name, type):
     #log("  title_bar_name %s " %(title_bar_name) )
 
     log("listSubReddit subreddit=%s url=%s" %(title_bar_name,url) )
-    t_on = translation(30071)  #"on"
+    t_on = translation(32071)  #"on"
     #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
     t_pts = u"\U00002709"  # translation(30072)   envelope symbol
+    t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
     
     li=[]
 
     currentUrl = url
-        
+    xbmc_busy()    
     content = reddit_request(url)  #content = opener.open(url).read()
     
     if not content:
+        xbmc_busy(False)
         return
 
 #     info_label={ "plot": translation(30013) }  #Automatically play videos
@@ -617,9 +619,10 @@ def listSubReddit(url, title_bar_name, type):
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             
             try:
+                # use unescape instead of cleanTitle?
                 description = cleanTitle(entry['data']['media']['oembed']['description'].encode('utf-8'))
             except:
-                description = ' '
+                description = ''
                 
             commentsUrl = urlMain+entry['data']['permalink'].encode('utf-8')
             #if show_listSubReddit_debug :log("commentsUrl"+str(idx)+"="+commentsUrl)
@@ -709,14 +712,12 @@ def listSubReddit(url, title_bar_name, type):
             except:
                 over_18 = False
 
-            #setting: toggle showing 2-line title 
-            #log("   TitleAddtlInfo "+str(idx)+"="+str(TitleAddtlInfo))
             title_line2=""
-            #if TitleAddtlInfo:
             #title_line2 = "[I][COLOR dimgrey]%s by %s [COLOR darkslategrey]r/%s[/COLOR] %d pts.[/COLOR][/I]" %(pretty_date,author,subreddit,ups)
-            #title_line2 = "[I][COLOR dimgrey]"+pretty_date+" by "+author+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
-
-            title_line2 = "[I][COLOR dimgrey]%s %s [COLOR darkslategrey]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
+            #http://www.w3schools.com/colors/colors_names.asp
+            #title_line2 = "[I][COLOR dimgrey]%s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
+            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
+            
             #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
 
             #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
@@ -782,7 +783,7 @@ def listSubReddit(url, title_bar_name, type):
         
         pass
     
-
+    xbmc_busy(False)
     #xbmcplugin.endOfDirectory(pluginhandle)
     
     from resources.guis import listSubRedditGUI    
@@ -838,7 +839,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     post_title=title
     il_description=il_description
         
-    il={"title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+    il={ "title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
     log( '    reddit thumb[%s] reddit preview[%s] new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
@@ -863,8 +864,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #----- assign actions
     if preview_ar>0 and preview_ar <= 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
         from resources.domains import link_url_is_playable
-        if link_url_is_playable(link_url):
-            liz.setProperty('right_button_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
+        log('*****%f '%preview_ar)
+        #if link_url_is_playable(link_url):
+        log('*****has zoom_n_slide_action ')
+        liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
 
     liz.setProperty('comments_action', build_script('listLinksInComment', site ) )        
     
@@ -872,6 +875,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #----- assign actions
     
     liz.setInfo(type='video', infoLabels=il)
+    #
+    
+    #liz.addStreamInfo('video', { 'codec': 'preview_ar','aspect': preview_ar, 'width': preview_w, 'height': preview_h } )  #how to retrieve?
+    #liz.setProperty('aspectt', '2.0')   #retrieve this with $INFO[ListItem.property(aspectt)]
+    #liz.setInfo(type='pictures', infoLabels={'exif:resolution': '%d,%d' %( preview_w, preview_h)  } ) $INFO[ListItem.PictureResolution]
+    
 
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
     liz.setArt({ "clearart": "type_unsupp.png"  }) 
@@ -1971,26 +1980,26 @@ def pretty_datediff(dt1, dt2):
     
         if day_diff == 0:
             if sec_diff < 10:
-                return translation(30060)     #"just now"
+                return translation(32060)     #"just now"
             if sec_diff < 60:
-                return str(sec_diff) + translation(30061)      #" secs ago"
+                return str(sec_diff) + translation(32061)      #" secs ago"
             if sec_diff < 120:
-                return translation(30062)     #"a min ago"
+                return translation(32062)     #"a min ago"
             if sec_diff < 3600:
-                return str(sec_diff / 60) + translation(30063) #" mins ago"
+                return str(sec_diff / 60) + translation(32063) #" mins ago"
             if sec_diff < 7200:
-                return translation(30064)     #"an hour ago"
+                return translation(32064)     #"an hour ago"
             if sec_diff < 86400:
-                return str(sec_diff / 3600) + translation(30065) #" hrs ago"
+                return str(sec_diff / 3600) + translation(32065) #" hrs ago"
         if day_diff == 1:
-            return translation(30066)         #"Yesterday"
+            return translation(32066)         #"Yesterday"
         if day_diff < 7:
-            return str(day_diff) + translation(30067)      #" days ago"
+            return str(day_diff) + translation(32067)      #" days ago"
         if day_diff < 31:
-            return str(day_diff / 7) + translation(30068)  #" wks ago"
+            return str(day_diff / 7) + translation(32068)  #" wks ago"
         if day_diff < 365:
-            return str(day_diff / 30) + translation(30069) #" months ago"
-        return str(day_diff / 365) + translation(30070)    #" years ago"
+            return str(day_diff / 30) + translation(32069) #" months ago"
+        return str(day_diff / 365) + translation(32070)    #" years ago"
     except:
         pass
 
@@ -2111,8 +2120,8 @@ def zoom_n_slide(image, width, height):
 
         scroll_time=int(height)*(int(height)/int(width))
         
-        zoom_effect="effect=zoom loop=true center=960 end=%d time=1000" %zoom
-        fade_effect="condition=true effect=slide delay=1000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
+        zoom_effect="effect=zoom loop=true delay=1000 center=960 end=%d time=1000" %zoom
+        fade_effect="condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
         
         ctl3.setAnimations([('WindowOpen', zoom_effect), ('conditional', fade_effect,) ])
         
@@ -2188,7 +2197,7 @@ def calculate_zoom_slide(img_w, img_h):
     
     #determine how much xbmc would shrink the image to fit screen
     
-    shrink_percent = float(screen_h) / img_h
+    shrink_percent = (float(screen_h) / img_h) 
     slide_end = float(img_h-screen_h) * shrink_percent
 
     log("  shrink_percentage %f " %(shrink_percent) )
@@ -2217,7 +2226,13 @@ def calculate_zoom_slide(img_w, img_h):
         #startx= (screen_w-img_w) / 2
 
         #zoom this much to get original size
-        zoom_percent = float(1) / shrink_percent
+        zoom_percent = ( float(1) / shrink_percent ) 
+        
+        #zoom_percent = ( float(1.5) / shrink_percent )  #adjust zoom_percent to go from 1:1 to bigger
+        #ssp=( float(1.5) / ( float(1) / shrink_percent ) )
+        #slide_end = float(img_h-screen_h) * ssp
+        
+        
         log("  percent to zoom  %f " %(zoom_percent) )
 
     return zoom_percent * 100, slide_end
@@ -2361,6 +2376,7 @@ def reddit_request( url ):
         xbmc.executebuiltin('XBMC.Notification("%s %s", "%s" )' %( err.code, err.msg, url)  )
         log( err.reason ) 
     
+
         
 def reddit_get_refresh_token(url, name, type):
     #this function gets a refresh_token from reddit and keep it in our addon. this refresh_token is used to get 1-hour access tokens.
@@ -2651,6 +2667,12 @@ def convert_date(stamp):
         localtime = time.strftime('%H:%M', date_time)
     return localtime + '  ' + localdate
 
+def xbmc_busy(busy=True):
+    if busy:
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
+    else:
+        xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+        
     
 def downloadurl( source_url, destination=""):
     try:

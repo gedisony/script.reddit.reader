@@ -260,7 +260,9 @@ class listSubRedditGUI(cGUI):
     a=0
     SUBREDDITS_LIST=550
     SIDE_SLIDE_PANEL=9000
+    #all controls in the side panel needs to be included in focused_control ACTION_MOVE_RIGHT check
     BTN_GOTO_SUBREDDIT=6052
+    BTN_ZOOM_N_SLIDE=6053
     
     def onInit(self):
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
@@ -340,13 +342,8 @@ class listSubRedditGUI(cGUI):
                 log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
                 
                 self.busy_execute_sleep(comments_action,3000,False )
-                
-                #xbmc.executebuiltin("ActivateWindow(busydialog)")
-                #xbmc.executebuiltin( comments_action  )
-                #xbmc.sleep(3000)
-                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT]:   #6052 is the left hiding panel  550 is a list (subreddits) in the hiding panel
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
@@ -363,24 +360,28 @@ class listSubRedditGUI(cGUI):
 
     def onClick(self, controlID):
         #log( ' clicked on control id %d'  %controlID )
+        
+        listbox_selected_item=self.gui_listbox.getSelectedItem()
+        subreddits_selected_item=self.subreddits_listbox.getSelectedItem()
+        
         if controlID == self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
-            item = self.gui_listbox.getSelectedItem()
+            #item = self.gui_listbox.getSelectedItem()
 
             if self.include_parent_directory_entry and self.gui_listbox_SelectedPosition == 0: 
                 self.close()  #include_parent_directory_entry means that we've added a ".." as the first item on the list onInit
 
             #name = item.getLabel()
-            try:di_url=item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
+            try:di_url=listbox_selected_item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
             except:di_url=""
-            item_type=item.getProperty('item_type').lower()
+            item_type=listbox_selected_item.getProperty('item_type').lower()
             
             log( "  clicked on %d IsPlayable=%s  url=%s " %( self.gui_listbox_SelectedPosition, item_type, di_url )   )
             if item_type=='playable':
                     #a big thank you to spoyser (http://forum.kodi.tv/member.php?action=profile&uid=103929) for this help
                     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
                     pl.clear()
-                    pl.add(di_url, item)
+                    pl.add(di_url, listbox_selected_item)
                     xbmc.Player().play(pl, windowed=False)
                     #self.close()
             elif item_type=='script':
@@ -390,7 +391,6 @@ class listSubRedditGUI(cGUI):
                 #if user clicked on 'next' we close this screen and load the next page. 
                 if 'mode=listSubReddit' in di_url:
                     self.busy_execute_sleep(di_url,500,True )
-                    
                 else:
                     self.busy_execute_sleep(di_url,5000,False )
                 
@@ -413,29 +413,17 @@ class listSubRedditGUI(cGUI):
                 #    log( "%s: %s" %( property, 'value' ) )
     
         elif controlID == self.SUBREDDITS_LIST:
-            #SelectedPosition = self.subreddits_listbox.getSelectedPosition()
-            item = self.subreddits_listbox.getSelectedItem()
-
-            try:di_url=item.getProperty('onClick_action') #this property was created in load_subreddits_file_into_a_listitem 
-            except:di_url=""
-            #log( "  onClick_action=%s " %( di_url )   )
+            di_url=subreddits_selected_item.getProperty('onClick_action') #this property was created in load_subreddits_file_into_a_listitem 
             self.busy_execute_sleep(di_url )
-            #xbmc.executebuiltin("ActivateWindow(busydialog)")
-            #xbmc.executebuiltin( di_url  )
-            #xbmc.sleep(500)
-            #self.close()
             pass
         elif controlID == self.BTN_GOTO_SUBREDDIT:
-            g=self.getControl(self.BTN_GOTO_SUBREDDIT)
-            
-            item = self.gui_listbox.getSelectedItem()
-            goto_subreddit_action=item.getProperty('goto_subreddit_action')
-            #log( ' clicked on button %s item %s '  % (g.getLabel2(), item.getLabel() ) )
-            #log( ' Action=%s '  % ( goto_subreddit_action ) )
-            
+            goto_subreddit_action=listbox_selected_item.getProperty('goto_subreddit_action')
             self.busy_execute_sleep(goto_subreddit_action)
             
-        
+        elif controlID == self.BTN_ZOOM_N_SLIDE:
+            action=listbox_selected_item.getProperty('zoom_n_slide_action')
+            self.busy_execute_sleep(action, 50,False)
+            pass
             
 class commentsGUI(cGUI):
     

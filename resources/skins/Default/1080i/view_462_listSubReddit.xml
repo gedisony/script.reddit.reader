@@ -117,7 +117,7 @@
 					</control>
 
 
-					<control type="group">
+					<control type="group"><description>visible if there is thumbnail </description>
 						<visible>!String.IsEmpty(ListItem.Art(thumb))</visible>
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>150</left>
@@ -184,7 +184,7 @@
 						</control>
 					</control>
 					
-					<control type="group">
+					<control type="group"><description>visible if there is thumbnail </description>
 						<visible>!String.IsEmpty(ListItem.Art(thumb))</visible>
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>150</left>
@@ -260,8 +260,7 @@
 	<!--END include name="UpDownArrows"-->
 
 
-		<control type="group">
-			<description>Right side panel. this is where the post description is shown.</description>
+		<control type="group"><description>Right side panel. this is where the post description is shown.</description>
 			<visible>false</visible>
 			
 			<control type="image">
@@ -519,7 +518,7 @@
 
 
 
-<control type="group">
+<control type="group"><description>This is the left-side sliding panel</description>
 		<!-- include name="MediaMenuCommon"-->
 		<animation type="Conditional" condition="ControlGroup(9000).HasFocus">
 			<effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" />
@@ -569,6 +568,27 @@
 				<label2>$INFO[Container(55).ListItem.Genre]</label2>
 				
 			</control>
+			<control type="button" id="6053">
+				<visible>true</visible><description>zoom_n_slide</description>
+				<enable>!String.IsEmpty(Container(55).ListItem.Property(zoom_n_slide_action))</enable>
+					<width>430</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>70</height>
+					<radioposx>330</radioposx>
+					<textwidth>320</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
+					<texturenofocus border="30">separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
+					<alttexturenofocus border="30">separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32050]</label>
+				
+				
+			</control>
+
 			<!-- control type="edit" id="19"><description>go to subreddit editbox </description>
 				<visible>true</visible>
 				<textwidth>395</textwidth>
