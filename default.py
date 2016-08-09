@@ -1570,7 +1570,7 @@ def listImgurAlbum(album_url, name, type):
     #album_url="http://imgur.com/a/fsjam"
     ci=ClassImgur()
         
-    dictlist=ci.ret_album_list(album_url)
+    dictlist=ci.ret_album_list(album_url, 'l')
     display_album_from(dictlist, name)
 
 def display_album_from(dictlist, album_name):

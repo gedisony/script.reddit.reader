@@ -280,7 +280,7 @@ class ClassImgur:
         r = requests.get(request_url, headers=ClassImgur.request_header)
         
         if r.status_code==200:  #http status code 200 = success
-            #log(r.text)
+            log(r.text)
             j = r.json()   #json.loads(r.text)    
             
             #2 types of json received:

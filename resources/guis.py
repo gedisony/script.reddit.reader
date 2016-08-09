@@ -341,6 +341,7 @@ class listSubRedditGUI(cGUI):
                 comments_action=item.getProperty('comments_action')
                 log( "   RIGHT(comments) pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
                 if comments_action:
+                    #if there are no comments, the comments_action property is not created for this listitem
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 

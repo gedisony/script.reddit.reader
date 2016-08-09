@@ -17,21 +17,21 @@
 				  Attempt a different method by Hiding the thumbnail image after list changes focus. 
 				  it works but it is hard to guess proper the delay -how long the original image finishes loading. 
 				    -->
-				<!-- control type="image" id="200">
+				<control type="image" id="200">
 					<visible>!Container(53).OnNext + !Container(53).OnPrevious</visible>
-					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
+					<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
 					<texture>$INFO[Container(53).ListItem.Art(thumb)]</texture>
-					<animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation>
-				</control -->
+					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
+				</control>
 
-		        <control type="image">
+		        <!--control type="image">
 		        	<top>-100</top>
 		            <description>The spinning animation in the background</description>
 		            <aspectratio align="center" aligny="center" >center</aspectratio>
 		            <texture>busy.gif</texture>
 		            <visible>!IntegerGreaterThan(Container(53).NumPages,0) | ![Container(53).OnNext | Container(53).OnPrevious]</visible>
 		            <!-- animation effect="fade" time="200" delay="500" reversible="false">Visible</animation-->
-		        </control>
+		        <!--/control-->
         
 				<control type="image" id="204">
 					<visible>Control.HasFocus(104)</visible>
