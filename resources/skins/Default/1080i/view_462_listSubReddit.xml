@@ -10,14 +10,14 @@
 			<control type="group"><description>Right side panel. this is where the post description is shown.</description>
 			<visible>true</visible>
 			
-			<control type="image">
+			<!-- control type="image">
 				<left>780</left>
 				<top>102</top>
 				<width>1270</width>
 				<height>870</height>
 				<visible>false</visible>
 				<texture border="22">dialog-bg.png</texture>
-			</control>
+			</control-->
 			
 			<control type="textbox" id="65591">
 				<description>if thumb is empty this bigger textbox is visible</description>
@@ -49,8 +49,10 @@
 			<control type="group"><description>images: thumbnail, banner and fade trick</description>
 				    
 				<control type="image" id="200">
-					<centerright>520</centerright>
-					<centertop>540</centertop>
+					<!-- centerright>520</centerright   did not work on android -->
+					<!-- centertop>540</centertop       did not work on android -->
+					<left>1230</left>
+					<top>350</top>
 					<width>380</width>
 					<height>380</height>
 					<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
@@ -60,8 +62,10 @@
 				</control>
 
 				<control type="image" id="201">
-					<centerright>520</centerright>
-					<centertop>540</centertop>
+					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
+					<centertop>540</centertop-->
+					<left>860</left>
+					<top>0</top>
 					<width>1080</width>
 					<height>1080</height>
 					<aspectratio scalediffuse="true">keep</aspectratio>
@@ -77,20 +81,14 @@
 					<texture>focus_f3.png</texture>
 				</control>
 
-		        <control type="image">
-		        	<top>-100</top>
-		            <description>The spinning animation in the background (not used for now)</description>
-		            <aspectratio align="center" aligny="center" >center</aspectratio>
-		            <texture>busy.gif</texture>
-		            <visible>false</visible>
-		        </control>
-
 			</control>
 		<!--END include name="DefaultBackground"-->
 
 	<!--BEGIN include>View_55_WideList</include -->
 
 		<control type="group">
+			<include>OpenClose_Left</include>
+			<include>Visible_Left</include>
 			<left>13</left>
 			<top>82</top>
 			<visible>true</visible>
@@ -154,7 +152,6 @@
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 					</control>
-
 
 					<control type="group"><description>visible if there is thumbnail </description>
 						<visible>!String.IsEmpty(ListItem.Art(thumb))</visible>

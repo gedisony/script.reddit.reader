@@ -68,10 +68,10 @@
 	
 		<control type="group">
 			<include>OpenClose_Right</include><!-- just animation -->
+			<include>Visible_Right</include><!-- just animation -->
 			<left>93</left>
 			<top>122</top>
 			<visible>true</visible>
-			<include>Visible_Right</include><!-- just animation -->
 			<control type="image">
 				<description>background image</description>
 				<left>-20</left>
@@ -376,9 +376,6 @@
 		<!--END include name="TopBar"-->
 
 		<!--BEGIN include name="BottomBar"-->
-		<param name="PageLabel">$VAR[BottomBarPageLabel]</param>
-		<param name="info_visible">False</param>
-
 			<control type="group">
 				<animation effect="slide" end="0,90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation>
 				<depth>DepthBars</depth>
