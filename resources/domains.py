@@ -280,7 +280,7 @@ class ClassImgur:
         r = requests.get(request_url, headers=ClassImgur.request_header)
         
         if r.status_code==200:  #http status code 200 = success
-            log(r.text)
+            #log(r.text)
             j = r.json()   #json.loads(r.text)    
             
             #2 types of json received:
@@ -1069,10 +1069,11 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     thumb_url=ret_youtube_thumbnail(videoID,0)  
                     #log("[%s] thumb_url from ID[%s] is[%s]" %(hoster,videoID,thumb_url))
                     poster_url=thumb_url
+                    #using the ytdl addon to handle youtube links bypasses the age restriction
                     if use_ytdl_for_yt:
+                        link_type ='script'
+                        pluginUrl=media_url
                         modecommand='playYTDLVideo'
-                        #pluginUrl=media_url
-                        
                         #a you tube link like the one below takes a very long time for youtube_dl to process 
                         #   https://www.youtube.com/watch?v=glXgSSOKlls&amp;list=RD0rtV5esQT6I&amp;index=9
                         #   since we already parsed the videoID, we will provide a faster url

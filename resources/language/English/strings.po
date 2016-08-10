@@ -219,7 +219,7 @@ msgid "Comments threshold"
 msgstr ""
 
 msgctxt "#32107"
-msgid "Enable/disable NSFW content"
+msgid "Enable NSFW content"
 msgstr ""
 
 
@@ -273,103 +273,9 @@ msgstr ""
 
 #30192-30299 empty
 
-# settings category
-msgctxt "#30300"
-msgid "Sites (video)"
-msgstr ""
 
-msgctxt "#30301"
-msgid "YouTube"
-msgstr ""
-
-msgctxt "#30302"
-msgid "Vimeo"
-msgstr ""
-
-msgctxt "#30303"
-msgid "LiveLeak"
-msgstr ""
-
-msgctxt "#30304"
-msgid "DailyMotion"
-msgstr ""
-
-msgctxt "#30305"
-msgid "GfyCat"
-msgstr ""
-
-msgctxt "#30306"
-msgid "Giphy"
-msgstr ""
-
-msgctxt "#30307"
-msgid "Vine.co"
-msgstr ""
-
-msgctxt "#30308"
-msgid "Streamable"
-msgstr ""
-
-msgctxt "#30309"
-msgid "Vid.me"
-msgstr ""
-
-msgctxt "#30310"
-msgid "Porn sites (youtube_dl add-on)"
-msgstr ""
-  
-msgctxt "#30311"
-msgid "Other sites via youtube_dl add-on"
-msgstr ""
-
-msgctxt "#30312"
+msgctxt "#32312"
 msgid "Use youtube_dl add-on for Youtube videos"
-msgstr ""
-
-msgctxt "#30313"
-msgid "Direct links to video media (mp4,webm)"
-msgstr ""
-
-msgctxt "#30314"
-msgid "Video sites via youtube_dl add-on"
-msgstr ""
-
-  
-# settings category
-msgctxt "#30350"
-msgid "Sites (other)"
-msgstr ""
-
-msgctxt "#30351"
-msgid "Imgur"
-msgstr ""
-
-msgctxt "#30352"
-msgid "Direct links to image media (jpg,png,gif)"
-msgstr ""
-
-msgctxt "#30353"
-msgid "Flickr"
-msgstr ""
-
-msgctxt "#30354"
-msgid "Reddit text posts"
-msgstr ""
-
-msgctxt "#30355"
-msgid "Instagram"
-msgstr ""
-
-msgctxt "#30356"
-msgid "Blogspot"
-msgstr ""
-
-msgctxt "#30357"
-msgid "Tumblr"
-msgstr ""
-
-msgctxt "#30358"
-msgid "Gyazo"
 msgstr ""
 
 

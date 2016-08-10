@@ -23,40 +23,29 @@
 						<texture border="22">dialog-bg.png</texture>
 					</control-->
 					
-					<control type="textbox" id="65591">
-						<description>if thumb is empty this bigger textbox is visible</description>
+					<control type="textbox" id="65591"><description>this big textbox is for text posts. visible when no banner art</description>
 						<left>982</left>
-						<top>128</top>
+						<top>98</top>
 						<width>910</width>
-						<height>810</height>
+						<height>952</height>
 						<font>font14</font>
 						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
 						<visible>isEmpty(Container(55).ListItem.Art(banner))</visible>
 						<label>$INFO[Container(55).ListItem.Plot]</label>					
 					</control>
+
 					
-					<control type="textbox" id="65592">
-						<left>982</left>
-						<top>128</top>
-						<width>910</width>
-						<height>356</height>
-						<font>font13</font>
-						<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-						<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
-						<visible>!Control.IsVisible(65591)</visible>
-						<!-- label>$INFO[Container(55).ListItem.PlotOutline]</label-->					
-					</control>
 				</control>
 				    
 				<control type="image" id="200">
 					<!-- centerright>520</centerright   did not work on android -->
 					<!-- centertop>540</centertop       did not work on android -->
-					<left>1230</left>
+					<left>1210</left>
 					<top>350</top>
 					<width>380</width>
 					<height>380</height>
 					<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
-					<aspectratio scalediffuse="true">keep</aspectratio>
+					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
 					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
@@ -71,7 +60,22 @@
 					<aspectratio scalediffuse="true">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
+					<visible>String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
+
+				<control type="image" id="203"><description>partner with id 65592</description>
+					<top>0</top>
+					<left>860</left>
+					<width>1080</width>
+      				<height>750</height>
+					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
+					<centertop>540</centertop-->
+					<aspectratio scalediffuse="true" aligny="bottom">keep</aspectratio>
+					<colordiffuse>FFFFFFFF</colordiffuse>
+					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
+					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+				</control>
+
 
 				<control type="image" id="202">	<description>left fade bkground</description>
 					<left>-30</left>
@@ -79,6 +83,19 @@
 					<width>1000</width>
 					<height>1080</height>
 					<texture>focus_f3.png</texture>
+				</control>
+
+				<control type="textbox" id="65592"><description>partner with id 203</description>
+					<left>912</left>
+					<top>758</top>
+					<width>980</width>
+					<height>320</height>
+					<font>font13</font>
+					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
+					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
+					<!-- visible>!Control.IsVisible(65591)</visible-->
+					<label>$INFO[Container(55).ListItem.PlotOutline]</label>
+					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
 				</control>
 
 			</control>
@@ -203,6 +220,7 @@
 							<width>960</width>
 							<aligny>center</aligny>
 							<scrolltime>0</scrolltime>
+							<autoscroll>false</autoscroll>
 							<font>font12</font>
 							<label>$INFO[ListItem.Label]</label>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -229,6 +247,7 @@
 							<width>810</width>
 							<aligny>center</aligny>
 							<scrolltime>0</scrolltime>
+							<autoscroll>false</autoscroll>
 							<font>font12</font>
 							<label>$INFO[ListItem.Label]</label>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -537,10 +556,9 @@
 	<!--  END include name="MediaMenuCommon" -->
 	
 		<control type="grouplist" id="9000">
-		<top>90</top>
+		<top>80</top>
 	<!-- include name="MediaMenuListCommon"-->
 			<left>0</left>
-			<top>100</top>
 			<width>430</width>
 			<height>1080</height>
 			<onleft>9000</onleft>
@@ -550,10 +568,11 @@
 			<onback>55</onback>
 			<control type="button" id="6052">
 				<visible>true</visible><description>go to subreddit. subreddit is stored in genre</description>
+				<enable>!String.IsEmpty(Container(55).ListItem.Property(goto_subreddit_action))</enable>
 					<width>430</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
-					<height>70</height>
+					<height>60</height>
 					<radioposx>330</radioposx>
 					<textwidth>320</textwidth>
 					<aligny>center</aligny>
@@ -573,7 +592,7 @@
 					<width>430</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
-					<height>70</height>
+					<height>60</height>
 					<radioposx>330</radioposx>
 					<textwidth>320</textwidth>
 					<aligny>center</aligny>
@@ -644,7 +663,7 @@
 				<left>2</left>
 				<top>3</top>
 				<width>430</width>
-				<height>820</height>
+				<height>800</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<!-- pagecontrol>55600</pagecontrol-->

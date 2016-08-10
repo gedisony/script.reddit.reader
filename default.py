@@ -840,9 +840,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     post_title=title
     il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
         
-    il={ "title": post_title, "plot": il_description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+    il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-    log( '    reddit thumb[%s] reddit preview[%s] new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, thumb_url, poster_url, link_url ))
+    log( '    reddit thumb[%s] reddit preview[%s] ar=%f new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, preview_ar, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
         iconimage=thumb_url
     if poster_url=="":
@@ -863,12 +863,20 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     
 
     #----- assign actions
-    if preview_ar>0 and preview_ar <= 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
+    if preview_ar>0 and preview_ar < 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
         from resources.domains import link_url_is_playable
-        log('*****%f '%preview_ar)
+        #log('*****%f '%preview_ar)
         #if link_url_is_playable(link_url):
-        log('*****has zoom_n_slide_action ')
+        #log('*****has zoom_n_slide_action ')
         liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
+
+    #liz.setProperty('preview_ar', str(preview_ar) )
+    
+    if preview_ar>1.25 and description:   #this measurement is related to control id 203's height
+        log('    ar and description criteris met') 
+        #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
+        liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
+        liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
 
     if num_comments > 0:
         liz.setProperty('comments_action', build_script('listLinksInComment', site ) )
@@ -1188,7 +1196,7 @@ def playYTDLVideo(url, name, type):
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://m.porntube.com/videos/briella-bounce-licks-kelly-divines-wet-minge_1069805' 
+    #url='http://video.gq.com/watch/adriana-lima' 
     choices = []
 
 #these checks done in around May 2016
