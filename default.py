@@ -1188,7 +1188,7 @@ def playYTDLVideo(url, name, type):
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://pluzz.francetv.fr/videos/13h15_le_dimanche_,125793231.html'
+    #url='http://m.porntube.com/videos/briella-bounce-licks-kelly-divines-wet-minge_1069805' 
     choices = []
 
 #these checks done in around May 2016
@@ -1211,7 +1211,7 @@ def playYTDLVideo(url, name, type):
 # howcast.com HowStuffWorks.com hrt.hr iconosquare.com infoq.com  ivi.ru kamcord.com/v video.kankan.com karrierevideos.at KrasView.ru hlamer.ru kuwo.cn la7.it laola1.tv le.com
 # media.ccc.de metacritic.com mitele.es  moevideo.net,playreplay.net,videochart.net vidspot.net(might work, can't find recent post) movieclips.com mtv.de mtviggy.com muenchen.tv myspace.com
 # myvi.ru myvideo.de myvideo.ge 163.com netzkino.de nfb.ca nicovideo.jp  videohive.net normalboots.com nowness.com ntr.nl nrk.no ntv.ru/video ocw.mit.edu odnoklassniki.ru/video 
-# onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv  periscope.tv play.fm pluzz.francetv.fr
+# onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv  periscope.tv play.fm pluzz.francetv.fr nbcolympics.com olympics.cbc.ca
 
 # news site (can't find sample to test) 
 # bleacherreport.com crooksandliars.com DailyMail.com channel5.com Funimation.com gamersyde.com gamespot.com gazeta.pl helsinki.fi hotnewhiphop.com lemonde.fr mnet.com motorsport.com MSN.com
@@ -1255,6 +1255,10 @@ def playYTDLVideo(url, name, type):
 #     extractors.sort()
 #     for n in extractors: log("'%s'," %n)
 
+    from urlparse import urlparse
+    parsed_uri = urlparse( url )
+    domain = '{uri.netloc}'.format(uri=parsed_uri)
+
     #xbmc.executebuiltin("ActivateWindow(busydialog)")
     try:
         if YDStreamExtractor.mightHaveVideo(url,resolve_redirects=True):
@@ -1285,10 +1289,10 @@ def playYTDLVideo(url, name, type):
                 #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
             else:
                 #log("getVideoInfo failed==" )
-                xbmc.executebuiltin('XBMC.Notification("'+ translation(30192) +'", "Youtube_dl" )' )  
+                xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(30192), domain )  )  
     except Exception as e:
         #log( "zz   " + str(e) )
-        xbmc.executebuiltin('XBMC.Notification("Youtube_dl","%s")' %str(e)  )
+        xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
 
     #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         
