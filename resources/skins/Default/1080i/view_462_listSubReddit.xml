@@ -6,8 +6,47 @@
 	<menucontrol>9000</menucontrol>
     	
 	<controls>
+	
+			<control type="group"><description>Right side panel. this is where the post description is shown.</description>
+			<visible>true</visible>
+			
+			<control type="image">
+				<left>780</left>
+				<top>102</top>
+				<width>1270</width>
+				<height>870</height>
+				<visible>false</visible>
+				<texture border="22">dialog-bg.png</texture>
+			</control>
+			
+			<control type="textbox" id="65591">
+				<description>if thumb is empty this bigger textbox is visible</description>
+				<left>982</left>
+				<top>128</top>
+				<width>910</width>
+				<height>810</height>
+				<font>font14</font>
+				<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
+				<visible>isEmpty(Container(55).ListItem.Art(banner))</visible>
+				<label>$INFO[Container(55).ListItem.Plot]</label>					
+			</control>
+			
+			<control type="textbox" id="65592">
+				<left>982</left>
+				<top>128</top>
+				<width>910</width>
+				<height>356</height>
+				<font>font13</font>
+				<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
+				<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
+				<visible>!Control.IsVisible(65591)</visible>
+				
+				<!-- label>$INFO[Container(55).ListItem.PlotOutline]</label-->					
+			</control>
+		</control>
+	
 		<!--BEGIN include name="DefaultBackground"-->
-			<control type="group">
+			<control type="group"><description>images: thumbnail, banner and fade trick</description>
 				    
 				<control type="image" id="200">
 					<centerright>520</centerright>
@@ -260,43 +299,6 @@
 	<!--END include name="UpDownArrows"-->
 
 
-		<control type="group"><description>Right side panel. this is where the post description is shown.</description>
-			<visible>false</visible>
-			
-			<control type="image">
-				<left>780</left>
-				<top>102</top>
-				<width>1270</width>
-				<height>870</height>
-				<visible>false</visible>
-				<texture border="22">dialog-bg.png</texture>
-			</control>
-			
-			<control type="textbox" id="65591">
-				<description>if thumb is empty this bigger textbox is visible</description>
-				<left>982</left>
-				<top>128</top>
-				<width>910</width>
-				<height>810</height>
-				<font>font14</font>
-				<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-				<visible>isEmpty(Container(55).ListItem.Art(banner))</visible>
-				<label>big $INFO[Container(55).ListItem.Plot]</label>					
-			</control>
-			
-			<control type="textbox" id="65592">
-				<left>982</left>
-				<top>128</top>
-				<width>910</width>
-				<height>356</height>
-				<font>font13</font>
-				<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-				<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
-				<visible>!Control.IsVisible(65591)</visible>
-				
-				<label>smal $INFO[Container(55).ListItem.Plot]</label>					
-			</control>
-		</control>
 
 
 

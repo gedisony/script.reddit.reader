@@ -618,11 +618,13 @@ def listSubReddit(url, title_bar_name, type):
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             
-            try:
-                # use unescape instead of cleanTitle?
-                description = cleanTitle(entry['data']['media']['oembed']['description'].encode('utf-8'))
-            except:
-                description = ''
+            try:    description = cleanTitle(entry['data']['media']['oembed']['description'].encode('utf-8'))
+            except: description = ''
+
+            try:    post_selftext=unescape(entry['data']['selftext'].encode('utf-8'))
+            except: post_selftext=''
+            
+            description=post_selftext+'[CR]'+description if post_selftext else description
                 
             commentsUrl = urlMain+entry['data']['permalink'].encode('utf-8')
             #if show_listSubReddit_debug :log("commentsUrl"+str(idx)+"="+commentsUrl)
@@ -801,7 +803,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     videoID=""
     post_title=title
     il_description=""
-    n=""  #will hold red nsfw asterisk string
+    
     h=""  #will hold bold hoster:  string
     t_Album = translation(30073) if translation(30073) else "Album"
     t_IMG =  translation(30074) if translation(30074) else "IMG"
@@ -828,18 +830,17 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     h="[B]" + hoster + "[/B] "
     if over_18: 
         mpaa="R"
-        #n = "[COLOR red]*[/COLOR] "
         #description = "[B]" + hoster + "[/B]:[COLOR red][NSFW][/COLOR] "+title+"\n" + description
-        il_description = "[COLOR red][NSFW][/COLOR] "+ h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
+        #il_description = "[COLOR red][NSFW][/COLOR] "+ h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
         title_line2 = "[COLOR red][NSFW][/COLOR] "+title_line2
     else:
         mpaa=""
-        il_description = h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
+        #il_description = h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
 
     post_title=title
-    il_description=il_description
+    il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
         
-    il={ "title": post_title, "plot": il_description, "plotoutline": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+    il={ "title": post_title, "plot": il_description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
     log( '    reddit thumb[%s] reddit preview[%s] new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
@@ -848,7 +849,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         poster_url=iconimage
     
     #log( "  PLOT:" +il_description )
-    liz=xbmcgui.ListItem(label=n+post_title
+    liz=xbmcgui.ListItem(label=post_title
                          ,label2=title_line2
                          ,iconImage="DefaultVideo.png"
                          ,thumbnailImage=iconimage
