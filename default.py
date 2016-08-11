@@ -16,7 +16,6 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import urlparse
-
 import SimpleDownloader
 import requests
 
@@ -1203,6 +1202,12 @@ def playYTDLVideo(url, name, type):
     #url='http://video.gq.com/watch/adriana-lima' 
     choices = []
 
+    #from BeautifulsSoup import BeautifulSoup
+    #r = urllib.urlopen('http://www.aflcio.org/Legislation-and-Politics/Legislative-Alerts').read() 
+    #soup = BeautifulSoup(r) 
+    #text =  soup.get_text() 
+    
+
 #these checks done in around May 2016
 #does not work:  yourlust  porntube xpornvid.com porndig.com  thumbzilla.com eporner.com yuvutu.com porn.com pornerbros.com fux.com flyflv.com xstigma.com sexu.com 5min.com alphaporno.com
 # stickyxtube.com xxxbunker.com bdsmstreak.com  jizzxman.com pornwebms.com pornurl.pw porness.tv openload.online pornworms.com fapgod.com porness.tv hvdporn.com pornmax.xyz xfig.net yobt.com
@@ -1271,10 +1276,11 @@ def playYTDLVideo(url, name, type):
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
 
-    #xbmc.executebuiltin("ActivateWindow(busydialog)")
+    xbmc_busy()
     try:
         if YDStreamExtractor.mightHaveVideo(url,resolve_redirects=True):
             log('    YDStreamExtractor.mightHaveVideo[true]=' + url)
+            xbmc_busy()
             vid = YDStreamExtractor.getVideoInfo(url,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
             if vid:
                 log("      getVideoInfo playableURL="+vid.streamURL())
@@ -1288,7 +1294,7 @@ def playYTDLVideo(url, name, type):
                     vid.selectStream(0) #You can also pass in the the dict for the chosen stream
         
                 stream_url = vid.streamURL()                         #This is what Kodi (XBMC) will play    
-
+                xbmc_busy()
                 playVideo(stream_url, name, type)
                 
                 #pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -1363,13 +1369,14 @@ def listLinksInComment(url, name, type):
     #only get up to "https://www.reddit.com/r/Music/comments/4k02t1". 
     #   do not include                                            "/bonnie_tyler_total_eclipse_of_the_heart_80s_pop/"
     #   because we'll have problem when it looks like this: "https://www.reddit.com/r/Overwatch/comments/4nx91h/ever_get_that_feeling_dÃ©jÃ _vu/"
+    #url=re.findall(r'(.*/comments/[A-Za-z0-9]+)',url)[0]
+    #UPDATE you need to convert this: https://www.reddit.com/r/redditviewertesting/comments/4x8v1k/test_test_what_is_déjà_vu/
+    #                        to this: https://www.reddit.com/r/redditviewertesting/comments/4x8v1k/test_test_what_is_d%C3%A9j%C3%A0_vu/
+    #
+    #use safe='' argument in quoteplus to encode only the weird chars part 
     
-    url=re.findall(r'(.*/comments/[A-Za-z0-9]+)',url)[0] 
-    url+='.json'
-    #log("listLinksInComment:"+url)
-
-    #content = opener.open(url).read()  
-    
+    url=  urllib.quote_plus(url,safe=':/') 
+     
     xbmc_busy()
     content = reddit_request(url)        
     if not content: return
@@ -1377,6 +1384,7 @@ def listLinksInComment(url, name, type):
     
     #log(content)
     #content = json.loads(content.replace('\\"', '\''))  #some error here ?      TypeError: 'NoneType' object is not callable
+    
     content = json.loads(content)
     
     del harvest[:]
@@ -1441,7 +1449,7 @@ def listLinksInComment(url, name, type):
             #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
             #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
             
-            plot= "[COLOR greenyellow]   *[%s] %s"%(hoster, plot )  + "[/COLOR]"
+            plot= "[COLOR greenyellow][%s] %s"%(hoster, plot )  + "[/COLOR]"
 
             liz=xbmcgui.ListItem(label=plot , #not used in gui
                                  label2="",
@@ -2333,11 +2341,14 @@ def test_menu(url, name, type):
 
 
 def reddit_request( url ):
-    #log( "  reddit_request " + url )
+    #this function replaces     content = opener.open(url).read()
+    #  for calls to reddit  
+
     
     #if there is a refresh_token, we use oauth.reddit.com instead of www.reddit.com
     if reddit_refresh_token:
         url=url.replace('www.reddit.com','oauth.reddit.com' )
+        url=url.replace( 'np.reddit.com','oauth.reddit.com' )
         log( "  replaced reqst." + url + " + access token=" + reddit_access_token)
         
     req = urllib2.Request(url)
@@ -2380,8 +2391,8 @@ def reddit_request( url ):
         xbmc.executebuiltin('XBMC.Notification("%s %s", "%s" )' %( err.code, err.msg, url)  )
         log( err.reason )         
     except urllib2.URLError, err: # Not an HTTP-specific error (e.g. connection refused)
-        xbmc.executebuiltin('XBMC.Notification("%s %s", "%s" )' %( err.code, err.msg, url)  )
-        log( err.reason ) 
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( err.reason, url)  )
+        log( str(err.reason) ) 
     
 
         
