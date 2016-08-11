@@ -335,22 +335,21 @@
 					<visible>!Window.IsVisible(extendedprogressdialog)</visible>
 					<animation effect="fade" time="150">VisibleChange</animation>
 					<animation effect="fade" start="100" end="0" time="300" condition="Window.Next(screencalibration)">WindowClose</animation>
-					<control type="grouplist">
-						<right>85</right>
-						<width>500</width>
-						<height>100</height>
-						<align>right</align>
-						<orientation>horizontal</orientation>
-						<usecontrolcoords>true</usecontrolcoords>
-						<include condition="Skin.HasSetting(show_weatherinfo) | Window.IsActive(skinsettings)">TopWeatherIcon</include>
+
 						<control type="label">
-							<include>BreadcrumbsLabel</include>
-							<label>$INFO[System.Time]</label>
+							<top>7</top>
+							<left>1724</left>
+							<height>100</height>
+							<width>200</width>
+							<font>font13</font>
+							<shadowcolor>text_shadow</shadowcolor>
+							<align>left</align>
+							<label>[B]$INFO[System.Time][/B]</label>
 						</control>
-					</control>
+
 					<control type="group">
 						<control type="image">
-							<right>25</right>
+							<left>1855</left>
 							<top>20</top>
 							<height>40</height>
 							<width>40</width>

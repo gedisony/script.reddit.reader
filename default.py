@@ -790,7 +790,7 @@ def listSubReddit(url, title_bar_name, type):
     
     from resources.guis import listSubRedditGUI    
     ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
-    ui.title_bar_text=title_bar_name
+    ui.title_bar_text='[B]'+ title_bar_name + '[/B]'
     #ui.include_parent_directory_entry=True
 
     ui.doModal()
