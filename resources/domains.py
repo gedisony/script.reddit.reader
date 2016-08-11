@@ -940,6 +940,7 @@ class ClassGfycat:
             j=json.loads(r.text.replace('\\"', '\''))
     
 
+
 def ret_youtube_thumbnail(videoID, quality0123=1):
     """
     Each YouTube video has 4 generated images. They are predictably formatted as follows:
@@ -1001,20 +1002,13 @@ def make_addon_url_from(media_url, assume_is_video=True):
     modecommand=""   #string used by this plugin to determine which functionality to call
     thumb_url=""     #reddit's thumbnail takes priority. this is for thumbs that can be easily gotten without requesting the hoster site.  
     poster_url=""    #a bigger thumbnail
-    replace_url_for_DirectoryItem=None
     url_for_DirectoryItem = ""
     isFolder=False
     flag_media_not_supported=True
     link_type=""  #tells how the gui will handle this link when clicked. playable or script
     ytdl_match=False
     
-    setInfo_type='video'  #this used to be for the directoryItem but now we're abandoning the idea of using this addon as pictures addon.
-                          #it is now used to determine if media is image and gets the [IMG] tag. we used to use 'playSlideShow' for this purpose but tumblr & instagram can have video, album or images that need to be processed later. 
-                                        #liz.setInfo(type='pictures', infoLabels=il)  pictures or video 
-                                        #if this addon is pictures addon, set to pictures so that image will show up
-                                        #if this addon is video addon, set to video so that description will be shown (but image won't "play" in unix variants)
-                                        #set this only to pictures for imgur images and only if    content_type='image'
-    setProperty_IsPlayable='true'
+    setInfo_type=''   #used to indicate what kind of media the link resolves to.  
 
     #ask youtube-dl which sites it can process. (removed because this part takes too long!)
     #     from youtube_dl.extractor import gen_extractors
@@ -1036,9 +1030,9 @@ def make_addon_url_from(media_url, assume_is_video=True):
     if media_url: pass
     else: return '', '', '', '', '', '', '', '',''
 
+    #if the global ytdl_sites array is empty, fill it
     if ytdl_sites:  pass
     else: load_ytdl_sites()
-    
     #log( "ytdl sites len=" + str( len(ytdl_sites)) )
 
     log( "    Checking link %s" %media_url) 
@@ -1066,6 +1060,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                 #figure out the thumbnail url. usually, reddit returns the thumbnail url but doesn't do so for nsfw
                 #log("determine [%s] thumb from ID[%s] url[%s]" %(hoster,videoID,media_url))
                 if hoster=="YouTube":   #**** this is case sensitive make sure it matches text defined in supported_sites[]
+                    setInfo_type='video'
                     thumb_url=ret_youtube_thumbnail(videoID,0)  
                     #log("[%s] thumb_url from ID[%s] is[%s]" %(hoster,videoID,thumb_url))
                     poster_url=thumb_url
@@ -1081,6 +1076,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     else:
                         pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="Giphy":
+                    setInfo_type='video'
                     #thumb_url="http://thumbs.gfycat.com/%s-poster.jpg"%videoID
                     #poster_url=thumb_url
                     
@@ -1092,47 +1088,47 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     pluginUrl=media_url
     
                 elif hoster=="Vimeo":
+                    setInfo_type='video'
                     #get thumbnail here then parse reply ['thumbnail_medium'] 
                     #http://vimeo.com/api/v2/video/<video-id>.php
                     thumb_url=""
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="DailyMotion":
+                    setInfo_type='video'
                     thumb_url=""
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="LiveLeak":
+                    setInfo_type='video'
                     thumb_url=""
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="Gfycat":
+                    setInfo_type='video'
                     thumb_url="http://thumbs.gfycat.com/%s-poster.jpg"%videoID
                     poster_url=thumb_url
                     pluginUrl= site[4].replace('##vidID##', videoID)
-    
                 elif hoster=="Imgur":
                     c=ClassImgur(media_url)
-                    #thumb_url=c.ret_thumb_url( media_url )
-                    #log('thumb_url '+thumb_url)
                     prepped_media_url, media_type = c.get_playable_url(media_url, assume_is_video)
                     #log( "  Imgur prepped_media_url="+prepped_media_url)
-                    if prepped_media_url=='':     #not imgur
+                    if prepped_media_url=='':     # sometimes imgur post is deleted
                         flag_media_not_supported=True
-                        log('  not imgur') # sometimes imgur post is deleted
                     else:
                         thumb_url=c.ret_thumb_url( prepped_media_url )
                         #log('  thumb_url:'+thumb_url)
                         
                         if media_type=='album':
+                            setInfo_type='album'
                             pluginUrl=media_url
                             modecommand='listImgurAlbum'
                             #link_type='script'  automatic from site07
                         else:
                             poster_url=c.ret_thumb_url( prepped_media_url,'l' )
                             if prepped_media_url.endswith(tuple(image_exts)):
+                                setInfo_type='pictures'
                                 pluginUrl=prepped_media_url
                                 modecommand='playSlideshow'
-                                #isFolder=True
-                                setProperty_IsPlayable='false'
-                                setInfo_type='pictures'
                             else:
+                                setInfo_type='video'   #gif
                                 pluginUrl=prepped_media_url
                                 #link_type ='playable'
     
@@ -1142,14 +1138,13 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     ret_url, media_type =t.get_playable_url(media_url, assume_is_video)
                     log( "   tumblr media type is [" + media_type +"]" )
                     if media_type=='album':
+                        setInfo_type='album'
                         modecommand='listTumblrAlbum'
                         poster_url=t.ret_thumb_url() #if poster+url =="" is taken care of by calling function
                         pluginUrl=media_url  #we don't use the ret_url here. ret_url is a dictlist of images
-                        setProperty_IsPlayable='false'
-                        isFolder=True
                     elif media_type=='photo':
+                        setInfo_type='pictures'
                         modecommand='playSlideshow'
-                        #provide thumbnail
                         poster_url=t.ret_thumb_url() #if poster+url =="" is taken care of by calling function
     
                         if thumb_url=="": 
@@ -1158,22 +1153,21 @@ def make_addon_url_from(media_url, assume_is_video=True):
                                 thumb_url=media_url                        
                             
                         pluginUrl=ret_url
-                        setProperty_IsPlayable='false'
-                        setInfo_type='pictures'
                     elif media_type in ['audio','answer','text']:
+                        #setInfo_type='audio'
                         log("  tumblr media (%s) not supported" %(media_type) )
                         flag_media_not_supported=True   
                     elif media_type=='video':
+                        setInfo_type='video'
                         thumb_url=t.ret_thumb_url()
                         poster_url=thumb_url
                         pluginUrl=ret_url
-                        #replace_url_for_DirectoryItem=ret_url
-                        link_type =='playable' #modecommand='direct'  #no need to call plugin with a 'mode' just have xbmc handle the stream directly
                     else:
                         log("  unknown tumblr media" )
                         flag_media_not_supported=True
     
                 elif hoster == 'Gyazo':
+                                        
                     pluginUrl=media_url
                     g=ClassGyazo(media_url)
                     ret_url, media_type =g.get_playable_url(media_url, assume_is_video)
@@ -1184,23 +1178,18 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         #ret_url=ret_url.replace('gif','mp4')   #replacing 'gif' to 'mp4' plays on browser but not on kodi 
                     
                     if media_type=='photo':
+                        setInfo_type='pictures'
                         modecommand='playSlideshow'
                         thumb_url=ret_url
                         pluginUrl=ret_url
-                        setProperty_IsPlayable='false'
-                        setInfo_type='pictures'
                     elif media_type=='video':
-                        #thumb_url=t.ret_thumb_url()
-                        #poster_url=thumb_url
+                        setInfo_type='video'
                         pluginUrl=ret_url
-                        #replace_url_for_DirectoryItem=ret_url
-                        link_type =='playable' #modecommand='direct'  #no need to call plugin with a 'mode' just have xbmc handle the stream directly
                     else:
                         log("  unknown gyazo media" )
                         flag_media_not_supported=True
                     
                 elif hoster in ["Redd.it", "RedditUploads", "RedditMedia", "image link"]:
-                    
                     media_url=media_url.replace('&amp;','&')  #this replace is only for  RedditUploads but seems harmless for the others...
                     pluginUrl=media_url  
                     
@@ -1214,6 +1203,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     filename,ext=parse_filename_and_ext_from_url(u)
                     #log( "  parsed filename" + filename + " ext---" + ext)
                     if ext=='gif':  
+                        setInfo_type='video'
                         link_type ='playable'  #playable uses pluginUrl directly   
                         #thumb_url=media_url  can't use gifs as thumb
                     else:
@@ -1221,32 +1211,24 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         thumb_url=media_url
                         poster_url=media_url
                         link_type ='script' 
-                        #setInfo_type='pictures'
-                        
                          
                 elif hoster=="Reddit.com":
+                    setInfo_type='comment'
                     pluginUrl=media_url 
                     #modecommand='listLinksInComment'    #
     
                 elif hoster=="Flickr":
                     pluginUrl=media_url 
-                    setProperty_IsPlayable='false'
                     f=ClassFlickr(media_url)
         
-                    if f.is_an_album(media_url): #indicates that this is an album, this is also in the flickr class.                      
+                    if f.is_an_album(media_url): #indicates that this is an album, this is also in the flickr class.
+                        setInfo_type='album'                      
                         modecommand='listFlickrAlbum'
-                        setProperty_IsPlayable='false'
-                        isFolder=True
                     else:
                         setInfo_type='pictures'
-                        
-    
-                    
-                    #modecommand='listLinksInComment'    #
-                    #setProperty_IsPlayable='false'
-                    #isFolder=True                                 #<-- this is important. tells kodi that this will open another listing. fixes WARNING: Attempt to use invalid handle -1
     
                 elif hoster in ["Vine","Vidme"]:
+                    setInfo_type='video'
                     #v=ClassVine(media_url)
                     #replace_url_for_DirectoryItem='https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4'
                     #replace_url_for_DirectoryItem=v.get_playable_url(media_url, True)    #this is for direct link on the directory item  xbmc prefers this mode but we don't use it.
@@ -1257,6 +1239,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     pluginUrl=media_url
                     thumb_url=""
                 elif hoster=="Streamable":
+                    setInfo_type='video'
                     pluginUrl=media_url
                     s=ClassStreamable(media_url)
                     #replace_url_for_DirectoryItem=s.get_playable_url(media_url,True )  6/18/2016  direct linking doesn't work anymore
@@ -1266,21 +1249,20 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     b=ClassBlogspot(media_url)
                     pluginUrl=b.get_playable_url(media_url,assume_is_video )
                     if b.media_is_an_image:
+                        setInfo_type='pictures'   
                         modecommand='playSlideshow'
-                        setProperty_IsPlayable='false'
                         thumb_url=pluginUrl
-                        setInfo_type='pictures'   #to get the [IMG] tag
                     else:
+                        setInfo_type='video'
                         link_type ='playable'
                         #replace_url_for_DirectoryItem=pluginUrl
     
                 elif hoster=="video link":     #a direct link to the video media
+                    setInfo_type='video'
                     pluginUrl=media_url
-                    #replace_url_for_DirectoryItem=media_url
-                    link_type =='playable' #modecommand='direct'
+                    link_type =='playable' 
                     from urlparse import urlparse
                     hoster=urlparse(media_url).netloc
-                    setProperty_IsPlayable='true'
                 elif hoster in ['Instagram']:   
                     #instagram video is handled by ytdl addon but we still figure out image/album 
                     pluginUrl=media_url
@@ -1288,10 +1270,9 @@ def make_addon_url_from(media_url, assume_is_video=True):
                     #poster_url=thumb_url  #ret_Instagram_thumbnail(media_url,'l')  #doesn't display
                     #log("  thumb: "+poster_url)
                     if assume_is_video==False:  #we determined that this is not a video accdg. to reddit json
+                        setInfo_type='pictures'
                         modecommand='playInstagram'
                         #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
-                        setInfo_type='pictures'
-                        setProperty_IsPlayable='false' 
 
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
@@ -1319,18 +1300,17 @@ def make_addon_url_from(media_url, assume_is_video=True):
                 # match = re.compile( "(%s)" %rex  , re.DOTALL).findall( media_url )
                 # if match : log( "matched ytdl:"+ rex);  break
             if ytdl_match:
+                setInfo_type='video'
                 link_type ='script'
                 pluginUrl=media_url
                 modecommand='playYTDLVideo'
             else:
                 flag_media_not_supported=True
             
-
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
             url_for_DirectoryItem = build_script(modecommand, pluginUrl)
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
-    
     
         
     if flag_media_not_supported:  #caller checks for the returned DirectoryItem_url. if it is blank, it is unsupported.

@@ -897,7 +897,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     
 
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
-    liz.setArt({ "clearart": "type_unsupp.png"  }) 
+    clearart=ret_info_type_icon(setInfo_type, mode_type)
+    liz.setArt({ "clearart": clearart  })
     
     if DirectoryItem_url:
 
@@ -915,21 +916,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                 #WINDOW.setProperty(videoID, il_description )
                 pass
 
-
-        #use clearart to indicate if link is video, album or image 
-        liz.setArt({ "clearart":"type_video.png"  })
-        if mode_type in ['listImgurAlbum','listTumblrAlbum', 'listFlickrAlbum']:
-            liz.setArt({ "clearart":"type_album.png"  })    #post_title='[%s] %s' %(t_Album, post_title)
-        if setInfo_type=='pictures'  : 
-            liz.setArt({ "clearart":"type_image.png"  })    #post_title='[%s] %s' %(t_IMG, post_title)
-        if mode_type=='playYTDLVideo': 
-            liz.setArt({ "clearart":"type_ytdl.png"  })    #post_title='[reddit] '+post_title               
-        if mode_type=='listLinksInComment': 
-            liz.setArt({ "clearart":"alienicon.png"  })    #post_title='[reddit] '+post_title  
-
-
-
-        
         
         #art_object
         #liz.setArt({ "poster":poster_url  })
@@ -1009,6 +995,27 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 #     if forceViewMode:
 #         xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 #     xbmcplugin.endOfDirectory(pluginhandle)
+
+def ret_info_type_icon(info_type, modecommand):
+    #returns icon for what kind of media the link is. 
+    #make_addon_url_from() assigns what info_type a url link is.
+    
+    #log( "  info_type=%s mode=%s"  %(info_type, modecommand) )
+    icon="type_unsupp.png"
+    if info_type=='video':
+        icon="type_video.png"
+        if modecommand=='playYTDLVideo':
+             icon="type_ytdl.png"
+
+    elif info_type=='album': 
+        icon="type_album.png"            
+    elif info_type=='pictures':
+        icon="type_image.png"
+    elif info_type=='comment':
+        icon="alienicon.png"
+           
+    return icon
+    
 
 #MODE autoPlay        - name not used
 def autoPlay(url, name, type):
@@ -2349,6 +2356,7 @@ def reddit_request( url ):
     if reddit_refresh_token:
         url=url.replace('www.reddit.com','oauth.reddit.com' )
         url=url.replace( 'np.reddit.com','oauth.reddit.com' )
+        url=url.replace(       'http://',        'https://' )
         log( "  replaced reqst." + url + " + access token=" + reddit_access_token)
         
     req = urllib2.Request(url)
