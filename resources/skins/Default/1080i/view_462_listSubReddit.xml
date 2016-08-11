@@ -412,7 +412,7 @@
 							<top>20</top>
 							<height>40</height>
 							<width>40</width>
-							<texture colordiffuse="FF12A8DA">frame/clock.png</texture>
+							<texture colordiffuse="FF12A8DA">clock.png</texture>
 							<animation effect="fade" time="300">Visible</animation>
 							<animation effect="fade" time="150">Hidden</animation>
 							<aspectratio>keep</aspectratio>

@@ -354,7 +354,7 @@
 							<top>20</top>
 							<height>40</height>
 							<width>40</width>
-							<texture colordiffuse="button_focus">frame/clock.png</texture>
+							<texture colordiffuse="button_focus">clock.png</texture>
 							<animation effect="fade" time="300">Visible</animation>
 							<animation effect="fade" time="150">Hidden</animation>
 							<aspectratio>keep</aspectratio>

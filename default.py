@@ -872,6 +872,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     #liz.setProperty('preview_ar', str(preview_ar) )
     
+    #if title is long, put it in description so that it will trigger displaying under preview image
+    if len(title) > 100:
+        description=title + description
+    
     if preview_ar>1.25 and description:   #this measurement is related to control id 203's height
         log('    ar and description criteris met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
