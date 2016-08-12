@@ -1011,7 +1011,7 @@ def ret_info_type_icon(info_type, modecommand):
         icon="type_album.png"            
     elif info_type=='pictures':
         icon="type_image.png"
-    elif info_type=='comment':
+    elif info_type=='reddit':
         icon="alienicon.png"
            
     return icon
@@ -1361,6 +1361,7 @@ def listLinksInComment(url, name, type):
 
     directory_items=[]
     author=""
+    post_title=''
     ShowOnlyCommentsWithlink=False
 
     if type=='linksOnly':
@@ -1387,112 +1388,126 @@ def listLinksInComment(url, name, type):
     xbmc_busy()
     content = reddit_request(url)        
     if not content: return
-    #content = r'[{"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t3", "data": {"domain": "liveleak.com", "banned_by": null, "media_embed": {"content": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "width": 600, "scrolling": false, "height": 338}, "subreddit": "redditviewertesting", "selftext_html": null, "selftext": "", "likes": true, "suggested_sort": null, "user_reports": [], "secure_media": null, "link_flair_text": null, "id": "4v8hk9", "from_kind": null, "gilded": 0, "archived": false, "clicked": false, "report_reasons": null, "author": "gsonide", "media": {"oembed": {"provider_url": "http://www.liveleak.com/", "description": "When this man was washing his car at 2am with his brother in the car, he was nearly attacked by two armed hijackers. However, the criminals were in for a surprise when he fought both of them off using", "title": "LiveLeak.com - Driver Thwarts Carjacking at Car Wash with Hose", "type": "video", "thumbnail_width": 1024, "height": 338, "width": 600, "html": "&lt;iframe class=\"embedly-embed\" src=\"//cdn.embedly.com/widgets/media.html?src=http%3A%2F%2Fwww.liveleak.com%2Fll_embed%3Ff%3D66d76ef92fcf&amp;url=http%3A%2F%2Fwww.liveleak.com%2Fview%3Fi%3D3b5_1469728820&amp;image=https%3A%2F%2Fcdn.liveleak.com%2F80281E%2Fll_a_u%2Fthumbs%2F2016%2FJul%2F28%2F66d76ef92fcf_sf_7.jpg&amp;key=2aa3c4d5f3de4f5b9120b660ad850dc9&amp;type=text%2Fhtml&amp;schema=liveleak\" width=\"600\" height=\"338\" scrolling=\"no\" frameborder=\"0\" allowfullscreen&gt;&lt;/iframe&gt;", "version": "1.0", "provider_name": "LiveLeak.com", "thumbnail_url": "https://cdn.liveleak.com/80281E/ll_a_u/thumbs/2016/Jul/28/66d76ef92fcf_sf_7.jpg", "thumbnail_height": 432}, "type": "liveleak.com"}, "name": "t3_4v8hk9", "score": 1, "approved_by": null, "over_18": false, "hidden": false, "preview": {"images": [{"source": {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?s=0287a1da16226199bf58c83c9f6856d4", "width": 1024, "height": 432}, "resolutions": [{"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=108&amp;s=eb4c7d7ddcf20711effcb1bf0fd8632a", "width": 108, "height": 45}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=216&amp;s=2e4b6493cfc10bd470e63547fea71f65", "width": 216, "height": 91}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=320&amp;s=d79e371f714793280e0e27f9814a77df", "width": 320, "height": 135}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=640&amp;s=aedbf13b14e888beedc139ee68dbe1d5", "width": 640, "height": 270}, {"url": "https://i.redditmedia.com/VqdviP5_R14GRQ1YSVV4oBaNuX_7lBwrhxlPxRtAGrw.jpg?fit=crop&amp;crop=faces%2Centropy&amp;arh=2&amp;w=960&amp;s=f0e7c05d552988295183acacf70c6c01", "width": 960, "height": 405}], "variants": {}, "id": "2CuxKUAzLYIGh1jNwcszBt0Nanjz6wBZcggqVgo55KU"}]}, "thumbnail": "http://b.thumbs.redditmedia.com/swF6-vbvBHGNTfamh2vScWQ5iLwMXcZbbHEr-vbvEWQ.jpg", "subreddit_id": "t5_3fhy1", "edited": false, "link_flair_css_class": null, "author_flair_css_class": null, "downs": 0, "mod_reports": [], "secure_media_embed": {}, "saved": false, "removal_reason": null, "post_hint": "rich:video", "stickied": false, "from": null, "is_self": false, "from_id": null, "permalink": "/r/redditviewertesting/comments/4v8hk9/liveleakcom_test_1/", "locked": false, "hide_score": false, "created": 1469850739.0, "url": "http://www.liveleak.com/view?i=3b5_1469728820", "author_flair_text": null, "quarantine": false, "title": "liveleak.com test 1", "created_utc": 1469821939.0, "ups": 1, "upvote_ratio": 1.0, "num_comments": 4, "visited": false, "num_reports": null, "distinguished": null}}], "after": null, "before": null}}, {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0lq8", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 1: asdfsdf asdf asdf sadf asdf asdf asdf", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 1: asdfsdf asdf asdf sadf asdf asdf asdf&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0lq8", "score_hidden": false, "stickied": false, "created": 1469970764.0, "author_flair_text": null, "created_utc": 1469941964.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": {"kind": "Listing", "data": {"modhash": "s3jpm9s7w782013e26e5e0682cf496a0741908d7f8c51b8c82", "children": [{"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0mh9", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t1_d5y0ly6", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2-1: gsdfgsdfg  sdfgsdsdf gsdfgkl sdf dsfkglhsdflkj sdlfgjsdl lsdfg sdlfg sdfg sdflg sdfg sdfgljksdhf sdflgksd dflsgj sdflgjk fgsdfg sdfg sdfgsdfgsd mmmmmmm mmmmmmmmmmm mmmmmm asdfh asdlf asld asdf  aslddfkja asdlf asfdjdh asdf j df aasd  aksdjd ks djdhf adfjfaksd mm", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2-1: gsdfgsdfg  sdfgsdfgsdfg sdfg sdfgsdfgsd&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0mh9", "score_hidden": false, "stickied": false, "created": 1469970812.0, "author_flair_text": null, "created_utc": 1469942012.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}, "user_reports": [], "saved": false, "id": "d5y0ly6", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 2: asdfsdf asdfasdfqwerqw asdf sadfqwer qetsdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0ly6", "score_hidden": false, "stickied": false, "created": 1469970779.0, "author_flair_text": null, "created_utc": 1469941979.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}, {"kind": "t1", "data": {"subreddit_id": "t5_3fhy1", "banned_by": null, "removal_reason": null, "link_id": "t3_4v8hk9", "likes": true, "replies": "", "user_reports": [], "saved": false, "id": "d5y0m5f", "gilded": 0, "archived": false, "report_reasons": null, "author": "gsonide", "parent_id": "t3_4v8hk9", "score": 1, "approved_by": null, "controversiality": 0, "body": "comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg", "edited": false, "author_flair_css_class": null, "downs": 0, "body_html": "&lt;div class=\"md\"&gt;&lt;p&gt;comment 3: adfasd asd asdf qwer qwe dsflgkj sdfg&lt;/p&gt;\n&lt;/div&gt;", "subreddit": "redditviewertesting", "name": "t1_d5y0m5f", "score_hidden": false, "stickied": false, "created": 1469970792.0, "author_flair_text": null, "created_utc": 1469941992.0, "distinguished": null, "mod_reports": [], "num_reports": null, "ups": 1}}], "after": null, "before": null}}]'
+    #content = r''
     
     #log(content)
     #content = json.loads(content.replace('\\"', '\''))  #some error here ?      TypeError: 'NoneType' object is not callable
+    try:
+        xbmc_busy()
+        content = json.loads(content)
+        
+        del harvest[:]
+        #harvest links in the post text (just 1) 
+        r_linkHunter(content[0]['data']['children'])
+        
+        try:submitter=content[0]['data']['children'][0]['data']['author']
+        except: submitter=''
+        
+        
+        #the post title is provided in json, we'll just use that instead of messages from addLink()
+        try:post_title=content[0]['data']['children'][0]['data']['title']
+        except:post_title=''
+        #for i, h in enumerate(harvest):
+        #    log("aaaaa first harvest "+h[2])
     
-    content = json.loads(content)
+        #harvest links in the post itself    
+        r_linkHunter(content[1]['data']['children'])
     
-    del harvest[:]
-    #harvest links in the post text (just 1) 
-    r_linkHunter(content[0]['data']['children'])
-    
-    #the post title is provided in json, we'll just use that instead of messages from addLink()
-    try:post_title=content[0]['data']['children'][0]['data']['title']
-    except:post_title=''
-    #for i, h in enumerate(harvest):
-    #    log("aaaaa first harvest "+h[2])
-
-    #harvest links in the post itself    
-    r_linkHunter(content[1]['data']['children'])
-
-    comment_score=0
-    for i, h in enumerate(harvest):
-        #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
-        comment_score=h[0]
-        #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
+        comment_score=0
+        for i, h in enumerate(harvest):
+            #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
+            comment_score=h[0]
+            #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
+            
+            if comment_score < int_CommentTreshold:
+                continue
+            
+            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2])
         
-        if comment_score < int_CommentTreshold:
-            continue
-        
-        hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2])
-    
-        #mode_type #usually 'playVideo'
-        kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.  
-        d=h[5]   #depth of the comment
-        
-        tab=" "*d if d>0 else "-"
-        
-        author=h[7]
-        
-        if using_custom_gui: #custom gui uses infoLabel->votes to display the comment score, we don't need to prepend it on the title
+            #mode_type #usually 'playVideo'
+            kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.  
+            d=h[5]   #depth of the comment
+            
+            tab=" "*d if d>0 else "-"
+            
+            author=h[7]
+            if author==submitter:#add a submitter tag
+                author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author 
+            else:
+                author="[COLOR cadetblue]%s[/COLOR]" %author
+            
             if kind=='t1':
-                list_title=r"%s" %( tab )
+                t_prepend=r"%s" %( tab )
             elif kind=='t3':
-                list_title=r"[I]Title [/I] %s" %( tab )
-            author=tab + " " +author
-        else:
-            if kind=='t1':
-                list_title=r"[I]%2d pts.[/I] %s" %( h[0], tab )
-            elif kind=='t3':
-                list_title=r"[I]Title [/I] %s" %( tab )
+                t_prepend=r"[B]Post text:[/B]"
+    
             
-        desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
-
-        #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
-        plot=h[3].replace('](', '] (')
-        plot= markdown_to_bbcode(plot)
-        plot=unescape(plot)  #convert html entities e.g.:(&#39;)
-        
-        if DirectoryItem_url:
-            #(score, link_desc, link_http, post_text, post_html, d, )
-            #list_item_name=str(h[0]).zfill(3)
-            
-            #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +h[2] + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
-            #log( h[4] + ' -- videoID['+videoID+']' )
-            #log("sss:"+ supportedPluginUrl )
-            
-            #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
-            #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
-            
-            plot= "[COLOR greenyellow][%s] %s"%(hoster, plot )  + "[/COLOR]"
-
-            liz=xbmcgui.ListItem(label=plot , #not used in gui
+                
+            desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+    
+            #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
+            plot=h[3].replace('](', '] (')
+            plot= markdown_to_bbcode(plot)
+            plot=unescape(plot)  #convert html entities e.g.:(&#39;)
+    
+            liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 , 
                                  label2="",
-                                 iconImage="DefaultVideo.png", 
-                                 thumbnailImage=thumb_url,
-                                 path=DirectoryItem_url)
-            if poster_url:
-                thumb_url=poster_url
-                
-            if thumb_url: pass
-            else: thumb_url="DefaultVideo.png"
-            
+                                 iconImage="", 
+                                 thumbnailImage="")
+    
             liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
-            liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
-
-
-            liz.setProperty('item_type',property_link_type)   #script or playable
-            liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
-            #liz.setPath(DirectoryItem_url) 
-
-            directory_items.append( (DirectoryItem_url, liz, isFolder,) )
-            #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
-        else:
-            #this section are for comments that have no links or unsupported links
-            if not ShowOnlyCommentsWithlink:
-                liz=xbmcgui.ListItem(label=list_title + desc100 , 
-                                     label2="",
-                                     iconImage="", 
-                                     thumbnailImage="")
-                liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
-                liz.setProperty('IsPlayable', 'false')
-                
-                directory_items.append( ("", liz, False,) )
-                #xbmcplugin.addDirectoryItem(handle=pluginhandle,url="",listitem=liz,isFolder=False)
             
-            #END section are for comments that have no links or unsupported links
+            if hoster:
+                #use clearart to indicate if link is video, album or image. here, we default to unsupported.
+                clearart=ret_info_type_icon(setInfo_type, mode_type)
+                liz.setArt({ "clearart": clearart  })
+            
+            #if DirectoryItem_url:
+                
+                #(score, link_desc, link_http, post_text, post_html, d, )
+                #list_item_name=str(h[0]).zfill(3)
+                
+                #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +h[2] + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
+                #log( h[4] + ' -- videoID['+videoID+']' )
+                #log("sss:"+ supportedPluginUrl )
+                
+                #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
+                #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
+    
+                #turn link green  
+                if DirectoryItem_url:          
+                    plot= "[COLOR greenyellow][%s] %s"%(hoster, plot )  + "[/COLOR]"
+                    liz.setLabel(tab+plot)
+        
+                    if poster_url:
+                        thumb_url=poster_url
+                        
+                    #if thumb_url: pass
+                    #else: thumb_url="DefaultVideo.png"
+        
+                    liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
+        
+                    liz.setProperty('item_type',property_link_type)   #script or playable
+                    liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
+                    #liz.setPath(DirectoryItem_url) 
+        
+                    directory_items.append( (DirectoryItem_url, liz, isFolder,) )
+                #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
+            else:
+                #this section are for comments that have no links or unsupported links
+                if not ShowOnlyCommentsWithlink:
+                    #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
+                    liz.setProperty('IsPlayable', 'false')
+                    
+                    directory_items.append( ("", liz, False,) )
+                    #xbmcplugin.addDirectoryItem(handle=pluginhandle,url="",listitem=liz,isFolder=False)
+                
+                #END section are for comments that have no links or unsupported links
+    
+    except Exception as e:
+        log('  ' + str(e) )
+        #xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )        
+        
     xbmc_busy(False)
     #for di in directory_items:
     #    log( str(di) )

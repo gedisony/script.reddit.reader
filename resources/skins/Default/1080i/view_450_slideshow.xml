@@ -68,7 +68,7 @@
 				
 				<control type="image" id="201">
 					<visible>![Control.IsVisible(202)|Control.IsVisible(203)|Control.IsVisible(204)|Control.IsVisible(205)]</visible>
-					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
+					<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
 					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
 					<!-- fadetime>200</fadetime-->
 				</control>
