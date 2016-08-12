@@ -1384,7 +1384,7 @@ def listLinksInComment(url, name, type):
     #use safe='' argument in quoteplus to encode only the weird chars part 
     
     url=  urllib.quote_plus(url,safe=':/') 
-     
+    url+= '.json'
     xbmc_busy()
     content = reddit_request(url)        
     if not content: return
