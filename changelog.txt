@@ -8,5 +8,12 @@
  - no context menus
  - add to favorites not yet supported
  - list only links in comments not yet supported
-  
+ 0.3.0
+ - add zoom and scroll down if image is very tall
+ - not open comments screen if no comments on link
+ - use thumbnail as loading image when viewing imgur album
+ - selftext posts show on preview 
+ - android compatibility fix 
+ - follow subreddit links in comment
+ - button to arrange links in comments at top of list
  
