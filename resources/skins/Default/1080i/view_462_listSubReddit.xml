@@ -13,31 +13,43 @@
 			<include>OpenClose_Right</include>
 			<include>Visible_Right</include>
 
-				<control type="group"><description>this is where the post description is shown.</description>
-					<visible>true</visible>
-					
-					<!-- control type="image">
-						<left>780</left>
-						<top>102</top>
-						<width>1270</width>
-						<height>870</height>
-						<visible>false</visible>
-						<texture border="22">dialog-bg.png</texture>
-					</control-->
-					
-					<control type="textbox" id="65591"><description>this big textbox is for text posts. visible when no banner art</description>
-						<left>982</left>
+				<control type="group"><description>this big textbox is for text posts. visible when no banner and thumb art</description>
+					<visible>isEmpty(Container(55).ListItem.Art(thumb)) + isEmpty(Container(55).ListItem.Art(banner)) </visible>
+					<control type="textbox" id="65591">
+						<left>992</left>
 						<top>98</top>
 						<width>910</width>
 						<height>952</height>
 						<font>font14</font>
 						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-						<visible>isEmpty(Container(55).ListItem.Art(banner))</visible>
+						
 						<label>$INFO[Container(55).ListItem.Plot]</label>					
 					</control>
-
-					
 				</control>
+				    
+				<control type="group" id="204"><description>when no banner art</description>
+					<visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<control type="image">
+						<left>1150</left>
+						<top>118</top>
+						<width>500</width>
+						<height>500</height>
+						<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
+						<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
+					</control>
+					<control type="textbox">
+						<left>992</left>
+						<top>618</top>
+						<width>910</width>
+						<height>432</height>
+						<font>font14</font>
+						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
+						<label>$INFO[Container(55).ListItem.Plot]</label>					
+					</control>
+				</control>
+				    
 				    
 				<control type="image" id="200">
 					<!-- centerright>520</centerright   did not work on android -->
@@ -46,11 +58,12 @@
 					<top>350</top>
 					<width>380</width>
 					<height>380</height>
-					<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
+					<visible>!Control.IsVisible(204)</visible>
 					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
 					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
+				
 
 				<control type="image" id="201">
 					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top

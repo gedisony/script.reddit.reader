@@ -701,12 +701,22 @@ def listSubReddit(url, title_bar_name, type):
                 except:
                     thumb_w=0
                     thumb_h=0
+
                 pass
             except Exception as e:
                 #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
                 thumb_w=0
                 thumb_h=0
                 preview="" #a blank preview image will be replaced with poster_url from make_addon_url_from() for domains that support it
+
+            #preview images are 'keep' stretched to fit inside 1080x1080. 
+            #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image  
+            if thumb_w < 280:
+                #log('*******preview is small ')
+                thumb=preview
+                thumb_w=0
+                thumb_h=0
+                preview=""
 
             try:
                 over_18 = entry['data']['over_18']
@@ -844,8 +854,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     log( '    reddit thumb[%s] reddit preview[%s] ar=%f new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, preview_ar, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
         iconimage=thumb_url
-    if poster_url=="":
-        poster_url=iconimage
+    
+    #if poster_url=="":
+    #    poster_url=iconimage
     
     #log( "  PLOT:" +il_description )
     liz=xbmcgui.ListItem(label=post_title
@@ -854,11 +865,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                          ,thumbnailImage=iconimage
                          ,path=DirectoryItem_url) 
 
+    #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
     if previewimage=="":
         #log("putting preview image")
-        liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
+        liz.setArt({"thumb": iconimage, "banner":poster_url,  })
     else:
-        liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":previewimage, "fanart":poster_url, "landscape":poster_url   })
+        liz.setArt({"thumb": iconimage, "banner":previewimage,  })
     
 
     #----- assign actions
