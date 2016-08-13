@@ -1124,7 +1124,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         flag_media_not_supported=True
                     else:
                         thumb_url=c.ret_thumb_url( prepped_media_url )
-                        log('  thumb_url:'+thumb_url)
+                        log('      thumb_url:'+thumb_url)
                         
                         if media_type=='album':
                             setInfo_type='album'
@@ -1342,7 +1342,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
         log("    unsupported [%s]" %media_url)
         url_for_DirectoryItem = "" 
      
-    log( "    %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
+    #log( "      %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
     return hoster, url_for_DirectoryItem, pluginUrl, modecommand, thumb_url, poster_url, isFolder, setInfo_type,link_type
 
 

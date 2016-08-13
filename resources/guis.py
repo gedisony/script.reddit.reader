@@ -83,8 +83,6 @@ class cGUI(xbmcgui.WindowXML):
             #listitem.setPath(url)
             self.gui_listbox.addItem(listitem)
         
-        
-        
         self.gui_listbox.addItems(self.listing)
         self.setFocus(self.gui_listbox)
         
@@ -195,7 +193,7 @@ class indexGui(cGUI):
     #this is the gui that handles the initial screen. 
     
     def onInit(self):
-        
+        #cGui.onInit()
         self.gui_listbox = self.getControl(self.main_control_id)
         #important to reset the listbox. when control comes back to this GUI(after calling another gui). 
         #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
@@ -207,9 +205,9 @@ class indexGui(cGUI):
             
         #load subreddit file directly here instead of the function that calls the gui.
         #   that way, this gui can refresh the list after the subreddit file modified
-            self.gui_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
+        self.gui_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
             
-        self.setFocus(self.gui_listbox)
+        #self.setFocus(self.gui_listbox)
         
         if self.gui_listbox_SelectedPosition > 0:
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
@@ -395,12 +393,22 @@ class commentsGUI(cGUI):
     links_top_selected_position=0
     listbox_selected_position=0
 
-    def addtl_init(self):
-        #NOTE: i cannot get the links button to hide. so instead, I set a property when calling this class and have the button xml check for this property.
-        #self.btn_links = self.getControl(self.BTN_LINKS)
-        #self.btn_links.setVisible(True)
-        pass
-
+    #NOTE: i cannot get the links button to hide. so instead, I set a property when calling this class and have the button xml check for this property.
+    #self.btn_links = self.getControl(self.BTN_LINKS)
+    #self.btn_links.setVisible(True)
+    def onInit(self):
+        cGUI.onInit(self)
+        
+        #after playing a video, onInit is called again. we return the list to the state where it was at.
+        if self.links_on_top:
+            self.sort_links_top()
+            if self.gui_listbox_SelectedPosition > 0:
+                self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
+            self.setFocus(self.gui_listbox)
+        #else:
+        #    self.sort_links_normal()
+        
+        
     
     def onAction(self, action):
         #self.btn_links.setVisible(True)
@@ -426,28 +434,36 @@ class commentsGUI(cGUI):
         cGUI.onClick(self, controlID)
 
         if controlID == self.BTN_LINKS:
-            if self.links_on_top:
-                self.links_top_selected_position=self.gui_listbox.getSelectedPosition()
-                self.gui_listbox.reset()
-                self.gui_listbox.addItems( self.listing  )
-                self.gui_listbox.selectItem( self.listbox_selected_position )
-                self.links_on_top=False
-                
-            else:
-                self.listbox_selected_position=self.gui_listbox.getSelectedPosition()
-                def getKey(li):
-                    if li.getProperty('onClick_action'): return 1
-                    else:                                return 2
-    
-                self.gui_listbox.reset()
-                self.gui_listbox.addItems( sorted( self.listing, key=getKey)  )
-                self.gui_listbox.selectItem( self.links_top_selected_position )
-                self.links_on_top=True
-
+            self.toggle_links_sorting()
+            #set focus back to list so that user don't have to go back
             self.setFocusId(self.main_control_id)    
             
+    def getKey(self, li):
+        #for sorting the comments list with links on top
+        if li.getProperty('onClick_action'): return 1
+        else:                                return 2
+
+    def toggle_links_sorting(self):
+        if self.links_on_top:
+            self.sort_links_normal()
+        else:
+            self.sort_links_top()
+        
             
+    def sort_links_top(self):
+        self.listbox_selected_position=self.gui_listbox.getSelectedPosition()
+
+        self.gui_listbox.reset()
+        self.gui_listbox.addItems( sorted( self.listing, key=self.getKey)  )
+        self.gui_listbox.selectItem( self.links_top_selected_position )
+        self.links_on_top=True
     
+    def sort_links_normal(self):
+        self.links_top_selected_position=self.gui_listbox.getSelectedPosition()
+        self.gui_listbox.reset()
+        self.gui_listbox.addItems( self.listing  )
+        self.gui_listbox.selectItem( self.listbox_selected_position )
+        self.links_on_top=False
 
 class qGUI(xbmcgui.WindowXMLDialog):
     #called by playSlideshow

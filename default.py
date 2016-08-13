@@ -471,6 +471,7 @@ def create_default_subreddits():
     fh.write('Documentaries+ArtisanVideos+lectures+LearnUselessTalents\n')
     fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
     #fh.write('SlowMotion+timelapse+PerfectTiming\n')
+    fh.write('[Frontpage]\n')
     fh.write('all\n')
     fh.write('aww+funny+Nickelodeons\n')
     fh.write('music+listentothis+musicvideos\n')
@@ -851,7 +852,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-    log( '    reddit thumb[%s] reddit preview[%s] ar=%f new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, preview_ar, thumb_url, poster_url, link_url ))
+    log( '      reddit thumb[%s] reddit preview[%s] ar=%f %dx%d new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, preview_ar, preview_w,preview_h, thumb_url, poster_url, link_url ))
     if iconimage in ["","nsfw", "default"]:
         iconimage=thumb_url
     
@@ -2179,7 +2180,7 @@ def zoom_n_slide(image, width, height):
         ctl3=xbmcgui.ControlImage(0, 0, 1920, 1080, image, aspectRatio=2)
         newWindow.addControl(ctl3)
 
-        scroll_time=int(height)*(int(height)/int(width))
+        scroll_time=int(height)*(int(height)/int(width))*2
         
         zoom_effect="effect=zoom loop=true delay=1000 center=960 end=%d time=1000" %zoom
         fade_effect="condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
