@@ -36,7 +36,7 @@
 				<control type="image" id="204">
 					<visible>Control.HasFocus(104)</visible>
 					<aspectratio aligny="bottom">scale</aspectratio>
-					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
+					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 					<animation effect="slide" start="0,50" time="50" tween="sine" easing="inout" >Visible</animation>
 				</control>
 
@@ -44,7 +44,7 @@
 					<description>middle zoom, activates only once. because of zoom anmimation. this is done because i cannot make condition=Control.Previous(101) work. conditional probably does not exist</description>
 					<visible>Control.HasFocus(103)</visible>
 					<aspectratio aligny="center">scale</aspectratio>
-					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
+					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 					<animation effect="zoom" start="80" center="auto" time="50" tween="sine" easing="inout" >Visible</animation>
 					<!-- animation type="Visible" reversible="true">
 						<effect type="zoom" end="150" center=0 time="1800" />
@@ -56,20 +56,20 @@
 					<description>middle zoom</description>
 					<visible>Control.HasFocus(105)</visible>
 					<aspectratio aligny="center">scale</aspectratio>
-					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
+					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 				</control>
 				
 				<control type="image" id="202">
 					<visible>Control.HasFocus(102)</visible>
 					<aspectratio aligny="top" >scale</aspectratio>
-					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
+					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 					<animation effect="slide" start="0,-50" time="50" tween="sine" easing="inout" >Visible</animation>
 				</control>
 				
 				<control type="image" id="201">
 					<visible>![Control.IsVisible(202)|Control.IsVisible(203)|Control.IsVisible(204)|Control.IsVisible(205)]</visible>
 					<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
-					<texture>$INFO[Container(53).ListItem.Art(landscape)]</texture>
+					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 					<!-- fadetime>200</fadetime-->
 				</control>
 			</control>

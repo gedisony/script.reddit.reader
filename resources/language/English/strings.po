@@ -37,6 +37,11 @@ msgctxt "#32008"
 msgid "Show %s links"
 msgstr ""
 
+#failed to retrieve link for xbmc
+msgctxt "#32009"
+msgid "Cannot retrieve URL"
+msgstr ""
+
 msgctxt "#30012"
 msgid "Randomly play all"
 msgstr ""

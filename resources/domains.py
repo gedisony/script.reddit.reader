@@ -11,7 +11,7 @@ import json
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, addonID, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import log
+from default import log, dump
 
 from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file, ytdl_psites_file, ytdl_sites_file
 
@@ -61,7 +61,7 @@ site15 = [True              , "listLinksInComment" ,'Reddit.com'   ,'reddit.com'
 site155= [True              , "listSubReddit"      ,'Reddit.com'   ,"^\/r\/(.+)(?:\/|$)"             ,"##vidID##"                                                             , "script"        ]
 site16 = [True              , "done in code"       ,'Tumblr'       ,'tumblr.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
 site17 = [True              , "done in code"       ,'Gyazo'        ,'gyazo.com'                      ,"(not used)##vidID##"                                                   , "script"        ]
-site18 = [True              , "playFlickr"         ,'Flickr'       ,'flickr.com'                     ,"(not used)##vidID##"                                                   , "script"        ]
+site18 = [True              , "playFlickr"         ,'Flickr'       ,'(flickr\.com|flic\.kr)'         ,"(not used)##vidID##"                                                   , "script"        ]
 site28 = [True              , "direct"             ,'video link'   ,"\.(mp4|webm|gifv)(?:\?|$)"      ,"(not used) ##vidID##"                                                   , ""        ]
 site29 = [True              , "playSlideshow"      ,'image link'   ,"\.(jpg|jpeg|png|gif)(?:\?|$)"   ,"(not used) ##vidID##"                                                   , "script"        ]
 
@@ -770,53 +770,102 @@ class ClassFlickr:
     thumb_url=""
     poster_url=""
     
+    TYPE_ALBUM='album'
+    TYPE_PHOTO='photo'
+    TYPE_GROUP='group'
+    TYPE_VIDEO='video'
+    
     def ret_thumb_url(self, image_url="", thumbnail_type='b'):
         #call this after calling get_playable_url
         return self.thumb_url
+
+
+
+    
+    def get_photo_id_flic_kr(self, url):
+        #Flickr provides a URL shortening service for uploaded photos (and videos). Short URLs can be useful in a variety of contexts including: email, on business cards, IM, text messages, or short status updates.
+        #Every photo on Flickr has a mathematically calculated short URL of the form:
+        #   https://flic.kr/p/{base58-photo-id}
+        #Base58 is used to compress the photo-ids using a mix of letters and numbers. You can find more info on base58, and code samples in the Flickr API Group.
+        
+        #after some testing, found that the flickr api accepts the undecoded photo id.
+        #after some more testing, undecoded photo id for photos only. for photosets(album), it has to be decoded
+        
+        #log( '    getting b58e_id:' + url )
+        
+        #flic\.kr\/(?:.+\/)?(.+)|flickr\.com\/photos\/|flic\.kr\/(?:.+\/)?(\d+)
+        #match = re.findall('flic\.kr\/(?:.+\/)?(.+)',url)
+        #photo_id=match[0]
+        
+        from base58 import decode        
+        b58e_id=url.split('/')[-1] #https://flic.kr/p/KSt6Hh   https://flic.kr/s/aHskGjN56V
+        
+        a = str( decode(b58e_id) )
+        
+        if self.media_type==self.TYPE_GROUP:
+            # https://flic.kr/g/stemc  ==>  https://www.flickr.com/groups/2995418@N23/
+            #log( " group id was %s" %a )
+            #log( " group id now %s" %( a[0:-2] + '@N' + a[-2:] ) )  #[ begin : end : step ]
+            a =( a[0:-2] + '@N' + a[-2:] )
+        
+        #log( '    decoding' + b58e_id + ' => ' + str(a) )      
+        return a
     
     def get_playable_url(self, media_url, is_probably_a_video=True ):
-        media_type="photo"
+        self.media_type="photo"
         ret_url=""
+        photo_id=0
         
-        #first, determine if the media_url leads to a media(.jpg .png .gif)
+        #first, determine if the media_url leads to a playable url(.jpg .png .gif)
         #this is not likely coz flickr does not like it and i've not seen posts that do it
         filename,ext=parse_filename_and_ext_from_url(media_url)
         if ext in image_exts:
-            return media_url,"photo"
+            return media_url,self.TYPE_PHOTO
         elif ext in ["mp4","gif"]:
-            return media_url,"video"
+            return media_url,self.TYPE_VIDEO
 
+        #figure out the media type; this determines how we extract the ID and api call to use
+        self.media_type=self.flickr_link_type(media_url)
+        #log( '  media_type='+ self.media_type + "  from:" + media_url)
 
-        #get the photoID
-        match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)',media_url)
+        if 'flic.kr' in media_url:
+            photo_id=self.get_photo_id_flic_kr(media_url)
+        else:
+            #get the photoID 
+            match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)',media_url)
+            photo_id=match[0]
 
-        photo_id=match[0]
-        #log( " *****" + str(match) )
-
-        if self.is_an_album(media_url):  
-            media_type="album"
+        
+        if self.media_type==self.TYPE_ALBUM:  
+            log('  is a flickr album (photoset)')
             api_method='flickr.photosets.getPhotos'
             api_arg='photoset_id=%s' %photo_id
-        else:
-            media_type="photo"
+        elif self.media_type==self.TYPE_PHOTO:
             api_method='flickr.photos.getSizes'
             api_arg='photo_id=%s' %photo_id
+        elif self.media_type==self.TYPE_GROUP:
+            api_method='flickr.groups.pools.getPhotos'
+            api_arg='group_id=%s' %photo_id
             
         api_url='https://api.flickr.com/services/rest/?format=json&nojsoncallback=1&api_key=%s&method=%s&%s' %(self.api_key,api_method,api_arg )
 
-        log('  flickr apiurl:'+api_url)
+        #log('  flickr apiurl:'+api_url)
         r = requests.get(api_url)
         #log(r.text)
         if r.status_code == 200:   #http status code 200 is success
             j=json.loads(r.text.replace('\\"', '\''))
             
             status=j.get('stat')
-            message=j.get('message')
             if status=='fail':
+                message=j.get('message')
                 raise Exception(message)
             
-            if media_type=='album':   #for  #photosets, galleries, pools? panda?
-                photos=j['photoset']['photo']
+            if self.media_type in [self.TYPE_ALBUM, self.TYPE_GROUP ]:   #for  #photosets, galleries, pools? panda?
+                if self.media_type==self.TYPE_ALBUM:
+                    photos=j['photoset']['photo']
+                    owner=j.get('photoset').get('ownername')
+                elif self.media_type==self.TYPE_GROUP:
+                    photos=j['photos']['photo']
                 '''
                 You can construct the source URL to a photo once you know its ID, server ID, farm ID and secret, as returned by many API methods.
                 The URL takes the following format:
@@ -839,11 +888,17 @@ class ClassFlickr:
                 '''
                 dictList=[]
                 for i, p in enumerate( photos ):
+                    if self.media_type==self.TYPE_GROUP:
+                        owner=p.get('ownername')
+                    
+                    
                     photo_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'b' )
                     thumb_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'n' )
                     #log(" %d  %s" %(i,photo_url ))
+                    #log(" %d  %s" %(i,thumb_url ))
 
-                    infoLabels={ "Title": p['title'], "plot": p['title'], "PictureDesc": '', "exif:exifcomment": '' }
+                    infoLabels={ "Title": p['title'], "plot": 'by %s'%(owner), "director": p.get('ownername'), "exif:exifcomment": '',  }
+                    
                     e=[ p['title'] if p['title'] else str(i+1)             #'li_label'           #  the text that will show for the list  (list label will be the caption or number if caption is blank)
                        ,p['title']                                         #'li_label2'          #  
                        ,""                                                 #'li_iconImage'       #
@@ -857,31 +912,71 @@ class ClassFlickr:
                           ]
                  
                     dictList.append(dict(zip(keys, e)))
-                    
-                return dictList, 'album'
                 
-            elif media_type=='photo':
+                return dictList, self.media_type
+                
+            elif self.media_type==self.TYPE_PHOTO:
             
                 sizes=j['sizes']
                 #log('    sizes' + str(sizes))
                 #Square, Large Square, Thumbnail, Small, Small 320, Medium, Medium 640, Medium 800, Large, Large 1600, Large 2048, Original
                 for s in sizes['size']:
                     #log('    images size %s url=%s' %( s['label'], s['source']  ) )
-                    if s['label'] == 'Medium 800':    
-                        poster_url=s['source']
-                    if s['label'] == 'Large':    #case sensitive
+                    if s['label'] == 'Medium 640':    
+                        self.poster_url=s['source']
+
+                    #if s['label'] == 'Medium 800': 
+                    #    self.poster_url=s['source']
+
+                    if s['label'] == 'Thumbnail':    
+                        self.thumb_url=s['source']
+
+                    if s['label'] == 'Small':    
+                        self.thumb_url=s['source']
+
+                    #sometimes large is not available we just brute force the list starting from lowest that we'll take
+                    if s['label'] == 'Medium':    
                         ret_url=s['source']
                         media_type=s['media']
-                
+
+                    if s['label'] == 'Medium 640':    
+                        ret_url=s['source']
+                        media_type=s['media']
+
+                    if s['label'] == 'Medium 800':    
+                        ret_url=s['source']
+                        media_type=s['media']
+
+                    if s['label'] == 'Large':    
+                        ret_url=s['source']
+                        media_type=s['media']
+
+                    if s['label'] == 'Large 1600':    
+                        ret_url=s['source']
+                        media_type=s['media']
                     
-        return ret_url, media_type
+        return ret_url, self.media_type
 
     def is_an_album(self,media_url):
-        a=['/sets/','/albums/']
+        #returns true if link is a bunch of images
+        a=['/sets/','/albums/','/s/','/groups/','/g/']
         if any(x in media_url for x in a): 
             return True
         return False
 
+    def flickr_link_type(self,media_url):
+        a=['/sets/','/albums/','/s/']
+        g=['/groups/','/g/']
+        if any(x in media_url for x in a): 
+            return self.TYPE_ALBUM
+
+        if any(x in media_url for x in g): 
+            return self.TYPE_GROUP
+        
+        return self.TYPE_PHOTO
+        
+        
+        
 class ClassGifsCom:
     #also vidmero.com
     def __init__(self, media_url=""):

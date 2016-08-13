@@ -1704,7 +1704,8 @@ def display_album_from(dictlist, album_name):
         
         
         liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
-        liz.setArt({"thumb": ti, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":d['DirectoryItem_url']   })             
+        #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })             
+        liz.setArt({"thumb": ti, "banner":d['DirectoryItem_url'] })
 
 
         directory_items.append( (DirectoryItem_url, liz, isFolder,) )
@@ -1823,10 +1824,14 @@ def playFlickr(flickr_url, name, type):
 
     try:
         media_url, media_type =f.get_playable_url(flickr_url, False)
-        if media_type=='album':
+        #log('  flickr class returned %s %s' %(media_type, media_url))
+        if media_type in ['album','group']:
             display_album_from( media_url, name )
         else:
-            playSlideshow(media_url,"Flickr","")
+            if media_url:
+                playSlideshow(media_url,"Flickr", f.thumb_url )
+            else:
+                raise Exception(translation(32009))
             #log("  listTumblrAlbum can't process " + media_type)    
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )
@@ -2068,19 +2073,21 @@ def pretty_datediff(dt1, dt2):
 
 
 
-def playSlideshow(url, name, type):
+def playSlideshow(image_url, name, preview_url):
     #url='d:\\aa\\lego_fusion_beach1.jpg'
 
     from resources.guis import cGUI
+
+    log('  playSlideshow %s %s %s' %( image_url, name, preview_url))
     
     #msg=WINDOW.getProperty(url)
     #WINDOW.clearProperty( url )
     #log( '   msg=' + msg )
     msg=""
     li=[]
-    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=url)
+    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=image_url)
     liz.setInfo( type='video', infoLabels={"plot": msg, } ) 
-    liz.setArt({"thumb": url, "poster":url, "banner":url, "fanart":url, "landscape":url  })             
+    liz.setArt({"thumb": preview_url, "banner":image_url })             
 
     li.append(liz)
     ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)   
@@ -2753,6 +2760,11 @@ def downloadurl( source_url, destination=""):
 
 def log(message, level=xbmc.LOGNOTICE):
     xbmc.log("reddit_viewer:"+message, level=level)
+
+def dump(obj):
+    for attr in dir(obj):
+        if hasattr( obj, attr ):
+            log( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
 
 if __name__ == '__main__':
