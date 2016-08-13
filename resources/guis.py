@@ -92,6 +92,7 @@ class cGUI(xbmcgui.WindowXML):
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
         
         pass
+    
 
     def onClick(self, controlID):
         
@@ -247,13 +248,6 @@ class indexGui(cGUI):
                 right_button_action=item.getProperty('right_button_action')    
                 
                 log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
-            
-                #xbmc.executebuiltin( right_button_action  )
-                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
-                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
-                
-                #ctl2=self.getControl(201)
-                #ctl2.setImage('d:\\test.png')
     
     
 class listSubRedditGUI(cGUI):
@@ -265,41 +259,8 @@ class listSubRedditGUI(cGUI):
     BTN_ZOOM_N_SLIDE=6053
     
     def onInit(self):
+        cGUI.onInit(self)
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-        self.gui_listbox = self.getControl(self.main_control_id)
-        #important to reset the listbox. when control comes back to this GUI(after calling another gui). 
-        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
-        self.gui_listbox.reset()
-        
-        if self.title_bar_text:
-            self.ctl_title_bar = self.getControl(1)
-            self.ctl_title_bar.setLabel(self.title_bar_text)
-            
-        # will not work. 'xbmcgui.ControlTextBox' does not have methods to set font size
-        # it might be possible to make the textbox control in code and addcontrol() it. but then you would have to figure out how to get text to change when listbox selection changes.   
-        #if self.plot_font:
-        #    self.ctl_plot_textbox = self.getControl(self.CONTROL_ID_FOR_PLOT_TEXTBOX)
-        #    self.ctl_plot_textbox.setLabel('Status', 'font14', '0xFFFFFFFF', '0xFFFF3300', '0xFF000000')
-            
-        #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
-        #url="http://i.imgur.com/ARdeL4F.mp4"
-        if self.include_parent_directory_entry:
-            back_image='DefaultFolderBackSquare.png'
-            listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
-            #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
-            listitem.setArt({"thumb": back_image }) #, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
-            #listitem.setPath(url)
-            self.gui_listbox.addItem(listitem)
-        
-        
-        
-        self.gui_listbox.addItems(self.listing)
-        self.setFocus(self.gui_listbox)
-        
-        if self.gui_listbox_SelectedPosition > 0:
-            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
-
-
 
         self.subreddits_listbox = self.getControl(self.SUBREDDITS_LIST)
         self.subreddits_listbox.reset()
@@ -429,13 +390,63 @@ class listSubRedditGUI(cGUI):
             
 class commentsGUI(cGUI):
     
-    def onAction(self, action):
-        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK, xbmcgui.ACTION_MOVE_LEFT ]:
-            self.close()
+    BTN_LINKS=6771
+    links_on_top=False
+    links_top_selected_position=0
+    listbox_selected_position=0
+
+    def addtl_init(self):
+        #NOTE: i cannot get the links button to hide. so instead, I set a property when calling this class and have the button xml check for this property.
+        #self.btn_links = self.getControl(self.BTN_LINKS)
+        #self.btn_links.setVisible(True)
+        pass
 
     
+    def onAction(self, action):
+        #self.btn_links.setVisible(True)
+        focused_control=self.getFocusId()
+        if action in [ xbmcgui.ACTION_MOVE_LEFT ]:
+            if focused_control==self.main_control_id: 
+                self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
+                item = self.gui_listbox.getSelectedItem()
+                self.setFocusId(self.BTN_LINKS)
+            elif focused_control==self.BTN_LINKS:
+                self.close()
+                
+        if action in [ xbmcgui.ACTION_MOVE_RIGHT ]:
+            if focused_control==self.BTN_LINKS:
+                self.setFocusId(self.main_control_id)
+                
+        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+            self.close()
+
     pass
 
+    def onClick(self, controlID):
+        cGUI.onClick(self, controlID)
+
+        if controlID == self.BTN_LINKS:
+            if self.links_on_top:
+                self.links_top_selected_position=self.gui_listbox.getSelectedPosition()
+                self.gui_listbox.reset()
+                self.gui_listbox.addItems( self.listing  )
+                self.gui_listbox.selectItem( self.listbox_selected_position )
+                self.links_on_top=False
+                
+            else:
+                self.listbox_selected_position=self.gui_listbox.getSelectedPosition()
+                def getKey(li):
+                    if li.getProperty('onClick_action'): return 1
+                    else:                                return 2
+    
+                self.gui_listbox.reset()
+                self.gui_listbox.addItems( sorted( self.listing, key=getKey)  )
+                self.gui_listbox.selectItem( self.links_top_selected_position )
+                self.links_on_top=True
+
+            self.setFocusId(self.main_control_id)    
+            
+            
     
 
 class qGUI(xbmcgui.WindowXMLDialog):

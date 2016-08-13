@@ -1348,7 +1348,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
 
 def url_is_supported(url_to_check):
     #search our supported_sites[] to see if media_url can be handled by plugin
-    log('    ?url_is_supported:'+ url_to_check) 
+    #log('    ?url_is_supported:'+ url_to_check) 
     dont_support=False
     if ytdl_sites:  pass
     else: load_ytdl_sites()

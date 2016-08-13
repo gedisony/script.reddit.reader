@@ -10,6 +10,8 @@
 	
 		<!--BEGIN include name="DefaultBackground"-->
 			<control type="group"><description>Right side panel</description>
+			<include>OpenClose_Right</include>
+			<include>Visible_Right</include>
 
 				<control type="group"><description>this is where the post description is shown.</description>
 					<visible>true</visible>
@@ -489,7 +491,7 @@
 							<width>28</width>
 							<height>28</height>
 							<aspectratio>keep</aspectratio>
-							<texture colordiffuse="FF12A8DA">$VAR[NowPlayingIconVar]</texture>
+							<texture colordiffuse="FF12A8DA">VAR[NowPlayingIconVar]</texture>
 						</control>
 					</control>
 				</control>
@@ -703,12 +705,11 @@
 				</itemlayout>
 			</control>
 			
-			
-			
 	<!-- END /include MediaMenuListCommon -->
 		</control>
 	
 </control>
+
 
 
 	</controls>

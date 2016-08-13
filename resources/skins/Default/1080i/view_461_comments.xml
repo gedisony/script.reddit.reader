@@ -67,8 +67,8 @@
 	<!--END include name="UpDownArrows"-->
 	
 		<control type="group">
-			<include>OpenClose_Right</include><!-- just animation -->
-			<include>Visible_Right</include><!-- just animation -->
+			<include>OpenClose_Left</include>
+			<include>Visible_Left</include>
 			<left>93</left>
 			<top>122</top>
 			<visible>true</visible>
@@ -198,19 +198,35 @@
 				<onright>55</onright>
 				<orientation>vertical</orientation>
 			</control>
+
+			<control type="button" id="6771"><description>button to sort links on top</description>
+				<visible>!String.IsEmpty(Window.Property(comments))</visible>
+					<top>200</top>
+					<left>-80</left>
+					<width>80</width>
+					<height>360</height>
+					<angle>90</angle>
+					<font>font12</font>
+					<align>center</align>
+					<aligny>center</aligny>
+					<texturefocus border="40" colordiffuse="FF12A8DA">buttons/dialogbutton-fo.png</texturefocus>
+					<texturenofocus colordiffuse="71FFFFFF" border="40">buttons/button-alt-nofo.png</texturenofocus>
+					<textoffsetx>20</textoffsetx>
+					<textwidth>320</textwidth>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+				<label>$ADDON[script.reddit.reader 32052]</label>
+				<onclick></onclick>
+			</control>
+
 			
 		</control>
 	<!--END include>View_55_WideList</include -->
 
-		<control type="group">
-			<description>Right side panel. this is where the comment and preview is shown</description>
-			<include>OpenClose_Left</include>
-			<include>Visible_Left</include>
-			<visible>Control.IsVisible(55)</visible>
-
-				<include>OpenClose_Right</include>
-				<visible>true</visible>
-				<include>Visible_Right</include>
+		<control type="group"><description>Right side panel. this is where the comment and preview is shown</description>
+			<include>OpenClose_Right</include>
+			<include>Visible_Right</include>
+			<visible>true</visible>
 				
 				<control type="image">
 					<left>580</left>
@@ -418,7 +434,7 @@
 				<control type="group"><description>middle portion</description>
 					<left>450</left>
 					<top>1005</top>
-					<visible>Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))</visible>
+					<visible>false</visible>
 					<animation effect="fade" time="200">VisibleChange</animation>
 					<control type="grouplist">
 						<orientation>horizontal</orientation>
@@ -433,18 +449,18 @@
 							<width>28</width>
 							<height>28</height>
 							<aspectratio>keep</aspectratio>
-							<texture colordiffuse="button_focus">$VAR[NowPlayingIconVar]</texture>
+							<texture colordiffuse="button_focus">NowPlayingIconVar</texture>
 						</control>
 						<control type="label">
-							<label>$VAR[NowPlayingMainlabelVar]</label>
-							<font>font13_title</font>
+							<label>NowPlayingMainlabelVar</label>
+							<font>[B]font13[/B]</font>
 							<shadowcolor>text_shadow</shadowcolor>
 							<height>35</height>
 							<width min="1" max="992">auto</width>
 						</control>
 					</control>
 					<control type="label" id="7700">
-						<label>$VAR[NowPlayingSublabelVar]</label>
+						<label>NowPlayingSublabelVar</label>
 						<top>35</top>
 						<font>font12</font>
 						<textoffsetx>100</textoffsetx>
@@ -487,8 +503,6 @@
 				</control>
 			</control>
 		<!--END include name="BottomBar"-->
-
-
 
 	</controls>
 </window>

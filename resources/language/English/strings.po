@@ -76,9 +76,9 @@ msgctxt "#32051"
 msgid "Go to"
 msgstr ""
 
-#show only links in comments
-msgctxt "#30052"
-msgid "Show comment links"
+#show links as the first items in the list of comments
+msgctxt "#32052"
+msgid "Sort links on top"
 msgstr ""
 
 #indicates that the post don't not have comments

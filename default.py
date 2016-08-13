@@ -1457,6 +1457,8 @@ def listLinksInComment(url, name, type):
     
             liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
             
+            #liz.setInfo( type="Video", infoLabels={ "count": d } )
+            
             if hoster:
                 #use clearart to indicate if link is video, album or image. here, we default to unsupported.
                 clearart=ret_info_type_icon(setInfo_type, mode_type)
@@ -1497,7 +1499,7 @@ def listLinksInComment(url, name, type):
                 #this section are for comments that have no links or unsupported links
                 if not ShowOnlyCommentsWithlink:
                     #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
-                    liz.setProperty('IsPlayable', 'false')
+                    #liz.setProperty('IsPlayable', 'false')
                     
                     directory_items.append( ("", liz, False,) )
                     #xbmcplugin.addDirectoryItem(handle=pluginhandle,url="",listitem=liz,isFolder=False)
@@ -1516,10 +1518,20 @@ def listLinksInComment(url, name, type):
     
     li=[]
     for di in directory_items:
-        #log( str(di[1] ) )
+        #log( '   %s-%s'  %(di[1].getLabel(), di[1].getProperty('onClick_action') ) )
         li.append( di[1] )
+    
+#     li.sort( key=getKey )
+#     log("  sorted")
+#     
+#     for l in li:
+#         log( '   %s-%s'  %(l.getLabel(), l.getProperty('onClick_action') ) )
+            
         
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    #NOTE: the subreddit selection screen and comments screen use the same gui. there is a button that is only for the comments screen
+    ui.setProperty('comments', 'yes')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
+    
     #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text=post_title
     ui.include_parent_directory_entry=False
