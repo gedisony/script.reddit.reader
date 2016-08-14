@@ -11,9 +11,10 @@ import json
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, addonID, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import log, dump
+from default import log, dump, translation
 
 from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file, ytdl_psites_file, ytdl_sites_file
+
 
 
 show_youtube     = addon.getSetting("show_youtube") == "true"
@@ -774,6 +775,7 @@ class ClassFlickr:
     TYPE_PHOTO='photo'
     TYPE_GROUP='group'
     TYPE_VIDEO='video'
+    TYPE_GALLERY='gallery'
     
     def ret_thumb_url(self, image_url="", thumbnail_type='b'):
         #call this after calling get_playable_url
@@ -791,25 +793,32 @@ class ClassFlickr:
         #after some testing, found that the flickr api accepts the undecoded photo id.
         #after some more testing, undecoded photo id for photos only. for photosets(album), it has to be decoded
         
-        #log( '    getting b58e_id:' + url )
-        
         #flic\.kr\/(?:.+\/)?(.+)|flickr\.com\/photos\/|flic\.kr\/(?:.+\/)?(\d+)
         #match = re.findall('flic\.kr\/(?:.+\/)?(.+)',url)
         #photo_id=match[0]
         
         from base58 import decode        
         b58e_id=url.split('/')[-1] #https://flic.kr/p/KSt6Hh   https://flic.kr/s/aHskGjN56V
-        
-        a = str( decode(b58e_id) )
+
+        a = decode(b58e_id)
+        sa= str(a)
+        #this site is helpful to test decoding:
+        #  https://www.darklaunch.com/tools/base58-encoder-decoder
         
         if self.media_type==self.TYPE_GROUP:
             # https://flic.kr/g/stemc  ==>  https://www.flickr.com/groups/2995418@N23/
             #log( " group id was %s" %a )
             #log( " group id now %s" %( a[0:-2] + '@N' + a[-2:] ) )  #[ begin : end : step ]
-            a =( a[0:-2] + '@N' + a[-2:] )
+            sa =( sa[0:-2] + '@N' + sa[-2:] )
+
+        if self.media_type==self.TYPE_GALLERY:
+            #note: this is done through trial and error. 
+            # https://flic.kr/y/2sfUimC  ==>  https://www.flickr.com/photos/flickr/galleries/72157671483451751/
+            a = a + 72157616180848087
+            sa=str(a)
         
-        #log( '    decoding' + b58e_id + ' => ' + str(a) )      
-        return a
+        #log( '    decoding flickrID:' + b58e_id + ' => ' + sa )      
+        return sa
     
     def get_playable_url(self, media_url, is_probably_a_video=True ):
         self.media_type="photo"
@@ -833,11 +842,20 @@ class ClassFlickr:
         else:
             #get the photoID 
             match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)',media_url)
-            photo_id=match[0]
+            if match:
+                photo_id=match[0]
+            else:
+                #cannot determine ID from url  e.g.: https://www.flickr.com/groups/flickrfriday/   (https://flic.kr/g/ju9j6)
+                #  flickrfriday is the friendly name for the group. you need to use the flickr api to get groupID
+                #  https://www.flickr.com/services/api/flickr.urls.lookupGroup.html
+                #  
+                #  not doing that right now. 
+                #use shortened url. it worked for groups
+                raise Exception(translation(32011) )  #Cannot parse ID from link
+                pass
 
-        
         if self.media_type==self.TYPE_ALBUM:  
-            log('  is a flickr album (photoset)')
+            #log('  is a flickr album (photoset)')
             api_method='flickr.photosets.getPhotos'
             api_arg='photoset_id=%s' %photo_id
         elif self.media_type==self.TYPE_PHOTO:
@@ -846,6 +864,10 @@ class ClassFlickr:
         elif self.media_type==self.TYPE_GROUP:
             api_method='flickr.groups.pools.getPhotos'
             api_arg='group_id=%s' %photo_id
+        elif self.media_type==self.TYPE_GALLERY:
+            api_method='flickr.galleries.getPhotos'
+            api_arg='gallery_id=%s' %photo_id
+            
             
         api_url='https://api.flickr.com/services/rest/?format=json&nojsoncallback=1&api_key=%s&method=%s&%s' %(self.api_key,api_method,api_arg )
 
@@ -860,12 +882,14 @@ class ClassFlickr:
                 message=j.get('message')
                 raise Exception(message)
             
-            if self.media_type in [self.TYPE_ALBUM, self.TYPE_GROUP ]:   #for  #photosets, galleries, pools? panda?
+            if self.media_type in [self.TYPE_ALBUM, self.TYPE_GROUP, self.TYPE_GALLERY ]:   #for  #photosets, galleries, pools? panda?
                 if self.media_type==self.TYPE_ALBUM:
                     photos=j['photoset']['photo']
                     owner=j.get('photoset').get('ownername')
-                elif self.media_type==self.TYPE_GROUP:
+                else:
+                    #elif self.media_type in [self.TYPE_GROUP, self.TYPE_GALLERY]:
                     photos=j['photos']['photo']
+                    
                 '''
                 You can construct the source URL to a photo once you know its ID, server ID, farm ID and secret, as returned by many API methods.
                 The URL takes the following format:
@@ -888,16 +912,18 @@ class ClassFlickr:
                 '''
                 dictList=[]
                 for i, p in enumerate( photos ):
-                    if self.media_type==self.TYPE_GROUP:
+                    ownerstring=''
+                    if self.media_type in [self.TYPE_GROUP, self.TYPE_GALLERY]:
                         owner=p.get('ownername')
-                    
+                        if owner:
+                            ownerstring ='by %s'%(owner)
                     
                     photo_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'b' )
                     thumb_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'n' )
                     #log(" %d  %s" %(i,photo_url ))
                     #log(" %d  %s" %(i,thumb_url ))
 
-                    infoLabels={ "Title": p['title'], "plot": 'by %s'%(owner), "director": p.get('ownername'), "exif:exifcomment": '',  }
+                    infoLabels={ "Title": p['title'], "plot": ownerstring , "director": p.get('ownername'), "exif:exifcomment": '',  }
                     
                     e=[ p['title'] if p['title'] else str(i+1)             #'li_label'           #  the text that will show for the list  (list label will be the caption or number if caption is blank)
                        ,p['title']                                         #'li_label2'          #  
@@ -959,7 +985,7 @@ class ClassFlickr:
 
     def is_an_album(self,media_url):
         #returns true if link is a bunch of images
-        a=['/sets/','/albums/','/s/','/groups/','/g/']
+        a=['/sets/','/albums/','/s/','/groups/','/g/','/galleries/','/y/']
         if any(x in media_url for x in a): 
             return True
         return False
@@ -967,12 +993,17 @@ class ClassFlickr:
     def flickr_link_type(self,media_url):
         a=['/sets/','/albums/','/s/']
         g=['/groups/','/g/']
+        y=['/galleries/','/y/']
         if any(x in media_url for x in a): 
             return self.TYPE_ALBUM
 
         if any(x in media_url for x in g): 
             return self.TYPE_GROUP
         
+        if any(x in media_url for x in y): 
+            return self.TYPE_GALLERY
+
+        #p=['/photo/','/p/']
         return self.TYPE_PHOTO
         
         

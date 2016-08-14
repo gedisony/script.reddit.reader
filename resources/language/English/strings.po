@@ -47,6 +47,11 @@ msgctxt "#32010"
 msgid "Failed to get playable url"
 msgstr ""
 
+#cannot parse ID from url
+msgctxt "#32011"
+msgid "Cannot parse ID from link"
+msgstr ""
+
 
 msgctxt "#30012"
 msgid "Randomly play all"

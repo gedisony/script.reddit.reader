@@ -1829,16 +1829,17 @@ def playFlickr(flickr_url, name, type):
     try:
         media_url, media_type =f.get_playable_url(flickr_url, False)
         #log('  flickr class returned %s %s' %(media_type, media_url))
-        if media_type in ['album','group']:
-            display_album_from( media_url, name )
-        else:
+        if media_type=='photo':
             if media_url:
                 playSlideshow(media_url,"Flickr", f.thumb_url )
             else:
                 raise Exception(translation(32009))  #Cannot retrieve URL
+        else: #if media_type in ['album','group','gallery']:
+            display_album_from( media_url, name )
     
     except Exception as e:
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )
+        log('   playFlickr error:' + str(e) )
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, flickr_url )  )
         
 
 def playImgurVideo(imgur_url, name, type):
