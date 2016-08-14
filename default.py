@@ -1841,18 +1841,18 @@ def playFlickr(flickr_url, name, type):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )
         
 
-# def playImgurVideo(imgur_url, name, type):
-#     from resources.domains import ClassImgur
-#     log('**************play imgur '+ imgur_url)
-#     f=ClassImgur( imgur_url )
-# 
-#     media_url, media_type =f.get_playable_url(imgur_url, False)
-#     if media_type=='album':
-#         display_album_from( media_url, name )
-#     elif media_type=='video':
-#         playVideo(media_url, "", "")
-#     elif media_type=='image':
-#         playSlideshow(media_url,"Imgur","")
+def playImgurVideo(imgur_url, name, type):
+    from resources.domains import ClassImgur
+    #log('**************play imgur '+ imgur_url)
+    f=ClassImgur( imgur_url )
+ 
+    media_url, media_type =f.get_playable_url(imgur_url, False)
+    if media_type=='album':
+        display_album_from( media_url, name )
+    elif media_type=='video':
+        playVideo(media_url, "", "")
+    elif media_type=='image':
+        playSlideshow(media_url,"Imgur","")
     
 
 #MODE queueVideo       -type not used
@@ -2810,7 +2810,8 @@ if __name__ == '__main__':
                     ,'addToFavs'            : addToFavs      
                     ,'removeFromFavs'       : removeFromFavs
                     ,'searchReddits'        : searchReddits          
-                    ,'openSettings'         : openSettings        
+                    ,'openSettings'         : openSettings
+                    ,'playImgurVideo'       : playImgurVideo        
                     ,'listImgurAlbum'       : listImgurAlbum
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment

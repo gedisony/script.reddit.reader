@@ -49,7 +49,7 @@ site03 = [False             , "playYTDLVideo"      ,'DailyMotion'  ,'dailymotion
 site04 = [False             , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]
 site05 = [False             , "playLiveLeakVideo"  ,'LiveLeak'     ,'liveleak.com/view\\?i=(.*)'     ,"##vidID##"                                                             , "site:liveleak.com"     ]
 site06 = [True              , "playGfycatVideo"    ,'Gfycat'       ,'gfycat.com/(.*)'                ,"##vidID##"                                                             , "script"       ]
-site07 = [True              , "playSlideshow"      ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "script"        ]
+site07 = [True              , "playImgur"          ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "script"        ]
 site08 = [True              , "playSlideshow"      ,'Redd.it'      ,'i.redd.it\/(.*)'                ,"##vidID##"                                                             , "script"        ]
 site09 = [True              , "playSlideshow"      ,'RedditMedia'  ,'\.(?:reddituploads|redditmedia).com/(.+)'       ,"##vidID##"                                             , "script"        ]
 site10 = [True              , "playVineVideo"      ,'Vine'         ,'vine\.co\/(.*)'                 ,"(not used) ##vidID##"                                                  , "script"        ]
@@ -1235,7 +1235,7 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
                             else:
                                 setInfo_type='video'   #gif
                                 pluginUrl=prepped_media_url
-                                #link_type ='playable'
+                                #goes to playImgurVideo
     
                 elif hoster == 'Tumblr':
                     pluginUrl=media_url
