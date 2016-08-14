@@ -136,10 +136,6 @@ class cGUI(xbmcgui.WindowXML):
                 #xbmc.executebuiltin('RunAddon(plugin.video.reddit_viewer)'  ) #does nothing. adding the parameter produces error(unknown plugin)
                 #xbmc.executebuiltin('ActivateWindow(video,%s)' %di_url )       #Can't find window video   ...#Activate/ReplaceWindow called with invalid destination window: video
 
-                #dump(item)
-                #for property in dir(item):
-                #    log( "%s: %s" %( property, 'value' ) )
-    
         elif controlID == 5:
             pass
         elif controlID == 7:
@@ -369,9 +365,6 @@ class listSubRedditGUI(cGUI):
                 #xbmc.executebuiltin('RunAddon(plugin.video.reddit_viewer)'  ) #does nothing. adding the parameter produces error(unknown plugin)
                 #xbmc.executebuiltin('ActivateWindow(video,%s)' %di_url )       #Can't find window video   ...#Activate/ReplaceWindow called with invalid destination window: video
 
-                #dump(item)
-                #for property in dir(item):
-                #    log( "%s: %s" %( property, 'value' ) )
     
         elif controlID == self.SUBREDDITS_LIST:
             di_url=subreddits_selected_item.getProperty('onClick_action') #this property was created in load_subreddits_file_into_a_listitem 

@@ -339,12 +339,16 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
     
     url = urlMain      # global variable urlMain = "http://www.reddit.com"
 
+    if subreddit.startswith('?'):
+        #special dev option
+        url+='/search.json'+subreddit 
+        return url
+
     a=[':','/domain/']
     if any(x in subreddit for x in a):  #search for ':' or '/domain/'
         #log("domain "+ subreddit)
         domain=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
         #log("domain "+ str(domain))
-        
 
     if domain:
         # put '/?' at the end. looks ugly but works fine.
@@ -672,13 +676,14 @@ def listSubReddit(url, title_bar_name, type):
             #media_url=media_url.lower()  #!!! note: do not lowercase!!!     
             
             thumb = entry['data']['thumbnail'].encode('utf-8')
+            #if show_listSubReddit_debug : log("       THUMB%.2d=%s" %( idx, thumb ))
+            
             if thumb in ['default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""               
 
             if thumb=="":
                 try: thumb = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8').replace('&amp;','&')
                 except: pass
-            
             
             try:
                 #collect_thumbs(entry)
@@ -703,7 +708,6 @@ def listSubReddit(url, title_bar_name, type):
                     thumb_w=0
                     thumb_h=0
 
-                pass
             except Exception as e:
                 #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
                 thumb_w=0
@@ -712,7 +716,7 @@ def listSubReddit(url, title_bar_name, type):
 
             #preview images are 'keep' stretched to fit inside 1080x1080. 
             #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image  
-            if thumb_w < 280:
+            if thumb_w > 0 and thumb_w < 280:
                 #log('*******preview is small ')
                 thumb=preview
                 thumb_w=0
@@ -725,21 +729,19 @@ def listSubReddit(url, title_bar_name, type):
                 over_18 = False
 
             title_line2=""
+            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
             #title_line2 = "[I][COLOR dimgrey]%s by %s [COLOR darkslategrey]r/%s[/COLOR] %d pts.[/COLOR][/I]" %(pretty_date,author,subreddit,ups)
             #http://www.w3schools.com/colors/colors_names.asp
             #title_line2 = "[I][COLOR dimgrey]%s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
-            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
-            
             #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
-
             #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
             #if show_listSubReddit_debug :log("   IS_A_VIDEO"+str(idx)+"="+str(is_a_video))
             #if show_listSubReddit_debug :log("        THUMB"+str(idx)+"="+thumb)
             #if show_listSubReddit_debug :log("    MediaURL%.2d=%s" % (idx,media_url) )
-
             #if show_listSubReddit_debug :log("       HOSTER"+str(idx)+"="+hoster)
             #log("    VIDEOID"+str(idx)+"="+videoID)
             #log( "["+description+"]1["+ str(date)+"]2["+ str( count)+"]3["+ str( commentsUrl)+"]4["+ str( subreddit)+"]5["+ video_url +"]6["+ str( over_18))+"]"
+
             liz=addLink(title=title, 
                     title_line2=title_line2,
                     iconimage=thumb, 
@@ -797,6 +799,10 @@ def listSubReddit(url, title_bar_name, type):
     
     xbmc_busy(False)
     #xbmcplugin.endOfDirectory(pluginhandle)
+    if title_bar_name=='': 
+        title_bar_name=make_title_bar_name_from(url)
+    else:
+        title_bar_name=urllib.unquote_plus(title_bar_name)
     
     from resources.guis import listSubRedditGUI    
     ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
@@ -889,7 +895,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         description=title + description
     
     if preview_ar>1.25 and description:   #this measurement is related to control id 203's height
-        log('    ar and description criteris met') 
+        #log('    ar and description criteris met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
         liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
@@ -2392,7 +2398,21 @@ def test_menu(url, name, type):
 #     log( "*******************stopping httpd")    
 #     httpd.stop()
 
+def make_title_bar_name_from(reddit_url):
+    
+    tbn=reddit_url.split('/')[-1]
+    tbn=urllib.unquote_plus(tbn)
 
+    tbn=tbn.replace('search.json?q=','search:' )
+    tbn=tbn.replace('site:','' )
+    tbn=tbn.replace('&sort=',' ' )
+    tbn=tbn.replace('&t=',' ' )
+    tbn=tbn.replace('subreddit:','r/' )
+    tbn=tbn.replace('author:','by:' )
+    tbn=tbn.replace('&restrict_sr=on','' )
+    tbn=tbn.replace('nsfw:no','' )
+    tbn=tbn.replace('nsfw:yes','nsfw' )
+    return tbn
 
 def reddit_request( url ):
     #this function replaces     content = opener.open(url).read()
@@ -2449,8 +2469,6 @@ def reddit_request( url ):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( err.reason, url)  )
         log( str(err.reason) ) 
     
-
-        
 def reddit_get_refresh_token(url, name, type):
     #this function gets a refresh_token from reddit and keep it in our addon. this refresh_token is used to get 1-hour access tokens.
     #  getting a refresh_token is a one-time step
