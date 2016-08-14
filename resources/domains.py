@@ -812,7 +812,7 @@ class ClassFlickr:
             sa =( sa[0:-2] + '@N' + sa[-2:] )
 
         if self.media_type==self.TYPE_GALLERY:
-            #note: this is done through trial and error. 
+            #note: this was done through trial and error. the short code did not decode to the correct galleryID. 
             # https://flic.kr/y/2sfUimC  ==>  https://www.flickr.com/photos/flickr/galleries/72157671483451751/
             a = a + 72157616180848087
             sa=str(a)
@@ -920,6 +920,7 @@ class ClassFlickr:
                     
                     photo_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'b' )
                     thumb_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'n' )
+                    poster_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'z' )
                     #log(" %d  %s" %(i,photo_url ))
                     #log(" %d  %s" %(i,thumb_url ))
 
@@ -938,6 +939,11 @@ class ClassFlickr:
                           ]
                  
                     dictList.append(dict(zip(keys, e)))
+                    
+                    #use first image as thumbnail and poster
+                    if i==0:
+                        self.thumb_url=thumb_url
+                        self.poster_url=poster_url
                 
                 return dictList, self.media_type
                 
@@ -1125,9 +1131,21 @@ def ret_Instagram_thumbnail( media_url, thumbnail_type='m'):
     #return ("%s://%s/%s%s%c" % ( o.scheme, o.netloc, o.path[1:], 'media/?size=', thumbnail_type ) )
     return ("http://%s/%s%s%c" % ( o.netloc, o.path[1:], 'media/?size=', thumbnail_type ) )
 
+def ret_dailymotion_thumbnail( media_url, thumbnail_type='m'):
+    #http://stackoverflow.com/questions/13173641/how-to-get-the-video-thumbnail-from-dailymotion-video-from-the-video-id-of-that
+    #Video URL: http://www.dailymotion.com/video/`video_id`
+    #Thumb URL: http://www.dailymotion.com/thumbnail/video/video_id
+    #
+    #OR
+    #https://api.dailymotion.com/video/VIDEO_ID?fields=field1,field2,...
+    #Replace field1,field2 with
+    #thumbnail_large_url (320px by 240px)
+    #thumbnail_medium_url (160px by 120px)
+    #thumbnail_small_url (80px by 60px)
+    return media_url.replace('/video/','/thumbnail/video/')
+    
 
-
-def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=True):
+def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url=''):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
@@ -1171,7 +1189,8 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
     else: load_ytdl_sites()
     #log( "ytdl sites len=" + str( len(ytdl_sites)) )
 
-    log( "    Checking link %s" %media_url) 
+    log( "    Checking link %s" %media_url ) 
+    #log( "   needs_thumbnail %s" %needs_thumbnail )
     if media_url :
         flag_media_not_supported=False
 
@@ -1231,7 +1250,9 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="DailyMotion":
                     setInfo_type='video'
-                    thumb_url=""
+                    if needs_thumbnail:
+                        thumb_url= ret_dailymotion_thumbnail(media_url)
+                        
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="LiveLeak":
                     setInfo_type='video'
@@ -1239,8 +1260,9 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="Gfycat":
                     setInfo_type='video'
-                    thumb_url="http://thumbs.gfycat.com/%s-poster.jpg"%videoID
-                    poster_url=thumb_url
+                    if needs_thumbnail:
+                        thumb_url="http://thumbs.gfycat.com/%s-poster.jpg"%videoID
+                        poster_url=thumb_url
                     pluginUrl= site[4].replace('##vidID##', videoID)
                 elif hoster=="Imgur":
                     c=ClassImgur(media_url)
@@ -1374,6 +1396,11 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
                         modecommand='listFlickrAlbum'
                     else:
                         setInfo_type='pictures'
+                        
+                    if needs_thumbnail:
+                        f.get_playable_url(media_url, False)
+                        thumb_url=f.thumb_url
+                        poster_url=f.poster_url
     
                 elif hoster in ["Vine","Vidme"]:
                     setInfo_type='video'
@@ -1458,7 +1485,7 @@ def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=Tr
         
             
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
-            url_for_DirectoryItem = build_script(modecommand, pluginUrl)
+            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
     

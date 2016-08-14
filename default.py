@@ -32,8 +32,6 @@ if len(sys.argv) > 1:
 else:
     pass 
 
-pluginhandle  = 10  #int(sys.argv[1])
-    
 
 #YDStreamExtractor.disableDASHVideo(True) #Kodi (XBMC) only plays the video for DASH streams, so you don't want these normally. Of course these are the only 1080p streams on YouTube
 from urllib import urlencode
@@ -548,11 +546,11 @@ def index(url,name,type):
     
 def build_script( mode, url, name="", type="", script_to_call=addonID):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
-    return "RunAddon(%s,%s)" %(addonID, "?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+    return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
 
 def build_playable_param( mode, url, name="", type="", script_to_call=addonID):
     #builds the  di_url for  pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO); pl.clear();  pl.add(di_url, item) ; xbmc.Player().play(pl, windowed=True)
-    return "plugin://" +script_to_call+"?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type)
+    return "plugin://" +script_to_call+"mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type)
 
 #MODE listSubReddit(url, name, type)    --name not used
 def listSubReddit(url, title_bar_name, type):
@@ -678,7 +676,7 @@ def listSubReddit(url, title_bar_name, type):
             thumb = entry['data']['thumbnail'].encode('utf-8')
             #if show_listSubReddit_debug : log("       THUMB%.2d=%s" %( idx, thumb ))
             
-            if thumb in ['default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
+            if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""               
 
             if thumb=="":
@@ -831,11 +829,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         preview_ar=0.0
     else:
         preview_ar=float(preview_w) / preview_h
-    
-    #log( "    w:%d h:%d ar:%f" %(preview_w,preview_h,preview_ar ))
 
+    if iconimage: needs_thumbnail=False  
+    else:         needs_thumbnail=True  #reddit has no thumbnail for this link. please get one
+        
     from resources.domains import make_addon_url_from
-    hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video )
+    hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage)
     
     #mode=mode_type #usually 'playVideo'
     if hoster: pass
@@ -1717,42 +1716,30 @@ def display_album_from(dictlist, album_name):
 
         #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz)
 
-    if using_custom_gui:
-        from resources.guis import cGUI
-     
-        #msg=WINDOW.getProperty(url)
-        #WINDOW.clearProperty( url )
-        #log( '   msg=' + msg )
-    
-        #<label>$INFO[Window(10000).Property(foox)]</label>
-        #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
-         
-        li=[]
-        for di in directory_items:
-            #log( str(di[1] ) )
-            li.append( di[1] )
-             
-        #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-        ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
-        
-        ui.include_parent_directory_entry=False
-        #ui.title_bar_text=WINDOW.getProperty(url)
-        
-        ui.doModal()
-        del ui
-        #WINDOW.clearProperty( 'view_450_slideshow_title' )
-        #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
-    else:
-        xbmcplugin.setContent(pluginhandle, "episodes")
+    from resources.guis import cGUI
+ 
+    #msg=WINDOW.getProperty(url)
+    #WINDOW.clearProperty( url )
+    #log( '   msg=' + msg )
 
-        log( 'album_viewMode ' + album_viewMode )
-        if album_viewMode=='0':
-            pass
-        else:
-            xbmc.executebuiltin('Container.SetViewMode('+album_viewMode+')')
+    #<label>$INFO[Window(10000).Property(foox)]</label>
+    #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
+     
+    li=[]
+    for di in directory_items:
+        #log( str(di[1] ) )
+        li.append( di[1] )
+         
+    #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
+    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
     
-        xbmcplugin.addDirectoryItems(handle=pluginhandle, items=directory_items )
-        xbmcplugin.endOfDirectory(pluginhandle)
+    ui.include_parent_directory_entry=False
+    #ui.title_bar_text=WINDOW.getProperty(url)
+    
+    ui.doModal()
+    del ui
+    #WINDOW.clearProperty( 'view_450_slideshow_title' )
+    #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
 
  
 def listTumblrAlbum(t_url, name, type):    
@@ -1921,15 +1908,6 @@ def openSettings(id, name,type):
     addonY.openSettings()
 #MODE toggleNSFW     -- url, name, type not uised
 
-def parameters_string_to_dict(parameters):
-    paramDict = {}
-    if parameters:
-        paramPairs = parameters[1:].split("&")
-        for paramsPair in paramPairs:
-            paramSplits = paramsPair.split('=')
-            if (len(paramSplits)) == 2:
-                paramDict[paramSplits[0]] = paramSplits[1]
-    return paramDict
 
 # def addFavLink(name, url, mode, iconimage, description, date, site, subreddit):
 #     ok = True
@@ -2060,7 +2038,7 @@ def playSlideshow(image_url, name, preview_url):
 
     from resources.guis import cGUI
 
-    log('  playSlideshow %s %s %s' %( image_url, name, preview_url))
+    log('  playSlideshow %s, %s, %s' %( image_url, name, preview_url))
     
     #msg=WINDOW.getProperty(url)
     #WINDOW.clearProperty( url )
@@ -2353,7 +2331,7 @@ def test_menu(url, name, type):
 
     
     liz = xbmcgui.ListItem("open webviewer", label2="", iconImage="DefaultFolder.png", thumbnailImage="", path="")
-    u=sys.argv[0]+"?mode=callwebviewer&type="
+    u=sys.argv[0]+"mode=callwebviewer&type="
 
     xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=False)
     
@@ -2760,6 +2738,18 @@ def dump(obj):
         if hasattr( obj, attr ):
             log( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
+def parameters_string_to_dict(parameters):
+    #log('   ######' + str( urlparse.parse_qsl(parameters) )  )
+    return dict( urlparse.parse_qsl(parameters) )
+#     paramDict = {}
+#     if parameters:
+#         paramPairs = parameters[1:].split("&")
+#         for paramsPair in paramPairs:
+#             paramSplits = paramsPair.split('=')
+#             if (len(paramSplits)) == 2:
+#                 paramDict[paramSplits[0]] = paramSplits[1]
+#     #log('   ######' + str( paramDict )  )
+#     return paramDict
 
 if __name__ == '__main__':
     dbPath = getDbPath()
@@ -2769,13 +2759,13 @@ if __name__ == '__main__':
 
     if len(sys.argv) > 1: 
         params=parameters_string_to_dict(sys.argv[1])
-        log("sys.argv[1]="+sys.argv[1]+"  ")        
+        #log("sys.argv[1]="+sys.argv[1]+"  ")        
     else: params={}
 
-    mode   = urllib.unquote_plus(params.get('mode', ''))
-    url    = urllib.unquote_plus(params.get('url', ''))
-    typez  = urllib.unquote_plus(params.get('type', '')) #type is a python function, try not to use a variable name same as function
-    name   = urllib.unquote_plus(params.get('name', ''))
+    mode   = params.get('mode', '')
+    url    = params.get('url', '')
+    typez  = params.get('type', '') #type is a python function, try not to use a variable name same as function
+    name   = params.get('name', '')
     #xbmc supplies this additional parameter if our <provides> in addon.xml has more than one entry e.g.: <provides>video image</provides>
     #xbmc only does when the add-on is started. we have to pass it along on subsequent calls   
     # if our plugin is called as a pictures add-on, value is 'image'. 'video' for video 
@@ -2793,7 +2783,6 @@ if __name__ == '__main__':
 #     log("type="+ typez) 
 #     log("name="+ name)
 #     log("url="+  url)
-#     log("pluginhandle:" + str(pluginhandle) )
 #     log("-----------------------")
     
     if mode=='':mode='index'  #default mode is to list start page (index)
