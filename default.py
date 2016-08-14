@@ -821,8 +821,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     il_description=""
     
     h=""  #will hold bold hoster:  string
-    t_Album = translation(30073) if translation(30073) else "Album"
-    t_IMG =  translation(30074) if translation(30074) else "IMG"
     #title_line2= "3 days ago on r/all 5 comments."
     
     ok = False    
@@ -858,7 +856,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-    log( '      reddit thumb[%s] reddit preview[%s] ar=%f %dx%d new-thumb[%s] poster[%s]  link_url:%s' %(iconimage,previewimage, preview_ar, preview_w,preview_h, thumb_url, poster_url, link_url ))
+    log( '      reddit thumb[%s] ' %(iconimage ))
+    log( '      reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    log( '      new-thumb[%s] poster[%s] ' %( thumb_url, poster_url ))
     if iconimage in ["","nsfw", "default"]:
         iconimage=thumb_url
     
@@ -1333,7 +1333,7 @@ def playYTDLVideo(url, name, type):
                 #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
             else:
                 #log("getVideoInfo failed==" )
-                xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(30192), domain )  )  
+                xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(32010), domain )  )  
     except Exception as e:
         #log( "zz   " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
@@ -1346,7 +1346,6 @@ def playGfycatVideo(id, name, type):
     log( "  play gfycat video " + id )
     content = opener.open("http://gfycat.com/cajax/get/"+id).read()
     content = json.loads(content.replace('\\"', '\''))
-    
     
     if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
         GfycatStreamUrl=content["gfyItem"]["webmUrl"]
@@ -1783,8 +1782,7 @@ def playVineVideo(vine_url, name, type):
     else:
         #media_status=v.whats_wrong()
         xbmc.executebuiltin('XBMC.Notification("Vine","%s")' % 'media_status'  )
-
-    #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
+        #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
 
 def playVidmeVideo(vidme_url, name, type):
     from resources.domains import ClassVidme
@@ -1837,48 +1835,25 @@ def playFlickr(flickr_url, name, type):
             if media_url:
                 playSlideshow(media_url,"Flickr", f.thumb_url )
             else:
-                raise Exception(translation(32009))
-            #log("  listTumblrAlbum can't process " + media_type)    
+                raise Exception(translation(32009))  #Cannot retrieve URL
+    
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )
         
 
-def playImgurVideo(imgur_url, name, type):
-    from resources.domains import ClassImgur
-    log('play imgur '+ imgur_url)
-    f=ClassImgur( imgur_url )
-
-    media_url, media_type =f.get_playable_url(imgur_url, False)
-    if media_type=='album':
-        display_album_from( media_url, name )
-    elif media_type=='video':
-        playVideo(media_url, "", "")
-    elif media_type=='image':
-        playSlideshow(media_url,"Flickr","")
-        #log("  listTumblrAlbum can't process " + media_type)    
+# def playImgurVideo(imgur_url, name, type):
+#     from resources.domains import ClassImgur
+#     log('**************play imgur '+ imgur_url)
+#     f=ClassImgur( imgur_url )
+# 
+#     media_url, media_type =f.get_playable_url(imgur_url, False)
+#     if media_type=='album':
+#         display_album_from( media_url, name )
+#     elif media_type=='video':
+#         playVideo(media_url, "", "")
+#     elif media_type=='image':
+#         playSlideshow(media_url,"Imgur","")
     
-#MODE downloadLiveLeakVideo       - name, type not used
-def downloadLiveLeakVideo(id, name, type):
-    downloader = SimpleDownloader.SimpleDownloader()
-    content = opener.open("http://www.liveleak.com/view?i="+id).read()
-    match = re.compile('<title>LiveLeak.com - (.+?)</title>', re.DOTALL).findall(content)
-    global ll_downDir
-    while not ll_downDir:
-        xbmc.executebuiltin('XBMC.Notification(Download:,Liveleak '+translation(30186)+'!,5000)')
-        addon.openSettings()
-        ll_downDir = addon.getSetting("ll_downDir")
-    url = getLiveLeakStreamUrl(id)
-    filename = ""
-    try:
-        filename = (''.join(c for c in unicode(match[0], 'utf-8') if c not in '/\\:?"*|<>')).strip()
-    except:
-        filename = id
-    filename+=".mp4"
-    if not os.path.exists(os.path.join(ll_downDir, filename)):
-        params = { "url": url, "download_path": ll_downDir }
-        downloader.download(filename, params)
-    else:
-        xbmc.executebuiltin('XBMC.Notification(Download:,'+translation(30185)+'!,5000)')
 
 #MODE queueVideo       -type not used
 def queueVideo(url, name, type):
@@ -2827,7 +2802,6 @@ if __name__ == '__main__':
                     ,'playVideo'            : playVideo           
                     ,'playLiveLeakVideo'    : playLiveLeakVideo  
                     ,'playGfycatVideo'      : playGfycatVideo   
-                    ,'downloadLiveLeakVideo': downloadLiveLeakVideo
                     ,'addSubreddit'         : addSubreddit         
                     ,'editSubreddit'        : editSubreddit         
                     ,'removeSubreddit'      : removeSubreddit      
@@ -2838,7 +2812,6 @@ if __name__ == '__main__':
                     ,'searchReddits'        : searchReddits          
                     ,'openSettings'         : openSettings        
                     ,'listImgurAlbum'       : listImgurAlbum
-                    ,'playImgurVideo'       : playImgurVideo  
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playVineVideo'        : playVineVideo

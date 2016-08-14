@@ -49,7 +49,7 @@ site03 = [False             , "playYTDLVideo"      ,'DailyMotion'  ,'dailymotion
 site04 = [False             , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]
 site05 = [False             , "playLiveLeakVideo"  ,'LiveLeak'     ,'liveleak.com/view\\?i=(.*)'     ,"##vidID##"                                                             , "site:liveleak.com"     ]
 site06 = [True              , "playGfycatVideo"    ,'Gfycat'       ,'gfycat.com/(.*)'                ,"##vidID##"                                                             , "script"       ]
-site07 = [True              , "playImgurVideo"     ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "script"        ]
+site07 = [True              , "playSlideshow"      ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "script"        ]
 site08 = [True              , "playSlideshow"      ,'Redd.it'      ,'i.redd.it\/(.*)'                ,"##vidID##"                                                             , "script"        ]
 site09 = [True              , "playSlideshow"      ,'RedditMedia'  ,'\.(?:reddituploads|redditmedia).com/(.+)'       ,"##vidID##"                                             , "script"        ]
 site10 = [True              , "playVineVideo"      ,'Vine'         ,'vine\.co\/(.*)'                 ,"(not used) ##vidID##"                                                  , "script"        ]
@@ -1096,7 +1096,7 @@ def ret_Instagram_thumbnail( media_url, thumbnail_type='m'):
 
 
 
-def make_addon_url_from(media_url, assume_is_video=True):
+def make_addon_url_from(media_url, assume_is_video=True, thumbnail_not_needed=True):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
@@ -1219,7 +1219,7 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         flag_media_not_supported=True
                     else:
                         thumb_url=c.ret_thumb_url( prepped_media_url )
-                        log('      thumb_url:'+thumb_url)
+                        #log('      thumb_url:'+thumb_url)
                         
                         if media_type=='album':
                             setInfo_type='album'
@@ -1272,7 +1272,6 @@ def make_addon_url_from(media_url, assume_is_video=True):
                         flag_media_not_supported=True
     
                 elif hoster == 'Gyazo':
-                                        
                     pluginUrl=media_url
                     g=ClassGyazo(media_url)
                     ret_url, media_type =g.get_playable_url(media_url, assume_is_video)

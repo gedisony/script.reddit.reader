@@ -42,6 +42,12 @@ msgctxt "#32009"
 msgid "Cannot retrieve URL"
 msgstr ""
 
+#error message popup when youtube-dl can't get playable url 
+msgctxt "#32010"
+msgid "Failed to get playable url"
+msgstr ""
+
+
 msgctxt "#30012"
 msgid "Randomly play all"
 msgstr ""
@@ -148,47 +154,7 @@ msgctxt "#32072"
 msgid "cmts"
 msgstr ""
 
-#these are tags prepended on a post to tell the user if it is an album or single image
-msgctxt "#30073"
-msgid "Album"
-msgstr ""
 
-msgctxt "#30074"
-msgid "IMG"
-msgstr ""
-
-msgctxt "#30185"
-msgid "File already exists"
-msgstr ""
-
-msgctxt "#30186"
-msgid "Choose download directory"
-msgstr ""
-
-msgctxt "#30187"
-msgid "NSFW content enabled!"
-msgstr ""
-
-msgctxt "#30188"
-msgid "NSFW content disabled!"
-msgstr ""
-
-msgctxt "#30189"
-msgid "Disable NSFW content?"
-msgstr ""
-
-msgctxt "#30190"
-msgid "Enable NSFW content?"
-msgstr ""
-
-msgctxt "#30191"
-msgid "Are you over eighteen and willing to see adult content?"
-msgstr ""
-
-#error message popup when youtube-dl can't get playable url 
-msgctxt "#30192"
-msgid "Failed to get playable url"
-msgstr ""
 
 
 
@@ -231,35 +197,7 @@ msgstr ""
 #32108-32119 empty
 
 #setting category
-msgctxt "#30120"
-msgid "Autoplay"
-msgstr ""
 
-msgctxt "#30121"
-msgid "Show "Randomly play all""
-msgstr ""
-
-msgctxt "#30122"
-msgid "Show "Randomly play unwatched""
-msgstr ""
-
-msgctxt "#30123"
-msgid "Show "Randomly play unfinished""
-msgstr ""
-
-msgctxt "#30124"
-msgid "Show "Play all""
-msgstr ""
-
-msgctxt "#30125"
-msgid "Show "Play unwatched""
-msgstr ""
-
-msgctxt "#30126"
-msgid "Show "Play unfinished""
-msgstr ""
-
-#30127-30149 empty
 
 # settings category
 msgctxt "#32150"
