@@ -13,7 +13,7 @@ import json
 from default import addon, addonID, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
 
-from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file, ytdl_psites_file, ytdl_sites_file
+from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file
 
 
 
@@ -1216,9 +1216,11 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                 #log("determine [%s] thumb from ID[%s] url[%s]" %(hoster,videoID,media_url))
                 if hoster=="YouTube":   #**** this is case sensitive make sure it matches text defined in supported_sites[]
                     setInfo_type='video'
-                    thumb_url=ret_youtube_thumbnail(videoID,0)  
-                    #log("[%s] thumb_url from ID[%s] is[%s]" %(hoster,videoID,thumb_url))
-                    poster_url=thumb_url
+                    if needs_thumbnail:
+                        thumb_url=ret_youtube_thumbnail(videoID,0)  
+                        poster_url=thumb_url
+                        #log("[%s] thumb_url from ID[%s] is[%s]" %(hoster,videoID,thumb_url))
+
                     #using the ytdl addon to handle youtube links bypasses the age restriction
                     if use_ytdl_for_yt:
                         link_type ='script'

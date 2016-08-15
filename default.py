@@ -139,10 +139,10 @@ addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID
 subredditsFile      = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits")
 nsfwFile            = xbmc.translatePath("special://profile/addon_data/"+addonID+"/nsfw")
 
-ytdl_psites_file         = xbmc.translatePath(profile_path+"/ytdl_sites_porn")
-default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/ytdl_sites_porn" )
-ytdl_sites_file          = xbmc.translatePath(profile_path+"/ytdl_sites")
-default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/ytdl_sites" )
+#ytdl_psites_file         = xbmc.translatePath(profile_path+"/ytdl_sites_porn")
+default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
+#ytdl_sites_file          = xbmc.translatePath(profile_path+"/ytdl_sites")
+default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_sites" )
 
 
 
@@ -489,7 +489,7 @@ def create_default_subreddits():
 def index(url,name,type):
     ## this is where the __main screen is created
 
-    from resources.guis import indexGui
+    from resources.lib.guis import indexGui
     li=[]
 
     #ui = cGUI('DialogSelect.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
@@ -554,7 +554,7 @@ def build_playable_param( mode, url, name="", type="", script_to_call=addonID):
 
 #MODE listSubReddit(url, name, type)    --name not used
 def listSubReddit(url, title_bar_name, type):
-    from resources.domains import parse_filename_and_ext_from_url
+    from resources.lib.domains import parse_filename_and_ext_from_url
     #url=r'https://www.reddit.com/r/videos/search.json?q=nsfw:yes+site%3Ayoutu.be+OR+site%3Ayoutube.com+OR+site%3Avimeo.com+OR+site%3Aliveleak.com+OR+site%3Adailymotion.com+OR+site%3Agfycat.com&sort=relevance&restrict_sr=on&limit=5&t=week'
     #url='https://www.reddit.com/search.json?q=site%3Adailymotion&restrict_sr=&sort=relevance&t=week'
     #url='https://www.reddit.com/search.json?q=site%3A4tube&sort=relevance&t=all'
@@ -802,7 +802,7 @@ def listSubReddit(url, title_bar_name, type):
     else:
         title_bar_name=urllib.unquote_plus(title_bar_name)
     
-    from resources.guis import listSubRedditGUI    
+    from resources.lib.guis import listSubRedditGUI    
     ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
     ui.title_bar_text='[B]'+ title_bar_name + '[/B]'
     #ui.include_parent_directory_entry=True
@@ -833,7 +833,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     if iconimage: needs_thumbnail=False  
     else:         needs_thumbnail=True  #reddit has no thumbnail for this link. please get one
         
-    from resources.domains import make_addon_url_from
+    from resources.lib.domains import make_addon_url_from
     hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage)
     
     #mode=mode_type #usually 'playVideo'
@@ -881,7 +881,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     #----- assign actions
     if preview_ar>0 and preview_ar < 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
-        from resources.domains import link_url_is_playable
+        from resources.lib.domains import link_url_is_playable
         #log('*****%f '%preview_ar)
         #if link_url_is_playable(link_url):
         #log('*****has zoom_n_slide_action ')
@@ -1037,7 +1037,7 @@ def ret_info_type_icon(info_type, modecommand):
 
 #MODE autoPlay        - name not used
 def autoPlay(url, name, type):
-    from resources.domains import make_addon_url_from
+    from resources.lib.domains import make_addon_url_from
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
@@ -1067,7 +1067,7 @@ def autoPlay(url, name, type):
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
             #log("  Title:%s -%c"  %( title, ("v" if is_a_video else " ") ) )              
-            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url,is_a_video)
+            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url,is_a_video, True)
 
             if DirectoryItem_url:
                 if isFolder:  #imgur albums are 'isFolder'
@@ -1358,7 +1358,7 @@ def playGfycatVideo(id, name, type):
     playVideo(GfycatStreamUrl, name, type)
 
 def listLinksInComment(url, name, type):
-    from resources.domains import make_addon_url_from
+    from resources.lib.domains import make_addon_url_from
     #called by context menu
     log('listLinksInComment:%s:%s' %(type,url) )
 
@@ -1368,7 +1368,7 @@ def listLinksInComment(url, name, type):
     #log( '   msg=' + msg )
 
 #     #for testing
-#     from resources.guis import cGUI
+#     from resources.lib.guis import cGUI
 #     #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
 #     ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i')
 #     
@@ -1439,7 +1439,7 @@ def listLinksInComment(url, name, type):
             if comment_score < int_CommentTreshold:
                 continue
             
-            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2])
+            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2], False, True)
         
             #mode_type #usually 'playVideo'
             kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.  
@@ -1531,7 +1531,7 @@ def listLinksInComment(url, name, type):
     #for di in directory_items:
     #    log( str(di) )
 
-    from resources.guis import commentsGUI
+    from resources.lib.guis import commentsGUI
     
     li=[]
     for di in directory_items:
@@ -1560,7 +1560,7 @@ def listLinksInComment(url, name, type):
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
-    from resources.domains import url_is_supported
+    from resources.lib.domains import url_is_supported
     #recursive function to harvest stuff from the reddit comments json reply
     prog = re.compile('<a href=[\'"]?([^\'" >]+)[\'"]>(.*?)</a>')   
     for e in json_node:
@@ -1642,7 +1642,7 @@ def r_linkHunter(json_node,d=0):
 #MODE listImgurAlbum
 def listImgurAlbum(album_url, name, type):
     #log("listImgurAlbum")
-    from resources.domains import ClassImgur
+    from resources.lib.domains import ClassImgur
     #album_url="http://imgur.com/a/fsjam"
     ci=ClassImgur()
         
@@ -1650,7 +1650,7 @@ def listImgurAlbum(album_url, name, type):
     display_album_from(dictlist, name)
 
 def display_album_from(dictlist, album_name):
-    from resources.domains import make_addon_url_from
+    from resources.lib.domains import make_addon_url_from
     #this function is called by listImgurAlbum and playTumblr
     #NOTE: the directoryItem calling this needs isFolder=True or you'll get handle -1  error
 
@@ -1716,7 +1716,7 @@ def display_album_from(dictlist, album_name):
 
         #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz)
 
-    from resources.guis import cGUI
+    from resources.lib.guis import cGUI
  
     #msg=WINDOW.getProperty(url)
     #WINDOW.clearProperty( url )
@@ -1743,7 +1743,7 @@ def display_album_from(dictlist, album_name):
 
  
 def listTumblrAlbum(t_url, name, type):    
-    from resources.domains import ClassTumblr
+    from resources.lib.domains import ClassTumblr
     log("listTumblrAlbum:"+t_url)
     t=ClassTumblr(t_url)
     
@@ -1757,7 +1757,7 @@ def listTumblrAlbum(t_url, name, type):
 
 
 def playVineVideo(vine_url, name, type):
-    from resources.domains import ClassVine
+    from resources.lib.domains import ClassVine
     #log('playVineVideo')
     
     v=ClassVine(vine_url)
@@ -1772,7 +1772,7 @@ def playVineVideo(vine_url, name, type):
         #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
 
 def playVidmeVideo(vidme_url, name, type):
-    from resources.domains import ClassVidme
+    from resources.lib.domains import ClassVidme
     log('playVidmeVideo')
     v=ClassVidme(vidme_url)
     vidme_stream_url=v.get_playable_url(vidme_url, True)
@@ -1783,7 +1783,7 @@ def playVidmeVideo(vidme_url, name, type):
         xbmc.executebuiltin('XBMC.Notification("Vidme","%s")' % media_status  )
         
 def playStreamable(media_url, name, type):
-    from resources.domains import ClassStreamable
+    from resources.lib.domains import ClassStreamable
     log('playStreamable '+ media_url)
     
     s=ClassStreamable(media_url)
@@ -1796,7 +1796,7 @@ def playStreamable(media_url, name, type):
         xbmc.executebuiltin('XBMC.Notification("Streamable","%s")' % "Access Denied"  )
     
 def playInstagram(media_url, name, type):
-    from resources.domains import ClassInstagram
+    from resources.lib.domains import ClassInstagram
     log('playInstagram '+ media_url)
     #instagram video handled by ytdl. links that reddit says is image are handled here.
     i=ClassInstagram( media_url )
@@ -1809,7 +1809,7 @@ def playLiveLeakVideo(id, name, type):
     playVideo(getLiveLeakStreamUrl(id), name, type)
 
 def playFlickr(flickr_url, name, type):
-    from resources.domains import ClassFlickr
+    from resources.lib.domains import ClassFlickr
     log('play flickr '+ flickr_url)
     f=ClassFlickr( flickr_url )
 
@@ -1830,7 +1830,7 @@ def playFlickr(flickr_url, name, type):
         
 
 def playImgurVideo(imgur_url, name, type):
-    from resources.domains import ClassImgur
+    from resources.lib.domains import ClassImgur
     #log('**************play imgur '+ imgur_url)
     f=ClassImgur( imgur_url )
  
@@ -2036,7 +2036,7 @@ def pretty_datediff(dt1, dt2):
 def playSlideshow(image_url, name, preview_url):
     #url='d:\\aa\\lego_fusion_beach1.jpg'
 
-    from resources.guis import cGUI
+    from resources.lib.guis import cGUI
 
     log('  playSlideshow %s, %s, %s' %( image_url, name, preview_url))
     
@@ -2058,7 +2058,7 @@ def playSlideshow(image_url, name, preview_url):
     return
     
     
-#     from resources.guis import qGUI
+#     from resources.lib.guis import qGUI
 #     
 #     ui = qGUI('view_image.xml' ,  addon_path, defaultSkin='Default', defaultRes='1080i')   
 #     #no need to download the image. kodi does it automatically!!!
@@ -2163,7 +2163,7 @@ def zoom_n_slide(image, width, height):
     
 
 def molest_xml(url, name, type):
-    #from resources.guis import cGUI
+    #from resources.lib.guis import cGUI
     log( 'molest_xml %s-%s-%s' %(url, name, type))
     #li=[]
 
@@ -2340,7 +2340,7 @@ def test_menu(url, name, type):
     addDir("3login", sys.argv[0], "reddit_login", "" )
     xbmcplugin.endOfDirectory(pluginhandle)
 
-#     from resources.httpd import TinyWebServer
+#     from resources.lib.httpd import TinyWebServer
 #       
 #     log( "*******************starting httpd")
 #     httpd = TinyWebServer('xyz')
