@@ -150,6 +150,33 @@ class ClassImgur:
                 #attempt to display image/unknowntype anyway
                 xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
 
+    def get_album_thumb(self, media_url):
+
+        album_id=self.get_album_or_gallery_id(media_url)
+        
+        request_url="https://api.imgur.com/3/album/"+album_id 
+        #log("    get_album_thumb---"+request_url )
+        r = requests.get(request_url, headers=ClassImgur.request_header)
+        #log(r.text)
+        if r.status_code == 200:   #http status code 200 is success
+            j = r.json()    #j = json.loads(r.text)
+
+            thumb_image_id=j['data'].get('cover')
+            
+            images_count=j['data'].get('images_count')
+
+            if thumb_image_id:
+                #we're not guaranteed that it is jpg but it seems to work with png files as well...
+                return 'http://i.imgur.com/'+thumb_image_id+'m.jpg', 'http://i.imgur.com/'+thumb_image_id+'l.jpg'
+            
+                #for i in j['data']['images']:
+                #    if thumb_image_id == i.get('id'):
+                #        thumb_image=i.get('link')
+                #        thumb_w=i.get('width')
+                #        thumb_h=i.get('height')
+                
+        return "",""
+
     def is_an_album(self, media_url):
         #determins if an imgur url is an album
         
@@ -267,6 +294,16 @@ class ClassImgur:
         return ("%s://%s/%s%c.%s" % \
                 ( o.scheme, o.netloc, filename, thumbnail_type, ext ) )
 
+    def get_album_or_gallery_id(self,album_url):
+        #you need to have determined that the url is album
+        match = re.compile(r'imgur\.com/(?:a|gallery)/(.*)/?', re.DOTALL).findall(album_url)
+        if match:
+            album_name = match[0]  #album_url.split("/a/",1)[1]
+        else:
+            log(r"ret_album_list: Can't determine album name from["+album_url+"]" )
+            album_name=""
+        return album_name        
+
     def ret_album_list(self, album_url, thumbnail_size_code='b'):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
         # see ret_thumb_url for thumbnail_size_code values
@@ -277,14 +314,12 @@ class ClassImgur:
         album_name=""
         dictList = []
 
-        #m=re.match(r'imgur\.com/(?:a|gallery)/(.*)?/?', album_url)
-        match = re.compile(r'imgur\.com/(?:a|gallery)/(.*)/?', re.DOTALL).findall(album_url)
+        album_name = self.get_album_or_gallery_id(album_url)
 
-        if match:
-            album_name = match[0]  #album_url.split("/a/",1)[1]
-        else:
+        if album_name=="": 
             log(r"ret_album_list: Can't determine album name from["+album_url+"]" )
             return dictList
+        
         #log('album name:'+album_name+' from ['+album_url+']')
         request_url="https://api.imgur.com/3/album/"+album_name+"/images"
         #log("listImgurAlbum-request_url---"+request_url )
@@ -1273,13 +1308,19 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                     if prepped_media_url=='':     # sometimes imgur post is deleted
                         flag_media_not_supported=True
                     else:
-                        thumb_url=c.ret_thumb_url( prepped_media_url )
-                        #log('      thumb_url:'+thumb_url)
-                        
+                        if needs_thumbnail:
+                            #sometimes we can get the thumbnail when calling get_playable_url
+                            thumb_url=c.ret_thumb_url( prepped_media_url )
+                            
                         if media_type=='album':
                             setInfo_type='album'
                             pluginUrl=media_url
                             modecommand='listImgurAlbum'
+                            if needs_thumbnail:
+                                #if calling get_playable_url didn't result in a thumbnail, we will do the call.
+                                if thumb_url=='':
+                                    thumb_url,poster_url=c.get_album_thumb(media_url)
+
                             #link_type='script'  automatic from site07
                         else:
                             poster_url=c.ret_thumb_url( prepped_media_url,'l' )
