@@ -10,7 +10,7 @@ import json
 
 #sys.setdefaultencoding("utf-8")
 
-from default import addon, addonID, comments_viewMode, streamable_quality   #,addon_path,pluginhandle,addonID
+from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
 
 from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file

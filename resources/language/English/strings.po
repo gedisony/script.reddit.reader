@@ -182,12 +182,12 @@ msgctxt "#32103"
 msgid "Skip subreddit selection screen"
 msgstr ""
 
-msgctxt "#30104"
-msgid "Hide non-Video posts"
+msgctxt "#32104"
+msgid "Hide posts by domain (separate by comma)"
 msgstr ""
 
-msgctxt "#30105"
-msgid "ViewID for album posts (0 for default)"
+msgctxt "#32105"
+msgid "Hide posts by subreddit (separate by comma)"
 msgstr ""
 
 msgctxt "#32106"

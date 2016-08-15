@@ -91,15 +91,17 @@ urlMain = "https://www.reddit.com"
 default_frontpage    = addon.getSetting("default_frontpage") 
 no_index_page        = addon.getSetting("no_index_page") == "true"
 
-forceViewMode        = addon.getSetting("forceViewMode") == "true"
-viewMode             = str(addon.getSetting("viewMode"))
-comments_viewMode    = str(addon.getSetting("comments_viewMode"))
-album_viewMode       = str(addon.getSetting("album_viewMode"))
+# viewMode             = str(addon.getSetting("viewMode"))
+# comments_viewMode    = str(addon.getSetting("comments_viewMode"))
+# album_viewMode       = str(addon.getSetting("album_viewMode"))
 
 show_nsfw            = addon.getSetting("show_nsfw") == "true"
+domain_filter        = addon.getSetting("domain_filter")
+subreddit_filter     = addon.getSetting("subreddit_filter")
 
 
-r_AccessToken         = addon.getSetting("r_AccessToken") 
+
+#r_AccessToken         = addon.getSetting("r_AccessToken") 
 
 sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage = int(sitemsPerPage)
@@ -107,8 +109,6 @@ except: itemsPerPage = 50
 
 itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
 TitleAddtlInfo        = addon.getSetting("TitleAddtlInfo") == "true"   #Show additional post info on title</string>
-HideImagePostsOnVideo = addon.getSetting("HideImagePostsOnVideo") == 'true' #<string id="30204">Hide image posts on video addon</string>
-setting_hide_images = False
 
 # searchSort = int(addon.getSetting("searchSort"))
 # searchSort = ["ask", "relevance", "new", "hot", "top", "comments"][searchSort]
@@ -650,13 +650,20 @@ def listSubReddit(url, title_bar_name, type):
                 credateTime = ""
 
             subreddit=entry['data']['subreddit'].encode('utf-8')
-            #if show_listSubReddit_debug :log("  SUBREDDIT"+str(idx)+"="+subreddit)
+            
+            if post_excluded_from( subreddit_filter, subreddit ):
+                log( '    r/%s excluded by subreddit_filter' %subreddit )
+                continue;
+            
             try: author = entry['data']['author'].encode('utf-8')
             except: author = ""
             
             try: domain= entry['data']['domain'].encode('utf-8')
             except: domain = ""
             #log("     DOMAIN%.2d=%s" %(idx,domain))
+            if post_excluded_from( domain_filter, domain ):
+                log( '    %s excluded by domain_filter' %domain )
+                continue;
             
             ups = entry['data']['score']       #downs not used anymore
             try:num_comments = entry['data']['num_comments']
@@ -855,9 +862,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-    log( '      reddit thumb[%s] ' %(iconimage ))
-    log( '      reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-    log( '      new-thumb[%s] poster[%s] ' %( thumb_url, poster_url ))
+#     log( '      reddit thumb[%s] ' %(iconimage ))
+#     log( '      reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+#     log( '      new-thumb[%s] poster[%s] ' %( thumb_url, poster_url ))
     if iconimage in ["","nsfw", "default"]:
         iconimage=thumb_url
     
@@ -920,19 +927,19 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     
     if DirectoryItem_url:
 
-        if setting_hide_images==True and mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
-            log('setting: hide non-video links') #and text links(reddit.com)
-            return
-        else:
-            if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]:
-                #after all that work creating DirectoryItem_url, we parse it to get the media_url. this is used by playSlideshow as 'key' to get the image description
-                #parsed = urlparse.urlparse(DirectoryItem_url)
-                #media_url=urlparse.parse_qs(parsed.query)['url'][0]  #<-- this will error in openelec/linux    
-                #log("   parsed media_url:" +  media_url  )
-                #log("   parsed plugi_url:" +  videoID  )
-                #WINDOW.setProperty(videoID, description )
-                #WINDOW.setProperty(videoID, il_description )
-                pass
+#         if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
+#             log('setting: hide non-video links') #and text links(reddit.com)
+#             return
+#         else:
+#             if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]:
+#                 #after all that work creating DirectoryItem_url, we parse it to get the media_url. this is used by playSlideshow as 'key' to get the image description
+#                 #parsed = urlparse.urlparse(DirectoryItem_url)
+#                 #media_url=urlparse.parse_qs(parsed.query)['url'][0]  #<-- this will error in openelec/linux    
+#                 #log("   parsed media_url:" +  media_url  )
+#                 #log("   parsed plugi_url:" +  videoID  )
+#                 #WINDOW.setProperty(videoID, description )
+#                 #WINDOW.setProperty(videoID, il_description )
+#                 pass
 
         
         #art_object
@@ -942,51 +949,51 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #liz.setInfo(type=setInfo_type, infoLabels=il)
 
         
-        entries = [] #entries for listbox for when you type 'c' or rt-click 
-
-
-        if num_comments > 0:            
-            #if we are using a custom gui to show comments, we need to use RunPlugin. there is a weird loading/pause if we use XBMC.Container.Update. i think xbmc expects us to use addDirectoryItem
-            #  if we have xbmc manage the gui(addDirectoryItem), we need to use XBMC.Container.Update. otherwise we'll get the dreaded "Attempt to use invalid handle -1" error
-
-            if comments_viewMode=='461':  #461 is my trigger to use a custom gui for showing comments. it is just an arbitrary number. i'm hoping there no skin will use the same viewid
-                entries.append( ( translation(30050) + " (c)",  #Show comments
-                              "XBMC.RunPlugin(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-                entries.append( ( translation(30052) , #Show comment links 
-                              "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-            else:  
-                entries.append( ( translation(30052) , #Show comment links 
-                              "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-                entries.append( ( translation(30050) ,  #Show comments
-                              "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-
-            #entries.append( ( translation(30050) + " (ActivateWindow)",  #Show comments
-            #              "XBMC.ActivateWindow(Video, %s?mode=listLinksInComment&url=%s)" % (  sys.argv[0], urllib.quote_plus(site) ) ) )      #***  ActivateWindow is for the standard xbmc window     
-        else:
-            entries.append( ( translation(30053) ,  #No comments
-                          "xbmc.executebuiltin('Action(Close)')" ) )            
-
-                
-        #no need to show the "go to other subreddits" if the entire list is from one subreddit        
-        if many_subreddit:
-            #sys.argv[0] is plugin://plugin.video.reddit_viewer/
-            #prl=zaza is just a dummy: during testing the first argument is ignored... possible bug?
-            entries.append( ( translation(30051)+" r/%s" %subreddit , 
-                              "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit,True)  ) ) ) )
-        else:
-            entries.append( ( translation(30051)+" r/%s" %subreddit , 
-                              "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit+'/new',True)  ) ) ) )
-
-
-        #favEntry = '<favourite name="'+title+'" url="'+DirectoryItem_url+'" description="'+description+'" thumb="'+iconimage+'" date="'+credate+'" site="'+site+'" />'
-        #entries.append((translation(30022), 'RunPlugin(plugin://'+addonID+'/?mode=addToFavs&url='+urllib.quote_plus(favEntry)+'&type='+urllib.quote_plus(subreddit)+')',))
-        
-        #if showBrowser and (osWin or osOsx or osLinux):
-        #    if osWin and browser_win==0:
-        #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.webbrowser/?url='+urllib.quote_plus(site)+'&mode=showSite&zoom='+browser_wb_zoom+'&stopPlayback=no&showPopups=no&showScrollbar=no)',))
-        #    else:
-        #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.chrome.launcher/?url='+urllib.quote_plus(site)+'&mode=showSite)',))
-        liz.addContextMenuItems(entries)
+#         entries = [] #entries for listbox for when you type 'c' or rt-click 
+# 
+# 
+#         if num_comments > 0:            
+#             #if we are using a custom gui to show comments, we need to use RunPlugin. there is a weird loading/pause if we use XBMC.Container.Update. i think xbmc expects us to use addDirectoryItem
+#             #  if we have xbmc manage the gui(addDirectoryItem), we need to use XBMC.Container.Update. otherwise we'll get the dreaded "Attempt to use invalid handle -1" error
+# 
+#             if comments_viewMode=='461':  #461 is my trigger to use a custom gui for showing comments. it is just an arbitrary number. i'm hoping there no skin will use the same viewid
+#                 entries.append( ( translation(30050) + " (c)",  #Show comments
+#                               "XBMC.RunPlugin(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
+#                 entries.append( ( translation(30052) , #Show comment links 
+#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
+#             else:  
+#                 entries.append( ( translation(30052) , #Show comment links 
+#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
+#                 entries.append( ( translation(30050) ,  #Show comments
+#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
+# 
+#             #entries.append( ( translation(30050) + " (ActivateWindow)",  #Show comments
+#             #              "XBMC.ActivateWindow(Video, %s?mode=listLinksInComment&url=%s)" % (  sys.argv[0], urllib.quote_plus(site) ) ) )      #***  ActivateWindow is for the standard xbmc window     
+#         else:
+#             entries.append( ( translation(30053) ,  #No comments
+#                           "xbmc.executebuiltin('Action(Close)')" ) )            
+# 
+#                 
+#         #no need to show the "go to other subreddits" if the entire list is from one subreddit        
+#         if many_subreddit:
+#             #sys.argv[0] is plugin://plugin.video.reddit_viewer/
+#             #prl=zaza is just a dummy: during testing the first argument is ignored... possible bug?
+#             entries.append( ( translation(30051)+" r/%s" %subreddit , 
+#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit,True)  ) ) ) )
+#         else:
+#             entries.append( ( translation(30051)+" r/%s" %subreddit , 
+#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit+'/new',True)  ) ) ) )
+# 
+# 
+#         #favEntry = '<favourite name="'+title+'" url="'+DirectoryItem_url+'" description="'+description+'" thumb="'+iconimage+'" date="'+credate+'" site="'+site+'" />'
+#         #entries.append((translation(30022), 'RunPlugin(plugin://'+addonID+'/?mode=addToFavs&url='+urllib.quote_plus(favEntry)+'&type='+urllib.quote_plus(subreddit)+')',))
+#         
+#         #if showBrowser and (osWin or osOsx or osLinux):
+#         #    if osWin and browser_win==0:
+#         #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.webbrowser/?url='+urllib.quote_plus(site)+'&mode=showSite&zoom='+browser_wb_zoom+'&stopPlayback=no&showPopups=no&showScrollbar=no)',))
+#         #    else:
+#         #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.chrome.launcher/?url='+urllib.quote_plus(site)+'&mode=showSite)',))
+#         liz.addContextMenuItems(entries)
 
         #xbmcplugin.addDirectoryItem(pluginhandle, DirectoryItem_url, listitem=liz, isFolder=isFolder, totalItems=post_total)
         liz.setProperty('item_type',property_link_type)
@@ -1077,7 +1084,7 @@ def autoPlay(url, name, type):
                     #log('      skipping setInfo_type==pictures ')
                     continue
                 
-                if setting_hide_images==True and mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
+                if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
                     #log("      skipping 'listImgurAlbum','playSlideshow','listLinksInComment' ")
                     continue                
                 
@@ -1188,6 +1195,19 @@ def has_multiple_subreddits(content_data_children):
     #log("  single subreddit")
     return False
 
+def post_excluded_from( filter, str_to_check):
+    #hide posts by domain/subreddit. 
+    #filter can be subreddit_filter or domain_filter. comma separated string. configured in settings
+    #log( '    exclude filter:' +str(filter))
+    #log( '    exclude check:' +str_to_check)
+    if filter:
+        filter_list=filter.split(',')
+        filter_list=[x.lower().strip() for x in filter_list]  #  list comprehensions
+        #log( '    exclude filter:' +str(filter_list))
+        if str_to_check.lower() in filter_list:
+            return True
+    return False
+    
 
 def getLiveLeakStreamUrl(id):
     #log("getLiveLeakStreamUrl ID="+str(id) )
@@ -2773,9 +2793,6 @@ if __name__ == '__main__':
     #ctp = "&content_type="+content_type   #for the lazy
     #log("content_type:"+content_type)
     
-    if HideImagePostsOnVideo: # and content_type=='video':
-        setting_hide_images=True
-    #log("HideImagePostsOnVideo:"+str(HideImagePostsOnVideo)+"  setting_hide_images:"+str(setting_hide_images))
     #log("params="+sys.argv[1]+"  ")
 #     log("----------------------")
 #     log("params="+ str(params))
