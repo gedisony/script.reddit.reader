@@ -869,7 +869,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                          ,label2=title_line2
                          ,iconImage="DefaultVideo.png"
                          ,thumbnailImage=iconimage
-                         ,path=DirectoryItem_url) 
+                         ,path=DirectoryItem_url)   #path not used by gui.
 
     #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
     if previewimage=="":
@@ -899,12 +899,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
         liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
 
+    #----- assign actions
     if num_comments > 0:
         liz.setProperty('comments_action', build_script('listLinksInComment', site ) )
-            
     
     liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
-    #----- assign actions
+    liz.setProperty('link_url', link_url )
     
     liz.setInfo(type='video', infoLabels=il)
     #

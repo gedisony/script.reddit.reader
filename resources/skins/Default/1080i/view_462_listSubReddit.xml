@@ -482,6 +482,19 @@
 							<height>35</height>
 							<width min="1" max="992">auto</width>
 						</control>
+						
+						<control type="label" >
+							<left>78</left>
+							<top>35</top>
+							<height>25</height>
+							<width>1920</width>
+							<font>font10</font>
+							<shadowcolor>text_shadow</shadowcolor>
+							<haspath>true</haspath>
+							<textcolor>44B2D4F5</textcolor>
+							<label>$INFO[Container(55).ListItem.Property(link_url)]</label>
+						</control>
+						
 					</control>
 				</control>
 				
