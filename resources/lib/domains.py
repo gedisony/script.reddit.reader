@@ -1348,10 +1348,11 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                         modecommand='playSlideshow'
                         poster_url=t.ret_thumb_url() #if poster+url =="" is taken care of by calling function
     
-                        if thumb_url=="": 
+                        if needs_thumbnail: 
                             filename,ext=parse_filename_and_ext_from_url(ret_url)
                             if ext in image_exts :             #=='gif':  #*** we can't handle gif. 
-                                thumb_url=media_url                        
+                                thumb_url=media_url
+                                poster_url=media_url                
                             
                         pluginUrl=ret_url
                     elif media_type in ['audio','answer','text']:
@@ -1360,6 +1361,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                         flag_media_not_supported=True   
                     elif media_type=='video':
                         setInfo_type='video'
+                        modecommand='playVideo'
                         thumb_url=t.ret_thumb_url()
                         poster_url=thumb_url
                         pluginUrl=ret_url
@@ -1484,12 +1486,15 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                 elif hoster in ['Instagram']:   
                     #instagram video is handled by ytdl addon but we still figure out image/album 
                     pluginUrl=media_url
-                    thumb_url=ret_Instagram_thumbnail(media_url)
+                    #thumb_url=ret_Instagram_thumbnail(media_url) #kodi won't display (no .jpg/.png extension in link)
                     #poster_url=thumb_url  #ret_Instagram_thumbnail(media_url,'l')  #doesn't display
                     #log("  thumb: "+poster_url)
                     if assume_is_video==False:  #we determined that this is not a video accdg. to reddit json
                         setInfo_type='pictures'
                         modecommand='playInstagram'
+                    elif assume_is_video==True:
+                        setInfo_type='video'
+                        modecommand='playYTDLVideo'
                         #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
 
             except Exception as e:
