@@ -589,21 +589,6 @@ def listSubReddit(url, title_bar_name, type):
     if not content:
         xbmc_busy(False)
         return
-
-#     info_label={ "plot": translation(30013) }  #Automatically play videos
-#     if showAllNewest:
-#         addDir("[B]- "+translation(30016)+"[/B]", url, 'autoPlay', "", "ALL_NEW", info_label)
-#     if showUnwatchedNewest:
-#         addDir("[B]- "+translation(30017)+"[/B]", url, 'autoPlay', "", "UNWATCHED_NEW", info_label)
-#     if showUnfinishedNewest:
-#         addDir("[B]- "+translation(30018)+"[/B]", url, 'autoPlay', "", "UNFINISHED_NEW", info_label)
-#     if showAll:
-#         addDir("[B]- "+translation(30012)+"[/B]", url, 'autoPlay', "", "ALL_RANDOM", info_label)
-#     if showUnwatched:
-#         addDir("[B]- "+translation(30014)+"[/B]", url, 'autoPlay', "", "UNWATCHED_RANDOM", info_label)
-#     if showUnfinished:
-#         addDir("[B]- "+translation(30015)+"[/B]", url, 'autoPlay', "", "UNFINISHED_RANDOM", info_label)
-
     
     #7-15-2016  removed the "replace(..." statement below cause it was causing error
     #content = json.loads(content.replace('\\"', '\''))
@@ -614,6 +599,14 @@ def listSubReddit(url, title_bar_name, type):
     
     hms = has_multiple_subreddits(content['data']['children'])
     
+    if hms==False:
+        #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link. 
+        try: g=content['data']['children'][0]['data']['subreddit']
+        except: g=""
+        if g:
+            title_bar_name=g
+            currentUrl=assemble_reddit_filter_string('',g)
+
     for idx, entry in enumerate(content['data']['children']):
         try:
             title = cleanTitle(entry['data']['title'].encode('utf-8'))
@@ -1111,7 +1104,7 @@ def autoPlay(url, name, type):
     xbmc.Player().play(playlist)
 
 def collect_thumbs( entry ):
-    #collect the thumbs from reddit json
+    #collect the thumbs from reddit json (not used)
     dictList = []
     keys=['thumb','width','height']
     e=[]
