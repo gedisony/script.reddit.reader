@@ -613,7 +613,7 @@ def listSubReddit(url, title_bar_name, type):
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             
-            try:    description = cleanTitle(entry['data']['media']['oembed']['description'].encode('utf-8'))
+            try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
             except: description = ''
 
             try:    post_selftext=unescape(entry['data']['selftext'].encode('utf-8'))
@@ -2656,7 +2656,10 @@ def unescape(text):
             except KeyError:
                 pass
         return text # leave as is
-    return re.sub("&#?\w+;", fixup, text)
+    text=re.sub("&#?\w+;", fixup, text)
+    text=text.replace('&nbsp;',' ')
+    text=text.replace('\n\n','\n')
+    return text
 
 def markdown_to_bbcode(s):
     #https://gist.github.com/sma/1513929
