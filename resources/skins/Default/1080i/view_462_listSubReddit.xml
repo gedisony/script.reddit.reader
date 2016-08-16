@@ -101,9 +101,9 @@
 				</control>
 
 				<control type="textbox" id="65592"><description>partner with id 203</description>
-					<left>912</left>
+					<left>942</left>
 					<top>758</top>
-					<width>980</width>
+					<width>950</width>
 					<height>320</height>
 					<font>font13</font>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>

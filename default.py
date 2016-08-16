@@ -693,12 +693,6 @@ def listSubReddit(url, title_bar_name, type):
                     #log('  thumb ends with .gif')
                 #    thumb = entry['data']['thumbnail'].encode('utf-8')
                 
-                filename,ext=parse_filename_and_ext_from_url(preview.split('?')[0])
-                if ext == 'gif': #we can't handle gif thumbnail
-                    preview=""
-                    thumb_w=0
-                    thumb_h=0
-                    #raise something
                 try:
                     thumb_h = float( entry['data']['preview']['images'][0]['source']['height'] )
                     thumb_w = float( entry['data']['preview']['images'][0]['source']['width'] )
