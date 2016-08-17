@@ -2,7 +2,7 @@
 <addon
     id="script.reddit.reader"
     name="Reddit Reader"
-    version="0.3.0"
+    version="0.4.0"
     provider-name="gedisony">
     <requires>
         <import addon="xbmc.python"                     version="2.14.0"                />
@@ -29,8 +29,8 @@
         <language></language>
         <description lang="en">Reddit is a social news and entertainment website where users share and vote on content they find funny and interesting.[CR]View Reddit video and images on Kodi[CR][CR]Original by: AddonscriptorDE and rasjani [CR]Forked from https://github.com/rasjani/plugin.video.reddit_tv[CR]</description>
         <website>http://www.reddit.com</website>
-        <source>https://github.com/gedisony/plugin.video.reddit_viewer</source>
-        <forum>http://forum.kodi.tv/showthread.php?tid=280388</forum>
+        <source>https://github.com/gedisony/script.reddit.reader</source>
+        <forum>http://forum.kodi.tv/showthread.php?tid=287355</forum>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <email>gediso+ny at gmail dot com</email>
 		

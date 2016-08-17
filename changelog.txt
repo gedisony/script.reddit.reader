@@ -16,4 +16,10 @@
  - android compatibility fix 
  - follow subreddit links in comment
  - button to arrange links in comments at top of list
+ 0.4.0 (08-17-2016)
+ - reorganize code
+ - support flickr galleries/groups
+ - filter posts by subreddit or domain
+ - kodi 16 compatibility 
+ 
  
