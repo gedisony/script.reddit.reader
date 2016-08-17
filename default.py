@@ -315,9 +315,13 @@ def editSubreddit(subreddit, name, type):
 def skin_chooser():
     
     from resources.lib.utils import xbmcVersion
-    #build = xbmc.getInfoLabel('System.BuildVersion')
-    log( ' kodi version:%f' % xbmcVersion() )
-                
+    
+    kodi_version = xbmcVersion()
+    log( ' kodi version:%f' % kodi_version )
+    
+    if kodi_version >= 17:  #krypton
+        pass
+    
 
 def index(url,name,type):
     ## this is where the __main screen is created
@@ -625,7 +629,7 @@ def listSubReddit(url, title_bar_name, type):
     title_bar_name=urllib.unquote_plus(title_bar_name)
     
     from resources.lib.guis import listSubRedditGUI    
-    ui = listSubRedditGUI('view_462_listSubReddit.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
+    ui = listSubRedditGUI('view_462_listSubReddit_j.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
     ui.title_bar_text='[B]'+ title_bar_name + '[/B]'
     #ui.include_parent_directory_entry=True
 
