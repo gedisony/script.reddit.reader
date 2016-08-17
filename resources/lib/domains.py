@@ -13,7 +13,8 @@ import json
 from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
 
-from default import build_script, default_ytdl_psites_file, default_ytdl_sites_file
+from default import default_ytdl_psites_file, default_ytdl_sites_file
+from utils import build_script
 
 
 
@@ -1643,6 +1644,9 @@ def ytdl_hoster( url_to_check ):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
 #    return "RunAddon(%s,%s)" %(addonID, "?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
 
+
+if __name__ == '__main__':
+    pass
 
 '''
 #special credit to https://www.reddit.com/r/learnpython/comments/4pl11h/dynamically_instantiate_class_from_class_method/

@@ -142,7 +142,7 @@ class cGUI(xbmcgui.WindowXML):
             pass
 
     def load_subreddits_file_into_a_listitem(self):
-        from default import parse_subreddit_entry, build_script, compose_list_item, assemble_reddit_filter_string
+        from utils import parse_subreddit_entry, build_script, compose_list_item, assemble_reddit_filter_string, prettify_reddit_query
         entries=[]
         listing=[]
         
@@ -166,7 +166,7 @@ class cGUI(xbmcgui.WindowXML):
         
             reddit_url= assemble_reddit_filter_string("",subreddit, "yes")
     
-            liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,alias) )
+            liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,prettify_reddit_query(alias)) )
             liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )
         
             listing.append(liz)

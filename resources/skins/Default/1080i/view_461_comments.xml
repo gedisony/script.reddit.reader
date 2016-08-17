@@ -269,7 +269,7 @@
 					<height>756</height>
 					<aspectratio>keep</aspectratio>
 					<fadetime>300</fadetime>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible>
+					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<visible>!Player.HasMedia</visible>
 					<texture background="true" fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
