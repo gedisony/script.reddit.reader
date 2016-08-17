@@ -67,8 +67,8 @@
 	<!--END include name="UpDownArrows"-->
 	
 		<control type="group">
-			<include>OpenClose_Left</include>
-			<include>Visible_Left</include>
+			<!-- OpenClose_Left - OpenClose_FadeSlide_Left --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Left - Vis_FadeSlide_Left --><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
 			<left>93</left>
 			<top>122</top>
 			<visible>true</visible>
@@ -97,8 +97,9 @@
 					<control type="image">
 						<left>0</left>
 						<top>0</top>
-						<width>1096</width>
+						<width>996</width>
 						<height>37</height>
+						<aspectratio aligny="bottom" >keep</aspectratio>
 						<texture>separator.png</texture>
 						<visible>!Control.HasFocus(55)</visible>
 					</control>
@@ -149,8 +150,9 @@
 					<control type="image">
 						<left>0</left>
 						<top>0</top>
-						<width>1396</width>
+						<width>996</width>
 						<height>37</height>
+						<aspectratio aligny="bottom" >keep</aspectratio>
 						<texture>separator.png</texture>
 					</control>
 					<control type="label"><!-- the little square(bullet) on the right of list gets replaced by 'year' -->
@@ -200,7 +202,7 @@
 			</control>
 
 			<control type="button" id="6771"><description>button to sort links on top</description>
-				<visible>!String.IsEmpty(Window.Property(comments))</visible>
+				<visible>!IsEmpty(Window.Property(comments))</visible>
 					<top>200</top>
 					<left>-80</left>
 					<width>80</width>
@@ -224,8 +226,8 @@
 	<!--END include>View_55_WideList</include -->
 
 		<control type="group"><description>Right side panel. this is where the comment and preview is shown</description>
-			<include>OpenClose_Right</include>
-			<include>Visible_Right</include>
+			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 			<visible>true</visible>
 				
 				<control type="image">
@@ -286,7 +288,7 @@
 
 		<!--BEGIN include name="TopBar"-->
 			<control type="group">
-				<animation effect="slide" end="0,-90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation>
+				<!--  animation effect="slide" end="0,-90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation-->
 				<depth>DepthBars</depth>
 				<animation effect="fade" start="0" end="100" time="300" condition="[Window.Previous(fullscreenvideo) | Window.Previous(startup)] + !Window.IsVisible(1109)">WindowOpen</animation>
 				<control type="image">
@@ -335,7 +337,7 @@
 				</control>
 				<control type="label"><description>fine text under the bigger text on Left side of top bar</description>
 					<top>40</top>
-					<label>$INFO[Container.SortMethod,$LOCALIZE[31022]: ]</label>
+					<label></label>
 					<font>font10</font>
 					<left>85</left>
 					<shadowcolor>text_shadow</shadowcolor>
@@ -392,7 +394,7 @@
 
 		<!--BEGIN include name="BottomBar"-->
 			<control type="group">
-				<animation effect="slide" end="0,90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation>
+				<!-- animation effect="slide" end="0,90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation-->
 				<depth>DepthBars</depth>
 				<animation effect="fade" start="100" end="0" time="300" condition="Window.Next(visualisation) | Window.Next(screencalibration)">WindowClose</animation>
 				<animation effect="fade" start="0" end="100" time="300" condition="Window.Previous(fullscreenvideo) | Window.Previous(startup) | Window.Previous(visualisation)">WindowOpen</animation>

@@ -1187,6 +1187,8 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
 
+    from utils import assemble_reddit_filter_string 
+
     pluginUrl=""     #'url=' param to use for our plugin 'mode=' will determine how we deal with the url
     hoster=None
     videoID=""
@@ -1418,11 +1420,10 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                          
                 elif hoster=="Reddit.com":
                     if media_url.startswith('/r/'):
-                        from default import assemble_reddit_filter_string #(search_string, subreddit, skip_site_filters="", domain="" ):
                         #log('    ********************subreddit')
                         #liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
                         setInfo_type='reddit'
-                        pluginUrl=assemble_reddit_filter_string("",videoID)
+                        pluginUrl=assemble_reddit_filter_string("",videoID) #(search_string, subreddit, skip_site_filters="", domain="" ):
                     
                     if '/comments/' in media_url:
                         setInfo_type='reddit'
@@ -1514,8 +1515,10 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                 
         else:  # if match 
             #originally ytdl sites were matched in supported sites[] but it is getting so big that it is moved to a separate configurable file.
+
             #check if it matches ytdl sites
             for rex in ytdl_sites:
+                #if rex.startswith('f'):log( ' rex=='+ rex )
                 if rex in media_url:
                     #log( "    ydtl-" + rex +" matched IN>"+ media_url)
                     hoster=rex

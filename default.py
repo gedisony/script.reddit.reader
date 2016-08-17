@@ -948,7 +948,7 @@ def playYTDLVideo(url, name, type):
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://video.gq.com/watch/adriana-lima' 
+    #url='http://sexix.net/video80058-twotgirls-yuuki-and-mayumi-sparkles-teen-lesbian-schoolgirls-play-truth-or-dare/' 
     choices = []
 
     #from BeautifulsSoup import BeautifulSoup
@@ -965,8 +965,8 @@ def playYTDLVideo(url, name, type):
 # userporn.com hdpornstar.com moviesand.com chumleaf.com fucktube.com fookgle.com pornative.com dailee.com pornsharia.com fux.com sluttyred.com pk5.net kuntfutube.com youpunish.com
 # vidxnet.com jizzbox.com bondagetube.tv spankingtube.tv pornheed.com pornwaiter.com lubetube.com porncor.com maxjizztube.com asianxtv.com analxtv.com yteenporn.com nurglestube.com yporn.tv
 # asiantubesex.com zuzandra.com moviesguy.com bustnow.com dirtydirtyangels.com yazum.com watchersweb.com voyeurweb.com zoig.com flingtube.com yourfreeporn.us foxgay.com goshgay.com
-# player.moviefap.com(www.moviefap.com works) nosvideo.com played.to(site is gone)
-
+# player.moviefap.com(www.moviefap.com works) nosvideo.com played.to(site is gone) sextvx.com camwhores.tv hentaidream.me yourdailypornvideos.com watchxxxfree.com pornovo.com sexix.net
+ 
 # also does not work (non porn)
 # rutube.ru  mail.ru  afreeca.com nicovideo.jp  videos.sapo.pt(many but not all) sciencestage.com vidoosh.tv metacafe.com vzaar.com videojug.com trilulilu.ro tudou.com video.yahoo.com blinkx.com blip.tv
 # blogtv.com  brainpop.com crackle.com engagemedia.org expotv.com flickr.com fotki.com hulu.com lafango.com  mefeedia.com motionpictur.com izlesene.com sevenload.com patas.in myvideo.de

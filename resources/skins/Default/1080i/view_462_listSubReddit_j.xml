@@ -76,7 +76,7 @@
 					<aspectratio scalediffuse="true">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
-					<visible>String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 				<control type="image" id="203"><description>partner with id 65592</description>
@@ -89,7 +89,7 @@
 					<aspectratio scalediffuse="true" aligny="bottom">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
-					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 
@@ -111,7 +111,7 @@
 					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<!-- visible>!Control.IsVisible(65591)</visible-->
 					<label>$INFO[Container(55).ListItem.PlotOutline]</label>
-					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
 				</control>
 
 			</control>
@@ -146,6 +146,7 @@
 					<control type="image">
 						<width>980</width>
 						<height>83</height>
+						<aspectratio aligny="bottom" >keep</aspectratio>
 						<texture>separator.png</texture>
 						<visible>!Control.HasFocus(55)</visible>
 					</control>
@@ -220,6 +221,7 @@
 					<control type="image">
 						<width>980</width>
 						<height>83</height>
+						<aspectratio aligny="bottom" >keep</aspectratio>
 						<texture>separator.png</texture>
 					</control>
 					<control type="image">
