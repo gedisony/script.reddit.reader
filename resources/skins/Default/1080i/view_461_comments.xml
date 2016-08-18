@@ -318,23 +318,18 @@
 					<texturefocus>-</texturefocus>
 					<texturenofocus>-</texturenofocus>
 				</control-->
-				<control type="grouplist"><description>text Left side of top bar</description>
+
+				<control type="label" id="1">
+					<top>10</top>
 					<left>85</left>
-					<width>1500</width>
 					<height>100</height>
-					<orientation>horizontal</orientation>
-					<usecontrolcoords>true</usecontrolcoords>
-					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
-					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-					<animation effect="slide" end="0,12" time="200" reversible="true" condition="String.IsEmpty(Container.SortMethod)">Conditional</animation>
-					<control type="label" id="1">
-						<width>1300</width>
-						<scroll>true</scroll>
-						<scrollspeed>50</scrollspeed>
-        				<scrollsuffix>           - </scrollsuffix>						
-        				<label></label>
-					</control>
+					<width>1500</width>
+					<scroll>true</scroll>
+					<scrollspeed>50</scrollspeed>
+       				<scrollsuffix>           - </scrollsuffix>						
+       				<label></label>
 				</control>
+
 				<control type="label"><description>fine text under the bigger text on Left side of top bar</description>
 					<top>40</top>
 					<label></label>
@@ -356,12 +351,12 @@
 
 						<control type="label">
 							<top>7</top>
-							<left>1724</left>
+							<left>1635</left>
 							<height>100</height>
 							<width>200</width>
 							<font>font13</font>
 							<shadowcolor>text_shadow</shadowcolor>
-							<align>left</align>
+							<align>right</align>
 							<label>[B]$INFO[System.Time][/B]</label>
 						</control>
 
@@ -381,7 +376,7 @@
 							<top>40</top>
 							<label>$INFO[System.Date]</label>
 							<font>font10</font>
-							<left>1340</left>
+							<left>1335</left>
 							<shadowcolor>text_shadow</shadowcolor>
 							<height>100</height>
 							<width>500</width>
@@ -415,6 +410,7 @@
 					<control type="group">
 						
 						<control type="image"><description>icon depicting what kind of media the link points to</description>
+							<top>0</top>
 							<left>17</left>
 							<width>48</width>
 							<height>48</height>
@@ -423,6 +419,7 @@
 						</control>
 						
 						<control type="label">
+							<top>0</top>
 							<left>78</left>
 							<label>[B]$INFO[Container(55).ListItem.Studio][/B]</label>
 							<font>font13</font>
@@ -430,6 +427,19 @@
 							<height>35</height>
 							<width min="1" max="992">auto</width>
 						</control>
+						
+						<control type="label" >
+							<left>78</left>
+							<top>35</top>
+							<height>25</height>
+							<width>1920</width>
+							<font>font10</font>
+							<shadowcolor>text_shadow</shadowcolor>
+							<haspath>true</haspath>
+							<textcolor>44B2D4F5</textcolor>
+							<label>$INFO[Container(55).ListItem.Property(link_url)]</label>
+						</control>
+						
 					</control>
 				</control>
 				

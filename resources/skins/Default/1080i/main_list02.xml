@@ -405,12 +405,12 @@
 						<control type="label">
 							<!-- include name="BreadcrumbsLabel"-->
 								<top>7</top>
-								<left>1724</left>
+								<left>1635</left>
 								<height>100</height>
 								<width>200</width>
 								<font>font13</font>
 								<shadowcolor>text_shadow</shadowcolor>
-								<align>left</align>
+								<align>right</align>
 							<!-- END include name="BreadcrumbsLabel" -->
 							<label>[B]$INFO[System.Time][/B]</label>
 						</control>
@@ -429,7 +429,7 @@
 						</control>
 						<control type="label">
 							<top>40</top>
-							<left>1340</left>
+							<left>1355</left>
 							<label>$INFO[System.Date]</label>
 							<font>font10</font>
 							<shadowcolor>text_shadow</shadowcolor>

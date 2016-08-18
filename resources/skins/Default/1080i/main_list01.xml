@@ -404,12 +404,12 @@
 						<control type="label">
 							<!-- include name="BreadcrumbsLabel"-->
 								<top>7</top>
-								<left>1724</left>
+								<left>1635</left>
 								<height>100</height>
 								<width>200</width>
 								<font>font13</font>
 								<shadowcolor>text_shadow</shadowcolor>
-								<align>left</align>
+								<align>right</align>
 							<!-- END include name="BreadcrumbsLabel" -->
 							<label>[B]$INFO[System.Time][/B]</label>
 						</control>
@@ -428,7 +428,7 @@
 						</control>
 						<control type="label">
 							<top>40</top>
-							<left>1340</left>
+							<left>1335</left>
 							<label>$INFO[System.Date]</label>
 							<font>font10</font>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -464,6 +464,7 @@
 					<control type="group">
 						
 						<control type="image"><description>icon depicting what kind of media the link points to</description>
+							<top>0</top>
 							<left>17</left>
 							<width>48</width>
 							<height>48</height>
@@ -472,6 +473,7 @@
 						</control>
 						
 						<control type="label">
+							<top>0</top>
 							<left>78</left>
 							<label>[B]$INFO[Container(55).ListItem.Studio][/B]</label>
 							<font>font13</font>

@@ -1241,6 +1241,7 @@ def listLinksInComment(url, name, type):
         
                     liz.setProperty('item_type',property_link_type)   #script or playable
                     liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
+                    liz.setProperty('link_url', h[2] )
                     #liz.setPath(DirectoryItem_url) 
         
                     directory_items.append( (DirectoryItem_url, liz, isFolder,) )
