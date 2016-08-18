@@ -98,7 +98,7 @@ no_index_page        = addon.getSetting("no_index_page") == "true"
 show_nsfw            = addon.getSetting("show_nsfw") == "true"
 domain_filter        = addon.getSetting("domain_filter")
 subreddit_filter     = addon.getSetting("subreddit_filter")
-
+main_gui_skin        = addon.getSetting("main_gui_skin")
 
 
 #r_AccessToken         = addon.getSetting("r_AccessToken") 
@@ -312,17 +312,6 @@ def editSubreddit(subreddit, name, type):
 
 
 
-def skin_chooser():
-    
-    from resources.lib.utils import xbmcVersion
-    
-    kodi_version = xbmcVersion()
-    log( ' kodi version:%f' % kodi_version )
-    
-    if kodi_version >= 17:  #krypton
-        pass
-    
-
 def index(url,name,type):
     ## this is where the __main screen is created
 
@@ -351,7 +340,6 @@ def index(url,name,type):
     #log( "--------------------"+ addon.getAddonInfo('path') )
     #log( "--------------------"+ addon.getAddonInfo('profile') )
      
-    skin_chooser()    
     #this part errors on android. comment out until feature is implemented
 #     if not os.path.exists(ytdl_psites_file): 
 #         #copy over default file
@@ -627,16 +615,38 @@ def listSubReddit(url, title_bar_name, type):
     xbmc_busy(False)
     
     title_bar_name=urllib.unquote_plus(title_bar_name)
-    
-    from resources.lib.guis import listSubRedditGUI    
-    ui = listSubRedditGUI('view_462_listSubReddit_j.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subredditsFile, id=55)
-    ui.title_bar_text='[B]'+ title_bar_name + '[/B]'
-    #ui.include_parent_directory_entry=True
-
-    ui.doModal()
+    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile )    
     
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
+
+def skin_launcher(mode,**kwargs ):
+    
+    from resources.lib.utils import xbmcVersion
+    from resources.lib.guis import listSubRedditGUI
+        
+    kodi_version = xbmcVersion()
+    #log( ' kodi version:%f' % kodi_version )
+    if kodi_version >= 17:  #krypton
+        pass
+    
+    
+    title_bar_text=kwargs.get('title_bar_name')
+    li=kwargs.get('li')
+    subreddits_file=kwargs.get('subreddits_file')
+
+    try:    
+        ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subreddits_file, id=55)
+        ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
+        #ui.include_parent_directory_entry=True
+    
+        ui.doModal()
+        del ui
+    except Exception as e:
+        log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
+        xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
+        
+
 
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_index=1,post_total=1,many_subreddit=False ):
     from resources.lib.utils import ret_info_type_icon, assemble_reddit_filter_string,build_script
@@ -948,7 +958,7 @@ def playYTDLVideo(url, name, type):
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://sexix.net/video80058-twotgirls-yuuki-and-mayumi-sparkles-teen-lesbian-schoolgirls-play-truth-or-dare/' 
+    #url='http://www.sextvx.com/en/video/638161/chanel-preston-hardcore-gangbang-anal-d-p' 
     choices = []
 
     #from BeautifulsSoup import BeautifulSoup
@@ -958,26 +968,28 @@ def playYTDLVideo(url, name, type):
     
 
 #these checks done in around May 2016
-#does not work:  yourlust  porntube xpornvid.com porndig.com  thumbzilla.com eporner.com yuvutu.com porn.com pornerbros.com fux.com flyflv.com xstigma.com sexu.com 5min.com alphaporno.com
-# stickyxtube.com xxxbunker.com bdsmstreak.com  jizzxman.com pornwebms.com pornurl.pw porness.tv openload.online pornworms.com fapgod.com porness.tv hvdporn.com pornmax.xyz xfig.net yobt.com
-# eroshare.com kalporn.com hdvideos.porn dailygirlscute.com desianalporn.com indianxxxhd.com onlypron.com sherloxxx.com hdvideos.porn x1xporn.com pornhvd.com lxxlx.com xrhub.com shooshtime.com
-# pornvil.com lxxlx.com redclip.xyz younow.com aniboom.com  gotporn.com  virtualtaboo.com 18porn.xyz vidshort.net fapxl.com vidmega.net freudbox.com bigtits.com xfapzap.com orgasm.com
-# userporn.com hdpornstar.com moviesand.com chumleaf.com fucktube.com fookgle.com pornative.com dailee.com pornsharia.com fux.com sluttyred.com pk5.net kuntfutube.com youpunish.com
-# vidxnet.com jizzbox.com bondagetube.tv spankingtube.tv pornheed.com pornwaiter.com lubetube.com porncor.com maxjizztube.com asianxtv.com analxtv.com yteenporn.com nurglestube.com yporn.tv
-# asiantubesex.com zuzandra.com moviesguy.com bustnow.com dirtydirtyangels.com yazum.com watchersweb.com voyeurweb.com zoig.com flingtube.com yourfreeporn.us foxgay.com goshgay.com
-# player.moviefap.com(www.moviefap.com works) nosvideo.com played.to(site is gone) sextvx.com camwhores.tv hentaidream.me yourdailypornvideos.com watchxxxfree.com pornovo.com sexix.net
+#does not work:  18porn.xyz 5min.com alphaporno.com analxtv.com aniboom.com asiantubesex.com asianxtv.com bdsmstreak.com bigtits.com bondagetube.tv bustnow.com camwhores.tv chumleaf.com dailee.com dailygirlscute.com
+# desianalporn.com dirtydirtyangels.com eporner.com eroshare.com fapgod.com fapxl.com flingtube.com flyflv.com fookgle.com foxgay.com freudbox.com fucktube.com fux.com fux.com goshgay.com gotporn.com hdpornstar.com
+# hdvideos.porn hdvideos.porn hentaidream.me hvdporn.com indianxxxhd.com jizzbox.com jizzxman.com kalporn.com kuntfutube.com lubetube.com lxxlx.com lxxlx.com maxjizztube.com moviesand.com moviesguy.com
+# nosvideo.com nurglestube.com onlypron.com openload.online orgasm.com pk5.net played.to(site is gone) player.moviefap.com(www.moviefap.com works) porn.com pornative.com porncor.com porndig.com pornerbros.com
+# porness.tv porness.tv pornheed.com pornhvd.com pornmax.xyz pornovo.com pornsharia.com porntube pornurl.pw pornvil.com pornwaiter.com pornwebms.com pornworms.com redclip.xyz sexix.net sextvx.com sexu.com
+# sherloxxx.com shooshtime.com sluttyred.com spankingtube.tv stickyxtube.com thumbzilla.com userporn.com vidmega.net vidshort.net vidxnet.com virtualtaboo.com voyeurweb.com watchersweb.com watchxxxfree.com
+# woporn.net x1xporn.com xfapzap.com xfig.net xpornvid.com xrhub.com xstigma.com xxxbunker.com yazum.com yobt.com younow.com youpunish.com yourdailypornvideos.com yourfreeporn.us yourlust yporn.tv yteenporn.com
+# yuvutu.com zoig.com zuzandra.com
+ 
  
 # also does not work (non porn)
-# rutube.ru  mail.ru  afreeca.com nicovideo.jp  videos.sapo.pt(many but not all) sciencestage.com vidoosh.tv metacafe.com vzaar.com videojug.com trilulilu.ro tudou.com video.yahoo.com blinkx.com blip.tv
-# blogtv.com  brainpop.com crackle.com engagemedia.org expotv.com flickr.com fotki.com hulu.com lafango.com  mefeedia.com motionpictur.com izlesene.com sevenload.com patas.in myvideo.de
-# vbox7.com 1tv.ru 1up.com 220.ro 24video.xxx 3sat.de 56.com adultswim.com atresplayer.com techchannel.att.com v.baidu.com azubu.tv www.bbc.co.uk/iplayer bet.com biobiochile.cl biqle.com
-# bloomberg.com/news/videos bpb.de bravotv.com byutv.org cbc.ca chirbit.com cloudtime.to(almost) cloudyvideos.com cracked.com crackle.com criterion.com ctv.ca culturebox.francetvinfo.fr
-# cultureunplugged.com cwtv.com daum.net dctp.tv democracynow.org douyutv.com dumpert.nl eitb.tv ex.fm fc-zenit.ru  ikudonsubs.com akb48ma.com Flipagram.com ft.dk Formula1.com
-# fox.com/watch(few works) video.foxnews.com foxsports.com france2.fr franceculture.fr franceinter.fr francetv.fr/videos francetvinfo.fr giantbomb.com hbo.com History.com hitbox.tv
-# howcast.com HowStuffWorks.com hrt.hr iconosquare.com infoq.com  ivi.ru kamcord.com/v video.kankan.com karrierevideos.at KrasView.ru hlamer.ru kuwo.cn la7.it laola1.tv le.com
-# media.ccc.de metacritic.com mitele.es  moevideo.net,playreplay.net,videochart.net vidspot.net(might work, can't find recent post) movieclips.com mtv.de mtviggy.com muenchen.tv myspace.com
-# myvi.ru myvideo.de myvideo.ge 163.com netzkino.de nfb.ca nicovideo.jp  videohive.net normalboots.com nowness.com ntr.nl nrk.no ntv.ru/video ocw.mit.edu odnoklassniki.ru/video 
-# onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv  periscope.tv play.fm pluzz.francetv.fr nbcolympics.com olympics.cbc.ca
+#  163.com 1tv.ru 1up.com 220.ro 24video.xxx 3sat.de 56.com adultswim.com afreeca.com akb48ma.com atresplayer.com azubu.tv bet.com biobiochile.cl biqle.com blinkx.com blip.tv blogtv.com bloomberg.com/news/videos
+# bpb.de brainpop.com bravotv.com byutv.org cbc.ca chirbit.com cloudtime.to(almost) cloudyvideos.com cracked.com crackle.com crackle.com criterion.com ctv.ca culturebox.francetvinfo.fr cultureunplugged.com cwtv.com
+# daum.net dctp.tv democracynow.org douyutv.com dumpert.nl eitb.tv engagemedia.org ex.fm expotv.com fc-zenit.ru flickr.com Flipagram.com Formula1.com fotki.com fox.com/watch(few works) foxsports.com france2.fr
+# franceculture.fr franceinter.fr francetv.fr/videos francetvinfo.fr ft.dk giantbomb.com hbo.com History.com hitbox.tv hlamer.ru howcast.com HowStuffWorks.com hrt.hr hulu.com iconosquare.com ikudonsubs.com
+# infoq.com ivi.ru izlesene.com kamcord.com/v karrierevideos.at KrasView.ru kuwo.cn la7.it lafango.com laola1.tv le.com mail.ru media.ccc.de mefeedia.com metacafe.com metacritic.com mitele.es moevideo.net,playreplay.net,videochart.net
+# motionpictur.com movieclips.com mtv.de mtviggy.com muenchen.tv myspace.com myvi.ru myvideo.de myvideo.de myvideo.ge nbcolympics.com netzkino.de nfb.ca nicovideo.jp nicovideo.jp normalboots.com nowness.com
+# nrk.no ntr.nl ntv.ru/video ocw.mit.edu odnoklassniki.ru/video olympics.cbc.ca onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv patas.in periscope.tv play.fm pluzz.francetv.fr rutube.ru
+# sciencestage.com sevenload.com techchannel.att.com trilulilu.ro tudou.com v.baidu.com vbox7.com video.foxnews.com video.kankan.com video.yahoo.com videohive.net videojug.com videos.sapo.pt(many but not all)
+# vidoosh.tv vidspot.net(might work, can't find recent post) vzaar.com www.bbc.co.uk/iplayer
+
+
 
 # news site (can't find sample to test) 
 # bleacherreport.com crooksandliars.com DailyMail.com channel5.com Funimation.com gamersyde.com gamespot.com gazeta.pl helsinki.fi hotnewhiphop.com lemonde.fr mnet.com motorsport.com MSN.com

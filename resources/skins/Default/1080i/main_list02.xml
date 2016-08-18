@@ -10,9 +10,10 @@
 	
 		<!--BEGIN include name="DefaultBackground"-->
 			<control type="group"><description>Right side panel</description>
-			<include>OpenClose_Right</include>
-			<include>Visible_Right</include>
 
+			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
+		
 				<control type="group"><description>this big textbox is for text posts. visible when no banner and thumb art</description>
 					<visible>isEmpty(Container(55).ListItem.Art(thumb)) + isEmpty(Container(55).ListItem.Art(banner)) </visible>
 					<control type="textbox" id="65591">
@@ -75,7 +76,7 @@
 					<aspectratio scalediffuse="true">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
-					<visible>String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 				<control type="image" id="203"><description>partner with id 65592</description>
@@ -88,7 +89,7 @@
 					<aspectratio scalediffuse="true" aligny="bottom">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
-					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 
@@ -110,7 +111,7 @@
 					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<!-- visible>!Control.IsVisible(65591)</visible-->
 					<label>$INFO[Container(55).ListItem.PlotOutline]</label>
-					<visible>!String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
 				</control>
 
 			</control>
@@ -119,8 +120,10 @@
 	<!--BEGIN include>View_55_WideList</include -->
 
 		<control type="group">
-			<include>OpenClose_Left</include>
-			<include>Visible_Left</include>
+		
+			<!-- OpenClose_Left - OpenClose_FadeSlide_Left --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Left - Vis_FadeSlide_Left --><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
+			
 			<left>13</left>
 			<top>82</top>
 			<visible>true</visible>
@@ -143,7 +146,8 @@
 					<control type="image">
 						<width>980</width>
 						<height>83</height>
-						<texture>separator.png</texture>
+						<aspectratio aligny="bottom" >keep</aspectratio>
+						<texture>srr_separator.png</texture>
 						<visible>!Control.HasFocus(55)</visible>
 					</control>
 					<control type="image">
@@ -217,7 +221,8 @@
 					<control type="image">
 						<width>980</width>
 						<height>83</height>
-						<texture>separator.png</texture>
+						<aspectratio aligny="bottom" >keep</aspectratio>
+						<texture>srr_separator.png</texture>
 					</control>
 					<control type="image">
 						<width>140</width>
@@ -302,8 +307,8 @@
 			<top>970</top>
 			<width>48</width>
 			<height>24</height>
-			<texturefocus colordiffuse="FF12A8DA">overlays/arrowdown.png</texturefocus>
-			<texturenofocus colordiffuse="FF12A8DA">overlays/arrowdown.png</texturenofocus>
+			<texturefocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturefocus>
+			<texturenofocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturenofocus>
 			<animation effect="zoom" start="100,0" end="100,100" center="auto" time="200" delay="10">VisibleChange</animation>
 			<animation effect="zoom" start="100,0" end="100,100" delay="500" center="auto" time="200">WindowOpen</animation>
 			<animation effect="zoom" start="100,100" end="100,0" center="auto" time="200">WindowClose</animation>
@@ -317,8 +322,8 @@
 			<top>104</top>
 			<width>48</width>
 			<height>24</height>
-			<texturefocus colordiffuse="FF12A8DA" flipy="true">overlays/arrowdown.png</texturefocus>
-			<texturenofocus colordiffuse="FF12A8DA" flipy="true">overlays/arrowdown.png</texturenofocus>
+			<texturefocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturefocus>
+			<texturenofocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturenofocus>
 			<animation effect="zoom" start="100,0" end="100,100" center="auto" time="200" delay="10">VisibleChange</animation>
 			<animation effect="zoom" start="100,0" end="100,100" delay="500" center="auto" time="200">WindowOpen</animation>
 			<animation effect="zoom" start="100,100" end="100,0" center="auto" time="200">WindowClose</animation>
@@ -365,25 +370,18 @@
 					<texturefocus>-</texturefocus>
 					<texturenofocus>-</texturenofocus>
 				</control-->
-				<control type="grouplist"><description>text Left side of top bar</description>
+
+				<control type="label" id="1">
+					<top>10</top>
 					<left>85</left>
-					<width>1500</width>
 					<height>100</height>
-					<orientation>vertical</orientation>
-					<itemgap>10</itemgap>
-					<usecontrolcoords>true</usecontrolcoords>
-					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
-					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-					<animation effect="slide" end="0,12" time="200" reversible="true" condition="String.IsEmpty(Container.SortMethod)">Conditional</animation>
-					<control type="label" id="1">
-						<top>10</top>
-						<width>1300</width>
-						<scroll>true</scroll>
-						<scrollspeed>50</scrollspeed>
-        				<scrollsuffix>           - </scrollsuffix>						
-        				<label></label>
-					</control>
+					<width>1500</width>
+					<scroll>true</scroll>
+					<scrollspeed>50</scrollspeed>
+       				<scrollsuffix>           - </scrollsuffix>						
+       				<label></label>
 				</control>
+
 				<!-- control type="label"><description>fine text under the bigger text on Left side of top bar</description>
 					<top>40</top>
 					<label>$INFO[Container.SortMethod,$LOCALIZE[31022]: ]</label>
@@ -423,7 +421,7 @@
 							<left>1855</left>
 							<height>40</height>
 							<width>40</width>
-							<texture colordiffuse="FF12A8DA">clock.png</texture>
+							<texture colordiffuse="FF12A8DA">srr_clock.png</texture>
 							<animation effect="fade" time="300">Visible</animation>
 							<animation effect="fade" time="150">Hidden</animation>
 							<aspectratio>keep</aspectratio>
@@ -575,7 +573,7 @@
 			<top>80</top>
 			<width>484</width>
 			<height>920</height>
-			<texture>panel.png</texture>
+			<texture>srr_panel.png</texture>
 		</control>
 	<!--  END include name="MediaMenuCommon" -->
 	
@@ -602,10 +600,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
-					<texturenofocus border="30">separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
-					<alttexturenofocus border="30">separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32051]</label>
 				<label2>$INFO[Container(55).ListItem.Genre]</label2>
 				
@@ -622,10 +620,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
-					<texturenofocus border="30">separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
-					<alttexturenofocus border="30">separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32050]</label>
 				
 				
@@ -643,10 +641,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">lists/focus.png</texturefocus>
-					<texturenofocus border="30">lists/separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
-					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$LOCALIZE[137]</label>
 			</control>
 			<control type="radiobutton" id="199">
@@ -660,10 +658,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">lists/focus.png</texturefocus>
-					<texturenofocus border="30">lists/separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
-					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>mmm $LOCALIZE[587]</label>
 				<selected>Container.Filtered</selected>
 				<onclick>right</onclick>
@@ -700,7 +698,7 @@
 						<top>0</top>
 						<width>1396</width>
 						<height>43</height>
-						<texture colordiffuse="FF12A8DA">focus.png</texture>
+						<texture colordiffuse="FF12A8DA">srr_focus.png</texture>
 						<visible>Control.HasFocus(550)</visible>
 					</control>
 					<control type="label"><!-- ListItem.Label -->

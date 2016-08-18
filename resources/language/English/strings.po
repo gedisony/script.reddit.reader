@@ -198,6 +198,9 @@ msgctxt "#32107"
 msgid "Enable NSFW content"
 msgstr ""
 
+msgctxt "#32108"
+msgid "Main GUI skin"
+msgstr ""
 
 #32108-32119 empty
 

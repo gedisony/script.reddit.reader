@@ -28,7 +28,7 @@
 		        	<top>-100</top>
 		            <description>The spinning animation in the background</description>
 		            <aspectratio align="center" aligny="center" >center</aspectratio>
-		            <texture>busy.gif</texture>
+		            <texture>srr_busy.gif</texture>
 		            <visible>!IntegerGreaterThan(Container(53).NumPages,0) | ![Container(53).OnNext | Container(53).OnPrevious]</visible>
 		        </control>
 		            <!-- animation effect="fade" time="200" delay="500" reversible="false">Visible</animation-->
@@ -150,7 +150,7 @@
 				<top>-62</top>
 				<!-- width>1720</width-->
 				<height>220</height>
-				<texture border="22">dialog-bg.png</texture>
+				<texture border="22">srr_dialog-bg.png</texture>
 			</control>
 
 			<!-- BEGIN include content="LeftRightArrows"-->
@@ -309,7 +309,7 @@
 			<!--  BEGIN include content="ShiftTextbox" -->
 					<!-- control type="image">
 						<visible>! [String.IsEmpty(Container(53).ListItem.Plot)]</visible>
-						<texture>dialog-bg.png</texture>
+						<texture>srr_dialog-bg.png</texture>
 					</control-->
 					<control type="textbox" id="65591">
 						<top>12</top>
@@ -340,7 +340,7 @@
 					<top>0</top>
 					<width>2000</width>
 					<height>83</height>
-					<texture>InfoBar.png</texture>
+					<texture>srr_InfoBar.png</texture>
 					<animation effect="fade" start="100" end="0" time="300" condition="Window.Next(screencalibration)">WindowClose</animation>
 				</control>
 				<control type="image"><description>little icon on Left of top bar </description>
@@ -405,7 +405,7 @@
 							<top>20</top>
 							<height>40</height>
 							<width>40</width>
-							<texture colordiffuse="button_focus">frame/clock.png</texture>
+							<texture colordiffuse="button_focus">frame/srr_clock.png</texture>
 							<animation effect="fade" time="300">Visible</animation>
 							<animation effect="fade" time="150">Hidden</animation>
 							<aspectratio>keep</aspectratio>

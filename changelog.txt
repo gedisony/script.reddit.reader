@@ -21,5 +21,8 @@
  - support flickr galleries/groups
  - filter posts by subreddit or domain
  - kodi 16 compatibility 
- 
+ 0.4.1
+ - adjust size for larger font
+ - add setting to choose xml file for main gui
+ - rename assets to not conflict with skin
  

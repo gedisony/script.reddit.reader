@@ -2,7 +2,7 @@
 <addon
     id="script.reddit.reader"
     name="Reddit Reader"
-    version="0.4.0"
+    version="0.4.1"
     provider-name="gedisony">
     <requires>
         <import addon="xbmc.python"                     version="2.14.0"                />
@@ -33,6 +33,13 @@
         <forum>http://forum.kodi.tv/showthread.php?tid=287355</forum>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <email>gediso+ny at gmail dot com</email>
-		
+		<disclaimer>This add-on is not published nor endorsed by reddit inc.</disclaimer>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>resources/fanart.jpg</fanart>
+			<screenshot>resources/screenshot-01.jpg</screenshot>
+			<screenshot>resources/screenshot-02.jpg</screenshot>
+			<screenshot>resources/screenshot-03.jpg</screenshot>
+		</assets>		
     </extension>
 </addon>

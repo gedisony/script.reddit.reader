@@ -142,17 +142,17 @@
 				<ondown>55</ondown>
 				
 				<visible>true</visible>
-				<focusedlayout height="83" >
+				<focusedlayout height="103" >
 					<control type="image">
 						<width>980</width>
-						<height>83</height>
+						<height>103</height>
 						<aspectratio aligny="bottom" >keep</aspectratio>
-						<texture>separator.png</texture>
+						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
 						<visible>!Control.HasFocus(55)</visible>
 					</control>
 					<control type="image">
 						<width>980</width>
-						<height>81</height>
+						<height>103</height>
 						<texture colordiffuse="FF12A8DA">focus_f2.png</texture>
 						<visible>Control.HasFocus(55)</visible>
 					</control>
@@ -168,7 +168,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
 							<top>0</top>
-							<height>61</height>
+							<height>71</height>
 							<width>960</width>
 							<aligny>center</aligny>
 							<font>font12</font>
@@ -179,7 +179,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>20</left>
-							<top>50</top>
+							<top>70</top>
 							<height>43</height>
 							<width>960</width>
 							<aligny>center</aligny>
@@ -194,7 +194,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>150</left>
 							<top>0</top>
-							<height>61</height>
+							<height>71</height>
 							<width>810</width>
 							<aligny>center</aligny>
 							<font>font12</font>
@@ -205,7 +205,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>150</left>
-							<top>50</top>
+							<top>70</top>
 							<height>43</height>
 							<width>810</width>
 							<aligny>center</aligny>
@@ -217,12 +217,12 @@
 
 					
 				</focusedlayout>
-				<itemlayout height="83" >
+				<itemlayout height="103" >
 					<control type="image">
 						<width>980</width>
-						<height>83</height>
-						<aspectratio aligny="bottom" >keep</aspectratio>
-						<texture>separator.png</texture>
+						<height>103</height>
+						<aspectratio aligny="bottom" >stretch</aspectratio>
+						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
 					</control>
 					<control type="image">
 						<width>140</width>
@@ -236,7 +236,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
 							<top>0</top>
-							<height>61</height>
+							<height>71</height>
 							<width>960</width>
 							<aligny>center</aligny>
 							<scrolltime>0</scrolltime>
@@ -247,7 +247,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>20</left>
-							<top>50</top>
+							<top>70</top>
 							<height>43</height>
 							<width>960</width>
 							<aligny>center</aligny>
@@ -263,7 +263,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>150</left>
 							<top>0</top>
-							<height>61</height>
+							<height>71</height>
 							<width>810</width>
 							<aligny>center</aligny>
 							<scrolltime>0</scrolltime>
@@ -274,7 +274,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>150</left>
-							<top>50</top>
+							<top>70</top>
 							<height>43</height>
 							<width>810</width>
 							<aligny>center</aligny>
@@ -307,8 +307,8 @@
 			<top>970</top>
 			<width>48</width>
 			<height>24</height>
-			<texturefocus colordiffuse="FF12A8DA">overlays/arrowdown.png</texturefocus>
-			<texturenofocus colordiffuse="FF12A8DA">overlays/arrowdown.png</texturenofocus>
+			<texturefocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturefocus>
+			<texturenofocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturenofocus>
 			<animation effect="zoom" start="100,0" end="100,100" center="auto" time="200" delay="10">VisibleChange</animation>
 			<animation effect="zoom" start="100,0" end="100,100" delay="500" center="auto" time="200">WindowOpen</animation>
 			<animation effect="zoom" start="100,100" end="100,0" center="auto" time="200">WindowClose</animation>
@@ -322,8 +322,8 @@
 			<top>104</top>
 			<width>48</width>
 			<height>24</height>
-			<texturefocus colordiffuse="FF12A8DA" flipy="true">overlays/arrowdown.png</texturefocus>
-			<texturenofocus colordiffuse="FF12A8DA" flipy="true">overlays/arrowdown.png</texturenofocus>
+			<texturefocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturefocus>
+			<texturenofocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturenofocus>
 			<animation effect="zoom" start="100,0" end="100,100" center="auto" time="200" delay="10">VisibleChange</animation>
 			<animation effect="zoom" start="100,0" end="100,100" delay="500" center="auto" time="200">WindowOpen</animation>
 			<animation effect="zoom" start="100,100" end="100,0" center="auto" time="200">WindowClose</animation>
@@ -341,7 +341,6 @@
 		<!--BEGIN include name="TopBar"-->
 			<control type="group">
 				<animation effect="slide" end="0,-90" time="300" tween="sine" easing="inout" condition="WindowClose">conditional</animation>
-				<depth>DepthBars</depth>
 				<animation effect="fade" start="0" end="100" time="300" condition="[Window.Previous(fullscreenvideo) | Window.Previous(startup)] + !Window.IsVisible(1109)">WindowOpen</animation>
 				<control type="image">
 					<left>0</left>
@@ -370,25 +369,18 @@
 					<texturefocus>-</texturefocus>
 					<texturenofocus>-</texturenofocus>
 				</control-->
-				<control type="grouplist"><description>text Left side of top bar</description>
+					
+				<control type="label" id="1">
+					<top>10</top>
 					<left>85</left>
-					<width>1500</width>
 					<height>100</height>
-					<orientation>vertical</orientation>
-					<itemgap>10</itemgap>
-					<usecontrolcoords>true</usecontrolcoords>
-					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
-					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-					<animation effect="slide" end="0,12" time="200" reversible="true" condition="String.IsEmpty(Container.SortMethod)">Conditional</animation>
-					<control type="label" id="1">
-						<top>10</top>
-						<width>1300</width>
-						<scroll>true</scroll>
-						<scrollspeed>50</scrollspeed>
-        				<scrollsuffix>           - </scrollsuffix>						
-        				<label></label>
-					</control>
+					<width>1500</width>
+					<scroll>true</scroll>
+					<scrollspeed>50</scrollspeed>
+       				<scrollsuffix>           - </scrollsuffix>						
+       				<label></label>
 				</control>
+
 				<!-- control type="label"><description>fine text under the bigger text on Left side of top bar</description>
 					<top>40</top>
 					<label>$INFO[Container.SortMethod,$LOCALIZE[31022]: ]</label>
@@ -428,7 +420,7 @@
 							<left>1855</left>
 							<height>40</height>
 							<width>40</width>
-							<texture colordiffuse="FF12A8DA">clock.png</texture>
+							<texture colordiffuse="FF12A8DA">srr_clock.png</texture>
 							<animation effect="fade" time="300">Visible</animation>
 							<animation effect="fade" time="150">Hidden</animation>
 							<aspectratio>keep</aspectratio>
@@ -580,7 +572,9 @@
 			<top>80</top>
 			<width>484</width>
 			<height>920</height>
-			<texture>panel.png</texture>
+			
+			<colordiffuse>FFFFFFFF</colordiffuse>
+			<texture>srr_panel.png</texture>
 		</control>
 	<!--  END include name="MediaMenuCommon" -->
 	
@@ -607,10 +601,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
-					<texturenofocus border="30">separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
-					<alttexturenofocus border="30">separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32051]</label>
 				<label2>$INFO[Container(55).ListItem.Genre]</label2>
 				
@@ -627,10 +621,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">focus.png</texturefocus>
-					<texturenofocus border="30">separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">focus.png</alttexturefocus>
-					<alttexturenofocus border="30">separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32050]</label>
 				
 				
@@ -648,10 +642,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">lists/focus.png</texturefocus>
-					<texturenofocus border="30">lists/separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
-					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$LOCALIZE[137]</label>
 			</control>
 			<control type="radiobutton" id="199">
@@ -665,10 +659,10 @@
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">lists/focus.png</texturefocus>
-					<texturenofocus border="30">lists/separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">lists/focus.png</alttexturefocus>
-					<alttexturenofocus border="30">lists/separator.png</alttexturenofocus>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>mmm $LOCALIZE[587]</label>
 				<selected>Container.Filtered</selected>
 				<onclick>right</onclick>
@@ -705,7 +699,7 @@
 						<top>0</top>
 						<width>1396</width>
 						<height>43</height>
-						<texture colordiffuse="FF12A8DA">focus.png</texture>
+						<texture colordiffuse="FF12A8DA">srr_focus.png</texture>
 						<visible>Control.HasFocus(550)</visible>
 					</control>
 					<control type="label"><!-- ListItem.Label -->
