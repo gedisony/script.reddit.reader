@@ -928,7 +928,11 @@ def autoPlay(url, name, type):
 
     for i,e in enumerate(entries): 
         log('  possible playable items(%d) %s...%s' %(i, e[0].ljust(15)[:15], e[1]) )
-
+        
+    if len(entries)==0:
+        xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(translation(32054), translation(32055)  ) )  #Play All     No playable items
+        return
+    
     entries_to_buffer=4
     #log('  entries:%d buffer:%d' %( len(entries), entries_to_buffer ) )
     if len(entries) < entries_to_buffer:
