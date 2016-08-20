@@ -934,6 +934,7 @@ def autoPlay(url, name, type):
         log('  possible playable items(%d) %s...%s' %(i, e[0].ljust(15)[:15], e[1]) )
         
     if len(entries)==0:
+        log('  Play All: no playable items' )
         xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(translation(32054), translation(32055)  ) )  #Play All     No playable items
         return
     
@@ -950,7 +951,7 @@ def autoPlay(url, name, type):
     #    log("  added to playlist:"+ title + "  " + url )
 
     log("**********autoPlay*************")
-
+    
     #play_list=[]
     ev = threading.Event()
     
@@ -1000,16 +1001,17 @@ def autoPlay(url, name, type):
     
     watchdog_counter=0
     while True:
-        log( '  c- waiting on join '  )
-        q.join()  
-        log( ' c- join-ed, get... '  )
+        #log( '  c-get buffer(%d) wdt=%d ' %(playlist.size(), watchdog_counter)  )
+        #q.join()  
+        #log( ' c- join-ed, get... '  )
         try:        
             #playable_url = q.get(True,10)
             playable_entry = q.get(True,10)
             q.task_done()
-            log( ' c- got next item... ' + playable_entry[1] )
+            #log( '    c- got next item... ' + playable_entry[1] )
             #play_list.append(playable_entry[1])
             playlist.add(playable_entry[1], xbmcgui.ListItem(playable_entry[0]))
+            log( '    c-got next item(%d):%s...%s' %(playlist.size(), playable_entry[0].ljust(15)[:15], playable_entry[1])  )
         except:
             watchdog_counter+=1
             if ev.isSet(): #p is done producing
@@ -1018,8 +1020,11 @@ def autoPlay(url, name, type):
             pass
         #xbmc.PlayList(1).add(playable_url)
 
-        if ev.isSet() or watchdog_counter > 2:
-            log( ' c- ev is set  -->  break '  )
+        if ev.isSet() and q.empty():
+            log( ' c- ev is set and q.empty -->  break '  )
+            break
+        
+        if watchdog_counter > 2:
             break
 
     log( ' c-all done '  )
@@ -1066,6 +1071,7 @@ class Worker(threading.Thread):
     def do_work(self):
         #log( ' wor-ker (%(threadName)-10s)')
         
+        url_to_check=""
         #for url in self.work_list:
         #    log('  worker task list:' + title.ljust(15)[:15] +'... '+ url )
         
@@ -1074,7 +1080,12 @@ class Worker(threading.Thread):
             #work  
             #xbmc.sleep(2000)
             title=entry[0]
-            playable_url = ydtl_get_playable_url( entry[1] )
+            url_to_check=entry[1]
+            if url_to_check.startswith('plugin://'):
+                playable_url=url_to_check
+                pass
+            else:
+                playable_url = ydtl_get_playable_url( url_to_check )
             #playable_url= '(worked)' + title.ljust(15)[:15] + '... '+ w_url
             #work
             if playable_url:

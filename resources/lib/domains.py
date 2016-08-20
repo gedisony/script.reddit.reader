@@ -49,7 +49,7 @@ site02 = [True              , "playVideo"          ,'Vimeo'        ,'vimeo.com/(
 site03 = [False             , "playYTDLVideo"      ,'DailyMotion'  ,'dailymotion.com/video/(.*)_?'   ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , "script"  ]
 site04 = [False             , "playVideo"          ,'DailyMotion'  ,'dailymotion.com/.+?video=(.*)'  ,"plugin://plugin.video.dailymotion_com/?mode=playVideo&url=##vidID##"   , ""                      ]
 site05 = [False             , "playLiveLeakVideo"  ,'LiveLeak'     ,'liveleak.com/view\\?i=(.*)'     ,"##vidID##"                                                             , "site:liveleak.com"     ]
-site06 = [True              , "playGfycatVideo"    ,'Gfycat'       ,'gfycat.com/(.*)'                ,"##vidID##"                                                             , "script"       ]
+site06 = [True              , "playGfycatVideo"    ,'Gfycat'       ,'gfycat.com/(.*)'                ,"(not used)##vidID##"                                                             , "script"       ]
 site07 = [True              , "playImgurVideo"     ,'Imgur'        ,'imgur\.com\/(.*)'               ,"##vidID##"                                                             , "script"        ]
 site08 = [True              , "playSlideshow"      ,'Redd.it'      ,'i.redd.it\/(.*)'                ,"##vidID##"                                                             , "script"        ]
 site09 = [True              , "playSlideshow"      ,'RedditMedia'  ,'\.(?:reddituploads|redditmedia).com/(.+)'       ,"##vidID##"                                             , "script"        ]
@@ -1478,6 +1478,14 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                     #log('p:'+pluginUrl)
                     pluginUrl=media_url
                     thumb_url=""
+                    if get_playable_url:
+                        if hoster=="Vine":
+                            v=ClassVine(media_url)   #vine_stream_url='https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4'
+                            pluginUrl=v.get_playable_url(media_url, True)    
+                        elif hoster=="Vidme":
+                            v=ClassVidme(media_url)
+                            pluginUrl=v.get_playable_url(media_url, True)
+                    
                 elif hoster=="Streamable":
                     setInfo_type='video'
                     pluginUrl=media_url
