@@ -176,7 +176,7 @@ class cGUI(xbmcgui.WindowXML):
     def busy_execute_sleep(self,executebuiltin, sleep=500, close=True):
         #
         xbmc.executebuiltin("ActivateWindow(busydialog)")
-        #RunAddon(script.reddit.reader,?mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
+        #RunAddon(script.reddit.reader,mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
         xbmc.executebuiltin( executebuiltin  )
         xbmc.sleep(sleep) #a sleep of 500 is enough for listing subreddit  use about 5000 for executing a link/playing video especially a ytdl video
         if close:
@@ -245,12 +245,13 @@ class indexGui(cGUI):
     
     
 class listSubRedditGUI(cGUI):
-    a=0
+    reddit_query_of_this_gui=''
     SUBREDDITS_LIST=550
     SIDE_SLIDE_PANEL=9000
     #all controls in the side panel needs to be included in focused_control ACTION_MOVE_RIGHT check
     BTN_GOTO_SUBREDDIT=6052
     BTN_ZOOM_N_SLIDE=6053
+    BTN_PLAY_ALL=6054
     
     def onInit(self):
         cGUI.onInit(self)
@@ -265,7 +266,7 @@ class listSubRedditGUI(cGUI):
     
     def onAction(self, action):
         
-        self.a+=1
+        
         if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
             self.close()
 
@@ -300,7 +301,7 @@ class listSubRedditGUI(cGUI):
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE]:   
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
@@ -316,6 +317,7 @@ class listSubRedditGUI(cGUI):
         pass 
 
     def onClick(self, controlID):
+        from utils import build_script
         #log( ' clicked on control id %d'  %controlID )
         
         listbox_selected_item=self.gui_listbox.getSelectedItem()
@@ -377,6 +379,14 @@ class listSubRedditGUI(cGUI):
         elif controlID == self.BTN_ZOOM_N_SLIDE:
             action=listbox_selected_item.getProperty('zoom_n_slide_action')
             self.busy_execute_sleep(action, 50,False)
+            pass
+
+        elif controlID == self.BTN_PLAY_ALL:
+            #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui
+            #build_script( mode, url, name="", type="", script_to_call=addonID)
+            action=build_script('autoPlay', self.reddit_query_of_this_gui,'','')
+            log('  PLAY_ALL '+ action)
+            self.busy_execute_sleep(action, 0,False)
             pass
             
 class commentsGUI(cGUI):

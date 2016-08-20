@@ -14,8 +14,7 @@ from default import addon, addonID, streamable_quality   #,addon_path,pluginhand
 from default import log, dump, translation
 
 from default import default_ytdl_psites_file, default_ytdl_sites_file
-from utils import build_script
-
+from utils import build_script, parse_filename_and_ext_from_url, image_exts
 
 
 show_youtube     = addon.getSetting("show_youtube") == "true"
@@ -75,8 +74,6 @@ site99 = [0,''              , "video" ,''          ,''             ,""          
 #eroshare.com  needs ability to sort by video or album or image 
 supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29]
 
-#used to filter out image links if content_type is video (when this addon is called from pictures)
-image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp'] #exclude 'gif' as we consider it as gifv
 
 keys=[ 'li_label'           #  the text that will show for the list
       ,'li_label2'          #  
@@ -1182,7 +1179,7 @@ def ret_dailymotion_thumbnail( media_url, thumbnail_type='m'):
     return media_url.replace('/video/','/thumbnail/video/')
     
 
-def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url=''):
+def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url='', use_plugin=None):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
@@ -1538,7 +1535,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
         
             
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
-            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url, use_plugin)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
     
@@ -1547,7 +1544,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
         log("    unsupported [%s]" %media_url)
         url_for_DirectoryItem = "" 
      
-    #log( "      %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
+    log( "      %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
     return hoster, url_for_DirectoryItem, pluginUrl, modecommand, thumb_url, poster_url, isFolder, setInfo_type,link_type
 
 
@@ -1593,35 +1590,6 @@ def url_is_supported(url_to_check):
         return True
 
     return False
-
-def parse_filename_and_ext_from_url(url=""):
-    filename=""
-    ext=""
-    try:
-        filename, ext = (url.split('/')[-1].split('.'))
-        #log( "  ext=[%s]" %ext )
-        if not ext=="":
-            
-            #ext=ext.split('?')[0]
-            ext=re.split("\?|#",ext)[0]
-            
-        return filename, ext
-    except:
-        return "", ""
-
-def link_url_is_playable(url):
-    url=url.split('?')[0]
-    
-    filename,ext=parse_filename_and_ext_from_url(url)
-    
-    if ext in image_exts:
-        return 'image'
-    
-    if ext in ['mp4','webm','mpg','gifv']:
-        return 'video'
-    
-    return False
-
 
 def load_ytdl_sites():
     #log( '***************load_ytdl_sites '  )

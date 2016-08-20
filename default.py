@@ -16,19 +16,24 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import urlparse
-import SimpleDownloader
+#import SimpleDownloader
 import requests
 
-import shelve
-import shutil
+# import shelve
+# import shutil
 
-#from email import Message
+import threading
+from Queue import Queue, Empty
 
 #this used to be a plugin. not that we're a script, we don't get free sys.argv's
+#this import for the youtube_dl addon causes our addon to start slower. we'll import it when we need to playYTDLVideo
 if len(sys.argv) > 1:
-    #this import for the youtube_dl addon causes our addon to start slower. we'll import it when we need to playYTDLVideo  
-    if 'mode=playYTDLVideo' in sys.argv[1] :
+    a=['mode=playYTDLVideo','mode=autoPlay']
+    if any(x in sys.argv[1] for x in a):
         import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
+      
+#     if 'mode=playYTDLVideo' in sys.argv[1] :
+#         import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
 else:
     pass 
 
@@ -37,7 +42,6 @@ else:
 from urllib import urlencode
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
 
 addon         = xbmcaddon.Addon()
 addonID       = addon.getAddonInfo('id')  #script.reddit.reader
@@ -615,7 +619,7 @@ def listSubReddit(url, title_bar_name, type):
     xbmc_busy(False)
     
     title_bar_name=urllib.unquote_plus(title_bar_name)
-    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile )    
+    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)    
     
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
@@ -634,10 +638,12 @@ def skin_launcher(mode,**kwargs ):
     title_bar_text=kwargs.get('title_bar_name')
     li=kwargs.get('li')
     subreddits_file=kwargs.get('subreddits_file')
+    currentUrl=kwargs.get('currentUrl')
 
     try:    
         ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subreddits_file, id=55)
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
+        ui.reddit_query_of_this_gui=currentUrl
         #ui.include_parent_directory_entry=True
     
         ui.doModal()
@@ -852,32 +858,36 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 #     xbmcplugin.endOfDirectory(pluginhandle)
 
 
-    
+q = Queue()
 
 #MODE autoPlay        - name not used
 def autoPlay(url, name, type):
     from resources.lib.domains import make_addon_url_from 
-    from resources.lib.utils import determine_if_video_media_from_reddit_json, getPlayCount
+    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
 
+
     entries = []
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
-    log("**********autoPlay*************")
+    
+    
+    
     #content = opener.open(url).read()
     content = reddit_request(url)        
     if not content: return
-
-    content = json.loads(content.replace('\\"', '\''))
+    #log( str(content) )
+    #content = json.loads(content.replace('\\"', '\''))
+    content = json.loads(content)
     
     log("Autoplay %s - Parsing %d items" %( type, len(content['data']['children']) )    )
     
     for j_entry in content['data']['children']:
         try:
             title = unescape(j_entry['data']['title'].encode('utf-8'))
-
+            
             try:
                 media_url = j_entry['data']['url']
             except:
@@ -885,42 +895,194 @@ def autoPlay(url, name, type):
 
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
-            #log("  Title:%s -%c"  %( title, ("v" if is_a_video else " ") ) )              
-            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url,is_a_video, True)
+            log("  Title:%s -%c"  %( title, ("v" if is_a_video else " ") ) )
+            
+            hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url,is_a_video, False,'')
+
+            #entries.append(['title','plugin://plugin.video.youtube/play/?video_id=H5SPYjhdK_I'])
 
             if DirectoryItem_url:
-                if isFolder:  #imgur albums are 'isFolder'
-                    #log('      skipping isFolder ')
-                    continue
-                if setInfo_type=='pictures': #we also skip images in autoplay
-                    #log('      skipping setInfo_type==pictures ')
-                    continue
+                #log('   type:'+ setInfo_type)
+                if setInfo_type=='video':
+                    if type.startswith("UNWATCHED_") and getPlayCount(url) < 0:
+                        #log("      UNWATCHED_" )
+                        entries.append([title,processed_media_url,modecommand])
+                    elif type.startswith("UNFINISHED_") and getPlayCount(url) == 0:
+                        #log("      UNFINISHED_" )
+                        entries.append([title,processed_media_url,modecommand])
+                    else:  # type.startswith("ALL_")
+                        #log("      ALL_" )
+                        entries.append([title,processed_media_url,modecommand])
+                    
                 
-                if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
-                    #log("      skipping 'listImgurAlbum','playSlideshow','listLinksInComment' ")
-                    continue                
-                
-                if type.startswith("ALL_"):
-                    #log("      ALL_" )
-                    entries.append([title, DirectoryItem_url])
-                elif type.startswith("UNWATCHED_") and getPlayCount(url) < 0:
-                    #log("      UNWATCHED_" )
-                    entries.append([title, DirectoryItem_url])
-                elif type.startswith("UNFINISHED_") and getPlayCount(url) == 0:
-                    #log("      UNFINISHED_" )
-                    entries.append([title, DirectoryItem_url])
-        except:
+        except Exception as e:
+            log( '  autoPlay exception:' + str(e) )
             pass
     
-    if type.endswith("_RANDOM"):
-        random.shuffle(entries)
+     
+    
+    #for i,e in enumerate(entries): log('  e1-%d %s:' %(i, e[1]) )
+    def k2(x): return x[1]
+    entries=remove_duplicates(entries, k2)
+    #for i,e in enumerate(entries): log('  e2-%d %s:' %(i, e[1]) )
+
+    entries_to_buffer=4
+    if len(entries) < entries_to_buffer:
+        entries_to_buffer=len(entries)
+        #log(' entries to buffer reduced to %d' %entries_to_buffer )
+
+    #if type.endswith("_RANDOM"):
+    #    random.shuffle(entries)
 
     #for title, url in entries:
-    #    log("  added to playlist:"+ title + "  " + urllib.unquote_plus(url) )
-    for title, url in entries:
-        listitem = xbmcgui.ListItem(title)
-        playlist.add(url, listitem)
-    xbmc.Player().play(playlist)
+    #    log("  added to playlist:"+ title + "  " + url )
+
+    log("**********autoPlay*************")
+
+    #play_list=[]
+    ev = threading.Event()
+    
+    t = Worker(entries, q, ev)
+    #t=wkr()
+    t.daemon = True
+    t.start()
+    #t.run()
+
+    #wait for worker to finish processing 1st item
+    #e.wait(200)
+    
+    while True:
+        #log( ' g-wait+get buffer item ' )
+        try:
+            #playable_url = q.get(True, 10)
+            playable_entry = q.get(True, 10)
+            #playable_url=playable_entry[1]
+            #log( ' buffering: ' + playable_entry[1] )
+            q.task_done()
+            #play_list.append(playable_entry[1])
+            playlist.add(playable_entry[1], xbmcgui.ListItem(playable_entry[0]))
+        except:
+            pass
+            
+        #playlist.size()
+        if playlist.size() >= entries_to_buffer:  #q.qsize()
+            break
+    
+    #q.join()
+    
+    #playlist.add(playable_url)
+    #listitem = xbmcgui.ListItem()
+    xbmc.Player().play(playlist)    
+    
+    #play_list.append(playable_url)
+    
+    while True:
+        #log( ' c- waiting on join '  )
+        q.join()  
+        #log( ' c- join-ed, get... '  )
+        try:        
+            #playable_url = q.get(True,10)
+            playable_entry = q.get(True,10)
+            q.task_done()
+            #log( ' c- got next item... ' + playable_entry[1] )
+            #play_list.append(playable_entry[1])
+            playlist.add(playable_entry[1], xbmcgui.ListItem(playable_entry[0]))
+        except:
+            pass
+        #xbmc.PlayList(1).add(playable_url)
+
+        if ev.isSet():
+            #log( ' c- ev is set  -->  break '  )
+            break
+
+    #log( ' c-all done '  )
+
+    #for e in play_list:
+    #    log( str(e) )
+        
+#     for title, url in entries:
+#         listitem = xbmcgui.ListItem(title)
+#         playlist.add(url, listitem)
+#     xbmc.Player().play(playlist)
+
+    
+class Worker(threading.Thread):
+    def __init__(self, entries, queue, ev):
+        threading.Thread.__init__(self)
+        self.queue = queue
+        self.work_list=entries
+        self.ev=ev
+        #log('  p-init ' + str( self.work_list ))
+
+    def stop(self):
+        self.running=False
+
+    def run(self):
+#        threading.Thread.run(self)
+        #log('  p-running ' + str( self.work_list ))
+        self.running = True
+        # Rather than running forever, check to see if it is still OK
+        while self.running:
+            try:
+                # Don't block
+                #item = self.queue.get(block=False)
+                self.do_work()
+                 
+                self.ev.set()
+                #work dome end
+                log( ' p-all done '  ) 
+                self.stop()
+            except Empty:
+                # Allow other stuff to run
+                time.sleep(0.1)
+
+    def do_work(self):
+        #log( ' wor-ker (%(threadName)-10s)')
+        
+        #for url in self.work_list:
+        #    log('  worker task list:' + title.ljust(15)[:15] +'... '+ url )
+        
+        #for title, w_url, modecommand in self.work_list:
+        for entry in self.work_list:
+            #work  
+            #xbmc.sleep(2000)
+            title=entry[0]
+            playable_url = ydtl_get_playable_url( entry[1] )
+            #playable_url= '(worked)' + title.ljust(15)[:15] + '... '+ w_url
+            #work
+            if playable_url:
+                entry[1]=playable_url
+                log('  p-%d %s %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
+                self.queue.put(entry)
+            else:
+                log('  p-(ytdl-failed) %s' %( title )  )
+            #log( ' qsize %d' %self.queue. qsize() )
+            #q.put(playable_url)
+        
+        #log('p-  done, setting ev')
+        #set only after we've done 1st item
+        #self.ev.set()    
+        #log('p-  ev is set')
+
+def ytdl_worker(q, url):
+    #ident = threading.current_thread()
+    log( ' worker '+ url)
+    q.put( urllib2.urlopen(url).read() )
+    
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def getLiveLeakStreamUrl(id):
@@ -942,14 +1104,43 @@ def playVideo(url, name, type):
     xbmc.executebuiltin( "Dialog.Close(busydialog)" )
     #log("playVideo:"+url)
     if url :
+        #pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+        #pl.clear()
+        #pl.add(stream_url)
         xbmc.Player().play(url, windowed=False)  #scripts play video like this.
 
         #listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
         #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
     else:
         log("playVideo(url) url is blank")
+
         
-        
+def ydtl_get_playable_url( url_to_check ):
+    from resources.lib.utils import link_url_is_playable
+    #log('ydtl_get_playable_url:' +url_to_check )
+    if link_url_is_playable(url_to_check)=='video':
+        return url_to_check
+    
+    if YDStreamExtractor.mightHaveVideo(url_to_check,resolve_redirects=True):
+        log('      YDStreamExtractor.mightHaveVideo[true]=' + url_to_check)
+        #xbmc_busy()
+        vid = YDStreamExtractor.getVideoInfo(url_to_check,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
+        if vid:
+            log("        getVideoInfo playableURL="+vid.streamURL())
+            if vid.hasMultipleStreams():
+                log("          vid hasMultipleStreams")
+                for s in vid.streams():
+                    title = s['title']
+                    log('        choices' + title  )
+                    choices.append(title)
+                #index = some_function_asking_the_user_to_choose(choices)
+                vid.selectStream(0) #You can also pass in the the dict for the chosen stream
+    
+            return vid.streamURL()                         #This is what Kodi (XBMC) will play    
+            
+    
+    
+    
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
@@ -1032,43 +1223,22 @@ def playYTDLVideo(url, name, type):
 
 #     extractors.sort()
 #     for n in extractors: log("'%s'," %n)
-
+    xbmc_busy()
     from urlparse import urlparse
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
 
-    xbmc_busy()
     try:
-        if YDStreamExtractor.mightHaveVideo(url,resolve_redirects=True):
-            log('    YDStreamExtractor.mightHaveVideo[true]=' + url)
-            xbmc_busy()
-            vid = YDStreamExtractor.getVideoInfo(url,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
-            if vid:
-                log("      getVideoInfo playableURL="+vid.streamURL())
-                if vid.hasMultipleStreams():
-                    log("        vid hasMultipleStreams")
-                    for s in vid.streams():
-                        title = s['title']
-                        log('      choices' + title  )
-                        choices.append(title)
-                    #index = some_function_asking_the_user_to_choose(choices)
-                    vid.selectStream(0) #You can also pass in the the dict for the chosen stream
-        
-                stream_url = vid.streamURL()                         #This is what Kodi (XBMC) will play    
-                xbmc_busy()
-                playVideo(stream_url, name, type)
-                
-                #pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-                #pl.clear()
-                #pl.add(stream_url)
-                #xbmc.Player().play(stream_url, windowed=False)
-                
-                #plugins play video like below
-                #listitem = xbmcgui.ListItem(path=stream_url)
-                #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
-            else:
-                #log("getVideoInfo failed==" )
-                xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(32010), domain )  )  
+        stream_url = ydtl_get_playable_url(url)
+
+        if stream_url:
+            playVideo(stream_url, name, type)
+
+        else:
+            #log("getVideoInfo failed==" )
+            xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(32010), domain )  )  
+
+    
     except Exception as e:
         #log( "zz   " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
@@ -1080,16 +1250,16 @@ def playYTDLVideo(url, name, type):
 def playGfycatVideo(id, name, type):
     log( "  play gfycat video " + id )
     content = opener.open("http://gfycat.com/cajax/get/"+id).read()
+    #log('gfycat response:'+ content)
     content = json.loads(content.replace('\\"', '\''))
-    
-    if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
-        GfycatStreamUrl=content["gfyItem"]["webmUrl"]
+
+    if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
+        GfycatStreamUrl=content["gfyItem"]["mp4Url"]
 
     if GfycatStreamUrl: pass
     else:
-        if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
-            GfycatStreamUrl=content["gfyItem"]["mp4Url"]
-
+        if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
+            GfycatStreamUrl=content["gfyItem"]["webmUrl"]
 
     playVideo(GfycatStreamUrl, name, type)
 
@@ -1813,30 +1983,7 @@ def molest_xml(url, name, type):
     
     pass
 
-def send_email(recipient, Message):
-    import smtplib
-    from email.mime.text import MIMEText
-    import xbmcaddon
-    import time
-    
-    thyme = time.time()
-    
-    recipient = 'gedisony@gmail.com'
-    
-    body = '<table border="1">'
-    body += '<tr><td>%s</td></tr>' % "I'm using the addon!"
-    body += '</table>'
-    
-    msg = MIMEText(body, 'html')
-    msg['Subject'] = 'LazyTV +1  %s' % thyme
-    msg['From'] = 'gemalphin@gmail.com'
-    msg['To'] = recipient
-    msg['X-Mailer'] = 'LazyTV Shout Out %s' % thyme
-    
-    smtp = smtplib.SMTP('alt4.gmail-smtp-in.l.google.com')
-    smtp.sendmail(msg['From'], msg['To'], msg.as_string(9))
-    smtp.quit()
-    
+   
 def callwebviewer(url, name, type):
     log( " callwebviewer")
 

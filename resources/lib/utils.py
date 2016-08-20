@@ -10,6 +10,10 @@ DATEFORMAT = xbmc.getRegion('dateshort')
 TIMEFORMAT = xbmc.getRegion('meridiem')
 
 
+#used to filter out image links if content_type is video (when this addon is called from pictures)
+image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp'] #exclude 'gif' as we consider it as gifv
+
+
 def create_default_subreddits():
     #create a default file and sites
     fh = open(subredditsFile, 'a')
@@ -76,9 +80,15 @@ def compose_list_item(label,label2,iconImage,property_item_type, onClick_action,
     return liz
 
 
-def build_script( mode, url, name="", type="", script_to_call=addonID):
+def build_script( mode, url, name="", type="", script_to_call=''):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
-    return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+    if script_to_call: #plugin://plugin.video.reddit_viewer/
+        #not used
+        #return "plugin://%s/?prl=zaza&%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+        pass
+    else: 
+        script_to_call=addonID
+        return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
 
 def build_playable_param( mode, url, name="", type="", script_to_call=addonID):
     #builds the  di_url for  pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO); pl.clear();  pl.add(di_url, item) ; xbmc.Player().play(pl, windowed=True)
@@ -427,6 +437,65 @@ def calculate_zoom_slide(img_w, img_h):
         log("  percent to zoom  %f " %(zoom_percent) )
 
     return zoom_percent * 100, slide_end
+
+
+def parse_filename_and_ext_from_url(url=""):
+    filename=""
+    ext=""
+    
+    #url = 'http://www.plssomeotherurl.com/station.pls?id=111'
+    #path = urlparse.urlparse(url).path
+    #ext = os.path.splitext(path)[1]    
+    try:
+        filename, ext = (url.split('/')[-1].split('.'))
+        #log( "  ext=[%s]" %ext )
+        if not ext=="":
+            
+            #ext=ext.split('?')[0]
+            ext=re.split("\?|#",ext)[0]
+            
+        return filename, ext
+    except:
+        return "", ""
+
+def link_url_is_playable(url):
+    url=url.split('?')[0]
+    
+    filename,ext=parse_filename_and_ext_from_url(url)
+    
+    if ext in image_exts:
+        return 'image'
+    
+    if ext in ['mp4','webm','mpg','gifv']:
+        return 'video'
+    
+    if ext == 'gifv':
+        return 'gifv'
+    
+    return False
+
+#remove duplicates.  http://stackoverflow.com/questions/7961363/removing-duplicates-in-lists
+#The common approach to get a unique collection of items is to use a set. 
+#  Sets are unordered collections of distinct objects. To create a set from any iterable, you can simply pass it to the built-in set() function. 
+#  If you later need a real list again, you can similarly pass the set to the list() function.
+#entries=list(set(entries))
+
+def remove_duplicates(seq, idfun=None): 
+    # order preserving https://www.peterbe.com/plog/uniqifiers-benchmark
+    if idfun is None:
+        def idfun(x): return x
+    seen = {}
+    result = []
+    for item in seq:
+        marker = idfun(item)
+        # in old Python versions:
+        # if seen.has_key(marker)
+        # but in new ones:
+        if marker in seen: continue
+        seen[marker] = 1
+        result.append(item)
+    return result    
+
 
 
 def cleanTitle(title):

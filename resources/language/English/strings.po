@@ -102,6 +102,10 @@ msgctxt "#30053"
 msgid "No comments"
 msgstr ""
 
+msgctxt "#32054"
+msgid "Play All"
+msgstr ""
+
 
 #begin strings used in pretty date to indicate how long ago a post is posted (keep these strings short and similar length) 
 msgctxt "#32060"

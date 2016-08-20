@@ -628,9 +628,27 @@
 					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
 					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32050]</label>
-				
-				
 			</control>
+
+			<control type="button" id="6054">
+				<visible>true</visible><description>play all</description>
+				<enable>true</enable>
+					<width>430</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>60</height>
+					<radioposx>330</radioposx>
+					<textwidth>320</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32054]</label>
+			</control>
+
 
 			<!-- control type="edit" id="19"><description>go to subreddit editbox </description>
 				<visible>true</visible>
@@ -688,7 +706,7 @@
 				<left>2</left>
 				<top>3</top>
 				<width>430</width>
-				<height>800</height>
+				<height>740</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<!-- pagecontrol>55600</pagecontrol-->
