@@ -896,8 +896,12 @@ def autoPlay(url, name, type):
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
             log("  Title:%s -%c"  %( title, ("v" if is_a_video else " ") ) )
-            
-            hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url,is_a_video, False,'')
+
+            hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url=media_url,
+                                                                                                                                                     assume_is_video=is_a_video, 
+                                                                                                                                                     needs_thumbnail=False,
+                                                                                                                                                     preview_url='',
+                                                                                                                                                     get_playable_url=True )  #we resolve the playable url
 
             #entries.append(['title','plugin://plugin.video.youtube/play/?video_id=H5SPYjhdK_I'])
 
@@ -1251,21 +1255,16 @@ def playYTDLVideo(url, name, type):
         
 
 #MODE playGfycatVideo       - name, type not used
-def playGfycatVideo(id, name, type):
-    log( "  play gfycat video " + id )
-    content = opener.open("http://gfycat.com/cajax/get/"+id).read()
-    #log('gfycat response:'+ content)
-    content = json.loads(content.replace('\\"', '\''))
-
-    if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
-        GfycatStreamUrl=content["gfyItem"]["mp4Url"]
-
-    if GfycatStreamUrl: pass
-    else:
-        if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
-            GfycatStreamUrl=content["gfyItem"]["webmUrl"]
-
+def playGfycatVideo(gfycat_url, name, type):
+    log( "  play gfycat video " + gfycat_url )
+    from resources.lib.domains import ClassGfycat
+    
+    g=ClassGfycat()
+    GfycatStreamUrl, media_type=g.get_playable_url( gfycat_url )
+    
     playVideo(GfycatStreamUrl, name, type)
+        
+        #xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(  Gfycat.com, translation(32010) )  )
 
 def listLinksInComment(url, name, type):
     from resources.lib.domains import make_addon_url_from

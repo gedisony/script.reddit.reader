@@ -1083,7 +1083,7 @@ class ClassGifsCom:
 
         request_url="https://api.gifs.com"
         #log("listImgurAlbum-request_url---"+request_url )
-        r = requests.get(request_url, headers=ClassVidme.request_header)
+        r = requests.get(request_url, headers=ClassGifsCom.headers)
         
         if r.status_code==200:  #http status code 200 = success
             j=json.loads(r.text.replace('\\"', '\''))
@@ -1103,19 +1103,34 @@ class ClassGfycat:
             return media_url,"video"
 
         #get the videoID
-        from urlparse import urlsplit
-        o=urlsplit(media_url)    
-
-        log( str(0) )
-
-        request_url="https://gfycat.com/cajax/get/" + "videoID"
-        #log("listImgurAlbum-request_url---"+request_url )
-        r = requests.get(request_url, headers=ClassVidme.request_header)
+        #from urlparse import urlsplit
+        #o=urlsplit(media_url)    
+        id=''
         
-        if r.status_code==200:  #http status code 200 = success
-            j=json.loads(r.text.replace('\\"', '\''))
-    
+        match = re.findall('gfycat.com/(.*)', media_url)
+        if match:
+            id=match[0]
 
+            request_url="https://gfycat.com/cajax/get/" + id
+            
+            content = requests.get(request_url )
+            #content = opener.open("http://gfycat.com/cajax/get/"+id).read()
+            #log('gfycat response:'+ content)
+            if content.status_code==200:
+                content = json.loads(content.text)
+            
+                if "gfyItem" in content and "mp4Url" in content["gfyItem"]:
+                    GfycatStreamUrl=content["gfyItem"]["mp4Url"]
+            
+                if GfycatStreamUrl: pass
+                else:
+                    if "gfyItem" in content and "webmUrl" in content["gfyItem"]:
+                        GfycatStreamUrl=content["gfyItem"]["webmUrl"]
+        else:
+            log("cannot get gfycat id")
+            pass
+        
+        return GfycatStreamUrl, "video"
 
 def ret_youtube_thumbnail(videoID, quality0123=1):
     """
@@ -1179,10 +1194,11 @@ def ret_dailymotion_thumbnail( media_url, thumbnail_type='m'):
     return media_url.replace('/video/','/thumbnail/video/')
     
 
-def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url='', use_plugin=None):
+def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url='', get_playable_url=False):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
+    #  get_playable_url-ask the hoster for the playable url. (slower) 
 
     from utils import assemble_reddit_filter_string 
 
@@ -1301,7 +1317,11 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                     if needs_thumbnail:
                         thumb_url="http://thumbs.gfycat.com/%s-poster.jpg"%videoID
                         poster_url=thumb_url
-                    pluginUrl= site[4].replace('##vidID##', videoID)
+                    if get_playable_url:
+                        g=ClassGfycat()
+                        pluginUrl, media_type=g.get_playable_url( media_url )
+                    else:
+                        pluginUrl= media_url  #site[4].replace('##vidID##', videoID)
                 elif hoster=="Imgur":
                     c=ClassImgur(media_url)
                     prepped_media_url, media_type = c.get_playable_url(media_url, assume_is_video)
@@ -1535,7 +1555,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
         
             
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
-            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url, use_plugin)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
     
