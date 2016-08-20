@@ -868,12 +868,12 @@ def autoPlay(url, name, type):
     #then create a playlist from those entries
     #then play the playlist
 
-
     entries = []
+    watchdog_counter=0
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     playlist.clear()
-    
-    
+
+    xbmc_busy()
     
     #content = opener.open(url).read()
     content = reddit_request(url)        
@@ -926,10 +926,14 @@ def autoPlay(url, name, type):
     entries=remove_duplicates(entries, k2)
     #for i,e in enumerate(entries): log('  e2-%d %s:' %(i, e[1]) )
 
+    for i,e in enumerate(entries): 
+        log('  possible playable items(%d) %s...%s' %(i, e[0].ljust(15)[:15], e[1]) )
+
     entries_to_buffer=4
+    #log('  entries:%d buffer:%d' %( len(entries), entries_to_buffer ) )
     if len(entries) < entries_to_buffer:
         entries_to_buffer=len(entries)
-        #log(' entries to buffer reduced to %d' %entries_to_buffer )
+        #log('entries to buffer reduced to %d' %entries_to_buffer )
 
     #if type.endswith("_RANDOM"):
     #    random.shuffle(entries)
@@ -952,50 +956,65 @@ def autoPlay(url, name, type):
     #e.wait(200)
     
     while True:
-        #log( ' g-wait+get buffer item ' )
+        #log( '  c-wait+get buffer(%d) wdt=%d ' %(playlist.size(), watchdog_counter)  )
         try:
             #playable_url = q.get(True, 10)
             playable_entry = q.get(True, 10)
             #playable_url=playable_entry[1]
-            #log( ' buffering: ' + playable_entry[1] )
             q.task_done()
             #play_list.append(playable_entry[1])
             playlist.add(playable_entry[1], xbmcgui.ListItem(playable_entry[0]))
+            log( '    c-buffered(%d):%s...%s' %(playlist.size(), playable_entry[0].ljust(15)[:15], playable_entry[1])  )
+
         except:
+            watchdog_counter+=1
+            if ev.is_set():#p is done producing
+                break
+            #if got 3 empty from queue.
             pass
-            
-        #playlist.size()
+        watchdog_counter+=1    
+        #log('  playlist:%d buffer:%d' %( playlist.size(), entries_to_buffer ) )
         if playlist.size() >= entries_to_buffer:  #q.qsize()
+            log('  c-buffer count met')
+            break
+        if watchdog_counter > entries_to_buffer: 
             break
     
-    #q.join()
+    log('  c-buffering done')
     
+    #q.join()
+    #xbmc_busy(False)    
     #playlist.add(playable_url)
     #listitem = xbmcgui.ListItem()
     xbmc.Player().play(playlist)    
     
     #play_list.append(playable_url)
     
+    watchdog_counter=0
     while True:
-        #log( ' c- waiting on join '  )
+        log( '  c- waiting on join '  )
         q.join()  
-        #log( ' c- join-ed, get... '  )
+        log( ' c- join-ed, get... '  )
         try:        
             #playable_url = q.get(True,10)
             playable_entry = q.get(True,10)
             q.task_done()
-            #log( ' c- got next item... ' + playable_entry[1] )
+            log( ' c- got next item... ' + playable_entry[1] )
             #play_list.append(playable_entry[1])
             playlist.add(playable_entry[1], xbmcgui.ListItem(playable_entry[0]))
         except:
+            watchdog_counter+=1
+            if ev.isSet(): #p is done producing
+                break
+            
             pass
         #xbmc.PlayList(1).add(playable_url)
 
-        if ev.isSet():
-            #log( ' c- ev is set  -->  break '  )
+        if ev.isSet() or watchdog_counter > 2:
+            log( ' c- ev is set  -->  break '  )
             break
 
-    #log( ' c-all done '  )
+    log( ' c-all done '  )
 
     #for e in play_list:
     #    log( str(e) )
@@ -1030,7 +1049,7 @@ class Worker(threading.Thread):
                  
                 self.ev.set()
                 #work dome end
-                log( ' p-all done '  ) 
+                log( '  p-all done '  ) 
                 self.stop()
             except Empty:
                 # Allow other stuff to run
@@ -1052,10 +1071,10 @@ class Worker(threading.Thread):
             #work
             if playable_url:
                 entry[1]=playable_url
-                log('  p-%d %s %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
+                log('    p-%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
                 self.queue.put(entry)
             else:
-                log('  p-(ytdl-failed) %s' %( title )  )
+                log('      p-(ytdl-failed) %s' %( title )  )
             #log( ' qsize %d' %self.queue. qsize() )
             #q.put(playable_url)
         
@@ -1063,25 +1082,6 @@ class Worker(threading.Thread):
         #set only after we've done 1st item
         #self.ev.set()    
         #log('p-  ev is set')
-
-def ytdl_worker(q, url):
-    #ident = threading.current_thread()
-    log( ' worker '+ url)
-    q.put( urllib2.urlopen(url).read() )
-    
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

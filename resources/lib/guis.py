@@ -386,7 +386,7 @@ class listSubRedditGUI(cGUI):
             #build_script( mode, url, name="", type="", script_to_call=addonID)
             action=build_script('autoPlay', self.reddit_query_of_this_gui,'','')
             log('  PLAY_ALL '+ action)
-            self.busy_execute_sleep(action, 0,False)
+            self.busy_execute_sleep(action, 10000,False)
             pass
             
 class commentsGUI(cGUI):
