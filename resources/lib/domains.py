@@ -1572,7 +1572,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
         log("    unsupported [%s]" %media_url)
         url_for_DirectoryItem = "" 
      
-    log( "      %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
+    #log( "      %s   di_url=%s  link_type=%s vid=%s" %( hoster , url_for_DirectoryItem , link_type,videoID)  )
     return hoster, url_for_DirectoryItem, pluginUrl, modecommand, thumb_url, poster_url, isFolder, setInfo_type,link_type
 
 
