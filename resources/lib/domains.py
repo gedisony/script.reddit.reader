@@ -7,14 +7,15 @@ import sys
 import re
 import requests 
 import json
-
+import xbmc
+import xbmcgui
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
 
-from default import default_ytdl_psites_file, default_ytdl_sites_file
-from utils import build_script, parse_filename_and_ext_from_url, image_exts
+from default import default_ytdl_psites_file, default_ytdl_sites_file, playVideo, addon_path
+from utils import build_script, parse_filename_and_ext_from_url, image_exts 
 
 
 show_youtube     = addon.getSetting("show_youtube") == "true"
@@ -70,7 +71,7 @@ site30 = [False             , "playYTDLVideo"      ,'misc1'        ,"(gfycat.com
 site31 = [False             , "playYTDLVideo"      ,'misc2'        ,"(pandora.tv)|(ora.tv)|(on.aol.com/video)|(ok.ru/video)|(npo.nl)|(nowvideo.sx/video)|(nick.com/videos)|(nerdcubed.co.uk/videos)|(tvcast.naver.com/v)|(MySpass.de)|(mva.microsoft.com)|(musicplayon.com)|(mtv.com/videos)|(mpora.com/videos)|(moviezine.se)|(allmyvideos.net)|(mojvideo.com)|(miomio.tv)|(mgtv.com)|(mgoon.com)|(maker.tv/video)|(makerschannel.com)|(lynda.com)|(alfa.lt/visi-video)|(life.ru/video)|(ku6.com)|(kontrtube.ru)|(konserthusetplay.se)|(khanacademy.org)|(keek.com)|(kaltura.com)|(jwplatform.com)|(jpopsuki.tv)|(jove.com/video)|(jeuxvideo.com/videos)|(izlesene.com)|(iqiyi.com/v_)|(iprima.cz)|(indavideo.hu)|(ina.fr/video)|(ign.com/videos)|(historicfilms.com)|(godtube.com)|(gdcvault.com)|(gamekings.tv/videos)|(freespeech.org/video)|(footyroom.com)|(fernsehkritik.tv)|(myaidol.net)|(c48.org)|(show48.com)|(dai.ly)|(features.aol.com)|(video.esri.com)|(escapistmagazine.com/videos)|(ebaumsworld.com/videos)|(video.aktualne.cz)|(dotsub.com)|(discovery.com)|(dbtv.no)|(csnne.com/video)|(collegerama.tudelft.nl)|(cnn.com)|(clubic.com/video)|(closertotruth.com)|(clipsyndicate.com)|(clipfish.de)|(chilloutzone.net/video)|(channel9.msdn.com)|(carambatv.ru)|(canvas.net)|(brightcove.com)|(bilibili.com)|(bambuser.com)|(arte.tv)|(ardmediathek.de)|(aparat.com)|(air.mozilla.org)|(tv.adobe.com)|(vevo.com)|(cc.com)|(comediansincarsgettingcoffee.com)|(trailers.apple.com)|(devour.com)|(funnyclips.me)|(engagemedia.org)|(videosift.com)|(break.com)|(veoh.com)|(viddler.com)|(schooltube.com)|(videos.sapo.pt)|(funnyordie.com)","(not used) ##vidID##", "script"        ]
 site32 = [False             , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", "script"        ]
 site99 = [0,''              , "video" ,''          ,''             ,""                                                                      , ""                      ]
-#to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com    Photobucket.com
+#to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com    Photobucket.com  vidble.com
 #eroshare.com  needs ability to sort by video or album or image 
 supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29]
 
@@ -1647,6 +1648,321 @@ def ytdl_hoster( url_to_check ):
 
 if __name__ == '__main__':
     pass
+
+
+
+
+
+
+def listImgurAlbum(album_url, name, type):
+    #log("listImgurAlbum")
+    #from resources.lib.domains import ClassImgur
+    #album_url="http://imgur.com/a/fsjam"
+    ci=ClassImgur()
+        
+    dictlist=ci.ret_album_list(album_url, 'l')
+    display_album_from(dictlist, name)
+
+def display_album_from(dictlist, album_name):
+    #from resources.lib.domains import make_addon_url_from
+    #this function is called by listImgurAlbum and playTumblr
+    #NOTE: the directoryItem calling this needs isFolder=True or you'll get handle -1  error
+
+#works on kodi 16.1 but doesn't load images on kodi 17.
+
+#     ui = ssGUI('tbp_main.xml' , addon_path)
+#     items=[]
+#     
+#     for d in dictlist:
+#         #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
+#         items.append({'pic': d['DirectoryItem_url'] ,'description': d['li_label'], 'title' :  d['li_label2'] })
+#     
+#     ui.items=items
+#     ui.album_name=album_name
+#     ui.doModal()
+#     del ui
+#  
+#     return
+    directory_items=[]
+    label=""
+    
+    using_custom_gui=True
+    
+    for idx, d in enumerate(dictlist):
+        #log('li_label:'+d['li_label'] + "  pluginhandle:"+ str(pluginhandle))
+        ti=d['li_thumbnailImage']
+        
+        if using_custom_gui:
+            #There is only 1 textbox for Title and description in our custom gui. 
+            #  I don't know how to achieve this in the xml file so it is done here:
+            #  combine title and description without [CR] if label is empty. [B]$INFO[Container(53).ListItem.Label][/B][CR]$INFO[Container(53).ListItem.Plot]
+            #  new note: this is how it is done: 
+            #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
+            combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
+            combined += d['infoLabels'].get('plot')
+            d['infoLabels']['plot'] = combined
+            #d['infoLabels']['genre'] = "0,-2000"
+            #d['infoLabels']['year'] = 1998
+            #log( d['infoLabels'].get('plot') ) 
+        else:
+            #most of the time, the image does not have a title. it looks so lonely on the listitem, we just put a number on it.    
+            label = d['li_label2'] if d['li_label2'] else str(idx+1).zfill(2)
+            
+        
+        liz=xbmcgui.ListItem(label=label, 
+                             label2=d['li_label2'],
+                             iconImage=d['li_iconImage'],
+                             thumbnailImage=ti)
+
+        #classImgur puts the media_url into  d['DirectoryItem_url']  no modification.
+        #we modify it here...
+        #url_for_DirectoryItem = sys.argv[0]+"?url="+ urllib.quote_plus(d['DirectoryItem_url']) +"&mode=playSlideshow"
+        hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
+        if poster_url=="": poster_url=ti
+        
+        
+        liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
+        #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })             
+        liz.setArt({"thumb": ti, "banner":d['DirectoryItem_url'] })
+
+
+        directory_items.append( (DirectoryItem_url, liz, isFolder,) )
+
+        #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz)
+
+    from resources.lib.guis import cGUI
+ 
+    #msg=WINDOW.getProperty(url)
+    #WINDOW.clearProperty( url )
+    #log( '   msg=' + msg )
+
+    #<label>$INFO[Window(10000).Property(foox)]</label>
+    #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
+     
+    li=[]
+    for di in directory_items:
+        #log( str(di[1] ) )
+        li.append( di[1] )
+         
+    #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
+    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
+    
+    ui.include_parent_directory_entry=False
+    #ui.title_bar_text=WINDOW.getProperty(url)
+    
+    ui.doModal()
+    del ui
+    #WINDOW.clearProperty( 'view_450_slideshow_title' )
+    #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
+
+def listTumblrAlbum(t_url, name, type):    
+    from resources.lib.domains import ClassTumblr
+    log("listTumblrAlbum:"+t_url)
+    t=ClassTumblr(t_url)
+    
+    media_url, media_type =t.get_playable_url(t_url, True)
+    #log('  ' + str(media_url))
+    
+    if media_type=='album':
+        display_album_from( media_url, name )
+    else:
+        log("  listTumblrAlbum can't process " + media_type)    
+
+
+
+def playInstagram(media_url, name, type):
+    from resources.lib.domains import ClassInstagram
+    log('playInstagram '+ media_url)
+    #instagram video handled by ytdl. links that reddit says is image are handled here.
+    i=ClassInstagram( media_url )
+    image_url=i.get_playable_url(media_url, False)
+    
+    playSlideshow(image_url,"Instagram","")
+
+
+def playSlideshow(image_url, name, preview_url):
+    #url='d:\\aa\\lego_fusion_beach1.jpg'
+
+    from resources.lib.guis import cGUI
+
+    log('  playSlideshow %s, %s, %s' %( image_url, name, preview_url))
+    
+    #msg=WINDOW.getProperty(url)
+    #WINDOW.clearProperty( url )
+    #log( '   msg=' + msg )
+    msg=""
+    li=[]
+    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=image_url)
+    liz.setInfo( type='video', infoLabels={"plot": msg, } ) 
+    liz.setArt({"thumb": preview_url, "banner":image_url })             
+
+    li.append(liz)
+    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)   
+    ui.include_parent_directory_entry=False
+    
+    ui.doModal()
+    del ui
+    return
+    
+#     from resources.lib.guis import qGUI
+#     
+#     ui = qGUI('view_image.xml' ,  addon_path, defaultSkin='Default', defaultRes='1080i')   
+#     #no need to download the image. kodi does it automatically!!!
+#     ui.image_path=url
+#     ui.doModal()
+#     del ui
+#     return
+# 
+#     #this is a workaround to not being able to show images on video addon
+#     log('playSlideshow:'+url +'  ' + name )
+# 
+#     ui = ssGUI('tbp_main.xml' , addon_path)
+#     items=[]
+#     
+#     items.append({'pic': url ,'description': "", 'title' : name })
+#     
+#     ui.items=items
+#     ui.album_name=""
+#     ui.doModal()
+#     del ui
+
+    #this will also work:
+    #download the image, then view it with view_image.xml.
+#     url=url.split('?')[0]
+#     
+#     filename,ext=parse_filename_and_ext_from_url(url)
+#     #empty_slideshow_folder()  # we're showing only 1 file
+#     xbmc.executebuiltin('ActivateWindow(busydialog)')
+# 
+#     os.chdir(SlideshowCacheFolder)
+#     download_file= filename+"."+ext
+#     if os.path.exists(download_file):
+#         log("  file exists")
+#     else:
+#         log('  downloading %s' %(download_file))
+#         downloadurl(url, download_file)
+#         log('  downloaded %s' %(download_file))
+#     xbmc.executebuiltin('Dialog.Close(busydialog)')
+# 
+#     ui = qGUI('view_image.xml' , addon_path, 'default')
+#     
+#     ui.image_path=SlideshowCacheFolder + fd + download_file  #fd = // or \ depending on os
+#     ui.doModal()
+#     return
+
+    #download_file=download_file.replace(r"\\",r"\\\\")
+
+    #addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
+    #i cannot get this to work reliably...
+    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(addonUserDataFolder) )
+    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(r"d:\\aa\\") )
+    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"file":"%s"}}}' %(download_file) )
+    #return
+
+    #whis won't work if addon is a video add-on
+    #xbmc.executebuiltin("XBMC.SlideShow(" + SlideshowCacheFolder + ")")
+
+
+
+def playFlickr(flickr_url, name, type):
+    #from resources.lib.domains import ClassFlickr
+    log('play flickr '+ flickr_url)
+    f=ClassFlickr( flickr_url )
+
+    try:
+        media_url, media_type =f.get_playable_url(flickr_url, False)
+        #log('  flickr class returned %s %s' %(media_type, media_url))
+        if media_type=='photo':
+            if media_url:
+                playSlideshow(media_url,"Flickr", f.thumb_url )
+            else:
+                raise Exception(translation(32009))  #Cannot retrieve URL
+        else: #if media_type in ['album','group','gallery']:
+            display_album_from( media_url, name )
+    
+    except Exception as e:
+        log('   playFlickr error:' + str(e) )
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, flickr_url )  )
+
+def playImgurVideo(imgur_url, name, type):
+    from resources.lib.domains import ClassImgur
+    #log('**************play imgur '+ imgur_url)
+    f=ClassImgur( imgur_url )
+ 
+    media_url, media_type =f.get_playable_url(imgur_url, False)
+    if media_type=='album':
+        display_album_from( media_url, name )
+    elif media_type=='video':
+        playVideo(media_url, "", "")
+    elif media_type=='image':
+        playSlideshow(media_url,"Imgur","")
+
+
+def playGfycatVideo(gfycat_url, name, type):
+    log( "  play gfycat video " + gfycat_url )
+    
+    g=ClassGfycat()
+    GfycatStreamUrl, media_type=g.get_playable_url( gfycat_url )
+    
+    playVideo(GfycatStreamUrl, name, type)
+
+
+def playVidmeVideo(vidme_url, name, type):
+    log('playVidmeVideo')
+    v=ClassVidme(vidme_url)
+    vidme_stream_url=v.get_playable_url(vidme_url, True)
+    if vidme_stream_url:
+        playVideo(vidme_stream_url, name, type)
+    else:
+        media_status=v.whats_wrong()
+        xbmc.executebuiltin('XBMC.Notification("Vidme","%s")' % media_status  )
+        
+def playStreamable(media_url, name, type):
+    log('playStreamable '+ media_url)
+    
+    s=ClassStreamable(media_url)
+    playable_url=s.get_playable_url(media_url, True)
+
+    if playable_url:
+        playVideo(playable_url, name, type)
+    else:
+        #media_status=s.whats_wrong()  #streamable does not tell us if access to video is denied beforehand
+        xbmc.executebuiltin('XBMC.Notification("Streamable","%s")' % "Access Denied"  )
+    
+def playVineVideo(vine_url, name, type):
+    #from resources.lib.domains import ClassVine
+    #log('playVineVideo')
+    
+    v=ClassVine(vine_url)
+    #vine_stream_url='https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4'
+    vine_stream_url=v.get_playable_url(vine_url, True)    #instead of querying vine(for the .mp4 link) for each item when listing the directory item(addLink()). we do that query here. better have the delay here than for each item when listing the directory item 
+    
+    if vine_stream_url:
+        playVideo(vine_stream_url, name, type)
+    else:
+        #media_status=v.whats_wrong()
+        xbmc.executebuiltin('XBMC.Notification("Vine","%s")' % 'media_status'  )
+        #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
+
+#ytdl handles liveleak videos now.
+def playLiveLeakVideo(id, name, type):
+    playVideo(getLiveLeakStreamUrl(id), name, type)
+
+def getLiveLeakStreamUrl(id):
+    #log("getLiveLeakStreamUrl ID="+str(id) )
+    #sometimes liveleak items are news articles and not video. 
+    url=None
+    content = opener.open("http://www.liveleak.com/view?i="+id).read()
+    matchHD = re.compile('hd_file_url=(.+?)&', re.DOTALL).findall(content)
+    matchSD = re.compile('file: "(.+?)"', re.DOTALL).findall(content)
+    if matchHD and ll_qualiy=="720p":
+        url = urllib.unquote_plus(matchHD[0])
+    elif matchSD:
+        url = matchSD[0]
+    #log("**********getLiveLeakStreamUrl hd_file_url="+url)
+    return url
+
+
 
 '''
 #special credit to https://www.reddit.com/r/learnpython/comments/4pl11h/dynamically_instantiate_class_from_class_method/

@@ -649,6 +649,25 @@
 				<label>$ADDON[script.reddit.reader 32054]</label>
 			</control>
 
+			<control type="button" id="6055">
+				<visible>true</visible><description>Slideshow all images</description>
+				<enable>true</enable>
+					<width>430</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>60</height>
+					<radioposx>330</radioposx>
+					<textwidth>320</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32056]</label>
+			</control>
+
 
 			<!-- control type="edit" id="19"><description>go to subreddit editbox </description>
 				<visible>true</visible>

@@ -102,12 +102,18 @@ msgctxt "#30053"
 msgid "No comments"
 msgstr ""
 
+#used on left sliding panel
 msgctxt "#32054"
 msgid "Play All"
 msgstr ""
 
 msgctxt "#32055"
 msgid "No playable items"
+msgstr ""
+
+#used on left sliding panel
+msgctxt "#32056"
+msgid "Slideshow"
 msgstr ""
 
 

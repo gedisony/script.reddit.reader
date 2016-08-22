@@ -252,6 +252,7 @@ class listSubRedditGUI(cGUI):
     BTN_GOTO_SUBREDDIT=6052
     BTN_ZOOM_N_SLIDE=6053
     BTN_PLAY_ALL=6054
+    BTN_SLIDESHOW=6055
     
     def onInit(self):
         cGUI.onInit(self)
@@ -301,7 +302,7 @@ class listSubRedditGUI(cGUI):
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL]:   
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL,self.BTN_SLIDESHOW]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
@@ -385,8 +386,16 @@ class listSubRedditGUI(cGUI):
             #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui
             #build_script( mode, url, name="", type="", script_to_call=addonID)
             action=build_script('autoPlay', self.reddit_query_of_this_gui,'','')
-            log('  PLAY_ALL '+ action)
+            #log('  PLAY_ALL '+ action)
             self.busy_execute_sleep(action, 10000,False)
+            pass
+
+        elif controlID == self.BTN_SLIDESHOW:
+            #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui
+            #build_script( mode, url, name="", type="", script_to_call=addonID)
+            action=build_script('autoSlideshow', self.reddit_query_of_this_gui,'','')
+            log('  SLIDESHOW '+ action)
+            self.busy_execute_sleep(action, 1000,False)
             pass
             
 class commentsGUI(cGUI):

@@ -6,7 +6,7 @@
             <description>Black Background</description>
             <left>0</left>
             <top>0</top>
-            <texture>srr_FullBackground.jpg</texture>
+            <texture>srr_blackbg.jpg</texture>
             <aspectratio>scale</aspectratio>
         </control>
         <control type="image">

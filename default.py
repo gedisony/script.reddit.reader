@@ -25,6 +25,8 @@ import requests
 import threading
 from Queue import Queue, Empty
 
+
+
 #this used to be a plugin. not that we're a script, we don't get free sys.argv's
 #this import for the youtube_dl addon causes our addon to start slower. we'll import it when we need to playYTDLVideo
 if len(sys.argv) > 1:
@@ -151,13 +153,15 @@ default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_site
 
 
 #C:\Users\myusername\AppData\Roaming\Kodi\userdata\addon_data\plugin.video.reddit_viewer
-#SlideshowCacheFolder    = xbmc.translatePath("special://profile/addon_data/"+addonID+"/slideshowcache") #will use this to cache images for slideshow in video mode
+
+#last slash at the end is important
+SlideshowCacheFolder    = xbmc.translatePath("special://profile/addon_data/"+addonID+"/slideshowcache/") #will use this to cache images for slideshow 
 
 if not os.path.isdir(addonUserDataFolder):
     os.mkdir(addonUserDataFolder)
 
-#if not os.path.isdir(SlideshowCacheFolder):
-#    os.mkdir(SlideshowCacheFolder)
+if not os.path.isdir(SlideshowCacheFolder):
+    os.mkdir(SlideshowCacheFolder)
 
 
 if show_nsfw:
@@ -1104,19 +1108,6 @@ class Worker(threading.Thread):
 
 
 
-def getLiveLeakStreamUrl(id):
-    #log("getLiveLeakStreamUrl ID="+str(id) )
-    #sometimes liveleak items are news articles and not video. 
-    url=None
-    content = opener.open("http://www.liveleak.com/view?i="+id).read()
-    matchHD = re.compile('hd_file_url=(.+?)&', re.DOTALL).findall(content)
-    matchSD = re.compile('file: "(.+?)"', re.DOTALL).findall(content)
-    if matchHD and ll_qualiy=="720p":
-        url = urllib.unquote_plus(matchHD[0])
-    elif matchSD:
-        url = matchSD[0]
-    #log("**********getLiveLeakStreamUrl hd_file_url="+url)
-    return url
 
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
@@ -1132,7 +1123,6 @@ def playVideo(url, name, type):
         #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
     else:
         log("playVideo(url) url is blank")
-
         
 def ydtl_get_playable_url( url_to_check ):
     from resources.lib.utils import link_url_is_playable
@@ -1156,10 +1146,6 @@ def ydtl_get_playable_url( url_to_check ):
                 vid.selectStream(0) #You can also pass in the the dict for the chosen stream
     
             return vid.streamURL()                         #This is what Kodi (XBMC) will play    
-            
-    
-    
-    
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
@@ -1168,7 +1154,7 @@ def playYTDLVideo(url, name, type):
     #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='http://www.sextvx.com/en/video/638161/chanel-preston-hardcore-gangbang-anal-d-p' 
+    #url='https://www.vidble.com/album/KtAymux9' 
     choices = []
 
     #from BeautifulsSoup import BeautifulSoup
@@ -1264,16 +1250,6 @@ def playYTDLVideo(url, name, type):
 
     #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         
-
-#MODE playGfycatVideo       - name, type not used
-def playGfycatVideo(gfycat_url, name, type):
-    log( "  play gfycat video " + gfycat_url )
-    from resources.lib.domains import ClassGfycat
-    
-    g=ClassGfycat()
-    GfycatStreamUrl, media_type=g.get_playable_url( gfycat_url )
-    
-    playVideo(GfycatStreamUrl, name, type)
         
         #xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(  Gfycat.com, translation(32010) )  )
 
@@ -1554,206 +1530,6 @@ def r_linkHunter(json_node,d=0):
                 if len(self_text) > 0: #don't post an empty titles
                     harvest.append((score, link_desc, link_http, self_text, self_text_html, d, "t3",author,created_utc,)   )    
 
-#MODE listImgurAlbum
-def listImgurAlbum(album_url, name, type):
-    #log("listImgurAlbum")
-    from resources.lib.domains import ClassImgur
-    #album_url="http://imgur.com/a/fsjam"
-    ci=ClassImgur()
-        
-    dictlist=ci.ret_album_list(album_url, 'l')
-    display_album_from(dictlist, name)
-
-def display_album_from(dictlist, album_name):
-    from resources.lib.domains import make_addon_url_from
-    #this function is called by listImgurAlbum and playTumblr
-    #NOTE: the directoryItem calling this needs isFolder=True or you'll get handle -1  error
-
-#works on kodi 16.1 but doesn't load images on kodi 17.
-
-#     ui = ssGUI('tbp_main.xml' , addon_path)
-#     items=[]
-#     
-#     for d in dictlist:
-#         #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
-#         items.append({'pic': d['DirectoryItem_url'] ,'description': d['li_label'], 'title' :  d['li_label2'] })
-#     
-#     ui.items=items
-#     ui.album_name=album_name
-#     ui.doModal()
-#     del ui
-#  
-#     return
-    directory_items=[]
-    label=""
-    
-    using_custom_gui=True
-    
-    for idx, d in enumerate(dictlist):
-        #log('li_label:'+d['li_label'] + "  pluginhandle:"+ str(pluginhandle))
-        ti=d['li_thumbnailImage']
-        
-        if using_custom_gui:
-            #There is only 1 textbox for Title and description in our custom gui. 
-            #  I don't know how to achieve this in the xml file so it is done here:
-            #  combine title and description without [CR] if label is empty. [B]$INFO[Container(53).ListItem.Label][/B][CR]$INFO[Container(53).ListItem.Plot]
-            #  new note: this is how it is done: 
-            #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
-            combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
-            combined += d['infoLabels'].get('plot')
-            d['infoLabels']['plot'] = combined
-            #d['infoLabels']['genre'] = "0,-2000"
-            #d['infoLabels']['year'] = 1998
-            #log( d['infoLabels'].get('plot') ) 
-        else:
-            #most of the time, the image does not have a title. it looks so lonely on the listitem, we just put a number on it.    
-            label = d['li_label2'] if d['li_label2'] else str(idx+1).zfill(2)
-            
-        
-        liz=xbmcgui.ListItem(label=label, 
-                             label2=d['li_label2'],
-                             iconImage=d['li_iconImage'],
-                             thumbnailImage=ti)
-
-        #classImgur puts the media_url into  d['DirectoryItem_url']  no modification.
-        #we modify it here...
-        #url_for_DirectoryItem = sys.argv[0]+"?url="+ urllib.quote_plus(d['DirectoryItem_url']) +"&mode=playSlideshow"
-        hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
-        if poster_url=="": poster_url=ti
-        
-        
-        liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
-        #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })             
-        liz.setArt({"thumb": ti, "banner":d['DirectoryItem_url'] })
-
-
-        directory_items.append( (DirectoryItem_url, liz, isFolder,) )
-
-        #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz)
-
-    from resources.lib.guis import cGUI
- 
-    #msg=WINDOW.getProperty(url)
-    #WINDOW.clearProperty( url )
-    #log( '   msg=' + msg )
-
-    #<label>$INFO[Window(10000).Property(foox)]</label>
-    #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
-     
-    li=[]
-    for di in directory_items:
-        #log( str(di[1] ) )
-        li.append( di[1] )
-         
-    #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
-    
-    ui.include_parent_directory_entry=False
-    #ui.title_bar_text=WINDOW.getProperty(url)
-    
-    ui.doModal()
-    del ui
-    #WINDOW.clearProperty( 'view_450_slideshow_title' )
-    #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
-
-def listTumblrAlbum(t_url, name, type):    
-    from resources.lib.domains import ClassTumblr
-    log("listTumblrAlbum:"+t_url)
-    t=ClassTumblr(t_url)
-    
-    media_url, media_type =t.get_playable_url(t_url, True)
-    #log('  ' + str(media_url))
-    
-    if media_type=='album':
-        display_album_from( media_url, name )
-    else:
-        log("  listTumblrAlbum can't process " + media_type)    
-
-def playVineVideo(vine_url, name, type):
-    from resources.lib.domains import ClassVine
-    #log('playVineVideo')
-    
-    v=ClassVine(vine_url)
-    #vine_stream_url='https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4'
-    vine_stream_url=v.get_playable_url(vine_url, True)    #instead of querying vine(for the .mp4 link) for each item when listing the directory item(addLink()). we do that query here. better have the delay here than for each item when listing the directory item 
-    
-    if vine_stream_url:
-        playVideo(vine_stream_url, name, type)
-    else:
-        #media_status=v.whats_wrong()
-        xbmc.executebuiltin('XBMC.Notification("Vine","%s")' % 'media_status'  )
-        #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
-
-def playVidmeVideo(vidme_url, name, type):
-    from resources.lib.domains import ClassVidme
-    log('playVidmeVideo')
-    v=ClassVidme(vidme_url)
-    vidme_stream_url=v.get_playable_url(vidme_url, True)
-    if vidme_stream_url:
-        playVideo(vidme_stream_url, name, type)
-    else:
-        media_status=v.whats_wrong()
-        xbmc.executebuiltin('XBMC.Notification("Vidme","%s")' % media_status  )
-        
-def playStreamable(media_url, name, type):
-    from resources.lib.domains import ClassStreamable
-    log('playStreamable '+ media_url)
-    
-    s=ClassStreamable(media_url)
-    playable_url=s.get_playable_url(media_url, True)
-
-    if playable_url:
-        playVideo(playable_url, name, type)
-    else:
-        #media_status=s.whats_wrong()  #streamable does not tell us if access to video is denied beforehand
-        xbmc.executebuiltin('XBMC.Notification("Streamable","%s")' % "Access Denied"  )
-    
-def playInstagram(media_url, name, type):
-    from resources.lib.domains import ClassInstagram
-    log('playInstagram '+ media_url)
-    #instagram video handled by ytdl. links that reddit says is image are handled here.
-    i=ClassInstagram( media_url )
-    image_url=i.get_playable_url(media_url, False)
-    
-    playSlideshow(image_url,"Instagram","")
-
-#MODE playLiveLeakVideo       - name, type not used
-def playLiveLeakVideo(id, name, type):
-    playVideo(getLiveLeakStreamUrl(id), name, type)
-
-def playFlickr(flickr_url, name, type):
-    from resources.lib.domains import ClassFlickr
-    log('play flickr '+ flickr_url)
-    f=ClassFlickr( flickr_url )
-
-    try:
-        media_url, media_type =f.get_playable_url(flickr_url, False)
-        #log('  flickr class returned %s %s' %(media_type, media_url))
-        if media_type=='photo':
-            if media_url:
-                playSlideshow(media_url,"Flickr", f.thumb_url )
-            else:
-                raise Exception(translation(32009))  #Cannot retrieve URL
-        else: #if media_type in ['album','group','gallery']:
-            display_album_from( media_url, name )
-    
-    except Exception as e:
-        log('   playFlickr error:' + str(e) )
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, flickr_url )  )
-        
-def playImgurVideo(imgur_url, name, type):
-    from resources.lib.domains import ClassImgur
-    #log('**************play imgur '+ imgur_url)
-    f=ClassImgur( imgur_url )
- 
-    media_url, media_type =f.get_playable_url(imgur_url, False)
-    if media_type=='album':
-        display_album_from( media_url, name )
-    elif media_type=='video':
-        playVideo(media_url, "", "")
-    elif media_type=='image':
-        playSlideshow(media_url,"Imgur","")
-    
 #MODE queueVideo       -type not used
 def queueVideo(url, name, type):
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -1823,92 +1599,6 @@ def translation(id):
 #     ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=url, listitem=liz)
 #     return ok
 
-
-def playSlideshow(image_url, name, preview_url):
-    #url='d:\\aa\\lego_fusion_beach1.jpg'
-
-    from resources.lib.guis import cGUI
-
-    log('  playSlideshow %s, %s, %s' %( image_url, name, preview_url))
-    
-    #msg=WINDOW.getProperty(url)
-    #WINDOW.clearProperty( url )
-    #log( '   msg=' + msg )
-    msg=""
-    li=[]
-    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=image_url)
-    liz.setInfo( type='video', infoLabels={"plot": msg, } ) 
-    liz.setArt({"thumb": preview_url, "banner":image_url })             
-
-    li.append(liz)
-    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)   
-    ui.include_parent_directory_entry=False
-    
-    ui.doModal()
-    del ui
-    return
-    
-    
-#     from resources.lib.guis import qGUI
-#     
-#     ui = qGUI('view_image.xml' ,  addon_path, defaultSkin='Default', defaultRes='1080i')   
-#     #no need to download the image. kodi does it automatically!!!
-#     ui.image_path=url
-#     ui.doModal()
-#     del ui
-#     return
-# 
-# 
-#     #this is a workaround to not being able to show images on video addon
-#     log('playSlideshow:'+url +'  ' + name )
-# 
-#     ui = ssGUI('tbp_main.xml' , addon_path)
-#     items=[]
-#     
-#     items.append({'pic': url ,'description': "", 'title' : name })
-#     
-#     ui.items=items
-#     ui.album_name=""
-#     ui.doModal()
-#     del ui
-
-    #this will also work:
-    #download the image, then view it with view_image.xml.
-#     url=url.split('?')[0]
-#     
-#     filename,ext=parse_filename_and_ext_from_url(url)
-#     #empty_slideshow_folder()  # we're showing only 1 file
-#     xbmc.executebuiltin('ActivateWindow(busydialog)')
-# 
-#     os.chdir(SlideshowCacheFolder)
-#     download_file= filename+"."+ext
-#     if os.path.exists(download_file):
-#         log("  file exists")
-#     else:
-#         log('  downloading %s' %(download_file))
-#         downloadurl(url, download_file)
-#         log('  downloaded %s' %(download_file))
-#     xbmc.executebuiltin('Dialog.Close(busydialog)')
-# 
-#     ui = qGUI('view_image.xml' , addon_path, 'default')
-#     
-#     ui.image_path=SlideshowCacheFolder + fd + download_file  #fd = // or \ depending on os
-#     ui.doModal()
-#     return
-
-    #download_file=download_file.replace(r"\\",r"\\\\")
-
-    #addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
-    #i cannot get this to work reliably...
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(addonUserDataFolder) )
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(r"d:\\aa\\") )
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"file":"%s"}}}' %(download_file) )
-    #return
-
-    #whis won't work if addon is a video add-on
-    #xbmc.executebuiltin("XBMC.SlideShow(" + SlideshowCacheFolder + ")")
-
-    return
 
 def zoom_n_slide(image, width, height):
     from resources.lib.utils import calculate_zoom_slide
@@ -2307,10 +1997,6 @@ def reddit_revoke_refresh_token(url, name, type):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( str(e), 'Revoking refresh token' )  )
         log("  Revoking refresh token EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
     
-
-
-
-
     
 def xbmc_busy(busy=True):
     if busy:
@@ -2379,18 +2065,21 @@ if __name__ == '__main__':
 #     log("name="+ name)
 #     log("url="+  url)
 #     log("-----------------------")
+    from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
+    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram
+    from resources.lib.slideshow import autoSlideshow
     
     if mode=='':mode='index'  #default mode is to list start page (index)
     #plugin_modes holds the mode string and the function that will be called given the mode
     plugin_modes = {'index'                 : index
                     ,'listSubReddit'        : listSubReddit
                     ,'playVideo'            : playVideo           
-                    ,'playLiveLeakVideo'    : playLiveLeakVideo  
                     ,'playGfycatVideo'      : playGfycatVideo   
                     ,'addSubreddit'         : addSubreddit         
                     ,'editSubreddit'        : editSubreddit         
                     ,'removeSubreddit'      : removeSubreddit      
-                    ,'autoPlay'             : autoPlay       
+                    ,'autoPlay'             : autoPlay
+                    ,'autoSlideshow'        : autoSlideshow                           
                     ,'queueVideo'           : queueVideo     
                     ,'addToFavs'            : addToFavs      
                     ,'removeFromFavs'       : removeFromFavs
@@ -2416,6 +2105,9 @@ if __name__ == '__main__':
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
                     }
+
+#                    ,'playLiveLeakVideo'    : playLiveLeakVideo  
+
     
     #'playYTDLVideo','listLinksInComment' takes a long time to complete. when these modes are called from the gui, a long xbmc.executebuiltin("ActivateWindow(busydialog)") is run
     #   we close the busy dialog if running other modes 
