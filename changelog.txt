@@ -1,14 +1,17 @@
- 0.1.1  (2016-07-27)
- - convert to script.reddit.reader from plugin.video.reddit_viewer
- 0.2.1  (2016-08-08)
- changes from reddit_viewer:
- - different user interface
- - removed supported sites filter. (all reddit links shown)
- - removed play all/play/random
- - no context menus
- - add to favorites not yet supported
- - list only links in comments not yet supported
- 0.3.0
+0.4.2  (08-22-2016)
+ - reorganize code
+ - add play all video
+ - add image slideshow 
+0.4.1
+ - adjust size for larger font
+ - add setting to choose xml file for main gui
+ - rename assets to not conflict with skin
+0.4.0 (08-17-2016)
+ - reorganize code
+ - support flickr galleries/groups
+ - filter posts by subreddit or domain
+ - kodi 16 compatibility 
+0.3.0
  - add zoom and scroll down if image is very tall
  - not open comments screen if no comments on link
  - use thumbnail as loading image when viewing imgur album
@@ -16,13 +19,14 @@
  - android compatibility fix 
  - follow subreddit links in comment
  - button to arrange links in comments at top of list
- 0.4.0 (08-17-2016)
- - reorganize code
- - support flickr galleries/groups
- - filter posts by subreddit or domain
- - kodi 16 compatibility 
- 0.4.1
- - adjust size for larger font
- - add setting to choose xml file for main gui
- - rename assets to not conflict with skin
+0.2.1  (2016-08-08)
+ changes from reddit_viewer:
+ - different user interface
+ - removed supported sites filter. (all reddit links shown)
+ - removed play all/play/random
+ - no context menus
+ - add to favorites not yet supported
+ - list only links in comments not yet supported
+0.1.1  (2016-07-27)
+ - convert to script.reddit.reader from plugin.video.reddit_viewer
  
