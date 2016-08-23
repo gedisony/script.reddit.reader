@@ -334,6 +334,17 @@
 		</control>
 	<!--END include name="UpDownArrows"-->
 
+	<control type="button"><description>long vertical hidden button that shows/hides the left sliding panel when mouse hovers on it</description>
+		<visible>! ControlGroup(9000).HasFocus </visible>
+		<top>0</top>
+		<left>0</left>
+		<width>20</width>
+		<height>1080</height>
+		<texturefocus>-</texturefocus>
+		<texturenofocus>-</texturenofocus>
+		<!-- onclick>SetFocus(9000)</onclick-->
+		<onfocus>SetFocus(9000)</onfocus>
+	</control>
 
 
 
@@ -359,16 +370,8 @@
 					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 					<texture colordiffuse="FF12A8DA">alienicon.png</texture>
 					<aspectratio align="center" aligny="center">stretch</aspectratio>
+					
 				</control>
-				<!--control type="button">
-					<top>0</top>
-					<width>120</width>
-					<height>100</height>
-					<onclick condition="!String.IsEmpty(Container.FolderPath)">Container.Update(" ",replace)</onclick>
-					<onclick condition="String.IsEmpty(Container.FolderPath)">Action(Back)</onclick>
-					<texturefocus>-</texturefocus>
-					<texturenofocus>-</texturenofocus>
-				</control-->
 					
 				<control type="label" id="1">
 					<top>10</top>

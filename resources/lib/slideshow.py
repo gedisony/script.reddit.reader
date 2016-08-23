@@ -3,7 +3,7 @@ import json
 import xbmcvfs
 import random
 
-from xbmcgui import ControlImage, WindowDialog, Window
+from xbmcgui import ControlImage, WindowDialog, Window, ControlTextBox, ControlLabel
 
 #autoSlideshow
 
@@ -117,7 +117,7 @@ def autoSlideshow(url, name, type):
             else:
                 if poster_url:
                     log('  added b poster:%s' % title )
-                    #entries.append([title,poster_url,0, 0,len(entries)])
+                    entries.append([title,poster_url,0, 0,len(entries)])
                 
             
                     
@@ -161,6 +161,7 @@ def autoSlideshow(url, name, type):
 
     
     #s= AppleTVLikeScreensaver(ev,q)
+    #s= TableDropScreensaver(ev,q)
     s= HorizontalSlideScreensaver(ev,q)
     s.start_loop()
     return
@@ -197,7 +198,8 @@ class ScreensaverBase(object):
         self.background_control = None
         self.preload_control = None
         self.image_count = 0
-        self.image_controls = []
+        #self.image_controls = []
+        self.tni_controls = []
         self.global_controls = []
         self.exit_monitor = ExitMonitor(self.stop)
         
@@ -231,25 +233,45 @@ class ScreensaverBase(object):
         #self.log('  init_cycle_controls start')
         for i in xrange(self.IMAGE_CONTROL_COUNT):
             img_control = ControlImage(0, 0, 0, 0, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
-            self.image_controls.append(img_control)
+            txt_control = ControlTextBox(0, 0, 0, 0, font='font30')
+#                     xbfont_left = 0x00000000
+#                     xbfont_right = 0x00000001
+#                     xbfont_center_x = 0x00000002
+#                     xbfont_center_y = 0x00000004
+#                     xbfont_truncated = 0x00000008
+            #ControlLabel(x, y, width, height, label, font=None, textColor=None, disabledColor=None, alignment=0, hasPath=False, angle=0)
+            #txt_control = ControlLabel(0, 0, 0, 0, '', font='font30', textColor='', disabledColor='', alignment=6, hasPath=False, angle=0)
+            
+            #self.image_controls.append(img_control)
+            self.tni_controls.append([txt_control,img_control])
         #self.log('  init_cycle_controls end')
 
     def stack_cycle_controls(self):
         #self.log('stack_cycle_controls start')
         # add controls to the window in same order as image_controls list
         # so any new image will be in front of all previous images
-        self.xbmc_window.addControls(self.image_controls)
+        #self.xbmc_window.addControls(self.image_controls)
+        #self.xbmc_window.addControls(self.text_controls)
+
+        self.xbmc_window.addControls(self.tni_controls[1])
+        self.xbmc_window.addControls(self.tni_controls[0])
+        
         #self.log('stack_cycle_controls end')
 
     def start_loop(self):
         self.log('start_loop start')
         
-        images = self.get_images('q')
+        #images = self.get_images('q')
+        desc_and_images = self.get_description_and_images('q')
+        
         
         #if addon.getSetting('random_order') == 'true':
         #    random.shuffle(images)
-        image_url_cycle = cycle(images)
-        image_controls_cycle = cycle(self.image_controls)
+        desc_and_images_cycle=cycle(desc_and_images)
+        
+        #image_url_cycle = cycle(images)
+        #image_controls_cycle = cycle(self.image_controls)
+        tni_controls_cycle= cycle(self.tni_controls)
 
         #self.log('  image_url_cycle %s' % image_url_cycle)
         
@@ -257,25 +279,32 @@ class ScreensaverBase(object):
         self.hide_loading_indicator()
         
         #pops the first one
-        image_url = image_url_cycle.next()
+        #image_url = image_url_cycle.next()
+        desc_and_image=desc_and_images_cycle.next()
         #self.log('  image_url_cycle.next %s' % image_url)
         
         while not self.exit_requested:
-            self.log('  using image: %s' % repr(image_url))
+            self.log('  using image: %s ' % ( repr(desc_and_image ) ) )
             
             #pops an image control
-            image_control = image_controls_cycle.next()
+            #image_control = image_controls_cycle.next()
+            tni_control   = tni_controls_cycle.next()
             
             #process_image done by subclass( assign animation and stuff to image control ) 
-            self.process_image(image_control, image_url)
+            #self.process_image(image_control, image_url)
+            #self.process_image(image_control, desc_and_image)
+            self.process_image(tni_control, desc_and_image)
             
-            image_url = image_url_cycle.next()
+            
+            #image_url = image_url_cycle.next()
+            desc_and_image=desc_and_images_cycle.next()
             
             #self.wait()
             if self.image_count < self.FAST_IMAGE_COUNT:
                 self.image_count += 1
             else:
-                self.preload_image(image_url)
+                #self.preload_image(image_url)
+                self.preload_image(desc_and_image[1])
                 self.wait()
                 
         self.log('start_loop end')
@@ -287,6 +316,7 @@ class ScreensaverBase(object):
         #source = SOURCES[int(addon.getSetting('source'))]
         #prop = PROPS[int(addon.getSetting('prop'))]
         images = []
+        texts = []
         #if source == 'movies':
         #    images = self._get_json_images('VideoLibrary.GetMovies', 'movies', prop)
         #elif source == 'albums':
@@ -300,7 +330,7 @@ class ScreensaverBase(object):
                 images = self._get_folder_images(path)
         elif source == 'q':
             images=[item[1] for item in q.queue]
-            
+            texts=[item[0] for item in q.queue]
             #for i in images: self.log('   image: %s' %i)
             #self.log('    %d images' % len(images))
 
@@ -320,6 +350,25 @@ class ScreensaverBase(object):
 #             raise NoImagesException
         
         return images
+
+    def get_description_and_images(self, source):
+        #self.log('get_images2')
+        self.image_aspect_ratio = 16.0 / 9.0
+
+        images = []
+
+        if source == 'image_folder':
+            path = SlideshowCacheFolder  #addon.getSetting('image_path')
+            if path:
+                images = self._get_folder_images(path)
+        elif source == 'q':
+            images=[[item[0], item[1]] for item in q.queue]
+            #texts=[item[0] for item in q.queue]
+            #for i in images: self.log('   image: %s' %i)
+            #self.log('    %d images' % len(images))
+
+        return images
+
 
     #for movie, audio or tv shows
     def _get_json_images(self, method, key, prop):
@@ -459,21 +508,28 @@ class HorizontalSlideScreensaver(ScreensaverBase):
 #         random.shuffle(self.image_controls)
 
 
-        for image_control in self.image_controls:
-#             zoom = int(random.betavariate(2, 2) * 40) + 10
-            width  = 1280
-            height = 720    #1280 / 100 * zoom
-            image_control.setHeight(height)
-            image_control.setWidth(width)
+#         for image_control in self.image_controls:
+# #             zoom = int(random.betavariate(2, 2) * 40) + 10
+#             width  = 1280
+#             height = 720    #1280 / 100 * zoom
+#             image_control.setHeight(height)
+#             image_control.setWidth(width)
+            
+            
 #         self.image_controls = sorted(
 #             self.image_controls, key=lambda c: c.getWidth()
 #         )
 #         self.xbmc_window.addControls(self.image_controls)
 #         random.shuffle(self.image_controls)
         
-        self.xbmc_window.addControls(self.image_controls)
+        #self.xbmc_window.addControls(self.tni_controls[0])
+        #self.xbmc_window.addControls(self.tni_controls[1])
+        for txt_ctl, img_ctl in self.tni_controls:
+            self.xbmc_window.addControl(img_ctl)
+            self.xbmc_window.addControl(txt_ctl)
+            
 
-    def process_image(self, image_control, image_url):
+    def process_image(self, tni_control, desc_and_image):
 #         MOVE_ANIMATION = (
 #             'effect=slide start=1920,0 end=-1920,0 center=auto time=%s '
 #             'tween=linear delay=0 condition=true'
@@ -482,19 +538,12 @@ class HorizontalSlideScreensaver(ScreensaverBase):
             'effect=slide start=1280,0 end=-1280,0 center=auto time=%s '
             'tween=circle easing=out delay=0 condition=true'
         )
+        image_control=tni_control[1]
+        text_control=tni_control[0]
+        
         image_control.setVisible(False)
         image_control.setImage('')
-        
-        # calculate all parameters and properties based on the already set
-        # width. We can not change the size again because all controls need
-        # to be added to the window in size order.
-        #width = image_control.getWidth()
-        #zoom = width * 100 / 1280
-        #height = int(width / self.image_aspect_ratio)
-        # let images overlap max 1/2w left or right
-        #center = random.randint(0, 1280)
-        #x_position = center - width / 2
-        #y_position = 0
+        text_control.setText('')
 
         time = 30000 #self.MAX_TIME #/ zoom * self.DISTANCE_RATIO * 100
 
@@ -502,15 +551,25 @@ class HorizontalSlideScreensaver(ScreensaverBase):
             ('conditional', MOVE_ANIMATION % time),
         ]
         # set all parameters and properties
-        image_control.setImage(image_url)
-        
+
+        #labels can have text centered but can't have multiline
+        #textbox can have multiline but not centered text... what to do...
+        #setLabel(self, label='', font=None, textColor=None, disabledColor=None, shadowColor=None, focusedColor=None, label2=''):
+#         text_control.setText(desc_and_image[0])
+#         text_control.setPosition(320, 550)
+#         text_control.setWidth(640)
+#         text_control.setHeight(220)
+#         text_control.setAnimations(animations)
+#         text_control.setVisible(True)
+#         
+
+        image_control.setImage(desc_and_image[1])
         image_control.setPosition(0, 0)
         image_control.setWidth(1280)
         image_control.setHeight(720)
         image_control.setAnimations(animations)
         # show the image
         image_control.setVisible(True)
-
 
 
 
@@ -563,7 +622,7 @@ class TableDropScreensaver(ScreensaverBase):
              DROP_ANIMATION % (drop_height, drop_duration)),
         ]
         # set all parameters and properties
-        image_control.setImage(image_url)
+        image_control.setImage(image_url[1])
         image_control.setPosition(x_position, y_position)
         image_control.setWidth(width)
         image_control.setHeight(height)
@@ -725,7 +784,7 @@ class AppleTVLikeScreensaver(ScreensaverBase):
             ('conditional', MOVE_ANIMATION % time),
         ]
         # set all parameters and properties
-        image_control.setImage(image_url)
+        image_control.setImage(image_url[1])
         image_control.setPosition(x_position, y_position)
         image_control.setWidth(width)
         image_control.setHeight(height)
