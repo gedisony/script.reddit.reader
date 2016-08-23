@@ -403,7 +403,7 @@ def listSubReddit(url, title_bar_name, type):
     title_bar_name=title_bar_name.replace(' ','+')
     #log("  title_bar_name %s " %(title_bar_name) )
 
-    log("listSubReddit r/%s url=%s" %(title_bar_name,type,url) )
+    log("listSubReddit r/%s url=%s" %(title_bar_name,url) )
     t_on = translation(32071)  #"on"
     #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
     t_pts = u"\U00002709"  # translation(30072)   envelope symbol
@@ -443,6 +443,10 @@ def listSubReddit(url, title_bar_name, type):
             title = unescape(entry['data']['title'].encode('utf-8'))
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
+            
+            post_id = entry['data']['id']
+            post_id = entry['data']['name']
+            
             
             try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
             except: description = ''
@@ -645,7 +649,7 @@ def skin_launcher(mode,**kwargs ):
     li=kwargs.get('li')
     subreddits_file=kwargs.get('subreddits_file')
     currentUrl=kwargs.get('currentUrl')
-    log('********************* ' + repr(currentUrl))
+    #log('********************* ' + repr(currentUrl))
     try:    
         ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subreddits_file, id=55)
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
