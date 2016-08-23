@@ -378,7 +378,7 @@ def index(url,name,type):
     
     return
     
-#MODE listSubReddit(url, name, type)    --name not used
+#MODE listSubReddit(url, name, type)  
 def listSubReddit(url, title_bar_name, type):
     from resources.lib.domains import parse_filename_and_ext_from_url
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
@@ -403,7 +403,7 @@ def listSubReddit(url, title_bar_name, type):
     title_bar_name=title_bar_name.replace(' ','+')
     #log("  title_bar_name %s " %(title_bar_name) )
 
-    log("listSubReddit subreddit=%s url=%s" %(title_bar_name,url) )
+    log("listSubReddit r/%s url=%s" %(title_bar_name,type,url) )
     t_on = translation(32071)  #"on"
     #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
     t_pts = u"\U00002709"  # translation(30072)   envelope symbol
@@ -434,7 +434,9 @@ def listSubReddit(url, title_bar_name, type):
         except: g=""
         if g:
             title_bar_name=g
-            currentUrl=assemble_reddit_filter_string('',g)
+            #preserve the &after string so that functions like play slideshow and play all videos can 'play' the correct page 
+            #  extract the &after string from currentUrl -OR- send it with the 'type' argument when calling this function.
+            currentUrl=assemble_reddit_filter_string('',g) + '&after=' + type
 
     for idx, entry in enumerate(content['data']['children']):
         try:
@@ -610,7 +612,7 @@ def listSubReddit(url, title_bar_name, type):
              
             #addDir(translation(32004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
             
-            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name), {'plot': translation(32004)} )
+            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': translation(32004)} )
             
             li.append(liz)
         
@@ -643,7 +645,7 @@ def skin_launcher(mode,**kwargs ):
     li=kwargs.get('li')
     subreddits_file=kwargs.get('subreddits_file')
     currentUrl=kwargs.get('currentUrl')
-
+    log('********************* ' + repr(currentUrl))
     try:    
         ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subreddits_file, id=55)
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
