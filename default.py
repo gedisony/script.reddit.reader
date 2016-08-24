@@ -751,7 +751,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #log('    ar and description criteria met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
-        liz.setInfo(type='', infoLabels={"plotoutline": il_description, }  )
+        liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
 
     #----- assign actions
     if num_comments > 0 or description:
@@ -762,7 +762,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setProperty('post_id', post_id )
     
     
-    liz.setInfo(type='', infoLabels=il)
+    liz.setInfo(type='video', infoLabels=il)
     #
     
     #liz.addStreamInfo('video', { 'codec': 'preview_ar','aspect': preview_ar, 'width': preview_w, 'height': preview_h } )  #how to retrieve?
