@@ -116,6 +116,11 @@ msgctxt "#32056"
 msgid "Slideshow"
 msgstr ""
 
+#Play all - from here
+msgctxt "#32057"
+msgid "from here"
+msgstr ""
+
 
 #begin strings used in pretty date to indicate how long ago a post is posted (keep these strings short and similar length) 
 msgctxt "#32060"

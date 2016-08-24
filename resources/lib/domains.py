@@ -1760,7 +1760,7 @@ def display_album_from(dictlist, album_name):
     #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
 
 def listTumblrAlbum(t_url, name, type):    
-    from resources.lib.domains import ClassTumblr
+    #from resources.lib.domains import ClassTumblr
     log("listTumblrAlbum:"+t_url)
     t=ClassTumblr(t_url)
     
@@ -1775,7 +1775,7 @@ def listTumblrAlbum(t_url, name, type):
 
 
 def playInstagram(media_url, name, type):
-    from resources.lib.domains import ClassInstagram
+    #from resources.lib.domains import ClassInstagram
     log('playInstagram '+ media_url)
     #instagram video handled by ytdl. links that reddit says is image are handled here.
     i=ClassInstagram( media_url )
@@ -1889,7 +1889,7 @@ def playFlickr(flickr_url, name, type):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, flickr_url )  )
 
 def playImgurVideo(imgur_url, name, type):
-    from resources.lib.domains import ClassImgur
+    #from resources.lib.domains import ClassImgur
     #log('**************play imgur '+ imgur_url)
     f=ClassImgur( imgur_url )
  

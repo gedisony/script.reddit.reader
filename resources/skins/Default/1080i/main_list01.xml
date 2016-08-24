@@ -617,6 +617,7 @@
 			<control type="button" id="6053">
 				<visible>true</visible><description>zoom_n_slide</description>
 				<enable>!String.IsEmpty(Container(55).ListItem.Property(zoom_n_slide_action))</enable>
+				<ondown>6050</ondown>
 					<width>430</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
@@ -633,23 +634,50 @@
 				<label>$ADDON[script.reddit.reader 32050]</label>
 			</control>
 
-			<control type="button" id="6054">
-				<visible>true</visible><description>play all</description>
-				<enable>true</enable>
-					<width>430</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32054]</label>
+			<control type="group" id="6050">
+				<height>60</height>
+				<onup>6053</onup>
+				<ondown>6057</ondown>
+				<control type="button" id="6054">
+					<visible>true</visible><description>play all</description>
+					<enable>true</enable>
+						<top>0</top>
+						<left>0</left>
+						<height>60</height>
+						<width>200</width>
+				<onup>6053</onup>
+				<ondown>6057</ondown>
+						<textoffsetx>20</textoffsetx>
+						<textwidth>320</textwidth>
+						<aligny>center</aligny>
+						<textcolor>white</textcolor>
+						<invalidcolor>invalid</invalidcolor>
+						<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+						<texturenofocus border="30">srr_separator.png</texturenofocus>
+						<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+						<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+					<label>$ADDON[script.reddit.reader 32054]</label>
+				</control>
+				<control type="button" id="6057">
+					<visible>true</visible><description>play from here</description>
+					<enable>true</enable>
+						<top>0</top>
+						<left>200</left>
+						<height>60</height>
+						<width>230</width>
+				<onup>6054</onup>
+				<ondown>6055</ondown>
+						<textoffsetx>20</textoffsetx>
+						<textwidth>320</textwidth>
+						<aligny>center</aligny>
+						<textcolor>white</textcolor>
+						<invalidcolor>invalid</invalidcolor>
+						<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+						<texturenofocus border="30">srr_separator.png</texturenofocus>
+						<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+						<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+					<label>$ADDON[script.reddit.reader 32057]</label>
+				</control>
 			</control>
 
 			<control type="button" id="6055">

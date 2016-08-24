@@ -253,6 +253,7 @@ class listSubRedditGUI(cGUI):
     BTN_ZOOM_N_SLIDE=6053
     BTN_PLAY_ALL=6054
     BTN_SLIDESHOW=6055
+    BTN_PLAY_FROM_HERE=6057
     
     def onInit(self):
         cGUI.onInit(self)
@@ -302,7 +303,7 @@ class listSubRedditGUI(cGUI):
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL,self.BTN_SLIDESHOW]:   
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL,self.BTN_SLIDESHOW, self.BTN_PLAY_FROM_HERE]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
@@ -389,6 +390,27 @@ class listSubRedditGUI(cGUI):
             #log('  PLAY_ALL '+ action)
             self.busy_execute_sleep(action, 10000,False)
             pass
+
+        elif controlID == self.BTN_PLAY_FROM_HERE:
+            #get the post_id before the selected item. (not the selected items post_id)
+            i  =self.gui_listbox.getSelectedPosition()
+            list_item_bs = self.gui_listbox.getListItem(i-1)
+            post_id_bs   = list_item_bs.getProperty('post_id')
+            
+            #replace or put &after=post_id to the reddit query so that the returned posts will be "&after=post_id"
+            rq=self.reddit_query_of_this_gui.split('&after=')[0]
+            #log('  rq= %s ' %( rq ) )
+            if post_id_bs:
+                rq = rq + '&after=' + post_id_bs
+            #log('  rq= %s ' %( rq ) )
+            
+            action=build_script('autoPlay', rq,'','')
+            log('  PLAY_FROM_HERE %d %s %s' %( i, post_id_bs, list_item_bs.getLabel() ) )
+            
+            self.busy_execute_sleep(action, 10000,False)
+            
+            pass
+
 
         elif controlID == self.BTN_SLIDESHOW:
             #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui
