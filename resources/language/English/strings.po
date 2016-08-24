@@ -44,7 +44,7 @@ msgstr ""
 
 #error message popup when youtube-dl can't get playable url 
 msgctxt "#32010"
-msgid "Failed to get playable url"
+msgid "Could not get a playable url"
 msgstr ""
 
 #cannot parse ID from url
@@ -241,6 +241,15 @@ msgstr ""
 
 msgctxt "#32312"
 msgid "Use youtube_dl add-on for Youtube videos"
+msgstr ""
+
+msgctxt "#32313"
+msgid "Have the youtube_dl add-on attempt to play unknown/unsupported links"
+msgstr ""
+
+# Have the youtube_dl add-on attempt to play unknown/unsupported links in comments
+msgctxt "#32314"
+msgid "All links in comments are enabled and youtube_dl add-on will attempt to play unsupported types"
 msgstr ""
 
 

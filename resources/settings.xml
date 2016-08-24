@@ -52,14 +52,16 @@
     </category-->
 
     <category label="32150">
-        <!-- setting                  type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/-->
-        <!-- setting                  type="action"      label="30152" action="RunAddon(script.reddit.reader,?mode=openSettings&url=vimeo)"/-->
-        <!-- setting                  type="action"      label="30153" action="RunAddon(script.reddit.reader,?mode=openSettings&url=dailymotion)"/-->
-        <setting id="ll_qualiy"   type="enum"        label="32154" values="480p|720p" default="1"/>
-        <!-- setting id="ll_downDir"  type="folder"      label="30155" default=""/-->
-        <!-- setting id="gfy_downDir" type="folder"      label="30156" default=""/-->
-        <setting id="streamable_quality" type="enum" label="32157" values="full|mobile" default="1" />
-        <setting id="use_ytdl_for_yt"    type="bool" label="32312" default="false"/>
+        <!-- setting                                   type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/-->
+        <!-- setting                                   type="action"      label="30152" action="RunAddon(script.reddit.reader,?mode=openSettings&url=vimeo)"/-->
+        <!-- setting                                   type="action"      label="30153" action="RunAddon(script.reddit.reader,?mode=openSettings&url=dailymotion)"/-->
+        <setting id="ll_qualiy"                        type="enum"        label="32154" values="480p|720p" default="1"/>
+        <!-- setting id="ll_downDir"                   type="folder"      label="30155" default=""/-->
+        <!-- setting id="gfy_downDir"                  type="folder"      label="30156" default=""/-->
+        <setting id="streamable_quality"               type="enum" label="32157" values="full|mobile" default="1" />
+        <setting id="use_ytdl_for_yt"                  type="bool" label="32312" default="false"/>
+        <setting id="use_ytdl_for_unknown"             type="bool" label="32313" default="false"/>
+        <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32314" default="false"/>
     </category>
     <category label="32400"> 
     	<setting                              type="lsep"        label="32401"               enable="true"   />

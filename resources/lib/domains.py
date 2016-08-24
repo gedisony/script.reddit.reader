@@ -14,7 +14,7 @@ import xbmcgui
 from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
 
-from default import default_ytdl_psites_file, default_ytdl_sites_file, playVideo, addon_path
+from default import default_ytdl_psites_file, default_ytdl_sites_file, playVideo, addon_path, use_ytdl_for_unknown_in_comments
 from utils import build_script, parse_filename_and_ext_from_url, image_exts 
 
 
@@ -1601,6 +1601,10 @@ def url_is_supported(url_to_check):
         if dont_support:
             return False
         
+        return True
+    
+    #if this setting is set to true, all links are supported. it is up to ytdl to see if it actually plays
+    if use_ytdl_for_unknown_in_comments:
         return True
 
     #originally ytdl sites were matched in supported sites[] but it is getting so big that it is moved to a separate configurable file.

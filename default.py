@@ -139,7 +139,8 @@ streamable_quality  =["full", "mobile"][istreamable_quality]       #https://stre
 
 gfy_downDir = str(addon.getSetting("gfy_downDir"))
 
-
+use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true" 
+use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
 
 addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
 subredditsFile      = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits")
@@ -444,9 +445,8 @@ def listSubReddit(url, title_bar_name, type):
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
             
-            post_id = entry['data']['id']
-            post_id = entry['data']['name']
-            
+            post_id = entry['kind'] + '_' + entry['data']['id']  #same as entry['data']['name']      
+            #log('  %s  %s ' % (post_id, entry['data']['name'] ))
             
             try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
             except: description = ''
@@ -587,6 +587,7 @@ def listSubReddit(url, title_bar_name, type):
                     over_18=over_18,
                     posted_by=author,
                     num_comments=num_comments,
+                    post_id=post_id,
                     post_index=idx,
                     post_total=posts_count,
                     many_subreddit=hms)
@@ -664,7 +665,7 @@ def skin_launcher(mode,**kwargs ):
         
 
 
-def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_index=1,post_total=1,many_subreddit=False ):
+def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id='', post_index=1,post_total=1,many_subreddit=False ):
     from resources.lib.utils import ret_info_type_icon, assemble_reddit_filter_string,build_script
     
     videoID=""
@@ -734,7 +735,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     #----- assign actions
     if preview_ar>0 and preview_ar < 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
-        from resources.lib.domains import link_url_is_playable
+        #from resources.lib.utils import link_url_is_playable
         #log('*****%f '%preview_ar)
         #if link_url_is_playable(link_url):
         #log('*****has zoom_n_slide_action ')
@@ -744,22 +745,24 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     
     #if title is long, put it in description so that it will trigger displaying under preview image
     if len(title) > 100:
-        description=title + description
+        il_description=title + description
     
     if preview_ar>1.25 and description:   #this measurement is related to control id 203's height
-        #log('    ar and description criteris met') 
+        #log('    ar and description criteria met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
-        liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
+        liz.setInfo(type='', infoLabels={"plotoutline": il_description, }  )
 
     #----- assign actions
-    if num_comments > 0:
+    if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', site ) )
     
     liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
     liz.setProperty('link_url', link_url )
+    liz.setProperty('post_id', post_id )
     
-    liz.setInfo(type='video', infoLabels=il)
+    
+    liz.setInfo(type='', infoLabels=il)
     #
     
     #liz.addStreamInfo('video', { 'codec': 'preview_ar','aspect': preview_ar, 'width': preview_w, 'height': preview_h } )  #how to retrieve?
@@ -770,6 +773,11 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
     clearart=ret_info_type_icon(setInfo_type, mode_type)
     liz.setArt({ "clearart": clearart  })
+    
+    #force all links to ytdl to see if they are playable 
+    if use_ytdl_for_unknown:
+        liz.setProperty('item_type','script')         
+        liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
     
     if DirectoryItem_url:
 
@@ -843,8 +851,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
         #xbmcplugin.addDirectoryItem(pluginhandle, DirectoryItem_url, listitem=liz, isFolder=isFolder, totalItems=post_total)
         liz.setProperty('item_type',property_link_type)
+        #liz.setProperty('onClick_action',DirectoryItem_url)
         liz.setProperty('onClick_action',DirectoryItem_url)
-        
         
     else:
         #unsupported type here:
@@ -1261,7 +1269,7 @@ def playYTDLVideo(url, name, type):
 
 def listLinksInComment(url, name, type):
     from resources.lib.domains import make_addon_url_from
-    from resources.lib.utils import markdown_to_bbcode, unescape, ret_info_type_icon
+    from resources.lib.utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
 
     log('listLinksInComment:%s:%s' %(type,url) )
 
@@ -1372,8 +1380,24 @@ def listLinksInComment(url, name, type):
                                  thumbnailImage="")
     
             liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
-            
-            #liz.setInfo( type="Video", infoLabels={ "count": d } )
+
+            #force all links to ytdl to see if it can be played
+            if h[2]:
+                #log('      there is a link from %s' %hoster)
+                if not DirectoryItem_url: 
+                    #log('      link is not supported ')
+                    if use_ytdl_for_unknown_in_comments:
+                        log('      ********* activating unsupported link:' + h[2])
+                        #hoster='[?]'
+                        liz.setProperty('item_type','script')         
+                        liz.setProperty('onClick_action', build_script('playYTDLVideo', h[2]) )
+                        plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
+                        liz.setLabel(tab+plot)
+                        liz.setProperty('link_url', h[2] )  #just used as text at bottom of the screen
+
+                        clearart=ret_info_type_icon('', '')
+                        liz.setArt({ "clearart": clearart  })
+
             
             if hoster:
                 #use clearart to indicate if link is video, album or image. here, we default to unsupported.
@@ -1391,6 +1415,8 @@ def listLinksInComment(url, name, type):
                 
                 #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
                 #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
+
+
     
                 #turn link green  
                 if DirectoryItem_url:          
@@ -1407,10 +1433,11 @@ def listLinksInComment(url, name, type):
         
                     liz.setProperty('item_type',property_link_type)   #script or playable
                     liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
-                    liz.setProperty('link_url', h[2] )
+                    liz.setProperty('link_url', h[2] )  #just used as text at bottom of the screen
                     #liz.setPath(DirectoryItem_url) 
         
                     directory_items.append( (DirectoryItem_url, liz, isFolder,) )
+                    
                 #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
             else:
                 #this section are for comments that have no links or unsupported links
