@@ -1,3 +1,9 @@
+0.4.3  (08-23-2016)
+ - have ytdl addon handle all unsupported links
+ - setting to enable/disable above feature
+ - add mouse support for left slide panel
+ - slideshow and play all bugfix affecting single subreddit
+ 
 0.4.2  (08-22-2016)
  - reorganize code
  - add play all video
