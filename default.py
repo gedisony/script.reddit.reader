@@ -974,7 +974,6 @@ def autoPlay(url, name, type):
     ev = threading.Event()
     
     t = Worker(entries, q, ev)
-    #t=wkr()
     t.daemon = True
     t.start()
     #t.run()
@@ -1009,13 +1008,9 @@ def autoPlay(url, name, type):
     
     log('  c-buffering done')
     
-    #q.join()
     #xbmc_busy(False)    
-    #playlist.add(playable_url)
-    #listitem = xbmcgui.ListItem()
-    xbmc.Player().play(playlist)    
     
-    #play_list.append(playable_url)
+    xbmc.Player().play(playlist)    
     
     watchdog_counter=0
     while True:
@@ -1047,8 +1042,7 @@ def autoPlay(url, name, type):
 
     log( ' c-all done '  )
 
-    #for e in play_list:
-    #    log( str(e) )
+    #for e in play_list: log( str(e) )
         
 #     for title, url in entries:
 #         listitem = xbmcgui.ListItem(title)
@@ -1103,38 +1097,39 @@ class Worker(threading.Thread):
                 playable_url=url_to_check
                 pass
             else:
-                playable_url = ydtl_get_playable_url( url_to_check )
+                playable_url = ydtl_get_playable_url( url_to_check )  #<-- will return a playable_url or a list of playable urls
             #playable_url= '(worked)' + title.ljust(15)[:15] + '... '+ w_url
             #work
             if playable_url:
-                entry[1]=playable_url
-                log('    p-%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
-                self.queue.put(entry)
+                if isinstance(playable_url, basestring):
+                    entry[1]=playable_url
+                    log('    p-%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
+                    self.queue.put(entry)
+                else:
+                    for u in playable_url:
+                        log('    p-(multiple)%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], u)  )
+                        self.queue.put( [title, u] )
             else:
                 log('      p-(ytdl-failed) %s' %( title )  )
-            #log( ' qsize %d' %self.queue. qsize() )
-            #q.put(playable_url)
-        
-        #log('p-  done, setting ev')
-        #set only after we've done 1st item
-        #self.ev.set()    
-        #log('p-  ev is set')
-
-
 
 
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
     xbmc.executebuiltin( "Dialog.Close(busydialog)" )
     #log("playVideo:"+url)
-    if url :
-        #pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-        #pl.clear()
-        #pl.add(stream_url)
-        xbmc.Player().play(url, windowed=False)  #scripts play video like this.
-
-        #listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
-        #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
+    
+    if url : #sometimes url is a list of url or just a single string
+        if isinstance(url, basestring):
+            xbmc.Player().play(url, windowed=False)  #scripts play video like this.
+        	#listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
+            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
+        else:
+            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+            pl.clear()
+            for u in url:
+                #log('u='+ repr(u))
+                pl.add(u)
+            xbmc.Player().play(pl, windowed=False)  
     else:
         log("playVideo(url) url is blank")
         
@@ -1143,21 +1138,27 @@ def ydtl_get_playable_url( url_to_check ):
     #log('ydtl_get_playable_url:' +url_to_check )
     if link_url_is_playable(url_to_check)=='video':
         return url_to_check
+
+    choices = []
     
     if YDStreamExtractor.mightHaveVideo(url_to_check,resolve_redirects=True):
         log('      YDStreamExtractor.mightHaveVideo[true]=' + url_to_check)
         #xbmc_busy()
+        #https://github.com/ruuk/script.module.youtube.dl/blob/master/lib/YoutubeDLWrapper.py
         vid = YDStreamExtractor.getVideoInfo(url_to_check,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
         if vid:
             log("        getVideoInfo playableURL="+vid.streamURL())
+            #log("        %s  %s %s" %( vid.sourceName , vid.description, vid.thumbnail ))   #usually just 'generic' and blank on everything else
             if vid.hasMultipleStreams():
+                #vid.info  <-- The info property contains the original youtube-dl info
                 log("          vid hasMultipleStreams")
                 for s in vid.streams():
                     title = s['title']
-                    log('        choices' + title  )
-                    choices.append(title)
+                    #log('            choices: %s... %s' %( title.ljust(15)[:15], s['xbmc_url']  )   )
+                    choices.append(s['xbmc_url'])
                 #index = some_function_asking_the_user_to_choose(choices)
-                vid.selectStream(0) #You can also pass in the the dict for the chosen stream
+                #vid.selectStream(0) #You can also pass in the the dict for the chosen stream
+                return choices  #vid.streamURL()   
     
             return vid.streamURL()                         #This is what Kodi (XBMC) will play    
         
@@ -1169,7 +1170,6 @@ def playYTDLVideo(url, name, type):
     #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
     #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
     #url='https://www.vidble.com/album/KtAymux9' 
-    choices = []
 
     #from BeautifulsSoup import BeautifulSoup
     #r = urllib.urlopen('http://www.aflcio.org/Legislation-and-Politics/Legislative-Alerts').read() 
@@ -1249,7 +1249,10 @@ def playYTDLVideo(url, name, type):
 
     try:
         stream_url = ydtl_get_playable_url(url)
-
+        #log( ' ytdl stream url ' + repr(stream_url ))
+        #if len(stream_url) == 1:
+        #    playVideo(stream_url, name, type)
+        
         if stream_url:
             playVideo(stream_url, name, type)
 
