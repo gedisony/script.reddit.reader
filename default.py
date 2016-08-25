@@ -688,7 +688,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:         needs_thumbnail=True  #reddit has no thumbnail for this link. please get one
         
     from resources.lib.domains import make_addon_url_from
-    hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage)
+    hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage, False, post_title)
     
     #mode=mode_type #usually 'playVideo'
     if hoster: pass
@@ -1120,7 +1120,10 @@ def playVideo(url, name, type):
     
     if url : #sometimes url is a list of url or just a single string
         if isinstance(url, basestring):
-            xbmc.Player().play(url, windowed=False)  #scripts play video like this.
+            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+            pl.clear()
+            pl.add(url, xbmcgui.ListItem(name))
+            xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
         	#listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
             #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem) 
         else:
@@ -1128,7 +1131,8 @@ def playVideo(url, name, type):
             pl.clear()
             for u in url:
                 #log('u='+ repr(u))
-                pl.add(u)
+                #pl.add(u)
+                pl.add(u, name)
             xbmc.Player().play(pl, windowed=False)  
     else:
         log("playVideo(url) url is blank")
@@ -1760,18 +1764,14 @@ def callwebviewer(url, name, type):
     log( " done callwebviewer")
 
 def test_menu(url, name, type):
-    log( "  test_menu")
+    log( "  test_menu:" + url)
 
     
-    liz = xbmcgui.ListItem("open webviewer", label2="", iconImage="DefaultFolder.png", thumbnailImage="", path="")
-    u=sys.argv[0]+"mode=callwebviewer&type="
-
-    xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=False)
+    #liz = xbmcgui.ListItem("open webviewer", label2="", iconImage="DefaultFolder.png", thumbnailImage="", path="")
+    #u=sys.argv[0]+"mode=callwebviewer&type="
+    #xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=False)
     
     
-    addDir("2login", sys.argv[0], "reddit_login", "" )
-    addDir("3login", sys.argv[0], "reddit_login", "" )
-    xbmcplugin.endOfDirectory(pluginhandle)
 
 #     from resources.lib.httpd import TinyWebServer
 #       

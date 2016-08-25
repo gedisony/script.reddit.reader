@@ -1195,7 +1195,7 @@ def ret_dailymotion_thumbnail( media_url, thumbnail_type='m'):
     return media_url.replace('/video/','/thumbnail/video/')
     
 
-def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url='', get_playable_url=False):
+def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, preview_url='', get_playable_url=False, name_arg=''):
     #returns tuple.  info ready for plugging into  addDirectoryItem
     #if url_for_DirectoryItem is blank, then assume media url is not supported.
     #  the returned videoID/pluginUrl is the resolved media url. (depends on hoster) 
@@ -1525,7 +1525,6 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                         setInfo_type='video'
                         modecommand='playYTDLVideo'
                         #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
-
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
                 flag_media_not_supported=True
@@ -1564,7 +1563,8 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
         
             
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
-            url_for_DirectoryItem = build_script(modecommand, pluginUrl,'',preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
+            #name_arg will be used as title for video.
+            url_for_DirectoryItem = build_script(modecommand, pluginUrl,name_arg,preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
     
@@ -1897,7 +1897,7 @@ def playImgurVideo(imgur_url, name, type):
     if media_type=='album':
         display_album_from( media_url, name )
     elif media_type=='video':
-        playVideo(media_url, "", "")
+        playVideo(media_url, name, "")
     elif media_type=='image':
         playSlideshow(media_url,"Imgur","")
 
