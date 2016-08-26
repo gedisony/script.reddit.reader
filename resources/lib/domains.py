@@ -72,10 +72,11 @@ site29 = [True              , "playSlideshow"      ,'image link'   ,"\.(jpg|jpeg
 #site32 = [False             , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", "script"        ]
 
 site30 = [True              , "playYTDLVideo"      ,'eroshare'     ,"(eroshare.com)"                 ,"(not used) ##vidID##", "script"        ]
+site31 = [True              , "playSlideshow"      ,'Vidble'       ,"(vidble.com)"                   ,"(not used) ##vidID##", "script"        ]
 site99 = [0,''              , "video" ,''          ,''             ,""                                                                      , ""                      ]
 #to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com    Photobucket.com  vidble.com
 #
-supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29, site30]
+supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29, site30,site31]
 
 
 keys=[ 'li_label'           #  the text that will show for the list
@@ -1297,9 +1298,6 @@ class ClassEroshare(sitesBase):
             log('    eroshare:ret_album_list: ' + str( content.status_code ) )
             
         return dictList    
-
-
-
     
     def get_media(self, j_item):
         h='https:'
@@ -1314,6 +1312,105 @@ class ClassEroshare(sitesBase):
             thumb_url =h+j_item.get('url_thumb')
         return media_type, media_url, poster_url, thumb_url   
         
+class ClassVidble(sitesBase):
+    #not used/ incomplete. already implemented by rasjani/addonscriptorDE
+    def __init__(self, media_url=""):
+        return
+    
+    def is_album(self, media_url):
+        if '/album/' in media_url:
+            self.media_type = self.TYPE_ALBUM
+            return True
+        else:
+            return False
+    
+    def get_playable_url(self, media_url, is_probably_a_video=False ):
+        
+        #first, determine if the media_url leads to a media(.jpg .png .gif)
+        #this is not likely coz flickr does not like it and i've not seen posts that do it
+        filename,ext=parse_filename_and_ext_from_url(media_url)
+        if ext in ["mp4","webm"]:
+            return media_url,self.TYPE_VIDEO
+
+        if ext in image_exts:
+            return media_url,self.TYPE_IMAGE
+
+        if self.is_album(media_url):
+            self.media_type = self.TYPE_ALBUM
+        
+        content = requests.get( media_url )
+        #if 'pnnh' in media_url:
+        #    log('      retrieved:'+ str(content) )
+        
+        if content.status_code==200:
+            from CommonFunctions import parseDOM
+
+            #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
+            thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
+            #log('    thumb='+repr(thumb))
+            if thumb:
+                self.thumb_url=thumb[0]
+
+            div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
+            #log('    div_item_list=' + repr(div_item_list))
+            if div_item_list:
+                images = parseDOM(div_item_list, "img", ret = "src")
+                #for idx, item in enumerate(images):
+                #    log('    %d %s' %(idx, item))
+                if images[0]:
+                    self.poster_url = 'http://www.vidble.com' + images[0]
+                    
+        else:
+            log('    error: vidble get_playable_url:' + str( content.status_code ) )
+            
+        return '', ''
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+        
+        dictList = []
+        
+        content = requests.get( album_url )
+        
+        if content.status_code==200:
+            from CommonFunctions import parseDOM
+
+            #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
+            thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
+            #log('    thumb='+repr(thumb))
+
+            div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
+            #log('      div_item_list=' + repr(div_item_list))
+            
+            if div_item_list:
+                images = parseDOM(div_item_list, "img", ret = "src")
+            
+                for idx, item in enumerate(images):
+                    image = 'http://www.vidble.com' + item
+
+                    infoLabels={ "Title": '', }
+                    e=[ ''                      #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
+                       ,''                      #'li_label2'          #  
+                       ,""                      #'li_iconImage'       #
+                       ,image                   #'li_thumbnailImage'  #
+                       ,image                   #'DirectoryItem_url'  #  
+                       ,False                   #'is_folder'          # 
+                       ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
+                       ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
+                       ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+                       ,'none'                  #'context_menu'       # ...
+                          ]
+    
+                    dictList.append(dict(zip(keys, e)))
+    
+            else:
+                log('      vidble: no div_item_list:  ')
+        else:
+            log('    vidble:ret_album_list: ' + str( content.status_code ) )
+            
+        return dictList    
+    
+
 
 def ret_youtube_thumbnail(videoID, quality0123=1):
     """
@@ -1712,7 +1809,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                     modecommand='playYTDLVideo'
                     e=ClassEroshare()
                     pluginUrl, media_type=e.get_playable_url(media_url, assume_is_video)
-                    log( '    eroshare: %s %s' %(media_type, pluginUrl) )
+                    #log( '    eroshare: %s %s' %(media_type, pluginUrl) )
                     
                     if needs_thumbnail:
                         thumb_url=e.thumb_url  
@@ -1739,6 +1836,25 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                         modecommand='playYTDLVideo'
                         pluginUrl=media_url
                      
+                elif hoster=='Vidble':
+                    # no video support
+                    v=ClassVidble()
+                    
+                    if needs_thumbnail:
+                        pluginUrl, media_type=v.get_playable_url(media_url, assume_is_video)
+                        thumb_url=v.thumb_url  
+                        poster_url=v.poster_url
+                        #log(' thumb=%s poster=%s' %(thumb_url,poster_url ))
+                    if v.is_album(media_url):
+                        setInfo_type='album'
+                        pluginUrl=media_url                      
+                        modecommand='listVidbleAlbum'
+                    else:
+                        if poster_url:
+                            #use poster url as the image link. (we don't query vidble if possible. if we got thumbnail, then it means that the data is already there. )
+                            setInfo_type='pictures'   
+                            modecommand='playSlideshow'
+                            pluginUrl=poster_url
                     
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
@@ -1991,6 +2107,14 @@ def listEroshareAlbum(e_url, name, type):
     #from resources.lib.domains import ClassTumblr
     log("listEroshareAlbum:"+e_url)
     e=ClassEroshare()
+    
+    dictlist=e.ret_album_list(e_url, '')
+    display_album_from( dictlist, name )
+
+def listVidbleAlbum(e_url, name, type):    
+    #from resources.lib.domains import ClassTumblr
+    log("listVidbleAlbum:"+e_url)
+    e=ClassVidble()
     
     dictlist=e.ret_album_list(e_url, '')
     display_album_from( dictlist, name )

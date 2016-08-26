@@ -1,6 +1,7 @@
+0.4.5  (08-25-2016)
+ - add vidble.com scraping image/album
 0.4.4  (08-25-2016)
  - add eroshare.com scraping image/album/videos
-
 0.4.3  (08-23-2016)
  - have ytdl addon handle all unsupported links
  - setting to enable/disable above feature

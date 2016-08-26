@@ -2102,7 +2102,7 @@ if __name__ == '__main__':
 #     log("url="+  url)
 #     log("-----------------------")
     from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
-    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum
+    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum
     from resources.lib.slideshow import autoSlideshow
     
     if mode=='':mode='index'  #default mode is to list start page (index)
@@ -2123,6 +2123,7 @@ if __name__ == '__main__':
                     ,'playImgurVideo'       : playImgurVideo        
                     ,'listImgurAlbum'       : listImgurAlbum
                     ,'listEroshareAlbum'    : listEroshareAlbum
+                    ,'listVidbleAlbum'      : listVidbleAlbum 
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playVineVideo'        : playVineVideo
