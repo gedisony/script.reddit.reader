@@ -67,13 +67,15 @@ site18 = [True              , "playFlickr"         ,'Flickr'       ,'(flickr\.co
 site28 = [True              , "direct"             ,'video link'   ,"\.(mp4|webm|gifv)(?:\?|$)"      ,"(not used) ##vidID##"                                                   , ""        ]
 site29 = [True              , "playSlideshow"      ,'image link'   ,"\.(jpg|jpeg|png|gif)(?:\?|$)"   ,"(not used) ##vidID##"                                                   , "script"        ]
 
-site30 = [False             , "playYTDLVideo"      ,'misc1'        ,"(gfycat.com)|(liveleak.com)|(dailymotion.com)|(nbcsports.com)|(nbcnews.com)|(nbc\.com\/.+\/video\/)|(mlb.com/video)|(localnews8.com)|(ellentv.com/videos)|(video.cnbc.com)|(canalplus.fr)|(allocine.fr)|(spiegel.tv)","(not used) ##vidID##", "script"        ]
-site31 = [False             , "playYTDLVideo"      ,'misc2'        ,"(pandora.tv)|(ora.tv)|(on.aol.com/video)|(ok.ru/video)|(npo.nl)|(nowvideo.sx/video)|(nick.com/videos)|(nerdcubed.co.uk/videos)|(tvcast.naver.com/v)|(MySpass.de)|(mva.microsoft.com)|(musicplayon.com)|(mtv.com/videos)|(mpora.com/videos)|(moviezine.se)|(allmyvideos.net)|(mojvideo.com)|(miomio.tv)|(mgtv.com)|(mgoon.com)|(maker.tv/video)|(makerschannel.com)|(lynda.com)|(alfa.lt/visi-video)|(life.ru/video)|(ku6.com)|(kontrtube.ru)|(konserthusetplay.se)|(khanacademy.org)|(keek.com)|(kaltura.com)|(jwplatform.com)|(jpopsuki.tv)|(jove.com/video)|(jeuxvideo.com/videos)|(izlesene.com)|(iqiyi.com/v_)|(iprima.cz)|(indavideo.hu)|(ina.fr/video)|(ign.com/videos)|(historicfilms.com)|(godtube.com)|(gdcvault.com)|(gamekings.tv/videos)|(freespeech.org/video)|(footyroom.com)|(fernsehkritik.tv)|(myaidol.net)|(c48.org)|(show48.com)|(dai.ly)|(features.aol.com)|(video.esri.com)|(escapistmagazine.com/videos)|(ebaumsworld.com/videos)|(video.aktualne.cz)|(dotsub.com)|(discovery.com)|(dbtv.no)|(csnne.com/video)|(collegerama.tudelft.nl)|(cnn.com)|(clubic.com/video)|(closertotruth.com)|(clipsyndicate.com)|(clipfish.de)|(chilloutzone.net/video)|(channel9.msdn.com)|(carambatv.ru)|(canvas.net)|(brightcove.com)|(bilibili.com)|(bambuser.com)|(arte.tv)|(ardmediathek.de)|(aparat.com)|(air.mozilla.org)|(tv.adobe.com)|(vevo.com)|(cc.com)|(comediansincarsgettingcoffee.com)|(trailers.apple.com)|(devour.com)|(funnyclips.me)|(engagemedia.org)|(videosift.com)|(break.com)|(veoh.com)|(viddler.com)|(schooltube.com)|(videos.sapo.pt)|(funnyordie.com)","(not used) ##vidID##", "script"        ]
-site32 = [False             , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", "script"        ]
+#site30 = [False             , "playYTDLVideo"      ,'misc1'        ,"(gfycat.com)|(liveleak.com)|(dailymotion.com)|(nbcsports.com)|(nbcnews.com)|(nbc\.com\/.+\/video\/)|(mlb.com/video)|(localnews8.com)|(ellentv.com/videos)|(video.cnbc.com)|(canalplus.fr)|(allocine.fr)|(spiegel.tv)","(not used) ##vidID##", "script"        ]
+#site31 = [False             , "playYTDLVideo"      ,'misc2'        ,"(pandora.tv)|(ora.tv)|(on.aol.com/video)|(ok.ru/video)|(npo.nl)|(nowvideo.sx/video)|(nick.com/videos)|(nerdcubed.co.uk/videos)|(tvcast.naver.com/v)|(MySpass.de)|(mva.microsoft.com)|(musicplayon.com)|(mtv.com/videos)|(mpora.com/videos)|(moviezine.se)|(allmyvideos.net)|(mojvideo.com)|(miomio.tv)|(mgtv.com)|(mgoon.com)|(maker.tv/video)|(makerschannel.com)|(lynda.com)|(alfa.lt/visi-video)|(life.ru/video)|(ku6.com)|(kontrtube.ru)|(konserthusetplay.se)|(khanacademy.org)|(keek.com)|(kaltura.com)|(jwplatform.com)|(jpopsuki.tv)|(jove.com/video)|(jeuxvideo.com/videos)|(izlesene.com)|(iqiyi.com/v_)|(iprima.cz)|(indavideo.hu)|(ina.fr/video)|(ign.com/videos)|(historicfilms.com)|(godtube.com)|(gdcvault.com)|(gamekings.tv/videos)|(freespeech.org/video)|(footyroom.com)|(fernsehkritik.tv)|(myaidol.net)|(c48.org)|(show48.com)|(dai.ly)|(features.aol.com)|(video.esri.com)|(escapistmagazine.com/videos)|(ebaumsworld.com/videos)|(video.aktualne.cz)|(dotsub.com)|(discovery.com)|(dbtv.no)|(csnne.com/video)|(collegerama.tudelft.nl)|(cnn.com)|(clubic.com/video)|(closertotruth.com)|(clipsyndicate.com)|(clipfish.de)|(chilloutzone.net/video)|(channel9.msdn.com)|(carambatv.ru)|(canvas.net)|(brightcove.com)|(bilibili.com)|(bambuser.com)|(arte.tv)|(ardmediathek.de)|(aparat.com)|(air.mozilla.org)|(tv.adobe.com)|(vevo.com)|(cc.com)|(comediansincarsgettingcoffee.com)|(trailers.apple.com)|(devour.com)|(funnyclips.me)|(engagemedia.org)|(videosift.com)|(break.com)|(veoh.com)|(viddler.com)|(schooltube.com)|(videos.sapo.pt)|(funnyordie.com)","(not used) ##vidID##", "script"        ]
+#site32 = [False             , "playYTDLVideo"      ,'porn'         ,"(3movs.com)|(4tube.com)|(91porn.com)|(alphaporno.com)|(animestigma.com)|(anysex.com)|(beeg.com)|(burningcamel.com)|(cliphunter.com)|(crocotube.com)|(cutegirlsgifs.info)|(daporn.com)|(deviantclip.com)|(drtuber.com)|(efukt.com)|(empflix.com)|(eroprofile.com)|(eroshare.com)|(eroxia.com)|(extremetube.com)|(faapy.com)|(fapality.com)|(fapdu.com)|(faptube.xyz)|(femdom-tube.com)|(fuckuh.com)|(hclips.com)|(hdporn.net)|(hellporno.com)|(hornbunny.com)|(hotgoo.com)|(japan-whores.com)|(keezmovies.com)|(lovehomeporn.com)|(madthumbs.com)|(motherless.com)|(mofosex.com)|(www.moviefap.com)|(my18tube.com)|(mylust.com)|(myvidster.com)|(nuvid.com)|(onlypron.com)|(panapin.com)|(porndoe.com)|(porneq.com)|(pornfun.com)|(pornhd.com)|(pornhost.com)|(pornhub.com)|(pornoxo.com)|(pornrabbit.com)|(porntrex.com)|(pussy.com)|(redclip.xyz)|(redtube.com)|(secret.sex)|(sendvid.com)|(sex24open.com)|(sex3.com)|(sexfactor.com)|(shameless.com)|(slutload.com)|(smotri.com)|(spankbang.com)|(spankingtube.com)|(spankwire.com)|(stickyxxx.com)|(stileproject.com)|(sunporno.com)|(submityourflicks.com)|(teenfucktory.com)|(thisav.com)|(thisvid.com)|(tnaflix.com)|(tube8.com)|(txxx.com)|(videolovesyou.com)|(vporn.com)|(worldsex.com)|(xbabe.com)|(xbabe.com)|(xcafe.com)|(xcum.com)|(xhamster.com)|(xnxx.com)|(xogogo.com)|(xtube.com)|(xvideos.com)|(xvids.us)|(xxxaporn.com)|(xxxymovies.com)|(xxxyours.com)|(youjizz.com)|(youporn.com)|(zedporn.com)","(not used) ##vidID##", "script"        ]
+
+site30 = [True              , "playYTDLVideo"      ,'eroshare'     ,"(eroshare.com)"                 ,"(not used) ##vidID##", "script"        ]
 site99 = [0,''              , "video" ,''          ,''             ,""                                                                      , ""                      ]
 #to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com    Photobucket.com  vidble.com
-#eroshare.com  needs ability to sort by video or album or image 
-supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29]
+#
+supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29, site30]
 
 
 keys=[ 'li_label'           #  the text that will show for the list
@@ -90,6 +92,25 @@ keys=[ 'li_label'           #  the text that will show for the list
 
 
 ytdl_sites=[]
+
+class sitesBase():
+    thumb_url=''
+    poster_url=''
+    media_type=''
+
+    TYPE_IMAGE='image'
+    TYPE_ALBUM='album'
+    TYPE_VIDEO='video'
+    TYPE_VIDS ='vids'
+    TYPE_MIXED='mixed'
+    
+    def get_playable_url(self,media_url,is_probably_a_video=True):
+        pass
+
+    
+    def all_same(self, items ):
+        #returns True if all items the same
+        return all(x == items[0] for x in items)
 
 
 class ClassImgur:
@@ -1133,6 +1154,167 @@ class ClassGfycat:
         
         return GfycatStreamUrl, "video"
 
+class ClassEroshare(sitesBase):
+    #not used/ incomplete. already implemented by rasjani/addonscriptorDE
+    def __init__(self, media_url=""):
+        return
+    
+    def get_playable_url(self, media_url, is_probably_a_video=True ):
+        
+        #first, determine if the media_url leads to a media(.jpg .png .gif)
+        #this is not likely coz flickr does not like it and i've not seen posts that do it
+        filename,ext=parse_filename_and_ext_from_url(media_url)
+        if ext in ["mp4","webm"]:
+            return media_url,"video"
+
+        #log('start eroshare:'+media_url )
+        
+        content = requests.get( media_url )
+        #if 'pnnh' in media_url:
+        #    log('      retrieved:'+ str(content) )
+        
+        if content.status_code==200:
+            match = re.compile('var album\s=\s(\{.*\});', re.DOTALL).findall(content.text)
+            #log('********* ' + match[0])    
+            if match:
+                j = json.loads(match[0])
+                items = j.get('items')
+                log( '      %d item(s)' % len(items) )
+                
+                self.media_type, playable_url, self.poster_url, self.thumb_url=self.get_media(items[0])
+                if len(items) == 1:
+                    #item=items[0]
+                    #log('      single %s %s' %( self.media_type, playable_url ))
+                    #self.media_type=item.get('type')
+                    #self.media_type, playable_url, self.poster_url, self.thumb_url=self.get_media(item)
+                    return playable_url, self.media_type
+                    
+                    pass
+                else:
+                    #check if all items are video or image
+                    media_types = []
+                    for item in items:
+                        #log('    multiple: %s orig=%s ' %( item.get('type').lower(), item.get('url_orig') ))
+                        media_types.append( item.get('type').lower() )
+                    
+                    if self.all_same(media_types):
+                        if media_types[0]==self.TYPE_IMAGE:
+                            self.media_type=self.TYPE_ALBUM
+                            
+                        elif media_types[0]==self.TYPE_VIDEO:
+                            #multiple video stream
+                            self.media_type=self.TYPE_VIDS
+                        
+                        return '', self.media_type
+                        
+                    else: #video and images
+                        log('  eroshare link has mixed video and images')
+                        self.media_type=self.TYPE_MIXED
+                        return '', self.media_type
+            else:
+                #try an alternate method
+                log('      var album string not found. trying alternate method ')
+                from CommonFunctions import parseDOM
+
+                div_item_list = parseDOM(content.text, "div", attrs = { "class": "item-list" })
+                #log('div_item_list=' + repr(div_item_list))
+                poster = parseDOM(div_item_list, "video", ret = "poster")
+                #log('    poster=' + repr(poster))
+                if poster:
+                    #assume video if there is poster
+                    self.poster_url='http:' + poster[0]
+                
+                    playable_url = parseDOM(div_item_list, "source", ret = "src")
+                    #log('playable_url=' + repr(playable_url))
+                    if playable_url:
+                        return playable_url[0], self.TYPE_VIDEO
+                else:
+                    #assume image if can't get poster
+                    image=parseDOM(div_item_list, "img", ret = "src")
+                    if image:
+                        self.poster_url='http:' + image[0]
+                        return self.poster_url, self.TYPE_IMAGE
+        else:
+            log('    error: eroshare get_playable_url:' + str( content.status_code ) )
+            
+        return '', ''
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+        
+        dictList = []
+        
+        content = requests.get( album_url )
+        
+        if content.status_code==200:
+            match = re.compile('var album\s=\s(\{.*\});', re.DOTALL).findall(content.text)
+            #log('********* ' + match[0])    
+            if match:
+                j = json.loads(match[0])
+                items = j.get('items')
+                log( '      %d item(s)' % len(items) )
+
+
+                for idx, item in enumerate(items):
+                    type = item.get('type').lower()        
+                    
+                    media_type, playable_url, poster_url, thumb_url=self.get_media(item)
+                    
+                    list_item_name = item.get('description')
+                    
+                    infoLabels={ "Title": list_item_name, "plot": list_item_name, "PictureDesc": list_item_name, "exif:exifcomment": list_item_name }
+                    e=[ list_item_name          #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
+                       ,list_item_name          #'li_label2'          #  
+                       ,""                      #'li_iconImage'       #
+                       ,playable_url               #'li_thumbnailImage'  #
+                       ,playable_url            #'DirectoryItem_url'  #  
+                       ,False                   #'is_folder'          # 
+                       ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
+                       ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
+                       ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+                       ,'none'                  #'context_menu'       # ...
+                          ]
+    
+                    """
+                        keys = ['FirstName', 'LastName', 'SSID']
+                         
+                        name1 = ['Michael', 'Kirk', '224567']
+                        name2 = ['Linda', 'Matthew', '123456']
+                         
+                        dictList = []
+                        dictList.append(dict(zip(keys, name1)))
+                        dictList.append(dict(zip(keys, name2)))
+                         
+                        print dictList
+                        for item in dictList:
+                            print ' '.join([item[key] for key in keys])
+                    """
+                    dictList.append(dict(zip(keys, e)))
+    
+            else:
+                log('      eroshare:ret_album_list: var album string not found. ')
+        else:
+            log('    eroshare:ret_album_list: ' + str( content.status_code ) )
+            
+        return dictList    
+
+
+
+    
+    def get_media(self, j_item):
+        h='https:'
+        media_type=j_item.get('type').lower()
+        if media_type=='video':
+            media_url =  j_item.get('url_mp4')
+            poster_url=h+j_item.get('url_full')
+            thumb_url =h+j_item.get('url_thumb')
+        elif media_type=='image':
+            poster_url=h+j_item.get('url_full')
+            media_url =poster_url    #h+j_item.get('url_orig')  #url_orig is very slow
+            thumb_url =h+j_item.get('url_thumb')
+        return media_type, media_url, poster_url, thumb_url   
+        
+
 def ret_youtube_thumbnail(videoID, quality0123=1):
     """
     Each YouTube video has 4 generated images. They are predictably formatted as follows:
@@ -1249,13 +1431,13 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
 
         #search our supported_sites[] to see if media_url can be handled by plugin
         for site in supported_sites :
-            if site[0]:  #site[0]  is the show_youtube/show_vimeo/show_dailymotion/... global variables taken from settings file
+            if site[0]:  #site[0]  
                 match = re.compile( site[3]  , re.DOTALL).findall( media_url )
                 if match : break
         
                 
         if match:
-            #log("  make_addon_url_from:match on hoster="+site[2])
+            #log("    make_addon_url_from:match on hoster="+site[2])
             hoster = site[2]
             modecommand = site[1]  #
             link_type = site[5]
@@ -1509,7 +1691,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                 elif hoster=="video link":     #a direct link to the video media
                     setInfo_type='video'
                     pluginUrl=media_url
-                    link_type =='playable' 
+                    link_type ='playable' 
                     from urlparse import urlparse
                     hoster=urlparse(media_url).netloc
                 elif hoster in ['Instagram']:   
@@ -1525,6 +1707,39 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                         setInfo_type='video'
                         modecommand='playYTDLVideo'
                         #pluginUrl=ret_Instagram_thumbnail(media_url,'l')
+                elif hoster=='eroshare':
+                    #pluginUrl=media_url
+                    modecommand='playYTDLVideo'
+                    e=ClassEroshare()
+                    pluginUrl, media_type=e.get_playable_url(media_url, assume_is_video)
+                    log( '    eroshare: %s %s' %(media_type, pluginUrl) )
+                    
+                    if needs_thumbnail:
+                        thumb_url=e.thumb_url  
+                        poster_url=e.poster_url
+
+                    #log ('   %s  sitesbase %s' %(media_type,sitesBase.TYPE_VIDEO))                        
+                    if media_type==sitesBase.TYPE_ALBUM:
+                        setInfo_type='album'
+                        pluginUrl=media_url                      
+                        modecommand='listEroshareAlbum'
+                    elif media_type==sitesBase.TYPE_IMAGE:
+                        setInfo_type='pictures'
+                        modecommand='playSlideshow'
+                        pluginUrl=media_url
+                    elif media_type==sitesBase.TYPE_VIDEO:
+                        #log('    direct play:' + pluginUrl )
+                        setInfo_type='video'
+                        modecommand='direct'
+                        #pluginUrl=plugin_url
+                        link_type ='playable'   #direct playable media.  
+                    #no need to specify this part. automatically sent to ytdl and videos are played.    
+                    else:  #if media_type in [sitesBase.TYPE_VIDS, sitesBase.TYPE_MIXED]:
+                        setInfo_type='video'
+                        modecommand='playYTDLVideo'
+                        pluginUrl=media_url
+                     
+                    
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
                 flag_media_not_supported=True
@@ -1703,7 +1918,7 @@ def display_album_from(dictlist, album_name):
             #  new note: this is how it is done: 
             #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
             combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
-            combined += d['infoLabels'].get('plot')
+            combined += d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
             d['infoLabels']['plot'] = combined
             #d['infoLabels']['genre'] = "0,-2000"
             #d['infoLabels']['year'] = 1998
@@ -1772,6 +1987,13 @@ def listTumblrAlbum(t_url, name, type):
     else:
         log("  listTumblrAlbum can't process " + media_type)    
 
+def listEroshareAlbum(e_url, name, type):    
+    #from resources.lib.domains import ClassTumblr
+    log("listEroshareAlbum:"+e_url)
+    e=ClassEroshare()
+    
+    dictlist=e.ret_album_list(e_url, '')
+    display_album_from( dictlist, name )
 
 
 def playInstagram(media_url, name, type):

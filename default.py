@@ -1132,7 +1132,7 @@ def playVideo(url, name, type):
             for u in url:
                 #log('u='+ repr(u))
                 #pl.add(u)
-                pl.add(u, name)
+                pl.add(u, xbmcgui.ListItem(name))
             xbmc.Player().play(pl, windowed=False)  
     else:
         log("playVideo(url) url is blank")
@@ -1155,7 +1155,7 @@ def ydtl_get_playable_url( url_to_check ):
             #log("        %s  %s %s" %( vid.sourceName , vid.description, vid.thumbnail ))   #usually just 'generic' and blank on everything else
             if vid.hasMultipleStreams():
                 #vid.info  <-- The info property contains the original youtube-dl info
-                log("          vid hasMultipleStreams")
+                log("          vid hasMultipleStreams %d" %len(vid._streams) )
                 for s in vid.streams():
                     title = s['title']
                     #log('            choices: %s... %s' %( title.ljust(15)[:15], s['xbmc_url']  )   )
@@ -2102,7 +2102,7 @@ if __name__ == '__main__':
 #     log("url="+  url)
 #     log("-----------------------")
     from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
-    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram
+    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum
     from resources.lib.slideshow import autoSlideshow
     
     if mode=='':mode='index'  #default mode is to list start page (index)
@@ -2122,6 +2122,7 @@ if __name__ == '__main__':
                     ,'searchReddits'        : searchReddits          
                     ,'playImgurVideo'       : playImgurVideo        
                     ,'listImgurAlbum'       : listImgurAlbum
+                    ,'listEroshareAlbum'    : listEroshareAlbum
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playVineVideo'        : playVineVideo
