@@ -17,6 +17,7 @@ from default import log, dump, translation
 from default import default_ytdl_psites_file, default_ytdl_sites_file, playVideo, addon_path, use_ytdl_for_unknown_in_comments
 from utils import build_script, parse_filename_and_ext_from_url, image_exts 
 
+import pprint
 
 show_youtube     = addon.getSetting("show_youtube") == "true"
 use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
@@ -73,10 +74,11 @@ site29 = [True              , "playSlideshow"      ,'image link'   ,"\.(jpg|jpeg
 
 site30 = [True              , "playYTDLVideo"      ,'eroshare'     ,"(eroshare.com)"                 ,"(not used) ##vidID##", "script"        ]
 site31 = [True              , "playSlideshow"      ,'Vidble'       ,"(vidble.com)"                   ,"(not used) ##vidID##", "script"        ]
+site32 = [True              , "playSlideshow"      ,'Imgbox'       ,"(imgbox.com)"                   ,"(not used) ##vidID##", "script"        ]
 site99 = [0,''              , "video" ,''          ,''             ,""                                                                      , ""                      ]
 #to add: vidmero.com/gifs.com  playlink.xyz  facebook.com  vrchive.com    Photobucket.com  vidble.com
 #
-supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29, site30,site31]
+supported_sites = [site00,site01,site02,site03,site04,site05,site06,site07,site08,site09,site10,site11,site12,site13,site14,site15,site155,site16,site17,site18,site28,site29, site30,site31,site32]
 
 
 keys=[ 'li_label'           #  the text that will show for the list
@@ -98,6 +100,7 @@ class sitesBase():
     thumb_url=''
     poster_url=''
     media_type=''
+    dictList = []   #used by assemble_images_dict ret_album_list and 
 
     TYPE_IMAGE='image'
     TYPE_ALBUM='album'
@@ -105,13 +108,72 @@ class sitesBase():
     TYPE_VIDS ='vids'
     TYPE_MIXED='mixed'
     
-    def get_playable_url(self,media_url,is_probably_a_video=True):
-        pass
+    def get_playable_url(self, media_url, is_probably_a_video=False ):
+        filename,ext=parse_filename_and_ext_from_url(media_url)
+        if ext in ["mp4","webm"]:
+            return media_url,self.TYPE_VIDEO
+
+        if ext in image_exts:
+            return media_url,self.TYPE_IMAGE
 
     
     def all_same(self, items ):
         #returns True if all items the same
         return all(x == items[0] for x in items)
+
+    def assemble_images_dictList(self,images_list):
+        title=''
+        image_url=''
+        thumbnail=''
+        for idx, item in enumerate(images_list):
+            if isinstance(item, basestring):
+                log( 'assemble_images_dictList STRING')
+                image_url=item
+                thumbnail=image_url
+            else:
+                if len(item)==1:
+                    log( 'assemble_images_dictList LEN1')
+                    image_url=item[0]
+                elif len(item)==2:
+                    log( 'assemble_images_dictList LEN2')
+                    title=item[0]
+                    image_url=item[1]
+                    thumbnail=image_url
+                elif len(item)==3:
+                    log( 'assemble_images_dictList LEN3')
+                    title=item[0]
+                    image_url=item[1]
+                    thumbnail=item[2]
+                
+            infoLabels={ "Title": title, "plot": title, "PictureDesc": title, "exif:exifcomment": title }
+            e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
+               ,''                      #'li_label2'          #  
+               ,""                      #'li_iconImage'       #
+               ,thumbnail               #'li_thumbnailImage'  #
+               ,image_url               #'DirectoryItem_url'  #  
+               ,False                   #'is_folder'          # 
+               ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
+               ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
+               ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+               ,'none'                  #'context_menu'       # ...
+                  ]
+            self.dictList.append(dict(zip(keys, e)))
+"""
+    keys = ['FirstName', 'LastName', 'SSID']
+      
+    name1 = ['Michael', 'Kirk', '224567']
+    name2 = ['Linda', 'Matthew', '123456']
+      
+    dictList = []
+    dictList.append(dict(zip(keys, name1)))
+    dictList.append(dict(zip(keys, name2)))
+      
+    print dictList
+    for item in dictList:
+        print ' '.join([item[key] for key in keys])
+"""
+            
+            
 
 
 class ClassImgur:
@@ -1069,8 +1131,6 @@ class ClassFlickr:
         #p=['/photo/','/p/']
         return self.TYPE_PHOTO
         
-        
-        
 class ClassGifsCom:
     #also vidmero.com
     def __init__(self, media_url=""):
@@ -1110,7 +1170,6 @@ class ClassGifsCom:
         
         if r.status_code==200:  #http status code 200 = success
             j=json.loads(r.text.replace('\\"', '\''))
-            
 
 class ClassGfycat:
     #not used/ incomplete. already implemented by rasjani/addonscriptorDE
@@ -1161,13 +1220,7 @@ class ClassEroshare(sitesBase):
         return
     
     def get_playable_url(self, media_url, is_probably_a_video=True ):
-        
-        #first, determine if the media_url leads to a media(.jpg .png .gif)
-        #this is not likely coz flickr does not like it and i've not seen posts that do it
-        filename,ext=parse_filename_and_ext_from_url(media_url)
-        if ext in ["mp4","webm"]:
-            return media_url,"video"
-
+        sitesBase.get_playable_url(self,media_url, is_probably_a_video)
         #log('start eroshare:'+media_url )
         
         content = requests.get( media_url )
@@ -1243,8 +1296,6 @@ class ClassEroshare(sitesBase):
     def ret_album_list(self, album_url, thumbnail_size_code=''):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
         
-        dictList = []
-        
         content = requests.get( album_url )
         
         if content.status_code==200:
@@ -1255,49 +1306,15 @@ class ClassEroshare(sitesBase):
                 items = j.get('items')
                 log( '      %d item(s)' % len(items) )
 
-
-                for idx, item in enumerate(items):
-                    type = item.get('type').lower()        
-                    
-                    media_type, playable_url, poster_url, thumb_url=self.get_media(item)
-                    
-                    list_item_name = item.get('description')
-                    
-                    infoLabels={ "Title": list_item_name, "plot": list_item_name, "PictureDesc": list_item_name, "exif:exifcomment": list_item_name }
-                    e=[ list_item_name          #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
-                       ,list_item_name          #'li_label2'          #  
-                       ,""                      #'li_iconImage'       #
-                       ,playable_url               #'li_thumbnailImage'  #
-                       ,playable_url            #'DirectoryItem_url'  #  
-                       ,False                   #'is_folder'          # 
-                       ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
-                       ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
-                       ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-                       ,'none'                  #'context_menu'       # ...
-                          ]
-    
-                    """
-                        keys = ['FirstName', 'LastName', 'SSID']
-                         
-                        name1 = ['Michael', 'Kirk', '224567']
-                        name2 = ['Linda', 'Matthew', '123456']
-                         
-                        dictList = []
-                        dictList.append(dict(zip(keys, name1)))
-                        dictList.append(dict(zip(keys, name2)))
-                         
-                        print dictList
-                        for item in dictList:
-                            print ' '.join([item[key] for key in keys])
-                    """
-                    dictList.append(dict(zip(keys, e)))
+                prefix='https:'
+                self.assemble_images_dictList(   ( [ s.get('description'), prefix+s.get('url_full')] for s in items)    )
     
             else:
                 log('      eroshare:ret_album_list: var album string not found. ')
         else:
             log('    eroshare:ret_album_list: ' + str( content.status_code ) )
             
-        return dictList    
+        return self.dictList    
     
     def get_media(self, j_item):
         h='https:'
@@ -1325,18 +1342,12 @@ class ClassVidble(sitesBase):
             return False
     
     def get_playable_url(self, media_url, is_probably_a_video=False ):
+        sitesBase.get_playable_url(self,media_url, is_probably_a_video)
         
-        #first, determine if the media_url leads to a media(.jpg .png .gif)
-        #this is not likely coz flickr does not like it and i've not seen posts that do it
-        filename,ext=parse_filename_and_ext_from_url(media_url)
-        if ext in ["mp4","webm"]:
-            return media_url,self.TYPE_VIDEO
-
-        if ext in image_exts:
-            return media_url,self.TYPE_IMAGE
-
         if self.is_album(media_url):
             self.media_type = self.TYPE_ALBUM
+        
+        #note: image can be got by just adding .jpg at end of url
         
         content = requests.get( media_url )
         #if 'pnnh' in media_url:
@@ -1367,9 +1378,6 @@ class ClassVidble(sitesBase):
 
     def ret_album_list(self, album_url, thumbnail_size_code=''):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
-        
-        dictList = []
-        
         content = requests.get( album_url )
         
         if content.status_code==200:
@@ -1384,32 +1392,103 @@ class ClassVidble(sitesBase):
             
             if div_item_list:
                 images = parseDOM(div_item_list, "img", ret = "src")
+                prefix = 'http://www.vidble.com' 
             
-                for idx, item in enumerate(images):
-                    image = 'http://www.vidble.com' + item
+                self.assemble_images_dictList(   (prefix + s for s in images)    )
 
-                    infoLabels={ "Title": '', }
-                    e=[ ''                      #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
-                       ,''                      #'li_label2'          #  
-                       ,""                      #'li_iconImage'       #
-                       ,image                   #'li_thumbnailImage'  #
-                       ,image                   #'DirectoryItem_url'  #  
-                       ,False                   #'is_folder'          # 
-                       ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
-                       ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
-                       ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-                       ,'none'                  #'context_menu'       # ...
-                          ]
-    
-                    dictList.append(dict(zip(keys, e)))
-    
             else:
                 log('      vidble: no div_item_list:  ')
         else:
             log('    vidble:ret_album_list: ' + str( content.status_code ) )
-            
-        return dictList    
+
+        #log( pprint.pformat(self.dictList, indent=1) )
+        return self.dictList    
     
+
+class ClassImgbox(sitesBase):
+    #not used/ incomplete. already implemented by rasjani/addonscriptorDE
+    def __init__(self, media_url=""):
+        return
+    
+    def is_album(self, media_url):
+        if '/g/' in media_url:
+            self.media_type = self.TYPE_ALBUM
+            return True
+        else:
+            return False
+    
+    def get_playable_url(self, media_url, is_probably_a_video=False ):
+        sitesBase.get_playable_url(self,media_url, is_probably_a_video)
+        
+        if self.is_album(media_url):
+            self.media_type = self.TYPE_ALBUM
+            
+        content = requests.get( media_url )
+        #if 'pnnh' in media_url:
+        #    log('      retrieved:'+ str(content) )
+        
+        if content.status_code==200:
+            #https://github.com/downthemall/anticontainer/blob/master/plugins/imgbox.com.json
+            match = re.compile("id=\"img\".+?src=\"(.+?)\" title=\"(.+?)\"", re.DOTALL).findall(content.text)
+            #log('********* ' + repr(match))    
+            if match:
+                #log('********* ' + match[0][0])
+                self.poster_url=match[0][0]
+                self.thumb_url=self.poster_url
+        else:
+            log('    error: %s get_playable_url: %s' %(self.__class__.__name__, repr( content.status_code ) ) )
+            
+        return '', ''
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+        
+        content = requests.get( album_url )
+        
+        if content.status_code==200:
+            from CommonFunctions import parseDOM
+
+            div_item_list=parseDOM(content.text, "div", attrs = { "id": "gallery-view-content" })
+            #log('    div_item_list='+repr(div_item_list))
+
+            #<a href="/fbDGR5kF"><img alt="Fbdgr5kf" src="http://1.s.imgbox.com/fbDGR5kF.jpg" /></a>
+            #<a href="/3f2FGZBl"><img alt="3f2fgzbl" src="http://4.s.imgbox.com/3f2FGZBl.jpg" /></a>
+            #<a href="/qnUS37TF"><img alt="Qnus37tf" src="http://6.s.imgbox.com/qnUS37TF.jpg" /></a>
+            #<a href="/PgEHrpIy"><img alt="Pgehrpiy" src="http://9.s.imgbox.com/PgEHrpIy.jpg" /></a>
+            #<a href="/W2sv8pFp"><img alt="W2sv8pfp" src="http://3.s.imgbox.com/W2sv8pFp.jpg" /></a>
+            
+            if div_item_list:
+                thumbs = parseDOM(div_item_list, "img", ret = "src" )
+                href   = parseDOM(div_item_list,   "a", ret = "href" )
+                #reassemble href into the image urls
+                images = ('http://i.imgbox.com%s.jpg' %s for s in href)
+                #self.assemble_images_dictList( images )
+
+
+
+                #combine 2 list into 1 multidimensional list http://stackoverflow.com/questions/12624623/two-lists-into-one-multidimensional-list
+                list3= map(list,zip( images, thumbs )) 
+            
+                #assemble_images_dictList expects the 1st item to be the image title, we don't have one
+                #add an additional column in out multidimensional list
+                list3 = [('',i,t) for i,t in list3]
+                
+                #for i in list3:
+                #    log('    ' + repr(i))
+                
+                #for i in images:
+                #    log('    ' + i)
+                    
+            
+                self.assemble_images_dictList( list3 )
+            else:
+                log('      %s: cant find <div ... id="gallery-view-content"> '  %(self.__class__.__name__ ) )
+        else:
+            log('    %s :ret_album_list: %s ' %(self.__class__.__name__, repr(content.status_code) ) )
+
+
+        #log( pprint.pformat(self.dictList, indent=1) )            
+        return self.dictList    
 
 
 def ret_youtube_thumbnail(videoID, quality0123=1):
@@ -1855,6 +1934,29 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
                             setInfo_type='pictures'   
                             modecommand='playSlideshow'
                             pluginUrl=poster_url
+
+                elif hoster=='Imgbox':
+                    # no video support
+                    v=ClassImgbox()
+                    
+                    if needs_thumbnail:
+                        pluginUrl, media_type=v.get_playable_url(media_url, assume_is_video)
+                        thumb_url=v.thumb_url  
+                        poster_url=v.poster_url
+                        #log(' thumb=%s poster=%s' %(thumb_url,poster_url ))
+                    if v.is_album(media_url):
+                        setInfo_type='album'
+                        pluginUrl=media_url                      
+                        modecommand='listImgboxAlbum'
+                    else:
+                        #some links will end up as unknown type if reddit has thumbnail 
+                        if poster_url:
+                            #use poster url as the image link. (we don't query the website if possible. if we got thumbnail, then it means that the data is already there. )
+                            setInfo_type='pictures'   
+                            modecommand='playSlideshow'
+                            pluginUrl=poster_url
+
+
                     
             except Exception as e:
                 log("    EXCEPTION:"+ str( sys.exc_info()[0]) + "  " + str(e) )    
@@ -1895,6 +1997,7 @@ def make_addon_url_from(media_url, assume_is_video=True, needs_thumbnail=False, 
             
         if link_type =='script': #xbmc.executebuiltin('RunAddon(%s)' %( di_url ) )
             #name_arg will be used as title for video.
+            #log('  title will be' + name_arg )
             url_for_DirectoryItem = build_script(modecommand, pluginUrl,name_arg,preview_url)   #def build_script( mode, url, name="", type="", script_to_call=addonID):  return "RunAddon(%s,%s)" %(addonID, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         elif link_type =='playable':
             url_for_DirectoryItem = pluginUrl
@@ -2115,6 +2218,14 @@ def listVidbleAlbum(e_url, name, type):
     #from resources.lib.domains import ClassTumblr
     log("listVidbleAlbum:"+e_url)
     e=ClassVidble()
+    
+    dictlist=e.ret_album_list(e_url, '')
+    display_album_from( dictlist, name )
+
+def listImgboxAlbum(e_url, name, type):    
+    #from resources.lib.domains import ClassTumblr
+    log("listImgboxAlbum:"+e_url)
+    e=ClassImgbox()
     
     dictlist=e.ret_album_list(e_url, '')
     display_album_from( dictlist, name )

@@ -87,6 +87,9 @@ def build_script( mode, url, name="", type="", script_to_call=''):
         #return "plugin://%s/?prl=zaza&%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
         pass
     else: 
+        #if name.startswith('In style'): log ('    namearg=' + name + ' ' + urllib.quote_plus(name.decode('unicode_escape').encode('ascii','ignore')) )
+        #remove unicode characters in name.  
+        name=name.decode('unicode_escape').encode('ascii','ignore')
         script_to_call=addonID
         return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type) )
 

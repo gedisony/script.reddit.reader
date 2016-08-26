@@ -689,7 +689,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
     from resources.lib.domains import make_addon_url_from
     hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage, False, post_title)
-    
+    #log('  done make_addon_url_from')
     #mode=mode_type #usually 'playVideo'
     if hoster: pass
     else:hoster="---"
@@ -2102,7 +2102,7 @@ if __name__ == '__main__':
 #     log("url="+  url)
 #     log("-----------------------")
     from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
-    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum
+    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum, listImgboxAlbum
     from resources.lib.slideshow import autoSlideshow
     
     if mode=='':mode='index'  #default mode is to list start page (index)
@@ -2124,6 +2124,7 @@ if __name__ == '__main__':
                     ,'listImgurAlbum'       : listImgurAlbum
                     ,'listEroshareAlbum'    : listEroshareAlbum
                     ,'listVidbleAlbum'      : listVidbleAlbum 
+                    ,'listImgboxAlbum'      : listImgboxAlbum
                     ,'playSlideshow'        : playSlideshow
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playVineVideo'        : playVineVideo
