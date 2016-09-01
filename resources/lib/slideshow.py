@@ -17,7 +17,7 @@ ADDON_PATH = addon_path   #addon.getAddonInfo('path')
 q=Queue()
 
 def autoSlideshow(url, name, type):
-    from domains import make_addon_url_from 
+    from domains import sitesBase, parse_reddit_link
     from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
     from default import reddit_request, getPlayCount
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
@@ -99,12 +99,12 @@ def autoSlideshow(url, name, type):
 
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
-            hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url=media_url, 
-                                                                                                                                                     assume_is_video=is_a_video, 
-                                                                                                                                                     needs_thumbnail=True,
-                                                                                                                                                     preview_url='',
-                                                                                                                                                     get_playable_url=False )  #we resolve the playable url
-            #entries.append(['title','plugin://plugin.video.youtube/play/?video_id=H5SPYjhdK_I'])
+#             hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url=media_url, 
+#                                                                                                                                                      assume_is_video=is_a_video, 
+#                                                                                                                                                      needs_thumbnail=True,
+#                                                                                                                                                      preview_url='',
+#                                                                                                                                                      get_playable_url=False )  #we resolve the playable url
+
  
 #             if DirectoryItem_url:
 #                 #log('   type:'+ setInfo_type)
@@ -115,9 +115,11 @@ def autoSlideshow(url, name, type):
                 log('  added preview:%s' % title )
                 entries.append([title,preview,preview_w, preview_h,len(entries)])
             else:
-                if poster_url:
-                    log('  added b poster:%s' % title )
-                    entries.append([title,poster_url,0, 0,len(entries)])
+                ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
+                if ld:
+                    if ld.poster:
+                        log('  added b poster:%s' % title )
+                        entries.append([title, ld.poster, ld.poster_w, ld.poster_h, len(entries)])
                 
             
                     

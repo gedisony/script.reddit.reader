@@ -301,22 +301,42 @@ def determine_if_video_media_from_reddit_json( entry ):
 
     return is_a_video
 
-def ret_info_type_icon(info_type, modecommand):
+def ret_info_type_icon(info_type, modecommand, domain=''):
     #returns icon for what kind of media the link is. 
     #make_addon_url_from() assigns what info_type a url link is.
     
     #log( "  info_type=%s mode=%s"  %(info_type, modecommand) )
+    
+    from domains import sitesBase
+    
+    
+    
+#     icon="type_unsupp.png"
+#     if info_type=='video':
+#         icon="type_video.png"
+#         if modecommand=='playYTDLVideo':
+#             icon="type_ytdl.png"
+# 
+#     elif info_type=='album': 
+#         icon="type_album.png"            
+#     elif info_type=='pictures':
+#         icon="type_image.png"
+#     elif info_type=='reddit':
+#         icon="alienicon.png"
+    
     icon="type_unsupp.png"
-    if info_type=='video':
+    if info_type==sitesBase.TYPE_VIDEO:
         icon="type_video.png"
         if modecommand=='playYTDLVideo':
             icon="type_ytdl.png"
+        #if 'giphy.com' in domain:
+        #    icon="type_giphy.gif"
 
-    elif info_type=='album': 
+    elif info_type==sitesBase.TYPE_ALBUM: 
         icon="type_album.png"            
-    elif info_type=='pictures':
+    elif info_type==sitesBase.TYPE_IMAGE:
         icon="type_image.png"
-    elif info_type=='reddit':
+    elif info_type==sitesBase.TYPE_REDDIT:
         icon="alienicon.png"
            
     return icon
@@ -446,34 +466,43 @@ def parse_filename_and_ext_from_url(url=""):
     filename=""
     ext=""
     
-    #url = 'http://www.plssomeotherurl.com/station.pls?id=111'
-    #path = urlparse.urlparse(url).path
+    from urlparse import urlparse
+    path = urlparse(url).path
     #ext = os.path.splitext(path)[1]    
     try:
-        filename, ext = (url.split('/')[-1].split('.'))
-        #log( "  ext=[%s]" %ext )
-        if not ext=="":
-            
-            #ext=ext.split('?')[0]
-            ext=re.split("\?|#",ext)[0]
-            
-        return filename, ext
+        if '.' in path:
+            #log( "        f&e=[%s]" %(url.split('/')[-1]).split('.')[0] )
+            #log( "          e=[%s]" %(url.split('/')[-1]).split('.')[-1] )
+            filename = path.split('/')[-1].split('.')[0]
+            ext      = path.split('/')[-1].split('.')[-1]
+            #log( "        ext=[%s]" %ext )
+            if not ext=="":
+                
+                #ext=ext.split('?')[0]
+                ext=re.split("\?|#",ext)[0]
+                
+            return filename, ext.lower()
+
     except:
-        return "", ""
+        pass
+        
+    return "", ""
 
 def link_url_is_playable(url):
     url=url.split('?')[0]
-    
-    filename,ext=parse_filename_and_ext_from_url(url)
-    
-    if ext in image_exts:
-        return 'image'
-    
-    if ext in ['mp4','webm','mpg','gifv']:
-        return 'video'
-    
-    if ext == 'gifv':
-        return 'gifv'
+    #log('        split[0]:' + url)
+    if url:
+        filename,ext=parse_filename_and_ext_from_url(url)
+        #log('        [%s][%s]' %(filename,ext) )
+        if ext in image_exts:
+            #log('        is image:' + url)
+            return 'image'
+        
+        if ext in ['mp4','webm','mpg','gifv','gif']:
+            return 'video'
+        
+        #if ext == 'gif':
+        #    return 'gif'
     
     return False
 
@@ -499,7 +528,12 @@ def remove_duplicates(seq, idfun=None):
         result.append(item)
     return result    
 
-
+#http://stackoverflow.com/questions/6330071/safe-casting-in-python
+def safe_cast(val, to_type, default=None):
+    try:
+        return to_type(val)
+    except ValueError:
+        return default
 
 def cleanTitle(title):
     #replaced by unescape

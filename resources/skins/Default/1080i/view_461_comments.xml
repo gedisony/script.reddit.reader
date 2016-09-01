@@ -273,7 +273,7 @@
 					<fadetime>300</fadetime>
 					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<visible>!Player.HasMedia</visible>
-					<texture background="true" fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
+					<texture fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
 				<control type="videowindow">
 					<left>602</left>

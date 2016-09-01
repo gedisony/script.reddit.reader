@@ -122,9 +122,9 @@ class cGUI(xbmcgui.WindowXML):
                 xbmc.sleep(5000)
                 xbmc.executebuiltin( "Dialog.Close(busydialog)" )
                 
-                #modes=['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
+                #modes=['listImgurAlbum','viewImage','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
                 #if any(x in di_url for x in modes):
-                    #playSlideshow uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
+                    #viewImage uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
                     #   use RunPlugin to avoid this issue
                     
 
@@ -355,9 +355,9 @@ class listSubRedditGUI(cGUI):
                 else:
                     self.busy_execute_sleep(di_url,5000,False )
                 
-                #modes=['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
+                #modes=['listImgurAlbum','viewImage','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
                 #if any(x in di_url for x in modes):
-                    #playSlideshow uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
+                    #viewImage uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing 
                     #   use RunPlugin to avoid this issue
                     
 
@@ -500,7 +500,7 @@ class commentsGUI(cGUI):
         self.links_on_top=False
 
 class qGUI(xbmcgui.WindowXMLDialog):
-    #called by playSlideshow
+    #called by viewImage
     
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)

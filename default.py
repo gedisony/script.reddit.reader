@@ -53,7 +53,7 @@ profile_path  = addon.getAddonInfo('profile')   #where user settings are stored
 WINDOW        = xbmcgui.Window(10000)
 #technique borrowed from LazyTV. 
 #  WINDOW is like a mailbox for passing data from caller to callee. 
-#    e.g.: addLink() needs to pass "image description" to playSlideshow()
+#    e.g.: addLink() needs to pass "image description" to viewImage()
 
 osWin         = xbmc.getCondVisibility('system.platform.windows')
 osOsx         = xbmc.getCondVisibility('system.platform.osx')
@@ -69,7 +69,7 @@ opener = urllib2.build_opener()
 #opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 
 #https://github.com/reddit/reddit/wiki/API
-userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
+reddit_userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
 reddit_clientID      ="ZEbDJ5DUrguDMA"    
 reddit_redirect_uri  ='http://localhost:8090/'   #specified when registering for a clientID
 reddit_refresh_token =addon.getSetting("reddit_refresh_token")
@@ -77,7 +77,7 @@ reddit_access_token  =addon.getSetting("reddit_access_token") #1hour token
 
 #test1 line
 
-opener.addheaders = [('User-Agent', userAgent)]
+opener.addheaders = [('User-Agent', reddit_userAgent)]
 #API requests with a bearer token should be made to https://oauth.reddit.com, NOT www.reddit.com.
 urlMain = "https://www.reddit.com"
 
@@ -541,7 +541,7 @@ def listSubReddit(url, title_bar_name, type):
                 #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
                 thumb_w=0
                 thumb_h=0
-                preview="" #a blank preview image will be replaced with poster_url from make_addon_url_from() for domains that support it
+                preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
 
             #preview images are 'keep' stretched to fit inside 1080x1080. 
             #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image  
@@ -667,34 +667,19 @@ def skin_launcher(mode,**kwargs ):
 
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id='', post_index=1,post_total=1,many_subreddit=False ):
     from resources.lib.utils import ret_info_type_icon, assemble_reddit_filter_string,build_script
+    from resources.lib.domains import parse_reddit_link, sitesBase
+
+    DirectoryItem_url=''
     
-    videoID=""
     post_title=title
     il_description=""
     
-    h=""  #will hold bold hoster:  string
-    #title_line2= "3 days ago on r/all 5 comments."
-    
-    ok = False    
-    #DirectoryItem_url=""
-
     preview_ar=0.0
     if preview_w==0 or preview_h==0:
         preview_ar=0.0
     else:
         preview_ar=float(preview_w) / preview_h
 
-    if iconimage: needs_thumbnail=False  
-    else:         needs_thumbnail=True  #reddit has no thumbnail for this link. please get one
-        
-    from resources.lib.domains import make_addon_url_from
-    hoster, DirectoryItem_url, videoID, mode_type, thumb_url, poster_url, isFolder,setInfo_type, property_link_type=make_addon_url_from(link_url,reddit_says_is_video,needs_thumbnail, previewimage, False, post_title)
-    #log('  done make_addon_url_from')
-    #mode=mode_type #usually 'playVideo'
-    if hoster: pass
-    else:hoster="---"
-        
-    h="[B]" + hoster + "[/B] "
     if over_18: 
         mpaa="R"
         #description = "[B]" + hoster + "[/B]:[COLOR red][NSFW][/COLOR] "+title+"\n" + description
@@ -705,49 +690,40 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #il_description = h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
 
     post_title=title
-    il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
+    if len(post_title) > 40:
+        il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
+    else:
+        il_description='%s' %( description )
+
+    #if title is long, put it in description so that it will trigger displaying under preview image
+    #if len(title) > 100 :
+    #il_description=title + description
+
         
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
-#     log( '      reddit thumb[%s] ' %(iconimage ))
-#     log( '      reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-#     log( '      new-thumb[%s] poster[%s] ' %( thumb_url, poster_url ))
-    if iconimage in ["","nsfw", "default"]:
-        iconimage=thumb_url
-    
     #if poster_url=="":
     #    poster_url=iconimage
     
     #log( "  PLOT:" +il_description )
     liz=xbmcgui.ListItem(label=post_title
                          ,label2=title_line2
-                         ,iconImage="DefaultVideo.png"
-                         ,thumbnailImage=iconimage
-                         ,path=DirectoryItem_url)   #path not used by gui.
+                         ,iconImage=""
+                         ,thumbnailImage=''
+                         ,path='')   #path not used by gui.
 
     #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
-    if previewimage=="":
-        #log("putting preview image")
-        liz.setArt({"thumb": iconimage, "banner":poster_url,  })
-    else:
-        liz.setArt({"thumb": iconimage, "banner":previewimage,  })
     
-
     #----- assign actions
     if preview_ar>0 and preview_ar < 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
         #from resources.lib.utils import link_url_is_playable
         #log('*****%f '%preview_ar)
         #if link_url_is_playable(link_url):
         #log('*****has zoom_n_slide_action ')
-        liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,int(preview_w),int(preview_h) ) )                      
+        liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,str(preview_w),str(preview_h) ) )                      
 
-    #liz.setProperty('preview_ar', str(preview_ar) )
-    
-    #if title is long, put it in description so that it will trigger displaying under preview image
-    if len(title) > 100:
-        il_description=title + description
-    
-    if preview_ar>1.25 and description:   #this measurement is related to control id 203's height
+        
+    if preview_ar>1.25:   #this measurement is related to control id 203's height
         #log('    ar and description criteria met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)] 
@@ -756,11 +732,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #----- assign actions
     if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', site ) )
-    
     liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
     liz.setProperty('link_url', link_url )
     liz.setProperty('post_id', post_id )
-    
     
     liz.setInfo(type='video', infoLabels=il)
     #
@@ -771,85 +745,63 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     
 
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
-    clearart=ret_info_type_icon(setInfo_type, mode_type)
+    clearart=ret_info_type_icon('', '')
     liz.setArt({ "clearart": clearart  })
+
     
     #force all links to ytdl to see if they are playable 
     if use_ytdl_for_unknown:
         liz.setProperty('item_type','script')         
         liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
+
+
+
+    if previewimage: needs_preview=False  
+    else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
     
-    if DirectoryItem_url:
+    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False )
 
-#         if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment' ]:
-#             log('setting: hide non-video links') #and text links(reddit.com)
-#             return
-#         else:
-#             if mode_type in ['listImgurAlbum','playSlideshow','listLinksInComment','playTumblr','playInstagram','playFlickr' ]:
-#                 #after all that work creating DirectoryItem_url, we parse it to get the media_url. this is used by playSlideshow as 'key' to get the image description
-#                 #parsed = urlparse.urlparse(DirectoryItem_url)
-#                 #media_url=urlparse.parse_qs(parsed.query)['url'][0]  #<-- this will error in openelec/linux    
-#                 #log("   parsed media_url:" +  media_url  )
-#                 #log("   parsed plugi_url:" +  videoID  )
-#                 #WINDOW.setProperty(videoID, description )
-#                 #WINDOW.setProperty(videoID, il_description )
-#                 pass
+    if previewimage=="":
+        liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
+    else:
+        liz.setArt({"thumb": iconimage, "banner":previewimage,  })
+        
+
+
+    log( '          reddit thumb[%s] ' %(iconimage ))
+    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    
+    if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+
+    if ld:
+        #log('###' + repr(ld.playable_url) )
+        #url_for_DirectoryItem = build_script(ld.link_action, ld.playable_url, post_title , previewimage )
+        #log('  ##is supported')
+
+        #use clearart to indicate the type of link(video, album, image etc.)
+        clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
+        liz.setArt({ "clearart": clearart  })
 
         
-        #art_object
-        #liz.setArt({ "poster":poster_url  })
-        #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":iconimage, "fanart":poster_url, "landscape":poster_url   })
+        if iconimage in ["","nsfw", "default"]:
+            iconimage=ld.thumb
 
-        #liz.setInfo(type=setInfo_type, infoLabels=il)
 
+    
+
+        if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
+            property_link_type=ld.link_action
+            DirectoryItem_url =ld.playable_url
+        else:
+            property_link_type='script'
+            DirectoryItem_url = build_script(mode=ld.link_action, 
+                                             url=ld.playable_url, 
+                                             name=post_title , 
+                                             type=previewimage ) 
         
-#         entries = [] #entries for listbox for when you type 'c' or rt-click 
-# 
-# 
-#         if num_comments > 0:            
-#             #if we are using a custom gui to show comments, we need to use RunPlugin. there is a weird loading/pause if we use XBMC.Container.Update. i think xbmc expects us to use addDirectoryItem
-#             #  if we have xbmc manage the gui(addDirectoryItem), we need to use XBMC.Container.Update. otherwise we'll get the dreaded "Attempt to use invalid handle -1" error
-# 
-#             if comments_viewMode=='461':  #461 is my trigger to use a custom gui for showing comments. it is just an arbitrary number. i'm hoping there no skin will use the same viewid
-#                 entries.append( ( translation(30050) + " (c)",  #Show comments
-#                               "XBMC.RunPlugin(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-#                 entries.append( ( translation(30052) , #Show comment links 
-#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-#             else:  
-#                 entries.append( ( translation(30052) , #Show comment links 
-#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s&type=linksOnly)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-#                 entries.append( ( translation(30050) ,  #Show comments
-#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listLinksInComment&url=%s)" % ( sys.argv[0], sys.argv[0], urllib.quote_plus(site) ) ) )            
-# 
-#             #entries.append( ( translation(30050) + " (ActivateWindow)",  #Show comments
-#             #              "XBMC.ActivateWindow(Video, %s?mode=listLinksInComment&url=%s)" % (  sys.argv[0], urllib.quote_plus(site) ) ) )      #***  ActivateWindow is for the standard xbmc window     
-#         else:
-#             entries.append( ( translation(30053) ,  #No comments
-#                           "xbmc.executebuiltin('Action(Close)')" ) )            
-# 
-#                 
-#         #no need to show the "go to other subreddits" if the entire list is from one subreddit        
-#         if many_subreddit:
-#             #sys.argv[0] is plugin://plugin.video.reddit_viewer/
-#             #prl=zaza is just a dummy: during testing the first argument is ignored... possible bug?
-#             entries.append( ( translation(30051)+" r/%s" %subreddit , 
-#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit,True)  ) ) ) )
-#         else:
-#             entries.append( ( translation(30051)+" r/%s" %subreddit , 
-#                               "XBMC.Container.Update(%s?path=%s?prl=zaza&mode=listSubReddit&url=%s)" % ( sys.argv[0], sys.argv[0],urllib.quote_plus(assemble_reddit_filter_string("",subreddit+'/new',True)  ) ) ) )
-# 
-# 
-#         #favEntry = '<favourite name="'+title+'" url="'+DirectoryItem_url+'" description="'+description+'" thumb="'+iconimage+'" date="'+credate+'" site="'+site+'" />'
-#         #entries.append((translation(30022), 'RunPlugin(plugin://'+addonID+'/?mode=addToFavs&url='+urllib.quote_plus(favEntry)+'&type='+urllib.quote_plus(subreddit)+')',))
-#         
-#         #if showBrowser and (osWin or osOsx or osLinux):
-#         #    if osWin and browser_win==0:
-#         #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.webbrowser/?url='+urllib.quote_plus(site)+'&mode=showSite&zoom='+browser_wb_zoom+'&stopPlayback=no&showPopups=no&showScrollbar=no)',))
-#         #    else:
-#         #        entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.chrome.launcher/?url='+urllib.quote_plus(site)+'&mode=showSite)',))
-#         liz.addContextMenuItems(entries)
-
-        #xbmcplugin.addDirectoryItem(pluginhandle, DirectoryItem_url, listitem=liz, isFolder=isFolder, totalItems=post_total)
+        
+        log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
+        
         liz.setProperty('item_type',property_link_type)
         #liz.setProperty('onClick_action',DirectoryItem_url)
         liz.setProperty('onClick_action',DirectoryItem_url)
@@ -859,6 +811,11 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         pass
 
     return liz
+
+
+
+
+
 #MODE listFavourites -  name, type not used
 # def listFavourites(subreddit, name, type):
 #     xbmcplugin.setContent(pluginhandle, "episodes")
@@ -876,11 +833,14 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 #     xbmcplugin.endOfDirectory(pluginhandle)
 
 
+
+
+
 q = Queue()
 
 #MODE autoPlay        - name not used
 def autoPlay(url, name, type):
-    from resources.lib.domains import make_addon_url_from 
+    from resources.lib.domains import sitesBase, parse_reddit_link 
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
@@ -913,28 +873,23 @@ def autoPlay(url, name, type):
 
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
-            log("  Title:%s -%c"  %( title, ("v" if is_a_video else " ") ) )
+            log("  %cTITLE:%s"  %( ("v" if is_a_video else " "), title  ) )
 
-            hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url=media_url,
-                                                                                                                                                     assume_is_video=is_a_video, 
-                                                                                                                                                     needs_thumbnail=False,
-                                                                                                                                                     preview_url='',
-                                                                                                                                                     get_playable_url=True )  #we resolve the playable url
+            ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=False, get_playable_url=True )
 
-            #entries.append(['title','plugin://plugin.video.youtube/play/?video_id=H5SPYjhdK_I'])
-
-            if DirectoryItem_url:
-                #log('   type:'+ setInfo_type)
-                if setInfo_type=='video':
+            if ld:
+                
+                log('      type:%s %s' %( ld.media_type, ld.link_action)   )
+                if ld.media_type in [sitesBase.TYPE_VIDEO, sitesBase.TYPE_VIDS, sitesBase.TYPE_MIXED]:
                     if type.startswith("UNWATCHED_") and getPlayCount(url) < 0:
                         #log("      UNWATCHED_" )
-                        entries.append([title,processed_media_url,modecommand])
+                        entries.append([title,ld.playable_url, ld.link_action])
                     elif type.startswith("UNFINISHED_") and getPlayCount(url) == 0:
                         #log("      UNFINISHED_" )
-                        entries.append([title,processed_media_url,modecommand])
+                        entries.append([title,ld.playable_url, ld.link_action])
                     else:  # type.startswith("ALL_")
                         #log("      ALL_" )
-                        entries.append([title,processed_media_url,modecommand])
+                        entries.append([title,ld.playable_url, ld.link_action])
                     
                 
         except Exception as e:
@@ -1275,20 +1230,10 @@ def playYTDLVideo(url, name, type):
         #xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(  Gfycat.com, translation(32010) )  )
 
 def listLinksInComment(url, name, type):
-    from resources.lib.domains import make_addon_url_from
+    from resources.lib.domains import parse_reddit_link, sitesBase
     from resources.lib.utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
 
     log('listLinksInComment:%s:%s' %(type,url) )
-
-
-#     #for testing
-#     from resources.lib.guis import cGUI
-#     #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-#     ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i')
-#     
-#     ui.doModal()
-#     del ui
-#     return
 
     directory_items=[]
     author=""
@@ -1339,29 +1284,57 @@ def listLinksInComment(url, name, type):
         try:post_title=content[0]['data']['children'][0]['data']['title']
         except:post_title=''
         #for i, h in enumerate(harvest):
-        #    log("aaaaa first harvest "+h[2])
+        #    log("aaaaa first harvest "+link_url)
     
         #harvest links in the post itself    
         r_linkHunter(content[1]['data']['children'])
+    
+        #for i, h in enumerate(harvest):
+        #    log( '  %d %s %d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
+    
+#         h[0]=score, 
+#         h[1]=link_desc, 
+#         h[2]=link_http, 
+#         h[3]=post_text, 
+#         h[4]=post_html, 
+#         h[5]=d, 
+#         h[6]="t1",
+#         h[7]=author,
+#         h[8]=created_utc,
     
         comment_score=0
         for i, h in enumerate(harvest):
             #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
             comment_score=h[0]
             #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
-            
-            if comment_score < int_CommentTreshold:
-                continue
-            
-            hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(h[2], False, True)
-        
-            #mode_type #usually 'playVideo'
+            link_url=h[2]
+            desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+
             kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.  
             d=h[5]   #depth of the comment
             
             tab=" "*d if d>0 else "-"
             
             author=h[7]
+            
+            from urlparse import urlparse
+            domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
+            
+            #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
+            if comment_score < int_CommentTreshold:
+                #log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
+                continue
+            
+            #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(link_url, False, True)
+            
+            if link_url:
+                log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
+                
+            ld=parse_reddit_link(link_url=link_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
+
+
+            
+            
             if author==submitter:#add a submitter tag
                 author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author 
             else:
@@ -1374,7 +1347,7 @@ def listLinksInComment(url, name, type):
     
             
                 
-            desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+            
     
             #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
             plot=h[3].replace('](', '] (')
@@ -1386,37 +1359,48 @@ def listLinksInComment(url, name, type):
                                  iconImage="", 
                                  thumbnailImage="")
     
-            liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
+            liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
+
+            
 
             #force all links to ytdl to see if it can be played
-            if h[2]:
-                #log('      there is a link from %s' %hoster)
-                if not DirectoryItem_url: 
+            if link_url:
+                #log('      there is a link from %s' %domain)
+                if not ld: 
                     #log('      link is not supported ')
                     if use_ytdl_for_unknown_in_comments:
-                        log('      ********* activating unsupported link:' + h[2])
-                        #hoster='[?]'
+                        log('      ********* activating unsupported link:' + link_url)
+                        #domain='[?]'
                         liz.setProperty('item_type','script')         
-                        liz.setProperty('onClick_action', build_script('playYTDLVideo', h[2]) )
+                        liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
                         plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
                         liz.setLabel(tab+plot)
-                        liz.setProperty('link_url', h[2] )  #just used as text at bottom of the screen
+                        liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
 
                         clearart=ret_info_type_icon('', '')
                         liz.setArt({ "clearart": clearart  })
 
             
-            if hoster:
+            if ld:
                 #use clearart to indicate if link is video, album or image. here, we default to unsupported.
-                clearart=ret_info_type_icon(setInfo_type, mode_type)
+                #clearart=ret_info_type_icon(setInfo_type, mode_type)
+                clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
                 liz.setArt({ "clearart": clearart  })
             
-            #if DirectoryItem_url:
+                if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
+                    property_link_type=ld.link_action
+                    DirectoryItem_url =ld.playable_url
+                else:
+                    property_link_type='script'
+                    DirectoryItem_url = build_script(mode=ld.link_action, 
+                                                     url=ld.playable_url, 
+                                                     name='' , 
+                                                     type='' ) 
                 
                 #(score, link_desc, link_http, post_text, post_html, d, )
                 #list_item_name=str(h[0]).zfill(3)
                 
-                #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +h[2] + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
+                #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +link_url + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
                 #log( h[4] + ' -- videoID['+videoID+']' )
                 #log("sss:"+ supportedPluginUrl )
                 
@@ -1427,32 +1411,33 @@ def listLinksInComment(url, name, type):
     
                 #turn link green  
                 if DirectoryItem_url:          
-                    plot= "[COLOR greenyellow][%s] %s"%(hoster, plot )  + "[/COLOR]"
+                    plot= "[COLOR greenyellow][%s] %s"%(domain, plot )  + "[/COLOR]"
                     liz.setLabel(tab+plot)
         
-                    if poster_url:
-                        thumb_url=poster_url
+                    #if poster_url:
+                    #    thumb_url=poster_url
                         
                     #if thumb_url: pass
                     #else: thumb_url="DefaultVideo.png"
-        
-                    liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
+                    
+                    #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
+                    liz.setArt({"thumb": ld.poster })
         
                     liz.setProperty('item_type',property_link_type)   #script or playable
                     liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
-                    liz.setProperty('link_url', h[2] )  #just used as text at bottom of the screen
+                    liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
                     #liz.setPath(DirectoryItem_url) 
         
-                    directory_items.append( (DirectoryItem_url, liz, isFolder,) )
+                    directory_items.append( (DirectoryItem_url, liz,) )
                     
                 #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
             else:
                 #this section are for comments that have no links or unsupported links
                 if not ShowOnlyCommentsWithlink:
-                    #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": hoster, "votes": str(h[0]), "director": author } )
+                    #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(h[0]), "director": author } )
                     #liz.setProperty('IsPlayable', 'false')
                     
-                    directory_items.append( ("", liz, False,) )
+                    directory_items.append( ("", liz, ) )
                     #xbmcplugin.addDirectoryItem(handle=pluginhandle,url="",listitem=liz,isFolder=False)
                 
                 #END section are for comments that have no links or unsupported links
@@ -1701,10 +1686,6 @@ def molest_xml(url, name, type):
         #CurrentWindow.addControl(ctl3)
         
         
-        
-        
-        
-        
         #read later:  Is it possible set animation windowopen via script ?      http://forum.kodi.tv/showthread.php?tid=210316
         
         
@@ -1800,7 +1781,7 @@ def reddit_request( url ):
     req = urllib2.Request(url)
 
     #req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
-    req.add_header('User-Agent', userAgent)   #userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
+    req.add_header('User-Agent', reddit_userAgent)   #userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
     
     #if there is a refresh_token, add the access token to the header
     if reddit_refresh_token:
@@ -1874,7 +1855,7 @@ def reddit_get_refresh_token(url, name, type):
         import base64
         base64string = base64.encodestring('%s:%s' % (reddit_clientID, '')).replace('\n', '')  
         req.add_header('Authorization',"Basic %s" % base64string)
-        req.add_header('User-Agent', userAgent)
+        req.add_header('User-Agent', reddit_userAgent)
          
         page = urllib2.urlopen(req, data=data)
         response=page.read();page.close()
@@ -1903,7 +1884,7 @@ def reddit_get_refresh_token(url, name, type):
 # 
 #         req = urllib2.Request(u)
 #         #req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
-#         req.add_header('User-Agent', userAgent)
+#         req.add_header('User-Agent', reddit_userAgent)
 #         req.add_header('Authorization','bearer LVQu8vitbEXfMPcK1sGlVVQZEpM')
 #         page = read,identity.urlopen(req)
 #         response=page.read();page.close()
@@ -1928,7 +1909,7 @@ def reddit_get_access_token(url="", name="", type=""):
         import base64
         base64string = base64.encodestring('%s:%s' % (reddit_clientID, '')).replace('\n', '')  
         req.add_header('Authorization',"Basic %s" % base64string)
-        req.add_header('User-Agent', userAgent)
+        req.add_header('User-Agent', reddit_userAgent)
           
         page = urllib2.urlopen(req, data=data)
         response=page.read();page.close()
@@ -2005,7 +1986,7 @@ def reddit_revoke_refresh_token(url, name, type):
         import base64
         base64string = base64.encodestring('%s:%s' % (reddit_clientID, '')).replace('\n', '')  
         req.add_header('Authorization',"Basic %s" % base64string)
-        req.add_header('User-Agent', userAgent)
+        req.add_header('User-Agent', reddit_userAgent)
           
         page = urllib2.urlopen(req, data=data)
         response=page.read();page.close()
@@ -2101,8 +2082,9 @@ if __name__ == '__main__':
 #     log("name="+ name)
 #     log("url="+  url)
 #     log("-----------------------")
-    from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
-    from resources.lib.domains import playSlideshow, playFlickr, playImgurVideo, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum, listImgboxAlbum
+    #from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
+    #from resources.lib.domains import viewImage, playFlickr, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum, listImgboxAlbum, listAlbum
+    from resources.lib.domains import viewImage, listAlbum
     from resources.lib.slideshow import autoSlideshow
     
     if mode=='':mode='index'  #default mode is to list start page (index)
@@ -2110,31 +2092,32 @@ if __name__ == '__main__':
     plugin_modes = {'index'                 : index
                     ,'listSubReddit'        : listSubReddit
                     ,'playVideo'            : playVideo           
-                    ,'playGfycatVideo'      : playGfycatVideo   
+#                     ,'playGfycatVideo'      : playGfycatVideo   
                     ,'addSubreddit'         : addSubreddit         
                     ,'editSubreddit'        : editSubreddit         
                     ,'removeSubreddit'      : removeSubreddit      
                     ,'autoPlay'             : autoPlay
                     ,'autoSlideshow'        : autoSlideshow                           
-                    ,'queueVideo'           : queueVideo     
-                    ,'addToFavs'            : addToFavs      
-                    ,'removeFromFavs'       : removeFromFavs
+#                     ,'queueVideo'           : queueVideo     
+#                     ,'addToFavs'            : addToFavs      
+#                     ,'removeFromFavs'       : removeFromFavs
                     ,'searchReddits'        : searchReddits          
-                    ,'playImgurVideo'       : playImgurVideo        
-                    ,'listImgurAlbum'       : listImgurAlbum
-                    ,'listEroshareAlbum'    : listEroshareAlbum
-                    ,'listVidbleAlbum'      : listVidbleAlbum 
-                    ,'listImgboxAlbum'      : listImgboxAlbum
-                    ,'playSlideshow'        : playSlideshow
+#                    ,'playImgurVideo'       : playImgurVideo      
+                    ,'listAlbum'            : listAlbum  
+#                     ,'listImgurAlbum'       : listImgurAlbum
+#                     ,'listEroshareAlbum'    : listEroshareAlbum
+#                     ,'listVidbleAlbum'      : listVidbleAlbum 
+#                     ,'listImgboxAlbum'      : listImgboxAlbum
+                    ,'viewImage'            : viewImage
                     ,'listLinksInComment'   : listLinksInComment
-                    ,'playVineVideo'        : playVineVideo
+#                     ,'playVineVideo'        : playVineVideo
                     ,'playYTDLVideo'        : playYTDLVideo
-                    ,'playVidmeVideo'       : playVidmeVideo
-                    ,'listTumblrAlbum'      : listTumblrAlbum
-                    ,'playStreamable'       : playStreamable
-                    ,'playInstagram'        : playInstagram
-                    ,'playFlickr'           : playFlickr
-                    ,'listFlickrAlbum'      : playFlickr 
+#                     ,'playVidmeVideo'       : playVidmeVideo
+#                     ,'listTumblrAlbum'      : listTumblrAlbum
+#                     ,'playStreamable'       : playStreamable
+#                     ,'playInstagram'        : playInstagram
+#                     ,'playFlickr'           : playFlickr
+#                     ,'listFlickrAlbum'      : playFlickr 
                     ,'molest_xml'           : molest_xml    #for testing 
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'test_menu'            : test_menu 
