@@ -759,7 +759,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     if previewimage: needs_preview=False  
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
     
-    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False )
+    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, previewimage  )
 
     if previewimage=="":
         liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })

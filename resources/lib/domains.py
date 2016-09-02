@@ -922,7 +922,6 @@ class ClassTumblr(sitesBase):
     regex='(tumblr.com)'
     
     api_key='no0FySaKYuQHKl0EBQnAiHxX7W0HY4gKvlmUroLS2pCVSevIVy'
-    thumb_url=""
     include_gif_in_get_playable=True
     
     def get_thumb_url(self, image_url="", thumbnail_type='b'):
@@ -2174,6 +2173,227 @@ class ClassReddit(sitesBase):
             else:
                 log( '    getting subreddit info:%s' %r.status_code ) 
             
+class ClassKindgirls(sitesBase):
+    regex='(kindgirls.com)'
+
+    def is_album(self, media_url):
+        if '/gallery/' in media_url:
+            self.media_type = self.TYPE_ALBUM
+            return True
+        else:
+            return False
+    
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+
+        if self.is_album(link_url):
+            self.media_type = sitesBase.TYPE_ALBUM
+            return link_url, self.media_type
+        
+        content = requests.get( link_url )
+        
+        if content.status_code==200:
+            #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
+            thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
+            #log('    thumb='+repr(thumb))
+            if thumb:
+                self.thumb_url=thumb[0]
+
+            div_item_list = parseDOM(content.text, "div", attrs = { "id": "photo" })
+            
+            #log('    div_item_list=' + repr(div_item_list))
+            if div_item_list:
+                images = parseDOM(div_item_list, "img", ret = "src")
+                #for idx, item in enumerate(images):
+                #    log('    %d %s' %(idx, item))
+                if images[0]:
+                    self.thumb_url = images[0]
+                    self.poster_url= images[0]
+                    
+                    return self.poster_url, self.TYPE_IMAGE
+        else:
+            log('    error: get_playable_url:' + str( content.status_code ) )
+            
+        return '', ''
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+        content = requests.get( album_url )
+        images=[]
+        if content.status_code==200:
+
+            div_item_list = parseDOM(content.text, "div", attrs = { "id": "cuerpo" })
+            #log('      div_item_list=' + repr(div_item_list))
+            
+            if div_item_list:
+                thumb_div=parseDOM(div_item_list, "div", attrs = { "id": "up_der" })
+                #log( repr( thumb_div) )
+                if thumb_div:
+                    #log('    thumb div')
+                    thumb = parseDOM(thumb_div,"a", ret="href")[0]
+                    if thumb:
+                        self.thumb_url=thumb
+                        self.poster_url=self.thumb_url
+                        #log('    thumb:' + thumb )
+                
+                img_divs=parseDOM(div_item_list, "div", attrs = { "class": "gal_list" })
+                
+                if img_divs:
+                    for div in img_divs:
+                        image_p     = parseDOM(div,"img", ret="src")[0]
+                        image_title = parseDOM(div,"img", ret="title")[0]
+                        image_o     = parseDOM(div,"a", attrs={ "target":"_blank"}, ret="href")[0]
+                        
+                        images.append( [image_title, image_o, image_p]  ) 
+            
+                #for i in images: log( repr(i) )
+                self.assemble_images_dictList( images )
+                #log( pprint.pformat(self.dictList, indent=1) ) 
+                
+            else:
+                log("      can't find div id cuerpo")
+        else:
+            log('    ret_album_list: ' + str( content.status_code ) )
+
+        #log( pprint.pformat(self.dictList, indent=1) )
+        return self.dictList    
+
+    def get_thumb_url(self):
+        #log('    get thumb [%s]' %self.thumb_url )
+        if self.thumb_url:
+            return self.thumb_url
+        
+        #log('    checking if album')
+        if self.is_album(self.original_url):
+            #log('    is album')
+            #this also gets the thumb and poster url's
+            dictlist = self.ret_album_list( self.original_url )
+            return self.thumb_url
+            
+class Class500px(sitesBase):
+    regex='(500px.com)'
+
+    key_string='consumer_key=aKLU1q5GKofJ2RDsNVEJScLy98aLKNmm7lADwOSB'
+    
+    def is_album(self, media_url):
+        if '/galleries/' in media_url:
+            self.media_type = self.TYPE_ALBUM
+            return True
+        else:
+            return False
+    
+    def get_thumb_url(self, image_url="", thumbnail_type='b'):
+
+        self.get_photo_info()
+
+        if self.poster_url:
+            return self.poster_url
+        
+        return ''
+
+    def get_photo_info(self, photo_url=''):
+        if not photo_url:
+            photo_url=self.media_url
+        
+        self.get_video_id()
+        #log('    videoID:' + self.video_id)
+        if self.video_id:
+            #image_size — Numerical size of the image to link to, 1 being the smallest and 4 being the largest.
+            api_url= 'https://api.500px.com/v1/photos/%s?image_size=6&%s' %(self.video_id, self.key_string) 
+            #log( '    ' + api_url )
+            r = requests.get(api_url )
+            #log(r.text)
+            
+            if r.status_code == 200:   #http status code 200 is success
+                j=json.loads(r.text)   #.replace('\\"', '\'')
+                j=j.get('photo')
+                
+                title=j.get('name')
+                self.poster_url=j.get('image_url')
+                self.media_w=j.get('width')  #width and height not accurate unless image size 6  (not sure if applies to all)
+                self.media_h=j.get('height')
+                self.media_url=self.poster_url
+                
+                log('      %s %dx%d %s' %(title, self.media_w,self.media_h, self.poster_url )  )
+                #return self.poster_url, sitesBase.TYPE_IMAGE
+            else:
+                log('    error: %s api call: %s' %(self.__class__.__name__, repr( r.status_code ) ) )
+        else:
+            log("    %s cannot get videoID %s" %( self.__class__.__name__, self.original_url) )
+        
+        
+    def get_playable_url(self, media_url, is_probably_a_video=True ):
+        #log('    class 500px prep media url')
+
+        if self.is_album(media_url):
+            return media_url, sitesBase.TYPE_ALBUM
+
+        self.get_photo_info()
+
+        if self.poster_url:
+            return self.poster_url, sitesBase.TYPE_IMAGE
+        
+        return '',''
+
+    def get_video_id(self):
+        self.video_id=''
+        #match = re.findall( '500px\.com/(?:photo)/(.+)(?:/|$)' , self.original_url)
+        match = re.findall( '500px\.com/photo/(.+?)(?:\/|$)' , self.original_url)
+        #log('    '+ repr(match) )
+        if match:
+            self.video_id=match[0]
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+
+        #first query for the user id then call the request that gets the image list
+        
+        #gallery links look like this:
+        #  https://500px.com/seanarcher/galleries/outdoor-portraits
+        #  https://500px.com/mikimacovei/galleries/favorites
+        #result = re.search('500px\.com/(.*?)/galleries', self.original_url)
+        result = re.search('500px\.com/(.*?)/(.+)?', self.original_url)
+        username  =result.group(1)
+        album_name=result.group(2)
+        log('    username:%s album:%s' %(username, album_name) )
+
+        api_call='https://api.500px.com/v1/users/show?username=%s&%s' %(username, self.key_string)
+        log('    req='+api_call)
+        r = requests.get(api_call)
+        if r.status_code == requests.codes.ok:
+            j=r.json()
+            user_id=j.get('user').get('id')
+        else:
+            log( '    error getting user ID:%s [%s]' %(r.status_code, api_call)  )
+            return
+        
+        if user_id:
+            #         https://api.500px.com/v1/users/777395/galleries/outdoor-portraits/items?consumer_key=aKLU1q5GKofJ2RDsNVEJScLy98aLKNmm7lADwOSB
+            api_call='https://api.500px.com/v1/users/%s/%s/items?image_size=6&rpp=100&%s' %(user_id, album_name, self.key_string)
+            log('    req='+api_call)
+            r = requests.get(api_call)
+            #log( r.text )
+            if r.status_code == requests.codes.ok:
+                images=[]
+                j=r.json()
+                j=j.get('photos')
+                for photo in j:
+                    title=photo.get('name') 
+                    description=photo.get('description')
+                    image=photo.get('image_url')
+                    combined='[B]%s[/B]\n%s' % (title, description)
+                    
+                    images.append( [combined, image ]  ) 
+                    
+                #for i in images: log( repr(i) )
+                self.assemble_images_dictList( images )
+                #log( pprint.pformat(self.dictList, indent=1) ) 
+            else:
+                log( '    error getting user ID:%s [%s]' %(r.status_code, api_call)  )
+                return
+        else:
+            log("    can't get user id")
+            return
+        return self.dictList
 
 class genericImage(sitesBase):
     regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
@@ -2248,7 +2468,7 @@ def sitesManager( media_url ):
                 #log('      *****match '+ subcls.regex )
                 return subcls( media_url )
 
-def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False ):
+def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False, previewimage='' ):
     
     
     if not link_url: return
@@ -2274,8 +2494,15 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                     hoster.link_action='viewImage'
                 if media_type==sitesBase.TYPE_ALBUM:
                     hoster.link_action='listAlbum'
-                #if media_type==sitesBase.TYPE_VIDEO:
-                #    hoster.link_action='listAlbum'
+#                 if media_type==sitesBase.TYPE_RDIT_IMG:  #reddit preview image is as good as the one from link
+#                     media_type=sitesBase.TYPE_IMAGE
+#                     hoster.link_action='viewImage'
+#                     if previewimage:
+#                         prepped_media_url=previewimage
+#                     else:
+#                         #if there was no preview image, hoster.get_thumb_url() would have gotten the preview image 
+#                         prepped_media_url=hoster.poster_url
+                        
 
             ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url)
             return ld
@@ -2855,7 +3082,8 @@ def display_album_from(dictlist, album_name):
         ti=d['li_thumbnailImage']
         media_url=d.get('DirectoryItem_url')
 
-        log('  display_album_from list:'+ media_url + "  " )
+        #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
+        log('  display_album_from list:'+ media_url + "  " )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
         
         #There is only 1 textbox for Title and description in our custom gui. 
         #  I don't know how to achieve this in the xml file so it is done here:
@@ -2913,42 +3141,42 @@ def display_album_from(dictlist, album_name):
     #WINDOW.clearProperty( 'view_450_slideshow_title' )
     #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
 
-def listTumblrAlbum(t_url, name, type):    
-    #from resources.lib.domains import ClassTumblr
-    log("listTumblrAlbum:"+t_url)
-    t=ClassTumblr(t_url)
-    
-    media_url, media_type =t.get_playable_url(t_url, True)
-    #log('  ' + str(media_url))
-    
-    if media_type=='album':
-        display_album_from( media_url, name )
-    else:
-        log("  listTumblrAlbum can't process " + media_type)    
-
-def listEroshareAlbum(e_url, name, type):    
-    #from resources.lib.domains import ClassTumblr
-    log("listEroshareAlbum:"+e_url)
-    e=ClassEroshare()
-    
-    dictlist=e.ret_album_list(e_url, '')
-    display_album_from( dictlist, name )
-
-def listVidbleAlbum(e_url, name, type):    
-    #from resources.lib.domains import ClassTumblr
-    log("listVidbleAlbum:"+e_url)
-    e=ClassVidble()
-    
-    dictlist=e.ret_album_list(e_url, '')
-    display_album_from( dictlist, name )
-
-def listImgboxAlbum(e_url, name, type):    
-    #from resources.lib.domains import ClassTumblr
-    log("listImgboxAlbum:"+e_url)
-    e=ClassImgbox()
-    
-    dictlist=e.ret_album_list(e_url, '')
-    display_album_from( dictlist, name )
+# def listTumblrAlbum(t_url, name, type):    
+#     #from resources.lib.domains import ClassTumblr
+#     log("listTumblrAlbum:"+t_url)
+#     t=ClassTumblr(t_url)
+#     
+#     media_url, media_type =t.get_playable_url(t_url, True)
+#     #log('  ' + str(media_url))
+#     
+#     if media_type=='album':
+#         display_album_from( media_url, name )
+#     else:
+#         log("  listTumblrAlbum can't process " + media_type)    
+# 
+# def listEroshareAlbum(e_url, name, type):    
+#     #from resources.lib.domains import ClassTumblr
+#     log("listEroshareAlbum:"+e_url)
+#     e=ClassEroshare()
+#     
+#     dictlist=e.ret_album_list(e_url, '')
+#     display_album_from( dictlist, name )
+# 
+# def listVidbleAlbum(e_url, name, type):    
+#     #from resources.lib.domains import ClassTumblr
+#     log("listVidbleAlbum:"+e_url)
+#     e=ClassVidble()
+#     
+#     dictlist=e.ret_album_list(e_url, '')
+#     display_album_from( dictlist, name )
+# 
+# def listImgboxAlbum(e_url, name, type):    
+#     #from resources.lib.domains import ClassTumblr
+#     log("listImgboxAlbum:"+e_url)
+#     e=ClassImgbox()
+#     
+#     dictlist=e.ret_album_list(e_url, '')
+#     display_album_from( dictlist, name )
 
 def listAlbum(album_url, name, type):
     log("listAlbum:"+album_url)
