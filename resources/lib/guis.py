@@ -303,7 +303,7 @@ class listSubRedditGUI(cGUI):
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_PLAY_ALL,self.BTN_SLIDESHOW, self.BTN_PLAY_FROM_HERE]:   
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW]:   
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 

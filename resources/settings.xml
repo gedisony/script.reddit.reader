@@ -39,17 +39,13 @@
         <setting id="show_ytdl_misc"     type="bool" label="30314" default="true"/>
         <setting id="show_pornsites"     type="bool" label="30310" default="false"/>
         
-    </category>
-    <category label="30350">
-        <setting id="show_imgur"         type="bool" label="30351" default="true"/>
-        <setting id="show_imageLink"     type="bool" label="30352" default="true"/>
-        <setting id="show_flickr"        type="bool" label="30353" default="true"/>
-        <setting id="show_reddit_com"    type="bool" label="30354" default="false"/>
-        <setting id="show_instagram"     type="bool" label="30355" default="true"/>
-        <setting id="show_blogspot"      type="bool" label="30356" default="true"/>
-        <setting id="show_tumblr"        type="bool" label="30357" default="true"/>
-        <setting id="show_gyazo"         type="bool" label="30358" default="true"/>
     </category-->
+    <category label="32200">
+        <setting id="slideshow_speed"          type="slider" label="32201" default="1" range="0.25,0.25,2.0" option="float"/>
+        <setting id="use_slideshow_for_album"  type="bool"   label="32202" default="true"/>
+        <setting id="include_albums"           type="bool"   label="32203" default="true"/>
+        <setting id="use_reddit_preview"       type="bool"   label="32204" default="true"/>
+    </category>
 
     <category label="32150">
         <!-- setting                                   type="action"      label="30151" action="RunAddon(script.reddit.reader,?mode=openSettings&url=youtube)"/-->

@@ -2313,7 +2313,7 @@ class Class500px(sitesBase):
                 self.media_h=j.get('height')
                 self.media_url=self.poster_url
                 
-                log('      %s %dx%d %s' %(title, self.media_w,self.media_h, self.poster_url )  )
+                #log('      %s %dx%d %s' %(title, self.media_w,self.media_h, self.poster_url )  )
                 #return self.poster_url, sitesBase.TYPE_IMAGE
             else:
                 log('    error: %s api call: %s' %(self.__class__.__name__, repr( r.status_code ) ) )
@@ -2468,7 +2468,7 @@ def sitesManager( media_url ):
                 #log('      *****match '+ subcls.regex )
                 return subcls( media_url )
 
-def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False, previewimage='' ):
+def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False ):
     
     
     if not link_url: return
@@ -3179,6 +3179,7 @@ def display_album_from(dictlist, album_name):
 #     display_album_from( dictlist, name )
 
 def listAlbum(album_url, name, type):
+    from slideshow import slideshowAlbum
     log("listAlbum:"+album_url)
     
     hoster = sitesManager( album_url )
@@ -3186,7 +3187,14 @@ def listAlbum(album_url, name, type):
 
     if hoster:
         dictlist=hoster.ret_album_list(album_url)
-        display_album_from( dictlist, name )
+        
+        if type=='return_dictlist':  #used in autoSlideshow  
+            return dictlist
+        
+        if addon.getSetting('use_slideshow_for_album') == 'true':
+            slideshowAlbum( dictlist, name )
+        else:
+            display_album_from( dictlist, name )
     
 
 def playInstagram(media_url, name, type):

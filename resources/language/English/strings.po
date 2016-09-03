@@ -239,7 +239,29 @@ msgctxt "#32157"
 msgid "Streamable.com Video Quality"
 msgstr ""
 
-#30158-30184 empty
+
+
+
+msgctxt "#32200"
+msgid "Slideshow"
+msgstr ""
+
+msgctxt "#32201"
+msgid "Slideshow speed"
+msgstr ""
+
+msgctxt "#32202"
+msgid "Use slideshow to display album"
+msgstr ""
+
+msgctxt "#32203"
+msgid "Include album images when playing slideshow"
+msgstr ""
+
+msgctxt "#32204"
+msgid "Use reddit preview if available (faster)"
+msgstr ""
+
 
 #30192-30299 empty
 

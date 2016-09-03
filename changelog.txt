@@ -1,11 +1,12 @@
+0.5.2  (09-01-2016)
+ - add album slideshow
+ - add slideshow options
 0.5.1  (09-01-2016)
  - add kindgirls.com
  - add 500px.com
- 
-0.5.0  (09-01-2016)
+ 0.5.0  (09-01-2016)
  - reorganize how modules are called to parse links
- 
-0.4.5  (08-25-2016)
+ 0.4.5  (08-25-2016)
  - add vidble.com scraping image/album
 0.4.4  (08-25-2016)
  - add eroshare.com scraping image/album/videos

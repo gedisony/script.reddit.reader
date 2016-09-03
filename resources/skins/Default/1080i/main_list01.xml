@@ -646,7 +646,8 @@
 						<height>60</height>
 						<width>200</width>
 				<onup>6053</onup>
-				<ondown>6057</ondown>
+				<ondown>6055</ondown>
+				<onright>6057</onright>
 						<textoffsetx>20</textoffsetx>
 						<textwidth>320</textwidth>
 						<aligny>center</aligny>
@@ -665,8 +666,9 @@
 						<left>200</left>
 						<height>60</height>
 						<width>230</width>
-				<onup>6054</onup>
+				<onup>6053</onup>
 				<ondown>6055</ondown>
+				<onleft>6054</onleft>
 						<textoffsetx>20</textoffsetx>
 						<textwidth>320</textwidth>
 						<aligny>center</aligny>

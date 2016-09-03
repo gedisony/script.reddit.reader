@@ -7,7 +7,11 @@ from xbmcgui import ControlImage, WindowDialog, Window, ControlTextBox, ControlL
 
 #autoSlideshow
 
-from default import log, translation, addon_path, addonID,SlideshowCacheFolder
+from default import addon, log, translation, addon_path, addonID,SlideshowCacheFolder, reddit_request, getPlayCount
+from domains import sitesManager, sitesBase, parse_reddit_link, listAlbum
+
+from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
+
 import threading
 from Queue import Queue, Empty
 
@@ -16,10 +20,35 @@ ADDON_PATH = addon_path   #addon.getAddonInfo('path')
 
 q=Queue()
 
+def slideshowAlbum(dictlist, name):
+    log("slideshowAlbum")
+    
+    entries=[]        
+    for d in dictlist:
+        media_url=d.get('DirectoryItem_url')
+        title    =d.get('li_label')
+        
+        entries.append([title,media_url, 0, 0, len(entries)])
+
+    def k2(x): return x[1]
+    entries=remove_duplicates(entries, k2)
+
+    for e in entries:
+        q.put(e)
+    
+    #s= AppleTVLikeScreensaver(ev,q)
+    #s= TableDropScreensaver(ev,q)
+    ev=threading.Event()
+    
+    s= HorizontalSlideScreensaver(ev,q)
+    s.start_loop()
+    return
+
+
 def autoSlideshow(url, name, type):
-    from domains import sitesBase, parse_reddit_link
-    from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
-    from default import reddit_request, getPlayCount
+    #from domains import sitesBase, parse_reddit_link
+    #from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
+    #from default import reddit_request, getPlayCount
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
@@ -99,36 +128,37 @@ def autoSlideshow(url, name, type):
 
             is_a_video = determine_if_video_media_from_reddit_json(j_entry) 
 
-#             hoster, DirectoryItem_url, processed_media_url, modecommand, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(media_url=media_url, 
-#                                                                                                                                                      assume_is_video=is_a_video, 
-#                                                                                                                                                      needs_thumbnail=True,
-#                                                                                                                                                      preview_url='',
-#                                                                                                                                                      get_playable_url=False )  #we resolve the playable url
 
- 
-#             if DirectoryItem_url:
-#                 #log('   type:'+ setInfo_type)
-#                 if setInfo_type in ['pictures','album']:
-#                     entries.append([title,processed_media_url,modecommand])
-            
-            if preview:
-                log('  added preview:%s' % title )
-                entries.append([title,preview,preview_w, preview_h,len(entries)])
-            else:
-                ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
-                if ld:
-                    if ld.poster:
-                        log('  added b poster:%s' % title )
-                        entries.append([title, ld.poster, ld.poster_w, ld.poster_h, len(entries)])
+            ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
+            if ld:
+                if not preview:
+                    preview = ld.poster
                 
-            
+                
+                if (addon.getSetting('include_albums')=='true') and (ld.media_type==sitesBase.TYPE_ALBUM) :
+                    dictlist = listAlbum( media_url, title, 'return_dictlist')
+                    for d in dictlist:
+                        #log('    (S) adding items from album ' + title  +' ' + d.get('DirectoryItem_url') )
+                        t2=d.get('li_label') if d.get('li_label') else title
+                        entries.append([ t2, d.get('DirectoryItem_url'), 0, 0, len(entries)])
+                
+                else:
+                    if addon.getSetting('use_reddit_preview')=='true':
+                        if preview: entries.append([title,preview,preview_w, preview_h,len(entries)])
+                        elif ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)]) 
+                    else:
+                        if ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
+                        elif preview: entries.append([title,preview,preview_w, preview_h,len(entries)])
+            else: 
+                if preview:
+                    #log('      (N)added preview:%s' % title )
+                    entries.append([title,preview,preview_w, preview_h,len(entries)])
+                        
+
                     
-                
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
             pass
-    
-     
     
     #for i,e in enumerate(entries): log('  e1-%d %s' %(i, e[1]) )
     def k2(x): return x[1]
@@ -285,6 +315,13 @@ class ScreensaverBase(object):
         desc_and_image=desc_and_images_cycle.next()
         #self.log('  image_url_cycle.next %s' % image_url)
         
+        #get the current screen saver value
+        saver_mode = json.loads(  xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettingValue", "params": {"setting":"screensaver.mode" } }')  ) 
+        saver_mode = saver_mode.get('result').get('value')       
+        #log('****screensavermode=' + repr(saver_mode) )
+        #set the screensaver to none
+        xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value":""} } ' )
+        
         while not self.exit_requested:
             self.log('  using image: %s ' % ( repr(desc_and_image ) ) )
             
@@ -310,6 +347,9 @@ class ScreensaverBase(object):
                 self.wait()
                 
         self.log('start_loop end')
+        
+        #return the screensaver back
+        xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value" : "%s"} }' % saver_mode )
 
 
     def get_images(self, source):
@@ -484,10 +524,10 @@ class HorizontalSlideScreensaver(ScreensaverBase):
     #SCREEN = 0
 
     def load_settings(self):
-        self.SPEED = 2 #float(addon.getSetting('appletvlike_speed'))
+        self.SPEED = float(addon.getSetting('slideshow_speed'))
         self.CONCURRENCY = 1.0 #float(addon.getSetting('appletvlike_concurrency'))
-        self.MAX_TIME = int(15000 / self.SPEED)
-        self.NEXT_IMAGE_TIME =  5000 #int(4500.0 / self.CONCURRENCY / self.SPEED)
+        self.MAX_TIME = int(30000 / self.SPEED)  #int(15000 / self.SPEED)
+        self.NEXT_IMAGE_TIME =  int(6000.0 / self.SPEED)
         
 
     def stack_cycle_controls(self):
@@ -547,7 +587,7 @@ class HorizontalSlideScreensaver(ScreensaverBase):
         image_control.setImage('')
         text_control.setText('')
 
-        time = 30000 #self.MAX_TIME #/ zoom * self.DISTANCE_RATIO * 100
+        time = self.MAX_TIME #/ zoom * self.DISTANCE_RATIO * 100   #30000
 
         animations = [
             ('conditional', MOVE_ANIMATION % time),
