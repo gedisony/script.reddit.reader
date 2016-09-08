@@ -1,3 +1,6 @@
+0.5.4  (09-08-2016)
+ - interface adjustment
+ - add alternate(main_list03.xml) skin for main gui
 0.5.3  (09-07-2016)
  - add fade slideshow
  - add random slide slideshow

@@ -322,7 +322,7 @@
 				<control type="label" id="1">
 					<top>10</top>
 					<left>85</left>
-					<height>100</height>
+					<height>66</height>
 					<width>1500</width>
 					<scroll>true</scroll>
 					<scrollspeed>50</scrollspeed>
@@ -352,7 +352,7 @@
 						<control type="label">
 							<top>7</top>
 							<left>1635</left>
-							<height>100</height>
+							<height>46</height>
 							<width>200</width>
 							<font>font13</font>
 							<shadowcolor>text_shadow</shadowcolor>
@@ -373,12 +373,12 @@
 							<visible>!Window.IsActive(volumebar)</visible>
 						</control>
 						<control type="label">
-							<top>40</top>
+							<top>46</top>
 							<label>$INFO[System.Date]</label>
 							<font>font10</font>
 							<left>1335</left>
 							<shadowcolor>text_shadow</shadowcolor>
-							<height>100</height>
+							<height>16</height>
 							<width>500</width>
 							<align>right</align>
 						</control>
@@ -489,8 +489,8 @@
 					<orientation>horizontal</orientation>
 					<align>right</align>
 					<top>1015</top>
-					<right>24</right>
-					<width>1200</width>
+					<left>1500</left>
+					<width>400</width>
 					<itemgap>10</itemgap>
 					<visible>!System.HasModalDialog + !Window.isActive(musicplaylisteditor)</visible>
 					<animation effect="fade" delay="1" time="200">VisibleChange</animation>
