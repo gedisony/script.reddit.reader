@@ -221,7 +221,21 @@ msgctxt "#32108"
 msgid "Main GUI skin"
 msgstr ""
 
-#32108-32119 empty
+#32109-32111 empty
+
+msgctxt "#32112"
+msgid "Use youtube_dl add-on for Youtube videos"
+msgstr ""
+
+msgctxt "#32113"
+msgid "Have the youtube_dl add-on attempt to play unknown/unsupported links"
+msgstr ""
+
+# Have the youtube_dl add-on attempt to play unknown/unsupported links in comments
+msgctxt "#32114"
+msgid "All links in comments are enabled and youtube_dl add-on will attempt to play unsupported types"
+msgstr ""
+
 
 #setting category
 
@@ -247,37 +261,46 @@ msgid "Slideshow"
 msgstr ""
 
 msgctxt "#32201"
-msgid "Slideshow speed"
+msgid "Slideshow Type"
 msgstr ""
 
 msgctxt "#32202"
-msgid "Use slideshow to display album"
+msgid "Slide right to left"
 msgstr ""
 
 msgctxt "#32203"
-msgid "Include album images when playing slideshow"
+msgid "Fade"
 msgstr ""
 
 msgctxt "#32204"
+msgid "Slide random"
+msgstr ""
+
+
+msgctxt "#32221"
+msgid "Slideshow speed"
+msgstr ""
+
+msgctxt "#32222"
+msgid "Use slideshow to display album"
+msgstr ""
+
+msgctxt "#32223"
+msgid "Include album images when playing slideshow"
+msgstr ""
+
+msgctxt "#32224"
 msgid "Use reddit preview if available (faster)"
+msgstr ""
+
+msgctxt "#32225"
+msgid "Show image title/description"
 msgstr ""
 
 
 #30192-30299 empty
 
 
-msgctxt "#32312"
-msgid "Use youtube_dl add-on for Youtube videos"
-msgstr ""
-
-msgctxt "#32313"
-msgid "Have the youtube_dl add-on attempt to play unknown/unsupported links"
-msgstr ""
-
-# Have the youtube_dl add-on attempt to play unknown/unsupported links in comments
-msgctxt "#32314"
-msgid "All links in comments are enabled and youtube_dl add-on will attempt to play unsupported types"
-msgstr ""
 
 
 # settings category

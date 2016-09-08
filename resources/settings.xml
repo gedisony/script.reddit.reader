@@ -41,10 +41,13 @@
         
     </category-->
     <category label="32200">
-        <setting id="slideshow_speed"          type="slider" label="32201" default="1" range="0.25,0.25,2.0" option="float"/>
-        <setting id="use_slideshow_for_album"  type="bool"   label="32202" default="true"/>
-        <setting id="include_albums"           type="bool"   label="32203" default="true"/>
-        <setting id="use_reddit_preview"       type="bool"   label="32204" default="true"/>
+    	<setting id="slideshow_mode"           type="enum"   label="32201" lvalues="32202|32203|32204" default="1"/>
+    	
+        <setting id="slideshow_speed"          type="slider" label="32221" default="1" range="0.25,0.25,2.0" option="float"/>
+        <setting id="use_slideshow_for_album"  type="bool"   label="32222" default="true"/>
+        <setting id="include_albums"           type="bool"   label="32223" default="true"/>
+        <setting id="use_reddit_preview"       type="bool"   label="32224" default="true"/>
+        <setting id="show_title"               type="bool"   label="32225" default="false"/>
     </category>
 
     <category label="32150">
@@ -55,9 +58,9 @@
         <!-- setting id="ll_downDir"                   type="folder"      label="30155" default=""/-->
         <!-- setting id="gfy_downDir"                  type="folder"      label="30156" default=""/-->
         <setting id="streamable_quality"               type="enum" label="32157" values="full|mobile" default="1" />
-        <setting id="use_ytdl_for_yt"                  type="bool" label="32312" default="false"/>
-        <setting id="use_ytdl_for_unknown"             type="bool" label="32313" default="false"/>
-        <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32314" default="false"/>
+        <setting id="use_ytdl_for_yt"                  type="bool" label="32112" default="false"/>
+        <setting id="use_ytdl_for_unknown"             type="bool" label="32113" default="false"/>
+        <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32114" default="false"/>
     </category>
     <category label="32400"> 
     	<setting                              type="lsep"        label="32401"               enable="true"   />

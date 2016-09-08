@@ -33,10 +33,13 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
       ,'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
       ,'context_menu'       # ...
+      ,'width'
+      ,'height'
       ]
 
-
 ytdl_sites=[]
+
+#deviantart mixtape.moe sli.mg 
 
 class sitesBase(object):
     regex=''
@@ -65,6 +68,17 @@ class sitesBase(object):
         self.media_url=link_url
         self.original_url=link_url
 
+    def get_html(self,link_url=''):
+        if not link_url:
+            link_url=self.original_url
+        
+        content = requests.get( link_url )
+        
+        if content.status_code==200:
+            return content.text
+        else:
+            log('    error: %s get_html: %s %s' %(self.__class__.__name__, repr( content.status_code ), link_url ) )
+            return None
     
     def get_playable(self, media_url='', is_probably_a_video=False ):
         if not media_url:
@@ -118,17 +132,25 @@ class sitesBase(object):
     def all_same(self, items ):
         #returns True if all items the same
         return all(x == items[0] for x in items)
+    def combine_title_and_description(self, title, description):
+        return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )
+    
+    def clog(self, error_code, request_url):
+        log("    %s error:%s %s" %( self.__class__.__name__, error_code ,request_url) )
     
     def assemble_images_dictList(self,images_list):
         title=''
         image_url=''
         thumbnail=''
+        width=0
+        height=0
         for item in images_list:
-            if isinstance(item, basestring):
+            #log('      type: %s' %( type(item)  ) )
+            if type(item) in [str,unicode]:  #if isinstance(item, basestring):
                 #log( 'assemble_images_dictList STRING')
                 image_url=item
                 thumbnail=image_url
-            else:
+            elif type(item) is list:
                 if len(item)==1:
                     #log( 'assemble_images_dictList LEN1')
                     image_url=item[0]
@@ -142,6 +164,13 @@ class sitesBase(object):
                     title=item[0]
                     image_url=item[1]
                     thumbnail=item[2]
+            elif type(item) is dict:
+                title    =item.get('text')
+                image_url=item.get('url')
+                thumbnail=item.get('thumb')
+                width    =item.get('width')
+                height   =item.get('height')
+            
                     
             infoLabels={ "Title": title, "plot": title, "PictureDesc": title, "exif:exifcomment": title }
             e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
@@ -154,7 +183,8 @@ class sitesBase(object):
                ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
                ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
                ,'none'                  #'context_menu'       # ...
-                  ]
+               ,width
+               ,height     ]
             self.dictList.append(dict(zip(keys, e)))
 """
     keys = ['FirstName', 'LastName', 'SSID']
@@ -288,7 +318,7 @@ class ClassImgur(sitesBase):
         request_url="https://api.imgur.com/3/gallery/"+gallery_name 
         #log("    imgur:check if album- request_url---"+request_url )
         r = requests.get(request_url, headers=ClassImgur.request_header)
-        log(r.text)
+        #log(r.text)
         if r.status_code == 200:   #http status code 200 is success
             j = r.json()    #j = json.loads(r.text)
             #log(" is_album=" + str(j['data']['is_album'])    ) 
@@ -409,20 +439,19 @@ class ClassImgur(sitesBase):
         #album_url="http://imgur.com/a/fsjam"
         #sometimes album name has "/new" at the end
         
-        album_name=""
-        dictList = []
-
         album_name = self.get_album_or_gallery_id(album_url)
 
         if album_name=="": 
             log(r"ret_album_list: Can't determine album name from["+album_url+"]" )
-            return dictList
+            return self.dictList
         
         #log('album name:'+album_name+' from ['+album_url+']')
         request_url="https://api.imgur.com/3/album/"+album_name+"/images"
         #log("listImgurAlbum-request_url---"+request_url )
         r = requests.get(request_url, headers=ClassImgur.request_header)
-        
+
+        images=[]
+                
         if r.status_code==200:  #http status code 200 = success
             #log(r.text)
             j = r.json()   #json.loads(r.text)    
@@ -431,58 +460,46 @@ class ClassImgur(sitesBase):
             #first, data is an array of objects 
             #second, data has 'images' which is the array of objects
             if 'images' in j['data']:
-                imgs=j['data']['images']
+                imgs=j.get('data').get('images')
             else:
-                imgs=j['data']
+                imgs=j.get('data')
             
             
             for idx, entry in enumerate(imgs):
-                type       =entry['type']         #image/jpeg
+                type       =entry.get('type')         #image/jpeg
                 
-                media_url  =str( entry['link'] )         #http://i.imgur.com/gpnMihj.jpg
-                try: description=entry['description'].encode('utf-8')
-                except: description=""
+                media_url=entry.get('link')          #http://i.imgur.com/gpnMihj.jpg
+                width    =entry.get('width')
+                height   =entry.get('height')
+                title    =entry.get('title')
+                descrip  =entry.get('description')
+                combined = self.combine_title_and_description(title, descrip)
                 #log("----description is "+description)
                 
                 #filename,ext=parse_filename_and_ext_from_url(media_url)
                 #if description=='' or description==None: description=filename+"."+ext
                 
                 media_thumb_url=self.get_thumb_url(media_url,thumbnail_size_code)
+                
                 #log("media_url----"+media_url) 
                 #log("media_thumb_url----"+media_thumb_url)
                 #log(str(idx)+type+" [" + str(description)+']'+media_url+" "  ) 
-                list_item_name = entry['title'] #if entry['title'] else str(idx).zfill(2)
+                #list_item_name = entry['title'] #if entry['title'] else str(idx).zfill(2)
                 
-                infoLabels={ "Title": list_item_name, "plot": description, "PictureDesc": description, "exif:exifcomment": description }
-                e=[ description             #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
-                   ,list_item_name          #'li_label2'          #  
-                   ,""                      #'li_iconImage'       #
-                   ,media_thumb_url         #'li_thumbnailImage'  #
-                   ,media_url               #'DirectoryItem_url'  #  
-                   ,False                   #'is_folder'          # 
-                   ,'pictures'              #'type'               # video pictures  liz.setInfo(type='pictures',
-                   ,True                    #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this 
-                   ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-                   ,'none'                  #'context_menu'       # ...
-                      ]
+                images.append( {'text': combined, 
+                                'url': media_url,
+                                'thumb': media_thumb_url,
+                                'width': width,
+                                'height': height,
+                                }  )
+            
+            #for i in images: log( '##' + repr(i))
+            
+            self.assemble_images_dictList(images)
+        else:
+            self.clog(r.status_code ,request_url)
 
-                """
-                    keys = ['FirstName', 'LastName', 'SSID']
-                     
-                    name1 = ['Michael', 'Kirk', '224567']
-                    name2 = ['Linda', 'Matthew', '123456']
-                     
-                    dictList = []
-                    dictList.append(dict(zip(keys, name1)))
-                    dictList.append(dict(zip(keys, name2)))
-                     
-                    print dictList
-                    for item in dictList:
-                        print ' '.join([item[key] for key in keys])
-                """
-                dictList.append(dict(zip(keys, e)))
-
-        return dictList    
+        return self.dictList    
     
         
     def media_id(self, media_url):
@@ -1782,7 +1799,6 @@ class ClassGifsCom(sitesBase):
 
 class ClassGfycat(sitesBase):
     regex='(gfycat.com)'
-    #not used/ incomplete. already implemented by rasjani/addonscriptorDE
 
     def get_playable_url(self, media_url, is_probably_a_video=True ):
 
@@ -1920,7 +1936,7 @@ class ClassEroshare(sitesBase):
 
     def ret_album_list(self, album_url, thumbnail_size_code=''):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
-        
+        images=[]
         content = requests.get( album_url )
         
         if content.status_code==200:
@@ -1932,7 +1948,21 @@ class ClassEroshare(sitesBase):
                 log( '      %d item(s)' % len(items) )
 
                 prefix='https:'
-                self.assemble_images_dictList(   ( [ s.get('description'), prefix+s.get('url_full')] for s in items)    )
+                
+                for s in items:
+                    description = s.get('description') 
+                    #media_url=prefix+s.get('url_orig')   #this size too big... 
+                    media_url=prefix+s.get('url_full')
+                    width=s.get('width')
+                    height=s.get('height')
+                
+                    images.append( {'text': description, 
+                                    'url': media_url,
+                                    'width': width,
+                                    'height': height,
+                                    }  )
+                self.assemble_images_dictList(images)
+                #self.assemble_images_dictList(   ( [ s.get('description'), prefix+s.get('url_full')] for s in items)    )
     
             else:
                 log('      eroshare:ret_album_list: var album string not found. ')
@@ -2040,7 +2070,8 @@ class ClassVidble(sitesBase):
 class ClassImgbox(sitesBase):
     SITE='imgbox'
     regex='(imgbox.com)'
-    #not used/ incomplete. already implemented by rasjani/addonscriptorDE
+    
+    include_gif_in_get_playable=True
     
     def is_album(self, media_url):
         if '/g/' in media_url:
@@ -2055,7 +2086,7 @@ class ClassImgbox(sitesBase):
             self.media_type = self.TYPE_ALBUM
             return media_url, sitesBase.TYPE_ALBUM
 
-        #log('  scraping:'+ media_url )            
+        log('  scraping:'+ media_url )            
         content = requests.get( media_url )
         
         if content.status_code==200:
@@ -2211,7 +2242,7 @@ class ClassKindgirls(sitesBase):
                     
                     return self.poster_url, self.TYPE_IMAGE
         else:
-            log('    error: get_playable_url:' + str( content.status_code ) )
+            self.clog(content.status_code ,'get_playable_url')
             
         return '', ''
 
@@ -2252,7 +2283,7 @@ class ClassKindgirls(sitesBase):
             else:
                 log("      can't find div id cuerpo")
         else:
-            log('    ret_album_list: ' + str( content.status_code ) )
+            self.clog(content.status_code ,album_url)
 
         #log( pprint.pformat(self.dictList, indent=1) )
         return self.dictList    
@@ -2316,7 +2347,7 @@ class Class500px(sitesBase):
                 #log('      %s %dx%d %s' %(title, self.media_w,self.media_h, self.poster_url )  )
                 #return self.poster_url, sitesBase.TYPE_IMAGE
             else:
-                log('    error: %s api call: %s' %(self.__class__.__name__, repr( r.status_code ) ) )
+                self.clog(r.status_code ,api_url)
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, self.original_url) )
         
@@ -2380,7 +2411,7 @@ class Class500px(sitesBase):
                     title=photo.get('name') 
                     description=photo.get('description')
                     image=photo.get('image_url')
-                    combined='[B]%s[/B]\n%s' % (title, description)
+                    combined=self.combine_title_and_description(title, description)
                     
                     images.append( [combined, image ]  ) 
                     
@@ -2394,6 +2425,210 @@ class Class500px(sitesBase):
             log("    can't get user id")
             return
         return self.dictList
+
+class ClassSlimg(sitesBase):
+    regex='(sli.mg)'
+    
+    #header='Authorization: Client-ID {YOUR_CLIENT_ID}'
+    header={'Authorization': 'Client-ID M5assQr4h9pj1xQNJ6ehAEXuDq27RsYE'}
+    #api_key='M5assQr4h9pj1xQNJ6ehAEXuDq27RsYE'
+
+    def is_album(self, link_url):
+        if '/a/' in link_url:
+            self.media_type = self.TYPE_ALBUM
+            return True
+        else:
+            return False
+            
+    def get_playable_url(self, link_url, is_probably_a_video):
+        
+        if self.is_album(link_url):
+            return link_url, sitesBase.TYPE_ALBUM
+        
+        self.get_video_id()
+        
+        api_req='https://api.sli.mg/media/' + self.video_id
+        #log('  ' + api_req )
+        r = requests.get(api_req, headers=self.header)
+        
+        #log('  ' + r.text)
+        if r.status_code == requests.codes.ok:
+            j=r.json()
+            j=j.get('data')
+            self.media_url=j.get('url_direct')
+            self.thumb_url=self.media_url
+            self.poster_url=self.media_url
+            
+            self.media_w=j.get('width')
+            self.media_h=j.get('height')
+            
+            if j.get('webm'):  #use webm if available.
+                self.link_action=sitesBase.DI_ACTION_PLAYABLE
+                self.media_type=sitesBase.TYPE_VIDEO
+                self.media_url=j.get('url_webm')
+            else:  #we're assuming that all items without a webm is image
+                self.media_type=sitesBase.TYPE_IMAGE
+            
+            #if 'gif' in j.get('mimetype'):
+            #    self.media_url=j.get('url_mp4')   #url_webm is also available
+            
+            return self.media_url, self.media_type
+            
+        else:
+            self.clog(r.status_code ,api_req)
+            
+    
+    def get_video_id(self):
+        #looks like the filename is also the video id
+        self.video_id=''
+        
+        match = re.compile('sli\.mg/(?:a/|album/)?(.+)').findall(self.media_url)
+        #log('    matches' + repr(match) )
+        if match: 
+            self.video_id=match[0]
+        
+    def get_thumb_url(self):
+        if self.thumb_url:
+            return self.thumb_url
+    
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        self.get_video_id()
+        
+        api_req='https://api.sli.mg/album/%s/media' % self.video_id
+        #log('  ' + api_req )
+        r = requests.get(api_req, headers=self.header)
+        
+        #log('  ' + r.text)
+        if r.status_code == requests.codes.ok:
+            j=r.json()
+            j=j.get('data')
+            
+            media_count=j.get('media_count')
+            images=[]
+            for i in j.get('media'):
+            
+                title=i.get('title')
+                description=i.get('description')
+                media_url=i.get('url_direct')
+                media_w=i.get('width')
+                media_h=i.get('height')
+                combined='[B]%s[/B]\n%s' % (title, description)
+                
+                combined= self.combine_title_and_description(title,description)
+                
+                if i.get('webm'):  #we don't support video in album but still avoid gif video  if possible. 
+                    media_url=j.get('url_webm')
+  
+                images.append( {'text': combined, 
+                                'url': media_url,
+                                'width': media_w,
+                                'height': media_h,
+                                }  )
+            
+            self.assemble_images_dictList(images)
+        else:
+            self.clog(r.status_code ,api_req)
+        
+        return self.dictList
+
+class genericAlbum1(sitesBase):
+    regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)'
+    
+    ps=[  [ 'houseofsummersville.com', '',          ['div', { "dir": "ltr" },None],  
+                                                    ['div', { "class": "separator" },None], 
+                                                    ['a', {}, "href"]     
+            ],      
+          [         'weirdrussia.com', '',          ['div', { "class": "thecontent clearfix" },None],  
+                                                    ['img', {}, "data-layzr"]          
+            ],
+          [         'cheezburger.com', 'no_ext',    ['div', { "class": "nw-post-asset" },None],  
+                                                   # ['li', { "class": "list-asset-item" },None],
+                                                    ['img', {}, "src"]          
+            ],
+        ]
+    
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+        return link_url, self.TYPE_ALBUM
+    
+    def get_thumb_url(self):
+        pass
+    
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+        
+        for p in self.ps:
+            if p[0] in album_url:
+                break
+        
+        html = self.get_html( album_url )
+        if html:
+            
+            
+            images=self.get_images(html, p)
+            
+            for i in images: log( repr(i) )
+            
+            #log( pprint.pformat(self.dictList, indent=1) ) 
+                
+            self.assemble_images_dictList( images )
+
+
+        #log( pprint.pformat(self.dictList, indent=1) )
+        return self.dictList    
+
+    def get_images(self, html, p):
+        log(    'len %d' %(len(p)) )
+        p_options=p[1]
+        images=[]
+        if len(p)==5:
+            div_item_list = parseDOM(html, name=p[2][0], attrs = p[2][1], ret=p[2][2] )
+            #log('        div_item_list=' + repr(div_item_list))
+            if div_item_list:
+                #img_divs=parseDOM(div_item_list, name="div", attrs = { "class": "separator" }, ret=None)
+                img_divs=parseDOM(div_item_list, name=p[3][0], attrs=p[3][1], ret=p[3][2])
+                if img_divs:
+                    #log('          img_divs=' + repr(img_divs))
+                    for div in img_divs:
+                        #log('          img_div=' + repr(div))
+                        #image_p     = parseDOM(div,"img", ret="src")[0]
+                        #image_title = parseDOM(div,"img", ret="title")[0]
+                        #image_o     = parseDOM(div,name="a", attrs={}, ret="href")
+                        image_o      = parseDOM(div,name=p[4][0], attrs=p[4][1], ret=p[4][2])
+                        #log('          image_o=' + repr(image_o))
+                        if image_o:
+                            if p_options=='no_ext':   #don't check for image extensions
+                                images.append( image_o[0] )
+                            else:
+                                if link_url_is_playable( image_o[0] ) == 'image':
+                                    #log('          appending:' + repr(image_o))
+                                    images.append( image_o[0] )
+        elif len(p)==4:
+            #log( '***name=%s, attrs=%s, ret=%s)' %(p[2][0], p[2][1], p[2][2])) 
+            big_div=parseDOM(html, name=p[2][0], attrs=p[2][1], ret=p[2][2])
+            if big_div:
+                #log('          big_div=' + repr(big_div))
+                imgs = parseDOM(big_div,name=p[3][0], attrs=p[3][1], ret=p[3][2])
+                #log('          image_o=' + repr(image_o))
+                self.append_imgs( imgs, p, images)
+        elif len(p)==3:
+            #log( '***name=%s, attrs=%s, ret=%s)' %(p[1][0], p[1][1], p[1][2])) 
+            imgs=parseDOM(html, name=p[2][0], attrs=p[2][1], ret=p[2][2])
+            self.append_imgs( imgs, p, images)
+        
+        return images
+
+    def append_imgs(self, imgs, p, images_list):
+        p_options=p[1]
+        if imgs:
+            for i in imgs:
+                #log('          i=' + repr(i))
+                if i:
+                    if p_options=='no_ext':   #don't check for image extensions
+                        images_list.append( i )
+                    else:
+                        if link_url_is_playable( i ) == 'image':
+                            images_list.append( i )
+        
 
 class genericImage(sitesBase):
     regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
@@ -2423,6 +2658,14 @@ class genericImage(sitesBase):
         self.poster_url=self.media_url
         return self.thumb_url
 
+class genericVideo(sitesBase):
+    regex='(\.(mp4|webm|avi|3gp|MPEG|WMV|ASF|FLV|MKV|MKA)(?:\?|$))'
+    def get_thumb_url(self):
+        pass
+
+    def get_playable_url(self, media_url, is_probably_a_video):
+        pass
+    
 class LinkDetails():
     def __init__(self, media_type, link_action, playable_url='', thumb='', poster='', poster_w=0, poster_h=0 ):
         #self.kodi_url = kodi_url
@@ -3190,6 +3433,10 @@ def listAlbum(album_url, name, type):
         
         if type=='return_dictlist':  #used in autoSlideshow  
             return dictlist
+        
+        if not dictlist:
+            xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( translation(32200), translation(32055) )  )  #slideshow, no playable items
+            return
         
         if addon.getSetting('use_slideshow_for_album') == 'true':
             slideshowAlbum( dictlist, name )

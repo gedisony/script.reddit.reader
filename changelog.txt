@@ -1,3 +1,7 @@
+0.5.3  (09-07-2016)
+ - add fade slideshow
+ - add random slide slideshow
+ - option to show 1 line of image title/description on slideshow
 0.5.2  (09-01-2016)
  - add album slideshow
  - add slideshow options
