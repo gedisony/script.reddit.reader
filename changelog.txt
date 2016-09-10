@@ -1,3 +1,7 @@
+0.5.5  (09-09-2016)
+ - add fade and random direction to horizontal slideshow
+ - slideshow no longer disables system screensaver
+ - fix slideshow text poking up if 2 lines
 0.5.4  (09-08-2016)
  - interface adjustment
  - add alternate(main_list03.xml) skin for main gui

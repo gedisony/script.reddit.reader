@@ -2531,6 +2531,20 @@ class ClassSlimg(sitesBase):
         
         return self.dictList
 
+# class Deviantart(sitesBase):
+#     regex='(deviantart.com)|(sta.sh)'
+#     
+#     clientid='5198'
+#     
+#     def get_playable_url(self, media_url, is_probably_a_video):
+#         pass
+#     
+#     def get_thumb_url(self):
+#         pass
+#     
+#     def ret_album_list(self, album_url, thumbnail_size_code=''):
+#         pass
+
 class genericAlbum1(sitesBase):
     regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)'
     
@@ -2705,7 +2719,7 @@ def sitesManager( media_url ):
     for subcls in sitesBase.__subclasses__():
         regex=subcls.regex
         if regex:
-            match=re.compile( regex  , re.DOTALL).findall( media_url )
+            match=re.compile( regex  , re.I).findall( media_url )
             #if 'giphy' in media_url: log('      checking '+ subcls.regex )
             if match : 
                 #log('      *****match '+ subcls.regex )

@@ -144,14 +144,11 @@ def autoSlideshow(url, name, type):
                 #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
                 preview="" 
 
-             
-
 
             ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
             if ld:
                 if not preview:
                     preview = ld.poster
-                
                 
                 if (addon.getSetting('include_albums')=='true') and (ld.media_type==sitesBase.TYPE_ALBUM) :
                     dictlist = listAlbum( media_url, title, 'return_dictlist')
@@ -278,6 +275,7 @@ class ScreensaverBase(object):
     BACKGROUND_IMAGE = 'srr_blackbg.jpg'
     
     pause_requested=False
+    info_requested=False
 
     def __init__(self, thread_event, image_queue):
         #self.log('__init__ start')
@@ -376,11 +374,11 @@ class ScreensaverBase(object):
         #self.log('  image_url_cycle.next %s' % image_url)
         
         #get the current screen saver value
-        saver_mode = json.loads(  xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettingValue", "params": {"setting":"screensaver.mode" } }')  ) 
-        saver_mode = saver_mode.get('result').get('value')       
+        #saver_mode = json.loads(  xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method": "Settings.getSettingValue", "params": {"setting":"screensaver.mode" } }')  ) 
+        #saver_mode = saver_mode.get('result').get('value')       
         #log('****screensavermode=' + repr(saver_mode) )
         #set the screensaver to none
-        xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value":""} } ' )
+        #xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value":""} } ' )
         
         while not self.exit_requested:
             self.log('  using image: %s ' % ( repr(desc_and_image ) ) )
@@ -411,7 +409,7 @@ class ScreensaverBase(object):
         self.log('start_loop end')
         
         #return the screensaver back
-        xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value" : "%s"} }' % saver_mode )
+        #xbmc.executeJSONRPC('{ "jsonrpc": "2.0", "id": 0, "method":"Settings.setSettingValue", "params": {"setting":"screensaver.mode", "value" : "%s"} }' % saver_mode )
 
 
     def get_description_and_images(self, source):
@@ -510,13 +508,15 @@ class ScreensaverBase(object):
             xbmc.sleep(chunk_wait_time)
 
     def action_id_handler(self,action_id):
-        #log('  action ID:' + str(action_id) )
+        log('  action ID:' + str(action_id) )
         if action_id in ACTION_IDS_EXIT:
             #self.exit_callback()
             self.stop()
         if action_id in ACTION_IDS_PAUSE:  
             self.pause()          
-            
+
+        if action_id == 11: #xbmcgui.ACTION_SHOW_INFO:   
+            self.info_requested=not self.info_requested            
 
     def stop(self,action_id=0):
         self.log('stop')
@@ -715,14 +715,9 @@ class HorizontalSlideScreensaver(ScreensaverBase):
         self.SHOW_TITLE = addon.getSetting('show_title') == 'true'
         
         self.CONCURRENCY = 1.0 #float(addon.getSetting('appletvlike_concurrency'))
-        self.MAX_TIME = int(30000 / self.SPEED)  #int(15000 / self.SPEED)
-        self.NEXT_IMAGE_TIME =  int(6000.0 / self.SPEED)
+        self.MAX_TIME = int(8000 / self.SPEED)  #int(15000 / self.SPEED)
+        self.NEXT_IMAGE_TIME =  int(12000.0 / self.SPEED) 
 
-        self.IMAGE_ANIMATIONS = [
-                ('conditional', 'effect=slide start=1280,0 end=-1280,0 center=auto time=%s '
-                                'tween=circle easing=out delay=0 condition=true' % self.MAX_TIME),
-            ]
-    
         self.TEXT_ANIMATIONS= [
                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ), 
                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ] 
@@ -781,7 +776,7 @@ class HorizontalSlideScreensaver(ScreensaverBase):
             self.xbmc_window.addControl( self.txt_background  )
         
             #ControlLabel(x, y, width, height, label, font=None, textColor=None, disabledColor=None, alignment=0, hasPath=False, angle=0)
-            self.image_label=ControlLabel(10,683,1280,40,'',font='font16', textColor='', disabledColor='', alignment=6, hasPath=False, angle=0)
+            self.image_label=ControlLabel(10,688,1280,30,'',font='font16', textColor='', disabledColor='', alignment=6, hasPath=False, angle=0)
             self.xbmc_window.addControl( self.image_label  )
         #for txt_ctl, img_ctl in self.tni_controls:
         #    self.xbmc_window.addControl(txt_ctl)
@@ -794,6 +789,22 @@ class HorizontalSlideScreensaver(ScreensaverBase):
         image_control.setImage('')
         text_control.setVisible(False)
         text_control.setText('')
+
+        direction=random.choice([1,0])
+        sx=1280;ex=-1280
+
+        if direction:
+            sx,ex=ex,sx
+
+        t=self.MAX_TIME
+
+        self.IMAGE_ANIMATIONS = [
+                ('conditional', 'effect=slide start=%d,0   end=0,0     center=auto time=%s tween=cubic easing=out delay=0  condition=true' %(sx, t) ),
+                ('conditional', 'effect=fade  start=0      end=100                 time=%s tween=cubic easing=out delay=0  condition=true' % t ),
+                ('conditional', 'effect=slide start=0,0    end=%d,0    center=auto time=%s tween=cubic easing=in  delay=%s condition=true' %(ex, t, (0.8*t)) ),
+                ('conditional', 'effect=fade  start=100    end=0                   time=%s tween=cubic easing=in  delay=%s condition=true' %(t, (0.8*t)) ),
+            ]
+
         
         #self.image_label.setVisible(False)
         #self.image_label.setLabel('')
@@ -899,17 +910,25 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         else:
             up_down=False
             
-        #log('  %d  %dx%d %f' %(direction, width,height,ar ) )
+        log('  %d  %dx%d %f' %(direction, width,height,ar ) )
 
         #default dimension of the image control        
         ctl_width=1680
         ctl_height=720
+        ctl_x=0
 
         if up_down:
             #with tall images, the image control dimension has to be tall 
             sx=0;ex=0
             sy=-1680;ey=720
-            ctl_width=1280
+            #prevent some tall images from being zoomed in too much
+            if ar > 0.6:
+                ctl_width=940
+                ctl_x=random.randint(0, 340)    
+                
+            else:
+                ctl_width=1280
+
             ctl_height=1680
         else:
             sx=1280;ex=-1680
@@ -929,7 +948,17 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
             self.txt_background.setImage('')
 
         if self.SHOW_TITLE:
-            
+#             if self.info_requested:
+#                 self.txt_background.setPosition(0, 498)
+#                 self.image_label.setPosition(10, 500)
+#                 self.txt_background.setHeight(220)
+#                 self.image_label.setHeight(220)
+#             else:
+#                 self.txt_background.setPosition(0, 685)
+#                 self.image_label.setPosition(10, 683)
+#                 self.txt_background.setHeight(40)
+#                 self.image_label.setHeight(40)
+                
             if self.image_label.getLabel() == desc_and_image[0]:  #avoid animating the same text label if previous one is the same
                 self.image_label.setAnimations( [ ('conditional', 'condition=true effect=fade delay=0 time=0 start=100 end=100  ' ) ]  )
             else:
@@ -946,7 +975,7 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
                 self.txt_background.setVisible(False)
                 
         image_control.setImage(desc_and_image[1])
-        image_control.setPosition(0, 0)
+        image_control.setPosition(ctl_x, 0)
         image_control.setWidth(ctl_width)  
         image_control.setHeight(ctl_height)
         image_control.setAnimations(slide_animation)
@@ -1276,3 +1305,5 @@ if __name__ == '__main__':
  
     sys.modules.clear()
 
+
+#save for later:  https://mblaszczak.artstation.com/ 

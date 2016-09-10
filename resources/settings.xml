@@ -43,7 +43,7 @@
     <category label="32200">
     	<setting id="slideshow_mode"           type="enum"   label="32201" lvalues="32202|32203|32204" default="1"/>
     	
-        <setting id="slideshow_speed"          type="slider" label="32221" default="1" range="0.25,0.25,2.0" option="float"/>
+        <setting id="slideshow_speed"          type="slider" label="32221" default="1" range="0.20,0.20,2.0" option="float"/>
         <setting id="use_slideshow_for_album"  type="bool"   label="32222" default="true"/>
         <setting id="include_albums"           type="bool"   label="32223" default="true"/>
         <setting id="use_reddit_preview"       type="bool"   label="32224" default="true"/>

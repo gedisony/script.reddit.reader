@@ -1,6 +1,6 @@
 # Kodi Media Center language file
-# Addon Name: Reddit Viewer
-# Addon id: plugin.video.reddit_viewer
+# Addon Name: Reddit Reader
+# Addon id: script.reddit.reader
 msgid ""
 msgstr ""
 
@@ -265,7 +265,7 @@ msgid "Slideshow Type"
 msgstr ""
 
 msgctxt "#32202"
-msgid "Slide right to left"
+msgid "Slide horizontal"
 msgstr ""
 
 msgctxt "#32203"
@@ -273,7 +273,7 @@ msgid "Fade"
 msgstr ""
 
 msgctxt "#32204"
-msgid "Slide random"
+msgid "Slide orthogonal"
 msgstr ""
 
 
