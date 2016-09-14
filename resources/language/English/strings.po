@@ -297,8 +297,23 @@ msgctxt "#32225"
 msgid "Show image title/description"
 msgstr ""
 
+msgctxt "#32226"
+msgid "Randomize post order (preserve image album order)"
+msgstr ""
+
+msgctxt "#32227"
+msgid "Totally randomize images (album order not preserved)"
+msgstr ""
 
 #30192-30299 empty
+
+msgctxt "#32300"
+msgid "Screensaver"
+msgstr ""
+
+msgctxt "#32301"
+msgid "Source Subreddit"
+msgstr ""
 
 
 

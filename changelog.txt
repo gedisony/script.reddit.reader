@@ -1,3 +1,8 @@
+0.5.6  (09-13-2016)
+ - screensaver addon included
+ - show description in slideshow (for r/diy etc. )
+ - fade and horizontal slideshow: info button toggles shows/hide of title and description
+ - added option to randomize slideshow images 
 0.5.5  (09-09-2016)
  - add fade and random direction to horizontal slideshow
  - slideshow no longer disables system screensaver

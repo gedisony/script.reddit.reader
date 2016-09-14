@@ -528,6 +528,12 @@ def remove_duplicates(seq, idfun=None):
         result.append(item)
     return result    
 
+def remove_dict_duplicates(list_of_dict, key):
+
+    seen = set()
+    return [x for x in list_of_dict if [ x.get(key) not in seen, seen.add(  x.get(key) ) ] [0]]
+    
+
 #http://stackoverflow.com/questions/6330071/safe-casting-in-python
 def safe_cast(val, to_type, default=None):
     try:

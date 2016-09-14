@@ -35,6 +35,7 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'context_menu'       # ...
       ,'width'
       ,'height'
+      ,'description'
       ]
 
 ytdl_sites=[]
@@ -132,14 +133,15 @@ class sitesBase(object):
     def all_same(self, items ):
         #returns True if all items the same
         return all(x == items[0] for x in items)
-    def combine_title_and_description(self, title, description):
-        return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )
+    #def combine_title_and_description(self, title, description):
+    #    return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )
     
     def clog(self, error_code, request_url):
         log("    %s error:%s %s" %( self.__class__.__name__, error_code ,request_url) )
     
     def assemble_images_dictList(self,images_list):
         title=''
+        desc=''
         image_url=''
         thumbnail=''
         width=0
@@ -165,14 +167,16 @@ class sitesBase(object):
                     image_url=item[1]
                     thumbnail=item[2]
             elif type(item) is dict:
-                title    =item.get('text')
+                title    =item.get('title') if item.get('title') else ''
+                desc     =item.get('description') if item.get('description') else ''
                 image_url=item.get('url')
                 thumbnail=item.get('thumb')
-                width    =item.get('width')
-                height   =item.get('height')
+                width    =item.get('width') if item.get('width') else 0
+                height   =item.get('height') if item.get('height') else 0
+                
             
                     
-            infoLabels={ "Title": title, "plot": title, "PictureDesc": title, "exif:exifcomment": title }
+            infoLabels={ "Title": title, "plot": desc, "PictureDesc": desc }
             e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
                ,''                      #'li_label2'          #  
                ,""                      #'li_iconImage'       #
@@ -184,7 +188,9 @@ class sitesBase(object):
                ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
                ,'none'                  #'context_menu'       # ...
                ,width
-               ,height     ]
+               ,height 
+               ,desc   
+                ]
             self.dictList.append(dict(zip(keys, e)))
 """
     keys = ['FirstName', 'LastName', 'SSID']
@@ -473,7 +479,7 @@ class ClassImgur(sitesBase):
                 height   =entry.get('height')
                 title    =entry.get('title')
                 descrip  =entry.get('description')
-                combined = self.combine_title_and_description(title, descrip)
+                #combined = self.combine_title_and_description(title, descrip)
                 #log("----description is "+description)
                 
                 #filename,ext=parse_filename_and_ext_from_url(media_url)
@@ -486,7 +492,8 @@ class ClassImgur(sitesBase):
                 #log(str(idx)+type+" [" + str(description)+']'+media_url+" "  ) 
                 #list_item_name = entry['title'] #if entry['title'] else str(idx).zfill(2)
                 
-                images.append( {'text': combined, 
+                images.append( {'title': title,
+                                'description': descrip, 
                                 'url': media_url,
                                 'thumb': media_thumb_url,
                                 'width': width,
@@ -1041,7 +1048,7 @@ class ClassTumblr(sitesBase):
         #needs to look like this:   #see documentation  https://www.tumblr.com/docs/en/api/v2
         #url='http://api.tumblr.com/v2/blog/boo-rad13y/posts?api_key=no0FySaKYuQHKl0EBQnAiHxX7W0HY4gKvlmUroLS2pCVSevIVy&id=146015264096'
         #log('apiurl:'+api_url)
-        log(api_url)
+        #log(api_url)
         r = requests.get(api_url)
         #log(r.text)
         if r.status_code == 200:   #http status code 200 is success
@@ -1465,7 +1472,7 @@ class ClassFlickr(sitesBase):
             
         api_url='https://api.flickr.com/services/rest/?format=json&nojsoncallback=1&api_key=%s&method=%s&%s' %(self.api_key,api_method,api_arg )
 
-        log('  flickr apiurl:'+api_url)
+        #log('  flickr apiurl:'+api_url)
         r = requests.get(api_url)
         #log(r.text)
         if r.status_code == 200:   #http status code 200 is success
@@ -1645,7 +1652,7 @@ class ClassFlickr(sitesBase):
             
         api_url='https://api.flickr.com/services/rest/?format=json&nojsoncallback=1&api_key=%s&method=%s&%s' %(self.api_key,api_method,api_arg )
 
-        log('  flickr apiurl:'+api_url)
+        #log('  flickr apiurl:'+api_url)
         r = requests.get(api_url)
         #log(r.text)
         if r.status_code == 200:   #http status code 200 is success
@@ -1956,7 +1963,7 @@ class ClassEroshare(sitesBase):
                     width=s.get('width')
                     height=s.get('height')
                 
-                    images.append( {'text': description, 
+                    images.append( {'description': description, 
                                     'url': media_url,
                                     'width': width,
                                     'height': height,
@@ -2411,9 +2418,18 @@ class Class500px(sitesBase):
                     title=photo.get('name') 
                     description=photo.get('description')
                     image=photo.get('image_url')
-                    combined=self.combine_title_and_description(title, description)
+                    width=photo.get('width') 
+                    height=photo.get('height') 
+                    #combined=self.combine_title_and_description(title, description)
                     
-                    images.append( [combined, image ]  ) 
+                    #images.append( [combined, image ]  )
+                    images.append( {'title': title,
+                                    'description': description,
+                                    'url': image,
+                                    'width': width,
+                                    'height': height,
+                                    }  )
+                     
                     
                 #for i in images: log( repr(i) )
                 self.assemble_images_dictList( images )
@@ -2512,14 +2528,15 @@ class ClassSlimg(sitesBase):
                 media_url=i.get('url_direct')
                 media_w=i.get('width')
                 media_h=i.get('height')
-                combined='[B]%s[/B]\n%s' % (title, description)
+                #combined='[B]%s[/B]\n%s' % (title, description)
                 
-                combined= self.combine_title_and_description(title,description)
+                #combined= self.combine_title_and_description(title,description)
                 
                 if i.get('webm'):  #we don't support video in album but still avoid gif video  if possible. 
                     media_url=j.get('url_webm')
   
-                images.append( {'text': combined, 
+                images.append( {'title': title,
+                                'description': description,
                                 'url': media_url,
                                 'width': media_w,
                                 'height': media_h,

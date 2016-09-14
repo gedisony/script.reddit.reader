@@ -48,6 +48,11 @@
         <setting id="include_albums"           type="bool"   label="32223" default="true"/>
         <setting id="use_reddit_preview"       type="bool"   label="32224" default="true"/>
         <setting id="show_title"               type="bool"   label="32225" default="false"/>
+        <setting id="random_post_order"        type="bool"   label="32226" default="false"/>
+        <setting id="random_image_order"       type="bool"   label="32227" default="false"/>
+    </category>
+    <category label="32300">
+    	<setting id="screensaver_subreddit"    type="text"   label="32301" values="" default=""/>
     </category>
 
     <category label="32150">

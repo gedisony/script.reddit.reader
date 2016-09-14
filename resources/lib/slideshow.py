@@ -11,9 +11,7 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, Window, Control
 from default import addon, log, translation, addon_path, addonID,SlideshowCacheFolder, reddit_request, getPlayCount
 from domains import sitesManager, sitesBase, parse_reddit_link, listAlbum
 
-from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
-
-from functools import partial
+from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates, remove_dict_duplicates
 
 import threading
 from Queue import Queue, Empty
@@ -21,9 +19,12 @@ from Queue import Queue, Empty
 ADDON_NAME = addonID      #addon.getAddonInfo('name')  <--changed to id
 ADDON_PATH = addon_path   #addon.getAddonInfo('path')  
 
+random_post_order = addon.getSetting("random_post_order") == "true"
+random_image_order= addon.getSetting("random_image_order") == "true"
+
 q=Queue()
 
-def slideshowAlbum(dictlist, name):
+def slideshowAlbum_old(dictlist, name):
     log("slideshowAlbum")
 
     entries=[]        
@@ -32,8 +33,10 @@ def slideshowAlbum(dictlist, name):
         title    =d.get('li_label')
         width    =d.get('width')
         height   =d.get('height')
+        description=d.get('description')
         
-        entries.append([title,media_url, width, height, len(entries)])
+        #log(' *********' + repr(description) )
+        entries.append([title,media_url, width, height, len(entries), description])
 
     def k2(x): return x[1]
     entries=remove_duplicates(entries, k2)
@@ -45,7 +48,76 @@ def slideshowAlbum(dictlist, name):
     #s= TableDropScreensaver(ev,q)
     ev=threading.Event()
     
-    #s= HorizontalSlideScreensaver(ev,q)
+    s= HorizontalSlide2(ev,q)
+    #s= ScreensaverManager(ev,q)
+    
+    try:
+        s.start_loop()
+    except Exception as e: 
+        log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
+
+    s.close()
+    del s
+    sys.modules.clear()
+    
+    return
+
+def slideshowAlbum(dictlist, name):
+    log("slideshowAlbum")
+
+    #introduce a duplicate
+#     dictlist.append(  {'li_label': 'aaa1',
+#                         'li_label2': 'descrip', 
+#                         'DirectoryItem_url': 'http://i.imgur.com/K5uhHZF.jpg',
+#                         'li_thumbnailImage': 'media_thumb_url',
+#                         'width': 12,
+#                         'height': 123,
+#                                 }  )
+# 
+#     dictlist.append(  {'li_label': 'aaa2',
+#                         'li_label2': 'descrip', 
+#                         'DirectoryItem_url': 'http://i.imgur.com/2C3G23c.jpg',
+#                         'li_thumbnailImage': 'media_thumb_url',
+#                         'width': 12,
+#                         'height': 123,
+#                                 }  )
+# 
+#     dictlist.append(  {'li_label': 'aaa3',
+#                         'li_label2': 'descrip', 
+#                         'DirectoryItem_url': 'http://i.imgur.com/DXsb037.jpg',
+#                         'li_thumbnailImage': 'media_thumb_url',
+#                         'width': 12,
+#                         'height': 123,
+#                                 }  )
+# 
+#     for d in dictlist:
+#         media_url=d.get('DirectoryItem_url')
+#         title    =d.get('li_label') if d.get('li_label') else ''
+#         width    =d.get('width')
+#         height   =d.get('height')
+#         description=d.get('description')
+#         log( "  %s... %s " %(title.ljust(15)[:15] ,media_url )  )
+
+    nl = remove_dict_duplicates( dictlist, 'DirectoryItem_url')  
+
+#    log("***after***")
+#     for d in nl:
+#         media_url=d.get('DirectoryItem_url')
+#         title    =d.get('li_label') if d.get('li_label') else ''
+#         width    =d.get('width')
+#         height   =d.get('height')
+#         description=d.get('description')
+#         log( "  %s... %s " %(title.ljust(15)[:15] ,media_url )  )
+    
+
+    for e in nl:
+        q.put(e)
+    
+    #s= AppleTVLikeScreensaver(ev,q)
+    #s= TableDropScreensaver(ev,q)
+    ev=threading.Event()
+    
+    #s= HorizontalSlideScreensaver2(ev,q)
     s= ScreensaverManager(ev,q)
     
     try:
@@ -62,55 +134,14 @@ def slideshowAlbum(dictlist, name):
 
 
 def autoSlideshow(url, name, type):
-    #from domains import sitesBase, parse_reddit_link
-    #from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
-    #from default import reddit_request, getPlayCount
-    #collect a list of title and urls as entries[] from the j_entries obtained from reddit
-    #then create a playlist from those entries
-    #then play the playlist
-
-
-#     newWindow=WindowDialog()
-#     newWindow.setCoordinateResolution(0)
-#  
-#     #ctl3=ControlImage(0, 0, 1920, 1080, 'http://i.imgur.com/E0qPa3D.jpg', aspectRatio=2)
-#     ctl3=ControlImage(0, 0, 1920, 1080, 'd:\\emi_camera\\IMG_0023.JPG', aspectRatio=2)
-#     newWindow.addControl(ctl3)
-#  
-#     #scroll_time=int(height)*(int(height)/int(width))*2
-#     #zoom_effect="effect=zoom loop=true delay=1000 center=960 end=%d time=1000" %zoom
-#     #fade_effect="condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
-#     #ctl3.setAnimations([('WindowOpen', zoom_effect), ('conditional', fade_effect,) ])
-#      
-#     newWindow.show()
-#     xbmc.sleep(8000)
-#     #newWindow.doModal()
-#     del newWindow
-#     
-
-    #xbmc_window = Window()
-    #xbmc_window.show()
-
-#     def stop():        pass
-#     xbmc_window = ScreensaverWindow(stop)
-#     
-#     ctl3=ControlImage(0, 0, 1920, 1080, 'd:\\emi_camera\\IMG_0023.JPG', aspectRatio=2)
-#     xbmc_window.addControl(ctl3)
-# 
-#     xbmc_window.show()
-#     xbmc.sleep(8000)
-#     return
 
     log('starting slideshow '+ url)
     ev=threading.Event()
-    
     
     entries = []
     watchdog_counter=0
     preview_w=0
     preview_h=0
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    playlist.clear()
 
     #content = opener.open(url).read()
     content = reddit_request(url)        
@@ -119,12 +150,26 @@ def autoSlideshow(url, name, type):
     #content = json.loads(content.replace('\\"', '\''))
     content = json.loads(content)
     
-    log("slideshow %s-Parsing %d items" %( type, len(content['data']['children']) )    )
+    log("slideshow %s:Parsing %d items: %s" %( type, len(content['data']['children']), 'random' if random_post_order else 'normal order' )    )
     
-    for j_entry in content['data']['children']:
+    data_children = content['data']['children']
+    
+    if random_post_order:
+        random.shuffle(data_children)
+    
+    for j_entry in data_children:
         try:
             title = unescape(j_entry['data']['title'].encode('utf-8'))
             log("  TITLE:%s "  %( title ) )
+
+            try:    description = unescape(j_entry['data']['media']['oembed']['description'].encode('utf-8'))
+            except: description = ''
+            #log('    description  [%s]' %description)
+            try:    post_selftext=unescape(j_entry['data']['selftext'].encode('utf-8'))
+            except: post_selftext=''
+            #log('    post_selftext[%s]' %post_selftext)
+            
+            description=post_selftext+'[CR]'+description if post_selftext else description
             
             try:
                 media_url = j_entry['data']['url']
@@ -155,44 +200,50 @@ def autoSlideshow(url, name, type):
                     for d in dictlist:
                         #log('    (S) adding items from album ' + title  +' ' + d.get('DirectoryItem_url') )
                         t2=d.get('li_label') if d.get('li_label') else title
-                        entries.append([ t2, d.get('DirectoryItem_url'), d.get('width'), d.get('height'), len(entries)])
-                
+                        #entries.append([ t2, d.get('DirectoryItem_url'), d.get('width'), d.get('height'), len(entries)])
+                        
+                        d['li_label']=t2
+                        entries.append( d )
+                        #title=''  #only put the title in once. 
                 else:
+                    image=''
                     if addon.getSetting('use_reddit_preview')=='true':
-                        if preview: entries.append([title,preview,preview_w, preview_h,len(entries)]) #log('      (N)added preview:%s %s' %( title,preview) )
-                        elif ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])    #log('      (N)added poster:%s %s' % ( title,ld.poster) ) 
+                        if preview: image=preview
+                        elif ld.poster: image=ld.poster     
+                        #if preview: entries.append([title,preview,preview_w, preview_h,len(entries)]) #log('      (N)added preview:%s %s' %( title,preview) )
+                        #elif ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])    #log('      (N)added poster:%s %s' % ( title,ld.poster) ) 
                     else:
-                        if ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
-                        elif preview: entries.append([title,preview,preview_w, preview_h,len(entries)])
+                        if ld.poster:  image=ld.poster #entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
+                        elif preview: image=preview  #entries.append([title,preview,preview_w, preview_h,len(entries)])
+                        #if ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
+                        #elif preview: entries.append([title,preview,preview_w, preview_h,len(entries)])
+                        
+                    append_entry( entries, title,image,preview_w, preview_h, description )
             else: 
-                if preview:
-                    #log('      (N)added preview:%s' % title )
-                    entries.append([title,preview,preview_w, preview_h,len(entries)])
+                append_entry( entries, preview,image,preview_w, preview_h, description )
+                #log('      (N)added preview:%s' % title )
                         
 
                     
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
             pass
-    
-    #for i,e in enumerate(entries): log('  e1-%d %s' %(i, e[1]) )
-    def k2(x): return x[1]
-    entries=remove_duplicates(entries, k2)
-    #for i,e in enumerate(entries): log('  e2-%d %s' %(i, e[1]) )
 
-    for e in entries: 
-        log('  possible playable items(%d) %s...%s' %(e[4], e[0].ljust(15)[:15], e[1]) )
+    entries = remove_dict_duplicates( entries, 'DirectoryItem_url')
+    
+#     #for i,e in enumerate(entries): log('  e1-%d %s' %(i, e[1]) )
+#     def k2(x): return x[1]
+#     entries=remove_duplicates(entries, k2)
+#     #for i,e in enumerate(entries): log('  e2-%d %s' %(i, e[1]) )
+    
+    for i, e in enumerate(entries): 
+        #log('  possible playable items(%d) %s...%s' %(e[4], e[0].ljust(15)[:15], e[1]) )
+        log('  possible playable items(%d) %s...%dx%d  %s' %(i, e['li_label'].ljust(15)[:15], e['width'],e['height'],  e['DirectoryItem_url']) )
         
     if len(entries)==0:
         log('  Play All: no playable items' )
         xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(translation(32054), translation(32055)  ) )  #Play All     No playable items
         return
-    
-    entries_to_buffer=4
-    #log('  entries:%d buffer:%d' %( len(entries), entries_to_buffer ) )
-    if len(entries) < entries_to_buffer:
-        entries_to_buffer=len(entries)
-        #log('entries to buffer reduced to %d' %entries_to_buffer )
 
     #if type.endswith("_RANDOM"):
     #    random.shuffle(entries)
@@ -200,11 +251,10 @@ def autoSlideshow(url, name, type):
     #for title, url in entries:
     #    log("  added to playlist:"+ title + "  " + url )
 
-    log("**********autoPlay*************")
+    log("**********playing slideshow*************")
 
     for e in entries:
         q.put(e)
-
 
     
     #s= AppleTVLikeScreensaver(ev,q)
@@ -225,6 +275,18 @@ def autoSlideshow(url, name, type):
     
     return
 
+def make_dictlist_entry(title,preview,width, height, description ):
+    return {'li_label'         : title,
+            'li_label2'        : '',
+            'DirectoryItem_url': preview,
+            'width'            : width,
+            'height'           : height,
+            'description'      : description,
+            }
+def append_entry( e, title,preview,width, height, description ):    
+    if preview:
+        e.append( make_dictlist_entry(title,preview,width, height, description ) )
+        
 
 ### credit to https://github.com/dersphere/script.screensaver.multi_slideshow for this code
 #
@@ -258,14 +320,12 @@ class ScreensaverXMLWindow(WindowXMLDialog):
         self.exit_callback = kwargs.get("exit_callback")
         #self.subreddits_file = kwargs.get("exit_callback")
         
-
     def onAction(self, action):
         action_id = action.getId()
-        self.exit_callback(action_id)
-#         if action_id in ACTION_IDS_EXIT:
-#             self.exit_callback(action_id)
+        self.exit_callback(action_id) #pass the action id to the calling class
 
-
+#screensaver code original by : Tristan Fischer (sphere@dersphere.de)
+#  http://forum.kodi.tv/showthread.php?tid=173734
 class ScreensaverBase(object):
 
     MODE = None
@@ -280,6 +340,7 @@ class ScreensaverBase(object):
     def __init__(self, thread_event, image_queue):
         #self.log('__init__ start')
         self.exit_requested = False
+        self.toggle_info_display_requested=False
         self.background_control = None
         self.preload_control = None
         self.image_count = 0
@@ -299,7 +360,7 @@ class ScreensaverBase(object):
         #self.log('__init__ end')
     
     def init_xbmc_window(self):
-        self.xbmc_window = ScreensaverWindow(self.stop)
+        self.xbmc_window = ScreensaverXMLWindow( "slideshow02.xml", addon_path, defaultSkin='Default', exit_callback=self.action_id_handler )
         self.xbmc_window.show()
         
 
@@ -355,8 +416,8 @@ class ScreensaverBase(object):
         #images = self.get_images('q')
         desc_and_images = self.get_description_and_images('q')
         
-        #if addon.getSetting('random_order') == 'true':
-        #    random.shuffle(images)
+        if random_image_order:    #addon.getSetting('random_image_order') == 'true':
+            random.shuffle(desc_and_images)
         desc_and_images_cycle=cycle(desc_and_images)
         
         #image_url_cycle = cycle(images)
@@ -424,7 +485,12 @@ class ScreensaverBase(object):
                 images = self._get_folder_images(path)
         elif source == 'q':
             #implement width & height extract here.
-            images=[[item[0], item[1],item[2], item[3], ] for item in q.queue]
+            #images=[[item[0], item[1],item[2], item[3], ] for item in q.queue]
+            
+            #[title,media_url, width, height, len(entries), description])
+            images=[  [i.get('li_label'), i.get('DirectoryItem_url'),i.get('width'), i.get('height'), i.get('description') ] for i in q.queue]
+            
+            log( "queue size:%d" %q.qsize() )
             #texts=[item[0] for item in q.queue]
             #for i in images: self.log('   image: %s' %i)
             #self.log('    %d images' % len(images))
@@ -502,13 +568,17 @@ class ScreensaverBase(object):
             if self.exit_requested:
                 self.log('wait aborted')
                 return
+            if self.toggle_info_display_requested:  #this value is set on specific keypress in action_id_handler
+                #self.log('toggle_info_display_requested')
+                self.toggle_info_display_requested=False
+                self.toggle_info_display_handler()
             if remaining_wait_time < chunk_wait_time:
                 chunk_wait_time = remaining_wait_time
             remaining_wait_time -= chunk_wait_time
             xbmc.sleep(chunk_wait_time)
 
     def action_id_handler(self,action_id):
-        log('  action ID:' + str(action_id) )
+        #log('  action ID:' + str(action_id) )
         if action_id in ACTION_IDS_EXIT:
             #self.exit_callback()
             self.stop()
@@ -516,7 +586,10 @@ class ScreensaverBase(object):
             self.pause()          
 
         if action_id == 11: #xbmcgui.ACTION_SHOW_INFO:   
-            self.info_requested=not self.info_requested            
+            self.toggle_info_display_requested=True  #not self.info_requested            
+
+    def toggle_info_display_handler(self):
+        pass
 
     def stop(self,action_id=0):
         self.log('stop')
@@ -555,150 +628,199 @@ class ScreensaverBase(object):
 
     
 
-class HorizontalSlideScreensaver2(ScreensaverBase):
+class HorizontalSlide2(ScreensaverBase):
 
-    MODE = 'Fade2'
-    BACKGROUND_IMAGE = 'srr_blackbg.jpg'
+    MODE = 'slideLeft'
+    BACKGROUND_IMAGE = '' #'srr_blackbg.jpg'
     IMAGE_CONTROL_COUNT = 35
     FAST_IMAGE_COUNT = 0
     DISTANCE_RATIO = 0.7
     SPEED = 1.0
     CONCURRENCY = 1.0
     #SCREEN = 0
+    image_control_ids=[101,102,103,104,105]   #control id's defined in ScreensaverXMLWindow xml file
 
     def init_xbmc_window(self):
         #self.xbmc_window = ScreensaverWindow(  exit_callback=self.stop )          
-        self.xbmc_window = ScreensaverXMLWindow( "slideshow01.xml", addon_path, defaultSkin='Default', exit_callback=self.stop )
+        self.xbmc_window = ScreensaverXMLWindow( "slideshow02.xml", addon_path, defaultSkin='Default', exit_callback=self.action_id_handler )
         self.xbmc_window.setCoordinateResolution(5)
         self.xbmc_window.show()
 
     def load_settings(self):
         self.SPEED = float(addon.getSetting('slideshow_speed'))
+        self.SHOW_TITLE = addon.getSetting('show_title') == 'true'
+        self.toggle_info_display_requested = False
         self.CONCURRENCY = 1.0 #float(addon.getSetting('appletvlike_concurrency'))
-        self.MAX_TIME = int(30000 / self.SPEED)  #int(15000 / self.SPEED)
-        self.NEXT_IMAGE_TIME =  int(6000.0 / self.SPEED)
+
+        self.MAX_TIME = int(8000 / self.SPEED)  #int(15000 / self.SPEED)
+        self.NEXT_IMAGE_TIME =  int(12000.0 / self.SPEED) 
+
+        self.TEXT_ANIMATIONS= [
+                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ) , 
+                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' %(1.45*self.MAX_TIME)  ) ] 
+
+#        self.TEXT_ANIMATIONS= [
+#                 ('visible', 'effect=fade time=800 start=0 end=100 ' ), ]
+#                 ('hidden', 'effect=fade  time=800 start=100 end=0 tween=circle easing=in'   ) ] 
+#        self.TEXT_ANIMATIONS= [ ] 
+
+    def init_cycle_controls(self):
+        pass
         
     def stack_cycle_controls(self):
-        # randomly generate a zoom in percent as betavariant
-        # between 10 and 70 and assign calculated width to control.
-        # Remove all controls from window and re-add sorted by size.
-        # This is needed because the bigger (=nearer) ones need to be in front
-        # of the smaller ones.
-        # Then shuffle image list again to have random size order.
 
-#         for image_control in self.image_controls:
-#             zoom = int(random.betavariate(2, 2) * 40) + 10
-#             #zoom = int(random.randint(10, 70))
-#             width = 1280 / 100 * zoom
-#             image_control.setWidth(width)
-#         self.image_controls = sorted(
-#             self.image_controls, key=lambda c: c.getWidth()
-#         )
-#         self.xbmc_window.addControls(self.image_controls)
-#         random.shuffle(self.image_controls)
-
-
-#         for image_control in self.image_controls:
-# #             zoom = int(random.betavariate(2, 2) * 40) + 10
-#             width  = 1280
-#             height = 720    #1280 / 100 * zoom
-#             image_control.setHeight(height)
-#             image_control.setWidth(width)
-            
-            
-#         self.image_controls = sorted(
-#             self.image_controls, key=lambda c: c.getWidth()
-#         )
-#         self.xbmc_window.addControls(self.image_controls)
-#         random.shuffle(self.image_controls)
+        #self.txt_background=ControlImage(720, 0, 560, 720, 'srr_dialog-bg.png', aspectRatio=1)
+        #self.xbmc_window.addControl( self.txt_background  )
+        self.txt_group_control=self.xbmc_window.getControl(200)
+        self.title_control=self.xbmc_window.getControl(201)
+        self.desc_control=self.xbmc_window.getControl(202)
         
-        #self.xbmc_window.addControls(self.tni_controls[0])
-        #self.xbmc_window.addControls(self.tni_controls[1])
-        for txt_ctl, img_ctl in self.tni_controls:
-            self.xbmc_window.addControl(img_ctl)
+        pass
 
-        self.txt_background=ControlImage(720, 0, 560, 720, 'srr_dialog-bg.png', aspectRatio=1)
-        self.xbmc_window.addControl( self.txt_background  )
+
+    def start_loop(self):
+        self.log('start_loop start')
         
-        for txt_ctl, img_ctl in self.tni_controls:
-            self.xbmc_window.addControl(txt_ctl)
+        desc_and_images = self.get_description_and_images('q')
+        
+        if random_image_order:    #addon.getSetting('random_image_order') == 'true':
+            random.shuffle(desc_and_images)
+        desc_and_images_cycle=cycle(desc_and_images)
+        
+        image_controls_cycle= cycle(self.image_control_ids)
+
+        self.hide_loading_indicator()
+        
+        #pops the first one
+        #desc_and_image=desc_and_images_cycle.next()
+        self.next_desc_and_image=desc_and_images_cycle.next()
+        #self.log('  image_url_cycle.next %s' % image_url)
+        
+        
+        while not self.exit_requested:
+            self.log('  using image: %s ' % ( repr(self.next_desc_and_image ) ) )
+
+
+            image_control_id = image_controls_cycle.next()
+            
+            #process_image done by subclass( assign animation and stuff to image control ) 
+            self.toggle_info_display()
+
+            self.process_image(image_control_id)
+            
+            self.current_desc_and_image=self.next_desc_and_image
+            #image_url = image_url_cycle.next()
+            self.next_desc_and_image=desc_and_images_cycle.next()
+            
+            #self.wait()
+            if self.image_count < self.FAST_IMAGE_COUNT:
+                self.image_count += 1
+            else:
+                #self.preload_image(image_url)
+                self.preload_image(self.next_desc_and_image[1])
+                self.wait()
+                
+        self.log('start_loop end')
                         
+    def ret_image_ar(self,desc_and_image):
+        width =desc_and_image[2] if desc_and_image[2] else 0
+        height=desc_and_image[3] if desc_and_image[3] else 0
+        if width>0 and height>0:
+            ar=float(float(width)/height)
+        else:
+            ar=1.0
 
-    def process_image(self, tni_control, desc_and_image):
+        return width,height,ar
 
-        MOVE_ANIMATION = (
-            'effect=slide start=1280,0 end=-1280,0 center=auto time=%s '
-            'tween=circle easing=out delay=0 condition=true'
-        )
+    def toggle_info_display_handler(self):
+        self.SHOW_TITLE=not self.SHOW_TITLE
+        self.toggle_info_display_requested=False
+        self.toggle_info_display(show_next=False)
+        pass
 
-        FADE_ANIMATION = (
-            'effect=fade delay=10 time=4000 '
-            'tween=linear easing=out condition=true'
-        )
+    def toggle_info_display(self,show_next=True):
+        if show_next:
+            desc_and_image=self.next_desc_and_image
+        else:
+            desc_and_image=self.current_desc_and_image
+
+        title      =desc_and_image[0]
+        description=desc_and_image[4]
+            
+        if self.SHOW_TITLE:
+#             #set the animation on the group instead of the individual controls
+#             if self.title_control.getText() == title:  #avoid animating the same text label if previous one is the same
+#                 self.txt_group_control.setAnimations( [ ('conditional', 'condition=true effect=fade delay=0 time=0 start=100 end=100  ' ) ]  )
+#                 #self.title_control.setAnimations( [ ('conditional', 'condition=true effect=fade delay=0 time=0 start=100 end=100  ' ) ]  )
+#                 #self.desc_control.setAnimations( [ ('conditional', 'condition=true effect=fade delay=0 time=0 start=100 end=100  ' ) ]  )
+#             else:
+#                 self.txt_group_control.setAnimations( self.TEXT_ANIMATIONS )
+#                 #self.title_control.setAnimations( self.TEXT_ANIMATIONS )
+#                 #self.desc_control.setAnimations( self.TEXT_ANIMATIONS )
+#                 pass
+
+            #hide the title control if missing (this is done in skin but can also be done in python) 
+            #if desc_and_image[0]:  
+            self.title_control.setText(title)
+            #    self.title_control.setVisible(True)
+            #else:
+            #    self.title_control.setVisible(False)
+            self.txt_group_control.setAnimations( self.TEXT_ANIMATIONS )
+            
+            self.desc_control.setText(description.replace('\n\n','\n'))
+            self.txt_group_control.setVisible(True)
+        else:
+            self.txt_group_control.setVisible(False)
+        pass
+
+    def process_image(self, image_control_id):
+
+        #width,height,ar = self.ret_image_ar(desc_and_image)
+        #log('  %dx%d %f' %(width,height,ar ) )
+
+        direction=random.choice([1,0])
+        sx=1280;ex=-1280
+
+        if direction:
+            sx,ex=ex,sx
+
+        t=self.MAX_TIME
+
+        self.IMAGE_ANIMATIONS = [
+                ('conditional', 'effect=slide start=%d,0   end=0,0    time=%s tween=cubic  easing=out delay=0  condition=true' %(sx, t) ),
+                ('conditional', 'effect=fade  start=0      end=100    time=%s tween=circle easing=out delay=0  condition=true' % (0.8*t) ),
+                ('conditional', 'effect=slide start=0,0    end=%d,0   time=%s tween=cubic  easing=in  delay=%s condition=true' %(ex, t, (0.8*t)) ),
+                ('conditional', 'effect=fade  start=100    end=0      time=%s tween=circle easing=in  delay=%s condition=true' %(t, (t)) ),
+            ]
         
-        image_control=tni_control[1]
-        text_control=tni_control[0]
+        #the image will align 'top' of the image control if there is a description. but will look unbalanced if there is no description. 
+        #  I couldn't find a way to programatically 'center' the image in the image control.
+        #  so, instead, i made 5 more image controls with id +50 in the slideshow xml that had the images centered. 
+        #  and use those controlid if there is no description 
+        description=self.next_desc_and_image[4]
+        if description and self.SHOW_TITLE:
+            image_control=self.xbmc_window.getControl(image_control_id)
+        else:
+            image_control=self.xbmc_window.getControl( image_control_id + 50 )
         
         
         image_control.setVisible(False)
         image_control.setImage('')
-        text_control.setVisible(False)
-        text_control.setText('')
-        
-        self.txt_background.setVisible(False)  
-        self.txt_background.setImage('')
 
-        time = self.MAX_TIME #/ zoom * self.DISTANCE_RATIO * 100   #30000
-
-        animations = [
-            ('conditional', MOVE_ANIMATION % time)
-        ]
-        # set all parameters and properties
-
-        #labels can have text centered but can't have multiline
-        #textbox can have multiline but not centered text... what to do...
-        #setLabel(self, label='', font=None, textColor=None, disabledColor=None, shadowColor=None, focusedColor=None, label2=''):
-        text_control.setText(desc_and_image[0])
-        text_control.setPosition(730, 0)
-        text_control.setWidth(540)
-        text_control.setHeight(720)
-        text_control.setAnimations(  [('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ), 
-                                      ('conditional', 'condition=true effect=fade delay=%s time=1000 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ]  )
-        text_control.setVisible(True)
-#       
-
-        image_control.setImage(desc_and_image[1])
+        image_control.setImage(self.next_desc_and_image[1])
         image_control.setPosition(0, 0)
         image_control.setWidth(1280)   #16:9
         #image_control.setWidth(1680)    #21:9  
         image_control.setHeight(720)
-        image_control.setAnimations(animations)
+        image_control.setAnimations(self.IMAGE_ANIMATIONS)
         # show the image
         image_control.setVisible(True)
-
-
-#         c=self.xbmc_window.getControl(101)
-#         #log('    **' +c.getText() )
-#         c.setText( desc_and_image[0] )
-#         cy=c.getY()
-#         #c.setPosition( 0, cy+10 )
-#         self.xbmc_window.removeControl(c)   #graaaahhhh!!! won't work. access violation!
-#         self.xbmc_window.addControl(c)
-
-
-        self.txt_background.setImage('srr_dlg-bg.png')
-        #self.txt_background.setPosition(0, 0)
-        # re-stack it (to be on top)
-        #self.xbmc_window.removeControl(self.txt_background)
-        #self.xbmc_window.addControl(self.txt_background)
-        #self.txt_background.setColorDiffuse('0xCCCCCCCC') 
-        self.txt_background.setVisible(True)  
 
 
 
 class HorizontalSlideScreensaver(ScreensaverBase):
 
-    MODE = 'slideLeft'
+    MODE = 'slideLeftx'
     BACKGROUND_IMAGE = 'srr_blackbg.jpg'
     IMAGE_CONTROL_COUNT = 35
     FAST_IMAGE_COUNT = 0
@@ -855,7 +977,7 @@ class HorizontalSlideScreensaver(ScreensaverBase):
         # show the image
         image_control.setVisible(True)
 
-class FadeScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
+class FadeScreensaver( HorizontalSlide2, ScreensaverBase):
     MODE = 'Fade'
     
     def load_settings(self):
@@ -867,15 +989,34 @@ class FadeScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         self.NEXT_IMAGE_TIME =  int(6000.0 / self.SPEED)
 
         self.IMAGE_ANIMATIONS = [
-                ('conditional', 'effect=fade start=0 end=100 center=auto time=%s '
-                                'tween=back  delay=0 condition=true' % self.NEXT_IMAGE_TIME),
-                ('conditional', 'effect=fade start=100 end=0 center=auto time=500 '
-                                'tween=linear            delay=%s condition=true' %(self.NEXT_IMAGE_TIME+1000) ),
+                ('conditional', 'effect=fade start=0 end=100 center=auto time=%s  tween=back  easing=out delay=0  condition=true' % self.NEXT_IMAGE_TIME),
+                ('conditional', 'effect=fade start=100 end=0 center=auto time=500 tween=back  easing=in  delay=%s condition=true' %(self.NEXT_IMAGE_TIME+1000) ),
             ]
     
         self.TEXT_ANIMATIONS= [
                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ), 
                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ] 
+
+    def process_image(self, image_control_id):
+
+        description=self.next_desc_and_image[4]
+        if description and self.SHOW_TITLE:
+            image_control=self.xbmc_window.getControl(image_control_id)
+        else:
+            image_control=self.xbmc_window.getControl( image_control_id + 50 )
+        
+        
+        image_control.setVisible(False)
+        image_control.setImage('')
+
+        image_control.setImage(self.next_desc_and_image[1])
+        image_control.setPosition(0, 0)
+        image_control.setWidth(1280)   #16:9
+        #image_control.setWidth(1680)    #21:9  
+        image_control.setHeight(720)
+        image_control.setAnimations(self.IMAGE_ANIMATIONS)
+        # show the image
+        image_control.setVisible(True)
 
 class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
     MODE = 'SlideUDLR'
@@ -910,7 +1051,7 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         else:
             up_down=False
             
-        log('  %d  %dx%d %f' %(direction, width,height,ar ) )
+        #log('  %d  %dx%d %f' %(direction, width,height,ar ) )
 
         #default dimension of the image control        
         ctl_width=1680

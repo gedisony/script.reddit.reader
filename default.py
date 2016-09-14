@@ -768,10 +768,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
 
 
-    log( '          reddit thumb[%s] ' %(iconimage ))
-    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-    
-    if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+#     log( '          reddit thumb[%s] ' %(iconimage ))
+#     log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+#     if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
         #log('###' + repr(ld.playable_url) )
