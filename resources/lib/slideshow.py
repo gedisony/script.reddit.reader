@@ -745,7 +745,7 @@ class HorizontalSlide2(ScreensaverBase):
             desc_and_image=self.current_desc_and_image
 
         title      =desc_and_image[0]
-        description=desc_and_image[4]
+        description=desc_and_image[4] if desc_and_image[4] else ''
             
         if self.SHOW_TITLE:
 #             #set the animation on the group instead of the individual controls

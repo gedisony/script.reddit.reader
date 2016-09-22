@@ -1431,7 +1431,10 @@ class ClassFlickr(sitesBase):
         else:
             #get the photoID 
             #match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)',media_url)
-            match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)|flickr\.com/photo\.gne\?short=(.+)',self.media_url)  #sometimes url comes like this: https://www.flickr.com/photo.gne?short=LHmhpR
+            if self.is_an_album(self.media_url):
+                match = re.findall('flickr\.com/photos/(?:.+)?(?:/sets/|/albums/|/s/|/groups/|/g/|galleries|/y/)(\d+)|flickr\.com/photo\.gne\?short=(.+)',self.media_url)  
+            else:
+                match = re.findall('flickr\.com\/photos\/(?:.+\/)?(\d+)|flickr\.com/photo\.gne\?short=(.+)',self.media_url)  #sometimes url comes like this: https://www.flickr.com/photo.gne?short=LHmhpR
             
             for m in match[0]:
                 if m: 
