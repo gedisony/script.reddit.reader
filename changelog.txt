@@ -1,3 +1,6 @@
+0.5.7  (09-23-2016)
+ - update flickr photoset id extraction routine
+ - cleanup
 0.5.6  (09-13-2016)
  - screensaver addon included
  - show description in slideshow (for r/diy etc. )

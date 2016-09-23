@@ -142,6 +142,7 @@ def autoSlideshow(url, name, type):
     watchdog_counter=0
     preview_w=0
     preview_h=0
+    image=''
 
     #content = opener.open(url).read()
     content = reddit_request(url)        
@@ -206,7 +207,6 @@ def autoSlideshow(url, name, type):
                         entries.append( d )
                         #title=''  #only put the title in once. 
                 else:
-                    image=''
                     if addon.getSetting('use_reddit_preview')=='true':
                         if preview: image=preview
                         elif ld.poster: image=ld.poster     
@@ -220,7 +220,7 @@ def autoSlideshow(url, name, type):
                         
                     append_entry( entries, title,image,preview_w, preview_h, description )
             else: 
-                append_entry( entries, preview,image,preview_w, preview_h, description )
+                append_entry( entries, title,preview,preview_w, preview_h, description )
                 #log('      (N)added preview:%s' % title )
                         
 
@@ -228,6 +228,8 @@ def autoSlideshow(url, name, type):
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
             pass
+
+    log( repr(entries))
 
     entries = remove_dict_duplicates( entries, 'DirectoryItem_url')
     

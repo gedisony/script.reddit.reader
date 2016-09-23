@@ -75,8 +75,6 @@ reddit_redirect_uri  ='http://localhost:8090/'   #specified when registering for
 reddit_refresh_token =addon.getSetting("reddit_refresh_token")
 reddit_access_token  =addon.getSetting("reddit_access_token") #1hour token
 
-#test1 line
-
 opener.addheaders = [('User-Agent', reddit_userAgent)]
 #API requests with a bearer token should be made to https://oauth.reddit.com, NOT www.reddit.com.
 urlMain = "https://www.reddit.com"
@@ -106,9 +104,6 @@ domain_filter        = addon.getSetting("domain_filter")
 subreddit_filter     = addon.getSetting("subreddit_filter")
 main_gui_skin        = addon.getSetting("main_gui_skin")
 
-
-#r_AccessToken         = addon.getSetting("r_AccessToken") 
-
 sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage = int(sitemsPerPage)
 except: itemsPerPage = 50    
@@ -116,19 +111,10 @@ except: itemsPerPage = 50
 itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
 TitleAddtlInfo        = addon.getSetting("TitleAddtlInfo") == "true"   #Show additional post info on title</string>
 
-# searchSort = int(addon.getSetting("searchSort"))
-# searchSort = ["ask", "relevance", "new", "hot", "top", "comments"][searchSort]
-# searchTime = int(addon.getSetting("searchTime"))
-# searchTime = ["ask", "hour", "day", "week", "month", "year", "all"][searchTime]
-
 #--- settings related to context menu "Show Comments"
 CommentTreshold          = addon.getSetting("CommentTreshold") 
 try: int_CommentTreshold = int(CommentTreshold)
 except: int_CommentTreshold = -1000    #if CommentTreshold can't be converted to int, show all comments 
-
-#showBrowser     = addon.getSetting("showBrowser") == "true"
-#browser_win     = int(addon.getSetting("browser_win"))
-#browser_wb_zoom = str(addon.getSetting("browser_wb_zoom"))
 
 ll_qualiy  = int(addon.getSetting("ll_qualiy"))
 ll_qualiy  = ["480p", "720p"][ll_qualiy]
@@ -150,8 +136,6 @@ nsfwFile            = xbmc.translatePath("special://profile/addon_data/"+addonID
 default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
 #ytdl_sites_file          = xbmc.translatePath(profile_path+"/ytdl_sites")
 default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_sites" )
-
-
 
 #C:\Users\myusername\AppData\Roaming\Kodi\userdata\addon_data\plugin.video.reddit_viewer
 
@@ -799,7 +783,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                                              type=previewimage ) 
         
         
-        log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
+        #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
         
         liz.setProperty('item_type',property_link_type)
         #liz.setProperty('onClick_action',DirectoryItem_url)
