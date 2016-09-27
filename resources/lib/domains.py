@@ -2565,6 +2565,61 @@ class ClassSlimg(sitesBase):
 #     def ret_album_list(self, album_url, thumbnail_size_code=''):
 #         pass
 
+class ClassImgTrex(sitesBase):
+    SITE='imgtrex'
+    regex='(imgtrex.com)'
+    
+    include_gif_in_get_playable=True
+
+    #imgtrex is devious in that the link has a .jpg .gif extension but it actually leads to an html page. 
+    #  we need to parse the html to get the actual image
+    def get_playable(self, media_url='', is_probably_a_video=False ):
+        if not media_url:
+            media_url=self.media_url
+        return self.get_playable_url(self.media_url, is_probably_a_video=False )
+
+    def get_playable_url(self, media_url, is_probably_a_video=False ):
+        log('  scraping:'+ media_url )            
+        content = requests.get( media_url )
+        
+        if content.status_code==200:
+            #is_album=parseDOM(content.text, name='img', attrs = { "class": "pic" }, ret='galleryimg' )  #this should return "no" but does not
+            #log( '  isalbum:' + pprint.pformat(is_album, indent=1) )
+            #add album checking code here. i think the galleryimg property in the img tag holds a clue but can't find gallery sample
+                 
+            image=parseDOM(content.text, name='img', attrs = { "class": "pic" }, ret="src")[0]
+            #log( '  ' + repr(image ) )
+
+            #super(ClassImgTrex, self).get_playable(image)
+            filename,ext=parse_filename_and_ext_from_url(image)
+            if self.include_gif_in_get_playable:
+                if ext in ["mp4","webm","gif"]:
+                    if ext=='gif':
+                        self.link_action=sitesBase.DI_ACTION_PLAYABLE
+                        self.thumb_url=image
+                        self.poster_url=self.thumb_url
+                    return image,self.TYPE_VIDEO
+            else:
+                if ext in ["mp4","webm"]:
+                    self.link_action=self.DI_ACTION_PLAYABLE
+                    return image,self.TYPE_VIDEO
+     
+            if ext in image_exts:  #excludes .gif     ***** there were instances where imgtrex returned image extension as .jpg but it is actually .gif.    we can't do anything about this.
+                self.thumb_url=image
+                self.poster_url=self.thumb_url
+                return image,self.TYPE_IMAGE
+        
+        else:
+            log('    error: %s get_playable_url: %s' %(self.__class__.__name__, repr( content.status_code ) ) )
+            
+        return '', ''
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        return None    
+
+    def get_thumb_url(self):
+        pass
+
 class genericAlbum1(sitesBase):
     regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)'
     
@@ -2746,8 +2801,6 @@ def sitesManager( media_url ):
                 return subcls( media_url )
 
 def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False ):
-    
-    
     if not link_url: return
 
     hoster = sitesManager( link_url )
