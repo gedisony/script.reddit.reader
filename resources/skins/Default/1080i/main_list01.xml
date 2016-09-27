@@ -575,7 +575,7 @@
 		<control type="image">
 			<left>0</left>
 			<top>80</top>
-			<width>484</width>
+			<width>594</width>
 			<height>920</height>
 			
 			<colordiffuse>FFFFFFFF</colordiffuse>
@@ -587,7 +587,7 @@
 		<top>80</top>
 	<!-- include name="MediaMenuListCommon"-->
 			<left>0</left>
-			<width>430</width>
+			<width>530</width>
 			<height>1080</height>
 			<onleft>9000</onleft>
 			<onup>9000</onup>
@@ -597,7 +597,7 @@
 			<control type="button" id="6052">
 				<visible>true</visible><description>go to subreddit. subreddit is stored in genre</description>
 				<enable>!String.IsEmpty(Container(55).ListItem.Property(goto_subreddit_action))</enable>
-					<width>430</width>
+					<width>530</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
 					<height>60</height>
@@ -618,7 +618,7 @@
 				<visible>false</visible><description>zoom_n_slide</description>
 				<enable>!String.IsEmpty(Container(55).ListItem.Property(zoom_n_slide_action))</enable>
 				<ondown>6050</ondown>
-					<width>430</width>
+					<width>530</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
 					<height>60</height>
@@ -644,7 +644,7 @@
 						<top>0</top>
 						<left>0</left>
 						<height>60</height>
-						<width>200</width>
+						<width>250</width>
 				<onup>6053</onup>
 				<ondown>6055</ondown>
 				<onright>6057</onright>
@@ -663,9 +663,9 @@
 					<visible>true</visible><description>play from here</description>
 					<enable>true</enable>
 						<top>0</top>
-						<left>200</left>
+						<left>250</left>
 						<height>60</height>
-						<width>230</width>
+						<width>280</width>
 				<onup>6053</onup>
 				<ondown>6055</ondown>
 				<onleft>6054</onleft>
@@ -685,7 +685,7 @@
 			<control type="button" id="6055">
 				<visible>true</visible><description>Slideshow all images</description>
 				<enable>true</enable>
-					<width>430</width>
+					<width>530</width>
 					<textoffsetx>20</textoffsetx>
 					<top>0</top>
 					<height>60</height>
@@ -757,7 +757,7 @@
 			<control type="list" id="550"><description>This listbox displays the subreddits</description>
 				<left>2</left>
 				<top>3</top>
-				<width>430</width>
+				<width>530</width>
 				<height>740</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
@@ -769,13 +769,24 @@
 					<control type="image">
 						<left>0</left>
 						<top>0</top>
-						<width>1396</width>
+						<width>496</width>
 						<height>43</height>
 						<texture colordiffuse="FF12A8DA">srr_focus.png</texture>
 						<visible>Control.HasFocus(550)</visible>
 					</control>
+					<control type="button">
+						<left>5</left>
+						<top>0</top>
+						<height>43</height>
+						<width>40</width>
+						<aligny>center</aligny>
+						<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+						<texturenofocus border="30">srr_separator.png</texturenofocus>
+      					<font>font13</font>
+						<label>·</label>
+					</control>				
 					<control type="label"><!-- ListItem.Label -->
-						<left>10</left>
+						<left>30</left>
 						<top>0</top>
 						<height>43</height>
 						<width>410</width>
@@ -790,7 +801,7 @@
 				</focusedlayout>
 				<itemlayout height="43">
 					<control type="label"><!-- ListItem.Label -->
-						<left>10</left>
+						<left>30</left>
 						<top>0</top>
 						<height>43</height>
 						<width>410</width>
@@ -799,6 +810,7 @@
 						<label>$INFO[ListItem.Label]</label>
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
+					
 				</itemlayout>
 			</control>
 			

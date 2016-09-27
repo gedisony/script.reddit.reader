@@ -226,7 +226,7 @@ class indexGui(cGUI):
 
             item_type   =item.getProperty('item_type').lower()
                         
-            if action == xbmcgui.ACTION_MOVE_LEFT:
+            if action in [ xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_CONTEXT_MENU ]:
                 ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
                 log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
                 #xbmc.executebuiltin("ActivateWindow(busydialog)")
@@ -268,7 +268,6 @@ class listSubRedditGUI(cGUI):
     
     def onAction(self, action):
         
-        
         if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
             self.close()
 
@@ -307,7 +306,7 @@ class listSubRedditGUI(cGUI):
             if action == xbmcgui.ACTION_MOVE_RIGHT:
                 self.setFocusId(self.main_control_id)
 
-            if action == xbmcgui.ACTION_MOVE_LEFT and focused_control==self.SUBREDDITS_LIST :
+            if focused_control==self.SUBREDDITS_LIST and ( action in [ xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_CONTEXT_MENU ]  ) :
                 item = self.subreddits_listbox.getSelectedItem()
                 ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
                 #log( "   left pressed  %d  url=%s " %(  self.gui_listbox_SelectedPosition, ACTION_manage_subreddits )   )
@@ -406,11 +405,8 @@ class listSubRedditGUI(cGUI):
             
             action=build_script('autoPlay', rq,'','')
             log('  PLAY_FROM_HERE %d %s %s' %( i, post_id_bs, list_item_bs.getLabel() ) )
-            
             self.busy_execute_sleep(action, 10000,False)
-            
             pass
-
 
         elif controlID == self.BTN_SLIDESHOW:
             #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui

@@ -2172,7 +2172,8 @@ git checkout -b <add-on-branch-name>                       <------while testing,
 *** remove the "-master"  --> plugin.video.reddit_viewer
 *** 
 *** this is what i did:
-$ git commit -m "[plugin.video.reddit_viewer] 2.7.1"
+$ git commit -m "[script.reddit.reader] 0.5.7"
+
 On branch add-on-branch-name
 Untracked files:
         plugin.video.reddit_viewer/                <------ error message
@@ -2182,7 +2183,7 @@ nothing added to commit but untracked files present
 edipc@DESKTOP-5C55U1P MINGW64 ~/kodi stuff/repo-plugins (add-on-branch-name)
 $ git add .    <---- did this to fix the error.
 
-$ git commit -m "[plugin.video.reddit_viewer] 2.7.1"  <------- this will now work
+$ git commit -m "[script.reddit.reader] 0.5.7"  <------- this will now work
 
 
 #Push your topic branch up to your fork:
@@ -2194,6 +2195,8 @@ git push origin add-on-branch-name
 *** on browser: click on pull request
 upper left : base fork: xbmc/repo-plugins         base:    jarvis
 upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
+(click on green button create pull request)
+
 *** the clear title till be [plugin.video.reddit_viewer] 2.7.1
 *** (don't know what description) left it as blank
 
