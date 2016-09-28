@@ -2140,6 +2140,7 @@ class ClassImgbox(sitesBase):
             if div_item_list:
                 thumbs = parseDOM(div_item_list, "img", ret = "src" )
                 href   = parseDOM(div_item_list,   "a", ret = "href" )
+                
                 #reassemble href into the image urls
                 images = ('http://i.imgbox.com%s.jpg' %s for s in href)
                 #self.assemble_images_dictList( images )
@@ -2149,7 +2150,7 @@ class ClassImgbox(sitesBase):
             
                 #assemble_images_dictList expects the 1st item to be the image title, we don't have one
                 #add an additional column in out multidimensional list
-                list3 = [('',i,t) for i,t in list3]
+                list3 = [['',i,t] for i,t in list3]
                 
                 #for i in list3:
                 #    log('    ' + repr(i))
@@ -2157,7 +2158,6 @@ class ClassImgbox(sitesBase):
                 #for i in images:
                 #    log('    ' + i)
                     
-            
                 self.assemble_images_dictList( list3 )
             else:
                 log('      %s: cant find <div ... id="gallery-view-content"> '  %(self.__class__.__name__ ) )
