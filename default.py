@@ -654,7 +654,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     from resources.lib.domains import parse_reddit_link, sitesBase
 
     DirectoryItem_url=''
-    
     post_title=title
     il_description=""
     
@@ -699,13 +698,14 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
     
     #----- assign actions
-    if preview_ar>0 and preview_ar < 0.5625 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
+    if preview_ar>0 and preview_ar < 0.7 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
         #from resources.lib.utils import link_url_is_playable
         #log('*****%f '%preview_ar)
         #if link_url_is_playable(link_url):
         #log('*****has zoom_n_slide_action ')
-        liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,str(preview_w),str(preview_h) ) )                      
-
+        #liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,str(preview_w),str(preview_h) ) )
+        #actual ar check in parse_reddit_link     
+        pass 
         
     if preview_ar>1.25:   #this measurement is related to control id 203's height
         #log('    ar and description criteria met') 
@@ -743,7 +743,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     if previewimage: needs_preview=False  
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
     
-    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False  )
+    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
 
     if previewimage=="":
         liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
@@ -752,9 +752,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         
 
 
-#     log( '          reddit thumb[%s] ' %(iconimage ))
-#     log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-#     if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+#    log( '          reddit thumb[%s] ' %(iconimage ))
+#    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+#    if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
         #log('###' + repr(ld.playable_url) )
@@ -769,19 +769,21 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         if iconimage in ["","nsfw", "default"]:
             iconimage=ld.thumb
 
-
-    
-
         if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
             property_link_type=ld.link_action
             DirectoryItem_url =ld.playable_url
         else:
             property_link_type='script'
-            DirectoryItem_url = build_script(mode=ld.link_action, 
-                                             url=ld.playable_url, 
-                                             name=post_title , 
-                                             type=previewimage ) 
-        
+            if ld.link_action=='viewTallImage' : #viewTallImage take different args
+                DirectoryItem_url = build_script(mode=ld.link_action, 
+                                                 url=ld.playable_url,
+                                                 name=str(preview_w),
+                                                 type=str(preview_h) ) 
+            else:  
+                DirectoryItem_url = build_script(mode=ld.link_action, 
+                                                 url=ld.playable_url, 
+                                                 name=post_title , 
+                                                 type=previewimage ) 
         
         #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
         
@@ -1607,11 +1609,79 @@ def translation(id):
 #     ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=url, listitem=liz)
 #     return ok
 
+def viewTallImage(image_url, width, height):
+    from resources.lib.utils import unescape
+    log( 'viewTallImage %s: %sx%s' %(image_url, width, height))
+    #image_url=unescape(image_url) #special case for handling reddituploads urls
+    #log( 'viewTallImage %s: %sx%s' %(image_url, width, height))
+
+    xbmc_busy(False)
+        
+    can_quit=True
+    if can_quit==True:
+        useWindow=xbmcgui.WindowDialog()
+        useWindow.setCoordinateResolution(0)
+    
+        try:
+            w=int(float(width))
+            h=int(float(height))
+            optimal_h=int(h*1.5)
+            #log( '    **' + repr(h))
+            loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+            
+            img_control = xbmcgui.ControlImage(0, 800, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+            img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
+    
+            #the cached image is of lower resolution. we force nocache by using setImage() instead of defining the image in ControlImage()
+            img_control.setImage(image_url, False)
+                    
+            useWindow.addControls( [ img_loading, img_control])
+            #useWindow.addControl(  img_control )
+            
+            scroll_time=(int(h)/int(w))*20000
+            
+            img_control.setAnimations( [ 
+                                        ('conditional', "condition=true effect=fade  delay=0    start=0   end=100   time=4000 "  ) ,
+                                        ('conditional', "condition=true effect=slide delay=2000 start=0,-%d end=0,0 tween=sine easing=in time=%d pulse=true" %( (h*1.4), scroll_time) ),
+                                        ]  )
+            
+            useWindow.doModal()
+            useWindow.removeControls( [img_control,img_loading] )
+            del useWindow
+        except Exception as e:
+            log("  EXCEPTION viewTallImage:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
+    
+    else:
+        # can be done this way but can't get keypress to exit animation
+        useWindow = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
+        xbmc_busy(False)
+        w=int(float(width))
+        h=int(float(height))
+        optimal_h=int(h*1.5)
+        #log( '    **' + repr(h))
+        loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+         
+        img_control = xbmcgui.ControlImage(0, 1080, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+        img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
+     
+        #the cached image is of lower resolution. we force nocache by using setImage() instead of defining the image in ControlImage()
+        img_control.setImage(image_url, False)
+        useWindow.addControls( [ img_loading, img_control])
+        scroll_time=int(h)*(int(h)/int(w))*10
+        img_control.setAnimations( [ 
+                                    ('conditional', "condition=true effect=fade  delay=0    start=0   end=100   time=4000 "  ) ,
+                                    ('conditional', "condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %( (h*1.6) ,scroll_time) ),
+                                    ('conditional', "condition=true effect=fade  delay=%s   start=100 end=0     time=2000 " %(scroll_time*1.8) ) ,
+                                    ]  )
+        xbmc.sleep(scroll_time*2)
+        useWindow.removeControls( [img_control,img_loading] )
+    
+
 
 def zoom_n_slide(image, width, height):
     from resources.lib.utils import calculate_zoom_slide
     #url=image, name=width, type=height
-    log( 'zoom_n_slide %s: %s,%s' %(image, width, height))
+    log( 'zoom_n_slide %s: %sx%s' %(image, width, height))
     
     try:
         w=int(width)
@@ -2092,6 +2162,7 @@ if __name__ == '__main__':
 #                     ,'listVidbleAlbum'      : listVidbleAlbum 
 #                     ,'listImgboxAlbum'      : listImgboxAlbum
                     ,'viewImage'            : viewImage
+                    ,'viewTallImage'        : viewTallImage                    
                     ,'listLinksInComment'   : listLinksInComment
 #                     ,'playVineVideo'        : playVineVideo
                     ,'playYTDLVideo'        : playYTDLVideo

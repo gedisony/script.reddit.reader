@@ -138,6 +138,13 @@ class sitesBase(object):
     
     def clog(self, error_code, request_url):
         log("    %s error:%s %s" %( self.__class__.__name__, error_code ,request_url) )
+
+    def get_first_url_from(self,string_with_url):
+        match = re.compile("(https?://[^\s/$.?#].[^\s]*)['\\\"](?:$)?").findall(string_with_url)
+        #log('    matches' + repr(match) )
+        if match: 
+            return match[0]        
+
     
     def assemble_images_dictList(self,images_list):
         title=''
@@ -1875,7 +1882,7 @@ class ClassEroshare(sitesBase):
         #    log('      retrieved:'+ str(content) )
         
         if content.status_code==200:
-            match = re.compile('var album\s=\s(\{.*\});', re.DOTALL).findall(content.text)
+            match = re.compile('var album\s=\s(.*)\;').findall(content.text)
             #log('********* ' + match[0])    
             if match:
                 j = json.loads(match[0])
@@ -1950,7 +1957,7 @@ class ClassEroshare(sitesBase):
         content = requests.get( album_url )
         
         if content.status_code==200:
-            match = re.compile('var album\s=\s(\{.*\});', re.DOTALL).findall(content.text)
+            match = re.compile('var album\s=\s(.*)\;').findall(content.text)
             #log('********* ' + match[0])    
             if match:
                 j = json.loads(match[0])
@@ -2171,7 +2178,7 @@ class ClassReddit(sitesBase):
     def get_playable_url(self, link_url, is_probably_a_video):
         from utils import assemble_reddit_filter_string
         self.get_video_id()
-        log('    subreddit=' + self.video_id )
+        #log('    subreddit=' + self.video_id )
 
         self.media_type=sitesBase.TYPE_REDDIT
         
@@ -2621,8 +2628,9 @@ class ClassImgTrex(sitesBase):
         pass
 
 class genericAlbum1(sitesBase):
-    regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)'
-    
+    regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)|(hentailair.xyz)'
+    #links are checked for valid image extensions. use no_ext to bypass this check
+     
     ps=[  [ 'houseofsummersville.com', '',          ['div', { "dir": "ltr" },None],  
                                                     ['div', { "class": "separator" },None], 
                                                     ['a', {}, "href"]     
@@ -2634,13 +2642,19 @@ class genericAlbum1(sitesBase):
                                                    # ['li', { "class": "list-asset-item" },None],
                                                     ['img', {}, "src"]          
             ],
+          [         'hentailair.xyz', '',           ['div', { "class": "box-inner-block" },None],   # with hentailair.xyz->imgtrex the actual image is in  the style attribute of the img tag  
+                                                    ['a', {}, "style"]                              #  "background-image: url('http://raptor.imgtrex.com/i/01882/gntod25j7lcf_t.jpg'); background-size: cover; background-position: 50% 50%; background-repeat: no-repeat;"
+            ],
         ]
+
     
     def get_playable_url(self, link_url, is_probably_a_video=False ):
         return link_url, self.TYPE_ALBUM
     
     def get_thumb_url(self):
-        pass
+        img=self.request_meta_ogimage_content()
+        self.thumb_url=img
+        self.poster_url=self.thumb_url
     
     def ret_album_list(self, album_url, thumbnail_size_code=''):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
@@ -2655,7 +2669,7 @@ class genericAlbum1(sitesBase):
             
             images=self.get_images(html, p)
             
-            for i in images: log( repr(i) )
+            #for i in images: log( '      ' + repr(i) )
             
             #log( pprint.pformat(self.dictList, indent=1) ) 
                 
@@ -2695,9 +2709,9 @@ class genericAlbum1(sitesBase):
             #log( '***name=%s, attrs=%s, ret=%s)' %(p[2][0], p[2][1], p[2][2])) 
             big_div=parseDOM(html, name=p[2][0], attrs=p[2][1], ret=p[2][2])
             if big_div:
-                #log('          big_div=' + repr(big_div))
+                #log('     %d     big_div=%s' %( len(big_div), pprint.pformat(big_div)) )
                 imgs = parseDOM(big_div,name=p[3][0], attrs=p[3][1], ret=p[3][2])
-                #log('          image_o=' + repr(image_o))
+                #log('     %d       imags=%s' %( len(imgs)   , pprint.pformat(imgs) )   )
                 self.append_imgs( imgs, p, images)
         elif len(p)==3:
             #log( '***name=%s, attrs=%s, ret=%s)' %(p[1][0], p[1][1], p[1][2])) 
@@ -2712,12 +2726,13 @@ class genericAlbum1(sitesBase):
             for i in imgs:
                 #log('          i=' + repr(i))
                 if i:
+                    i=self.get_first_url_from(i)   # this is added for hentailair.xyz the actual image is in the style attribute of the img tag. probably fine for others
+                    
                     if p_options=='no_ext':   #don't check for image extensions
                         images_list.append( i )
                     else:
                         if link_url_is_playable( i ) == 'image':
                             images_list.append( i )
-        
 
 class genericImage(sitesBase):
     regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
@@ -2800,7 +2815,7 @@ def sitesManager( media_url ):
                 #log('      *****match '+ subcls.regex )
                 return subcls( media_url )
 
-def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False ):
+def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False, image_ar=0 ):
     if not link_url: return
 
     hoster = sitesManager( link_url )
@@ -2821,7 +2836,11 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             if not hoster.link_action:
                 if media_type==sitesBase.TYPE_IMAGE:
-                    hoster.link_action='viewImage'
+                    if image_ar>0 and image_ar < 0.7: #special action for tall images 
+                        hoster.link_action='viewTallImage'
+                    else:
+                        hoster.link_action='viewImage'
+                        
                 if media_type==sitesBase.TYPE_ALBUM:
                     hoster.link_action='listAlbum'
 #                 if media_type==sitesBase.TYPE_RDIT_IMG:  #reddit preview image is as good as the one from link
