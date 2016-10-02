@@ -1709,59 +1709,6 @@ def zoom_n_slide(image, width, height):
         log("  EXCEPTION zoom_n_slide:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
     
 
-def molest_xml(url, name, type):
-    #from resources.lib.guis import cGUI
-    log( 'molest_xml %s-%s-%s' %(url, name, type))
-    #li=[]
-
-    CurrentWindow = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
-    #log( '  cwi:'+ str(CurrentWindow) )
-    
-    try:
-        ctl=CurrentWindow.getControl(65591)
-        log( 'setting visible' )
-        ctl.setVisible(True)
-        xbmc.sleep(5)
-        #win.addControl()
-        
-        ctl2=CurrentWindow.getControl(201)
-        #CurrentWindow.removeControl(ctl2)
-        #aa=ctl2.getProperty('width')
-        #log("  aa"+str(aa))
-        
-        #doesn't work
-        #ctl2.setImage('d:\\test.png')
-        #CurrentWindow.show()
-        
-        #works
-        #ctl3=xbmcgui.ControlLabel(200,200,100,50, "labellasdas", "font14")
-        #ctl3=xbmcgui.ControlImage(1200, 200, 500, 500, 'http://target.scene7.com/is/image/Target/15773403', aspectRatio=0)
-        #CurrentWindow.addControl(ctl3)
-        
-        
-        #read later:  Is it possible set animation windowopen via script ?      http://forum.kodi.tv/showthread.php?tid=210316
-        
-        
-        #ctl3.setAnimations([ ('WindowOpen', 'effect=zoom center=960 time=2000') , ('conditional', 'condition=true effect=slide delay=2000 start=10,10 end=1280,10 time=5000 loop=true',) ] )
-        #ctl3.setAnimations([ ('conditional','condition=true effect=slide delay=2000 start=10,10 end=10,510 time=5000 loop=true')  ] )
-        #ctl3.setAnimations([('conditional', 'condition=true effect=slide pulse=true delay=1000 start=10,10 end=1280,10 time=2000',)])
-        
-        #ctl3.setAnimations([('conditional', 'condition=true pulse=True effect=zoom end=150 time=2000'), ('conditional', 'condition=true effect=slide delay=2000 start=10,10 end=1280,10 time=5000 loop=true') ])
-        
-        
-    except Exception as e:
-        log("  EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
-        
-        
-    #ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-    #ui.addItems(li )
-    
-    #ui.doModal()
-    #del ui
-    
-    pass
-
-   
 def callwebviewer(url, name, type):
     log( " callwebviewer")
 
@@ -2146,45 +2093,24 @@ if __name__ == '__main__':
     plugin_modes = {'index'                 : index
                     ,'listSubReddit'        : listSubReddit
                     ,'playVideo'            : playVideo           
-#                     ,'playGfycatVideo'      : playGfycatVideo   
                     ,'addSubreddit'         : addSubreddit         
                     ,'editSubreddit'        : editSubreddit         
                     ,'removeSubreddit'      : removeSubreddit      
                     ,'autoPlay'             : autoPlay
                     ,'autoSlideshow'        : autoSlideshow                           
-#                     ,'queueVideo'           : queueVideo     
-#                     ,'addToFavs'            : addToFavs      
-#                     ,'removeFromFavs'       : removeFromFavs
                     ,'searchReddits'        : searchReddits          
-#                    ,'playImgurVideo'       : playImgurVideo      
                     ,'listAlbum'            : listAlbum        #slideshowAlbum
-#                     ,'listImgurAlbum'       : listImgurAlbum
-#                     ,'listEroshareAlbum'    : listEroshareAlbum
-#                     ,'listVidbleAlbum'      : listVidbleAlbum 
-#                     ,'listImgboxAlbum'      : listImgboxAlbum
                     ,'viewImage'            : viewImage
                     ,'viewTallImage'        : viewTallImage                    
                     ,'listLinksInComment'   : listLinksInComment
-#                     ,'playVineVideo'        : playVineVideo
                     ,'playYTDLVideo'        : playYTDLVideo
-#                     ,'playVidmeVideo'       : playVidmeVideo
-#                     ,'listTumblrAlbum'      : listTumblrAlbum
-#                     ,'playStreamable'       : playStreamable
-#                     ,'playInstagram'        : playInstagram
-#                     ,'playFlickr'           : playFlickr
-#                     ,'listFlickrAlbum'      : playFlickr 
-                    ,'molest_xml'           : molest_xml    #for testing 
                     ,'zoom_n_slide'         : zoom_n_slide
-                    ,'test_menu'            : test_menu 
                     ,'manage_subreddits'    : manage_subreddits
                     ,'callwebviewer'        : callwebviewer
                     ,'get_refresh_token'    : reddit_get_refresh_token
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
                     }
-
-#                    ,'playLiveLeakVideo'    : playLiveLeakVideo  
-
     
     #'playYTDLVideo','listLinksInComment' takes a long time to complete. when these modes are called from the gui, a long xbmc.executebuiltin("ActivateWindow(busydialog)") is run
     #   we close the busy dialog if running other modes 
@@ -2193,13 +2119,6 @@ if __name__ == '__main__':
     
     #whenever a list item is clicked, this part handles it.
     plugin_modes[mode](url,name,typez)
-
-#    usually this plugin is called by a list item constructed like the one below
-#         u = sys.argv[0]+"?url=&mode=addSubreddit&type="   #these are the arguments that is sent to our plugin and processed by plugin_modes
-#         liz = xbmcgui.ListItem("Add Subreddit",label2="aaa", iconImage="DefaultFolder.png", thumbnailImage="")
-#         liz.setInfo(type="Video", infoLabels={"Title": "aaaaaaa", "Plot": "description", "Aired": "daate", "mpaa": "aa"})
-#         xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=True)
-
 
 
 '''

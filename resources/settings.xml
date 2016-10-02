@@ -16,30 +16,7 @@
         <setting id="subreddit_filter"         type="text" label="32105" default=""/>
         <setting id="main_gui_skin"            type="text" label="32108" default="main_list01.xml"/>
     </category>
-    <!-- category label="30120">
-        <setting id="showAllNewest"         type="bool" label="30121" default="false"/>
-        <setting id="showUnwatchedNewest"   type="bool" label="30122" default="true"/>
-        <setting id="showUnfinishedNewest"  type="bool" label="30123" default="false"/>
-        <setting type="sep" />
-        <setting id="showAll"               type="bool" label="30124" default="false"/>
-        <setting id="showUnwatched"         type="bool" label="30125" default="false"/>
-        <setting id="showUnfinished"        type="bool" label="30126" default="false"/>
-    </category>
-    <category label="30300">
-        <setting id="show_youtube"       type="bool" label="30301" default="true"/>
-        <setting id="show_vimeo"         type="bool" label="30302" default="true"/>
-        <setting id="show_liveleak"      type="bool" label="30303" default="true"/>
-        <setting id="show_dailymotion"   type="bool" label="30304" default="true"/>
-        <setting id="show_gfycat"        type="bool" label="30305" default="true"/>
-        <setting id="show_giphy"         type="bool" label="30306" default="true"/>
-        <setting id="show_vine"          type="bool" label="30307" default="true"/>
-        <setting id="show_streamable"    type="bool" label="30308" default="true"/>
-        <setting id="show_vidme"         type="bool" label="30309" default="true"/>
-        <setting id="show_videoLink"     type="bool" label="30313" default="true"/>
-        <setting id="show_ytdl_misc"     type="bool" label="30314" default="true"/>
-        <setting id="show_pornsites"     type="bool" label="30310" default="false"/>
-        
-    </category-->
+
     <category label="32200">
     	<setting id="slideshow_mode"           type="enum"   label="32201" lvalues="32202|32203|32204" default="1"/>
     	
@@ -63,7 +40,7 @@
         <!-- setting id="ll_downDir"                   type="folder"      label="30155" default=""/-->
         <!-- setting id="gfy_downDir"                  type="folder"      label="30156" default=""/-->
         <setting id="streamable_quality"               type="enum" label="32157" values="full|mobile" default="1" />
-        <setting id="use_ytdl_for_yt"                  type="bool" label="32112" default="false"/>
+        <!-- setting id="use_ytdl_for_yt"                  type="bool" label="32112" default="false"/-->
         <setting id="use_ytdl_for_unknown"             type="bool" label="32113" default="false"/>
         <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32114" default="false"/>
     </category>
