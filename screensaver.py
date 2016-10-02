@@ -83,7 +83,6 @@ def assemble_reddit_filter_string(subreddit, domain="" ):
             #url+='/user/sallyyy19/m/video'     
             #format_multihub(subreddit)
             if subreddit.startswith('/'):
-                #log("startswith/") 
                 url+=subreddit  #user can enter multihub with or without the / in the beginning
             else: url+='/'+subreddit
         else:
@@ -93,11 +92,7 @@ def assemble_reddit_filter_string(subreddit, domain="" ):
         site_filter=""
         url+= "/.json?"
 
-    #url+= "&"+nsfw       #nsfw = "nsfw:no+"
-    
     url += "&limit="+str(itemsPerPage)
-    #url += "&limit=12"
-    #log("assemble_reddit_filter_string="+url)
     return url
 
 if __name__ == '__main__':

@@ -2106,10 +2106,11 @@ def parameters_string_to_dict(parameters):
 #     return paramDict
 
 if __name__ == '__main__':
-    dbPath = getDbPath()
-    if dbPath:
-        conn = sqlite3.connect(dbPath)
-        c = conn.cursor()
+    # (10/2/2016) --- directly connecting to our databases is not allowed.
+    #dbPath = getDbPath()
+    #if dbPath:
+    #    conn = sqlite3.connect(dbPath)
+    #    c = conn.cursor()
 
     if len(sys.argv) > 1: 
         params=parameters_string_to_dict(sys.argv[1])

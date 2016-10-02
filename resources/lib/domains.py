@@ -226,12 +226,13 @@ class ClassYoutube(sitesBase):
         log('      youtube video id:' + self.video_id )
         
         if self.video_id:
-            if use_ytdl_for_yt:
-                self.link_action='playYTDLVideo'
-                return "http://youtube.com/v/" + self.video_id, self.TYPE_VIDEO
-            else:
-                self.link_action=self.DI_ACTION_PLAYABLE
-                return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
+            #if use_ytdl_for_yt:
+            # (10/2/2016) --- please only use script.module.youtube.dl if possible and remove these dependencies.
+            self.link_action='playYTDLVideo'
+            return "http://youtube.com/v/" + self.video_id, self.TYPE_VIDEO
+            #else:
+            #    self.link_action=self.DI_ACTION_PLAYABLE
+            #    return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
             self.link_action='playYTDLVideo'
@@ -680,11 +681,12 @@ class ClassVimeo(sitesBase):
         
         if self.video_id:
             #if use_ytdl_for_yt:  #ytdl can also handle vimeo
-            #    self.link_action=sitesBase.DI_ACTION_YTDL
-            #    return media_url, self.TYPE_VIDEO
+            # (10/2/2016) --- please only use script.module.youtube.dl if possible and remove these dependencies.
+            self.link_action=sitesBase.DI_ACTION_YTDL
+            return media_url, self.TYPE_VIDEO
             #else:
-            self.link_action=self.DI_ACTION_PLAYABLE
-            return "plugin://plugin.video.vimeo/play/?video_id=" + self.video_id, self.TYPE_VIDEO
+            #self.link_action=self.DI_ACTION_PLAYABLE
+            #return "plugin://plugin.video.vimeo/play/?video_id=" + self.video_id, self.TYPE_VIDEO
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
             #feed it to ytdl. sometimes link points to multiple streams: https://vimeo.com/mrmichaelrobinson/videos/ 
