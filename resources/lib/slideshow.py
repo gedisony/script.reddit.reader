@@ -58,7 +58,6 @@ def slideshowAlbum_old(dictlist, name):
 
     s.close()
     del s
-    sys.modules.clear()
     
     return
 

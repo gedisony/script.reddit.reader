@@ -2152,7 +2152,8 @@ git merge upstream/master
 
 
 #Create a new branch to contain your new add-on or subsequent update:
-git checkout -b <add-on-branch-name>                       <------while testing, i ended up naming the branch name as "add-on-branch-name"
+$ git checkout -b script.reddit.reader
+
 #The branch name isn't really relevant however a good suggestion is to name it like the addon ID.
 
 
@@ -2179,7 +2180,7 @@ $ git commit -m "[script.reddit.reader] 0.5.7"  <------- this will now work
 
 #Push your topic branch up to your fork:
 
-git push origin add-on-branch-name
+git push origin script.reddit.reader
 
 #Open a pull request with a clear title and description.
 

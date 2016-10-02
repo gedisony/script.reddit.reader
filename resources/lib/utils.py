@@ -16,22 +16,25 @@ image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp'] #exclude 
 
 def create_default_subreddits():
     #create a default file and sites
-    fh = open(subredditsFile, 'a')
-    #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
-    fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(32006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
-    fh.write('Documentaries+ArtisanVideos\n')
-    fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
-    fh.write('random\n')
-    #fh.write('randnsfw\n')
-    fh.write('[Frontpage]\n')
-    fh.write('all\n')
-    fh.write('aww+funny+Nickelodeons\n')
-    fh.write('music+listentothis+musicvideos\n')
-    fh.write('site:youtube.com\n')
-    fh.write('videos\n')
-    #fh.write('videos/new\n')
-    fh.write('woahdude+interestingasfuck+shittyrobots\n')
-    fh.close()
+    #fh = open(subredditsFile, 'a')
+    with open(subredditsFile, 'a') as fh:
+    
+        #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
+        fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(32006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
+        fh.write('Documentaries+ArtisanVideos\n')
+        fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
+        fh.write('random\n')
+        #fh.write('randnsfw\n')
+        fh.write('[Frontpage]\n')
+        fh.write('all\n')
+        fh.write('aww+funny+Nickelodeons\n')
+        fh.write('music+listentothis+musicvideos\n')
+        fh.write('site:youtube.com\n')
+        fh.write('videos\n')
+        #fh.write('videos/new\n')
+        fh.write('woahdude+interestingasfuck+shittyrobots\n')
+        fh.close()
+        
     #justiceporn
 
 def format_multihub(multihub):
