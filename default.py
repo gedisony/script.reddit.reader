@@ -205,7 +205,7 @@ def manage_subreddits(subreddit, name, type):
     elif selected_index == 2:     # 2-> third item
         removeSubreddit(subreddit,'','')
         pass
-    else:                         #-1 -> escape pressed or [cancel] 
+    else:                         #-1 -> escape pressed or [cancel]
         pass
     
     xbmc.executebuiltin( "Dialog.Close(busydialog)" )
@@ -2125,10 +2125,10 @@ if __name__ == '__main__':
 github notes:  (6-27-2016)
 
 # Clone your fork of kodi's repo into the current directory in terminal
-git clone git@github.com:gedisony/repo-plugins.git repo-plugins
+git clone git@github.com:gedisony/repo-scripts.git repo-scripts
 
 # Navigate to the newly cloned directory
-cd repo-plugins
+cd repo-scripts
 
 # Assign the original repo to a remote called "upstream"
 git remote add upstream https://github.com/xbmc/repo-plugins.git
