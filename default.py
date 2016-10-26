@@ -19,8 +19,6 @@ import urlparse
 #import SimpleDownloader
 import requests
 
-# import shelve
-# import shutil
 
 import threading
 from Queue import Queue, Empty
@@ -80,10 +78,6 @@ opener.addheaders = [('User-Agent', reddit_userAgent)]
 urlMain = "https://www.reddit.com"
 
 
-#filter           = addon.getSetting("filter") == "true"
-#filterRating     = int(addon.getSetting("filterRating"))
-#filterThreshold  = int(addon.getSetting("filterThreshold"))
-
 # settings for automatically play videos
 # showAll              = addon.getSetting("showAll") == "true"
 # showUnwatched        = addon.getSetting("showUnwatched") == "true"
@@ -94,10 +88,6 @@ urlMain = "https://www.reddit.com"
 
 default_frontpage    = addon.getSetting("default_frontpage") 
 no_index_page        = addon.getSetting("no_index_page") == "true"
-
-# viewMode             = str(addon.getSetting("viewMode"))
-# comments_viewMode    = str(addon.getSetting("comments_viewMode"))
-# album_viewMode       = str(addon.getSetting("album_viewMode"))
 
 show_nsfw            = addon.getSetting("show_nsfw") == "true"
 domain_filter        = addon.getSetting("domain_filter")
@@ -158,28 +148,28 @@ def log(message, level=xbmc.LOGNOTICE):
     xbmc.log("reddit_reader:"+message, level=level)
 
 
-def getDbPath():
-    path = xbmc.translatePath("special://userdata/Database")
-    files = os.listdir(path)
-    latest = ""
-    for file in files:
-        if file[:8] == 'MyVideos' and file[-3:] == '.db':
-            if file > latest:
-                latest = file
-    if latest:
-        return os.path.join(path, latest)
-    else:
-        return ""
-def getPlayCount(url):
-    if dbPath:
-        c.execute('SELECT playCount FROM files WHERE strFilename=?', [url])
-        result = c.fetchone()
-        if result:
-            result = result[0]
-            if result:
-                return int(result)
-            return 0
-    return -1
+#def getDbPath():
+#    path = xbmc.translatePath("special://userdata/Database")
+#    files = os.listdir(path)
+#    latest = ""
+#    for file in files:
+#        if file[:8] == 'MyVideos' and file[-3:] == '.db':
+#            if file > latest:
+#                latest = file
+#    if latest:
+#        return os.path.join(path, latest)
+#    else:
+#        return ""
+#def getPlayCount(url):
+#    if dbPath:
+#        c.execute('SELECT playCount FROM files WHERE strFilename=?', [url])
+#        result = c.fetchone()
+#        if result:
+#            result = result[0]
+#            if result:
+#                return int(result)
+#            return 0
+#    return -1
     
 def manage_subreddits(subreddit, name, type):
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
@@ -219,9 +209,10 @@ def addSubreddit(subreddit, name, type):
     from resources.lib.utils import this_is_a_multihub, format_multihub
     log( 'addSubreddit ' + subreddit)
     alreadyIn = False
-    fh = open(subredditsFile, 'r')
-    content = fh.readlines()
-    fh.close()
+    
+    with open(subredditsFile, 'r') as fh:
+        content = fh.readlines()
+        #fh.close()
     
     if subreddit:
         for line in content:
@@ -230,9 +221,9 @@ def addSubreddit(subreddit, name, type):
                 #log('  MATCH '+line+'='+subreddit)
                 alreadyIn = True
         if not alreadyIn:
-            fh = open(subredditsFile, 'a')
-            fh.write(subreddit+'\n')
-            fh.close()
+            with open(subredditsFile, 'a') as fh:
+                fh.write(subreddit+'\n')
+                #fh.close()
     else:
         #dialog = xbmcgui.Dialog()
         #ok = dialog.ok('Add subreddit', 'Add a subreddit (videos)','or  Multiple subreddits (music+listentothis)','or  Multireddit (/user/.../m/video)')
@@ -251,35 +242,37 @@ def addSubreddit(subreddit, name, type):
                 if line.lower()==subreddit.lower()+"\n":
                     alreadyIn = True
             if not alreadyIn:
-                fh = open(subredditsFile, 'a')
-                fh.write(subreddit+'\n')
-                fh.close()
+                with open(subredditsFile, 'a') as fh:
+                    fh.write(subreddit+'\n')
+                    #fh.close()
+                    
         xbmc.executebuiltin("Container.Refresh")
 
 #MODE removeSubreddit      - name, type not used
 def removeSubreddit(subreddit, name, type):
     log( 'removeSubreddit ' + subreddit)
      
-    fh = open(subredditsFile, 'r')
-    content = fh.readlines()
-    fh.close()
+    with open(subredditsFile, 'r') as fh:
+        content = fh.readlines()
+
     contentNew = ""
     for line in content:
         if line!=subreddit+'\n':
             #log('line='+line+'toremove='+subreddit)
             contentNew+=line
-    fh = open(subredditsFile, 'w')
-    fh.write(contentNew)
-    fh.close()
+    with open(subredditsFile, 'w') as fh:
+        fh.write(contentNew)
+        #fh.close()
     xbmc.executebuiltin("Container.Refresh")
 
 def editSubreddit(subreddit, name, type):
     from resources.lib.utils import this_is_a_multihub, format_multihub
     log( 'editSubreddit ' + subreddit)
      
-    fh = open(subredditsFile, 'r')
-    content = fh.readlines()
-    fh.close()
+    with open(subredditsFile, 'r') as fh:
+        content = fh.readlines()
+        #fh.close()
+        
     contentNew = ""
 
     keyboard = xbmc.Keyboard(subreddit, translation(30003))
@@ -297,12 +290,11 @@ def editSubreddit(subreddit, name, type):
             else:
                 contentNew+=line
 
-        fh = open(subredditsFile, 'w')
-        fh.write(contentNew)
-        fh.close()
+        with open(subredditsFile, 'w') as fh:
+            fh.write(contentNew)
+            #fh.close()
             
         xbmc.executebuiltin("Container.Refresh")    
-
 
 
 def index(url,name,type):
@@ -369,12 +361,6 @@ def listSubReddit(url, title_bar_name, type):
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
     
-    #url=r'https://www.reddit.com/r/videos/search.json?q=nsfw:yes+site%3Ayoutu.be+OR+site%3Ayoutube.com+OR+site%3Avimeo.com+OR+site%3Aliveleak.com+OR+site%3Adailymotion.com+OR+site%3Agfycat.com&sort=relevance&restrict_sr=on&limit=5&t=week'
-    #url='https://www.reddit.com/search.json?q=site%3Adailymotion&restrict_sr=&sort=relevance&t=week'
-    #url='https://www.reddit.com/search.json?q=site%3A4tube&sort=relevance&t=all'
-    #url="https://www.reddit.com/domain/tumblr.com.json"
-    #url="https://www.reddit.com/r/wiiu.json?&nsfw:no+&limit=13"
-
     #show_listSubReddit_debug=False
     show_listSubReddit_debug=True
     credate = ""
@@ -624,11 +610,10 @@ def skin_launcher(mode,**kwargs ):
     from resources.lib.utils import xbmcVersion
     from resources.lib.guis import listSubRedditGUI
         
-    kodi_version = xbmcVersion()
+    #kodi_version = xbmcVersion()
     #log( ' kodi version:%f' % kodi_version )
-    if kodi_version >= 17:  #krypton
-        pass
-    
+    #if kodi_version >= 17:  #krypton
+    #    pass
     
     title_bar_text=kwargs.get('title_bar_name')
     li=kwargs.get('li')
@@ -678,15 +663,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:
         il_description='%s' %( description )
 
-    #if title is long, put it in description so that it will trigger displaying under preview image
-    #if len(title) > 100 :
-    #il_description=title + description
-
-        
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-
-    #if poster_url=="":
-    #    poster_url=iconimage
     
     #log( "  PLOT:" +il_description )
     liz=xbmcgui.ListItem(label=post_title
@@ -726,19 +703,15 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #liz.addStreamInfo('video', { 'codec': 'preview_ar','aspect': preview_ar, 'width': preview_w, 'height': preview_h } )  #how to retrieve?
     #liz.setProperty('aspectt', '2.0')   #retrieve this with $INFO[ListItem.property(aspectt)]
     #liz.setInfo(type='pictures', infoLabels={'exif:resolution': '%d,%d' %( preview_w, preview_h)  } ) $INFO[ListItem.PictureResolution]
-    
 
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
     clearart=ret_info_type_icon('', '')
     liz.setArt({ "clearart": clearart  })
-
     
     #force all links to ytdl to see if they are playable 
     if use_ytdl_for_unknown:
         liz.setProperty('item_type','script')         
         liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
-
-
 
     if previewimage: needs_preview=False  
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
@@ -750,7 +723,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
         
-
 
 #    log( '          reddit thumb[%s] ' %(iconimage ))
 #    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
@@ -796,29 +768,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         pass
 
     return liz
-
-
-
-
-
-#MODE listFavourites -  name, type not used
-# def listFavourites(subreddit, name, type):
-#     xbmcplugin.setContent(pluginhandle, "episodes")
-#     file = os.path.join(addonUserDataFolder, subreddit+".fav")
-#     xbmcplugin.addSortMethod(pluginhandle, xbmcplugin.SORT_METHOD_LABEL)
-#     if os.path.exists(file):
-#         fh = open(file, 'r')
-#         content = fh.read()
-#         fh.close()
-#         match = re.compile('<favourite name="(.+?)" url="(.+?)" description="(.+?)" thumb="(.+?)" date="(.+?)" site="(.+?)" />', re.DOTALL).findall(content)
-#         for name, url, desc, thumb, date, site in match:
-#             addFavLink(name, url, "playVideo", thumb, desc.replace("<br>","\n"), date, site, subreddit)
-#     if forceViewMode:
-#         xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
-#     xbmcplugin.endOfDirectory(pluginhandle)
-
-
-
 
 
 q = Queue()
@@ -880,8 +829,6 @@ def autoPlay(url, name, type):
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
             pass
-    
-     
     
     #for i,e in enumerate(entries): log('  e1-%d %s:' %(i, e[1]) )
     def k2(x): return x[1]
@@ -1209,10 +1156,6 @@ def playYTDLVideo(url, name, type):
         #log( "zz   " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
 
-    #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-        
-        
-        #xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(  Gfycat.com, translation(32010) )  )
 
 def listLinksInComment(url, name, type):
     from resources.lib.domains import parse_reddit_link, sitesBase
@@ -1541,73 +1484,13 @@ def r_linkHunter(json_node,d=0):
                     harvest.append((score, link_desc, link_http, self_text, self_text_html, d, "t3",author,created_utc,)   )    
 
 #MODE queueVideo       -type not used
-def queueVideo(url, name, type):
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    listitem = xbmcgui.ListItem(name)
-    playlist.add(url, listitem)
-
-#MODE addToFavs         -name not used
-def addToFavs(url, name, subreddit):
-    file = os.path.join(addonUserDataFolder, subreddit+".fav")
-    if os.path.exists(file):
-        fh = open(file, 'r')
-        content = fh.read()
-        fh.close()
-        if url not in content:
-            fh = open(file, 'w')
-            fh.write(content.replace("</favourites>", "    "+url.replace("\n","<br>")+"\n</favourites>"))
-            fh.close()
-    else:
-        fh = open(file, 'a')
-        fh.write("<favourites>\n    "+url.replace("\n","<br>")+"\n</favourites>")
-        fh.close()
-
-#MODE removeFromFavs      -name not used
-def removeFromFavs(url, name, subreddit):
-    file = os.path.join(addonUserDataFolder, subreddit+".fav")
-    fh = open(file, 'r')
-    content = fh.read()
-    fh.close()
-    fh = open(file, 'w')
-    fh.write(content.replace("    "+url.replace("\n","<br>")+"\n", ""))
-    fh.close()
-    xbmc.executebuiltin("Container.Refresh")
-
-#searchReddits      --url, name, type not used
-def searchReddits(url, name, type):
-    keyboard = xbmc.Keyboard('sort=new&t=week&q=', translation(32005))
-    keyboard.doModal()
-    if keyboard.isConfirmed() and keyboard.getText():  
-        
-        #search_string = urllib.quote_plus(keyboard.getText().replace(" ", "+"))
-        search_string = keyboard.getText().replace(" ", "+")
-        
-        #sites_filter = site_filter_for_reddit_search()
-        url = urlMain +"/search.json?" +search_string    #+ '+' + nsfw  # + sites_filter skip the sites filter
-
-        listSubReddit(url, name, "")
-        
+#def queueVideo(url, name, type):
+#    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+#    listitem = xbmcgui.ListItem(name)
+#    playlist.add(url, listitem)
 
 def translation(id):
     return addon.getLocalizedString(id).encode('utf-8')
-
-# def addFavLink(name, url, mode, iconimage, description, date, site, subreddit):
-#     ok = True
-#     liz = xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
-#     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": description, "Aired": date})
-#     liz.setProperty('IsPlayable', 'true')
-#     entries = []
-#     entries.append((translation(30018), 'RunPlugin(plugin://'+addonID+'/?mode=queueVideo&url='+urllib.quote_plus(url)+'&name='+urllib.quote_plus(name)+')',))
-#     favEntry = '<favourite name="'+name+'" url="'+url+'" description="'+description+'" thumb="'+iconimage+'" date="'+date+'" site="'+site+'" />'
-#     entries.append((translation(30024), 'RunPlugin(plugin://'+addonID+'/?mode=removeFromFavs&url='+urllib.quote_plus(favEntry)+'&type='+urllib.quote_plus(subreddit)+')',))
-#     if showBrowser and (osWin or osOsx or osLinux):
-#         if osWin and browser_win==0:
-#             entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.webbrowser/?url='+urllib.quote_plus(site)+'&mode=showSite&zoom='+browser_wb_zoom+'&stopPlayback=no&showPopups=no&showScrollbar=no)',))
-#         else:
-#             entries.append((translation(30021), 'RunPlugin(plugin://plugin.program.chrome.launcher/?url='+urllib.quote_plus(site)+'&mode=showSite)',))
-#     liz.addContextMenuItems(entries)
-#     ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=url, listitem=liz)
-#     return ok
 
 def viewTallImage(image_url, width, height):
     from resources.lib.utils import unescape
@@ -1676,8 +1559,6 @@ def viewTallImage(image_url, width, height):
         xbmc.sleep(scroll_time*2)
         useWindow.removeControls( [img_control,img_loading] )
     
-
-
 def zoom_n_slide(image, width, height):
     from resources.lib.utils import calculate_zoom_slide
     #url=image, name=width, type=height
@@ -1743,28 +1624,6 @@ def callwebviewer(url, name, type):
     del window 
 
     log( " done callwebviewer")
-
-def test_menu(url, name, type):
-    log( "  test_menu:" + url)
-
-    
-    #liz = xbmcgui.ListItem("open webviewer", label2="", iconImage="DefaultFolder.png", thumbnailImage="", path="")
-    #u=sys.argv[0]+"mode=callwebviewer&type="
-    #xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=False)
-    
-    
-
-#     from resources.lib.httpd import TinyWebServer
-#       
-#     log( "*******************starting httpd")
-#     httpd = TinyWebServer('xyz')
-#     httpd.create("localhost", 8090)
-#     httpd.start()
-#       
-#     xbmc.sleep(30000)
-#       
-#     log( "*******************stopping httpd")    
-#     httpd.stop()
 
 def reddit_request( url ):
     #this function replaces     content = opener.open(url).read()
@@ -2042,15 +1901,7 @@ def dump(obj):
 def parameters_string_to_dict(parameters):
     #log('   ######' + str( urlparse.parse_qsl(parameters) )  )
     return dict( urlparse.parse_qsl(parameters) )
-#     paramDict = {}
-#     if parameters:
-#         paramPairs = parameters[1:].split("&")
-#         for paramsPair in paramPairs:
-#             paramSplits = paramsPair.split('=')
-#             if (len(paramSplits)) == 2:
-#                 paramDict[paramSplits[0]] = paramSplits[1]
-#     #log('   ######' + str( paramDict )  )
-#     return paramDict
+
 
 if __name__ == '__main__':
     # (10/2/2016) --- directly connecting to our databases is not allowed.
@@ -2083,8 +1934,7 @@ if __name__ == '__main__':
 #     log("name="+ name)
 #     log("url="+  url)
 #     log("-----------------------")
-    #from resources.lib.domains import playVineVideo, playVidmeVideo, playStreamable, playGfycatVideo
-    #from resources.lib.domains import viewImage, playFlickr, listImgurAlbum, listTumblrAlbum, playInstagram, listEroshareAlbum, listVidbleAlbum, listImgboxAlbum, listAlbum
+
     from resources.lib.domains import viewImage, listAlbum
     from resources.lib.slideshow import autoSlideshow
     
@@ -2098,7 +1948,6 @@ if __name__ == '__main__':
                     ,'removeSubreddit'      : removeSubreddit      
                     ,'autoPlay'             : autoPlay
                     ,'autoSlideshow'        : autoSlideshow                           
-                    ,'searchReddits'        : searchReddits          
                     ,'listAlbum'            : listAlbum        #slideshowAlbum
                     ,'viewImage'            : viewImage
                     ,'viewTallImage'        : viewTallImage                    
@@ -2193,6 +2042,14 @@ upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
 *** (don't know what description) left it as blank
 
 *** sent pull request on 6/27/2016
+
+
+if need to change things...
+
+git rebase --interactive HEAD~2
+(bunch of vi stuff later...)
+git push origin script.reddit.reader --force
+
 
 '''
 '''

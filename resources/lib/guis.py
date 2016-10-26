@@ -147,15 +147,15 @@ class cGUI(xbmcgui.WindowXML):
         listing=[]
         
         if os.path.exists(self.subreddits_file):
-            fh = open(self.subreddits_file, 'r')
-            content = fh.read()
-            fh.close()
-            spl = content.split('\n')
-            
-            for i in range(0, len(spl), 1):
-                if spl[i]:
-                    subreddit = spl[i].strip()
-                    entries.append(subreddit )
+            with open(self.subreddits_file, 'r') as fh:
+                content = fh.read()
+                fh.close()
+                spl = content.split('\n')
+                
+                for i in range(0, len(spl), 1):
+                    if spl[i]:
+                        subreddit = spl[i].strip()
+                        entries.append(subreddit )
         entries.sort()
         #log( '  entries count ' + str( len( entries) ) )
 
@@ -178,7 +178,10 @@ class cGUI(xbmcgui.WindowXML):
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         #RunAddon(script.reddit.reader,mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
         xbmc.executebuiltin( executebuiltin  )
-        xbmc.sleep(sleep) #a sleep of 500 is enough for listing subreddit  use about 5000 for executing a link/playing video especially a ytdl video
+        
+        xbmc.Monitor().waitForAbort( int(sleep/1000)   )
+        #xbmc.sleep(sleep) #a sleep of 500 is enough for listing subreddit  use about 5000 for executing a link/playing video especially a ytdl video
+        
         if close:
             self.close()
         else:
@@ -437,8 +440,6 @@ class commentsGUI(cGUI):
             self.setFocus(self.gui_listbox)
         #else:
         #    self.sort_links_normal()
-        
-        
     
     def onAction(self, action):
         #self.btn_links.setVisible(True)
@@ -479,7 +480,6 @@ class commentsGUI(cGUI):
         else:
             self.sort_links_top()
         
-            
     def sort_links_top(self):
         self.listbox_selected_position=self.gui_listbox.getSelectedPosition()
 
@@ -494,186 +494,6 @@ class commentsGUI(cGUI):
         self.gui_listbox.addItems( self.listing  )
         self.gui_listbox.selectItem( self.listbox_selected_position )
         self.links_on_top=False
-
-class qGUI(xbmcgui.WindowXMLDialog):
-    #called by viewImage
-    
-    def __init__(self, *args, **kwargs):
-        xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
-        
-    image_path=""
-    s=0
-
-    def onInit(self):
-        self.getControl(3000).setImage(self.image_path)
-        self.getControl(3100).setImage(self.image_path)
-        self.getControl(3200).setImage(self.image_path)
-        self.getControl(3300).setImage(self.image_path)
-
-        self.getControl(3100).setVisible(False)
-        self.getControl(3200).setVisible(False)
-        self.getControl(3300).setVisible(False)
-
-    def onAction(self, action):
-        #ACTION_PREVIOUS_MENU=10    #ACTION_STOP=13    #AACTION_MOUSE_RIGHT_CLICK = 101   #ACTION_BACKSPACE = 110   ACTION_NAV_BACK = 92
-        #ACTION_PAUSE = 12     #ACTION_PREV_ITEM = 15    # ACTION_STOP = 13   #KEY_BUTTON_B = 257   #KEY_BUTTON_BACK = 275 ACTION_PARENT_DIR = 9
-        #
-        #ACTION_PLAY = 68  KEY_BUTTON_A = 256 ACTION_ENTER = 135 ACTION_MOUSE_LEFT_CLICK = 100 ACTION_CONTEXT_MENU = 117
-        if action in [68,256, 135,100]:
-            self.cycle_zoom()
-            #log("aaaaa go")
-        
-        if action == 31:  #ACTION_ZOOM_IN = 31
-            log("zoom in")
-        
-        if action == 30:  #ACTION_ZOOM_OUT = 30
-            log("zoom out")
-
-        if action in [9, 10,13,92, 101,110,12,15,13,257,275,117]:
-            self.close()        
-        pass
-
-    def onFocus(self, controlId):
-        pass
-    
-    def cycle_zoom(self):
-        if self.s==1:
-            self.zoom_top()
-        elif self.s==2:
-            self.zoom_mid()
-        elif self.s==3:
-            self.zoom_btm()
-        else:
-            self.zoom_out()
-
-    def zoom_out(self):
-        self.s=1
-        self.getControl(3000).setVisible(True)
-        self.getControl(3100).setVisible(False)
-        self.getControl(3200).setVisible(False)
-        self.getControl(3300).setVisible(False)
-    def zoom_top(self):
-        self.s=2
-        self.getControl(3000).setVisible(False)
-        self.getControl(3100).setVisible(True)
-        self.getControl(3200).setVisible(False)
-        self.getControl(3300).setVisible(False)
-    def zoom_mid(self):
-        self.s=3
-        self.getControl(3000).setVisible(False)
-        self.getControl(3100).setVisible(False)
-        self.getControl(3200).setVisible(True)
-        self.getControl(3300).setVisible(False)
-    def zoom_btm(self):
-        self.s=4
-        self.getControl(3000).setVisible(False)
-        self.getControl(3100).setVisible(False)
-        self.getControl(3200).setVisible(False)
-        self.getControl(3300).setVisible(True)
-        
-
-    def onClick(self, controlId):
-        #if controlId == 3001:
-        self.cycle_zoom()
-            
-    def closeDialog(self):
-        self.close()
-
-class ssGUI(xbmcgui.WindowXMLDialog):
-    #credit to The big Picture addon.
-    CONTROL_MAIN_IMAGE = 100
-    CONTROL_VISIBLE = 102
-    CONTROL_ASPECT_KEEP = 103
-    CONTROL_ARROWS = 104
-    CONTROL_BG = 105
-    ACTION_CONTEXT_MENU = [117]
-    ACTION_PREVIOUS_MENU = [9, 92, 10]
-    ACTION_SHOW_INFO = [11]
-    ACTION_EXIT_SCRIPT = [13]
-    ACTION_DOWN = [4]
-    ACTION_UP = [3]
-    ACTION_0 = [58, 18]
-    ACTION_PLAY = [79]
-    items=[]
-    album_name=''
-    
-    def __init__(self, *args, **kwargs):
-        #log("starting ssgui")
-        #xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
-        pass
-
-    def onInit(self):
-        self.show_info = True
-        self.aspect_keep = True
-
-        self.getControls()
-        self.addItems(self.items)
-
-        self.setFocus(self.image_list)
-        log('onInit finished')
-
-    def onAction(self, action):
-        action_id = action   #action.getId()
-        if action_id in self.ACTION_SHOW_INFO:
-            log('ACTION_SHOW_INFO: category:' + self.getWindowProperty('Category') )
-            self.toggleInfo()  #show/hide description
-        elif action_id in self.ACTION_CONTEXT_MENU:
-            log('ACTION_CONTEXT_MENU category:' + self.getWindowProperty('Category') )
-            self.close()
-            #self.download_album()
-        elif action_id in self.ACTION_PREVIOUS_MENU:
-            log('ACTION_PREVIOUS_MENU: category:' + self.getWindowProperty('Category') )
-            self.close()
-
-    def onClick(self, controlId):
-        if controlId == self.CONTROL_MAIN_IMAGE:
-            self.toggleInfo()
-
-    def getControls(self):
-        self.window = xbmcgui.Window(xbmcgui.getCurrentWindowId())
-        self.image_list = self.getControl(self.CONTROL_MAIN_IMAGE)
-        self.arrows_controller = self.getControl(self.CONTROL_ARROWS)
-        self.aspect_controller = self.getControl(self.CONTROL_ASPECT_KEEP)
-        self.info_controller = self.getControl(self.CONTROL_VISIBLE)
-        try:
-            self.bg_controller = self.getControl(self.CONTROL_BG)
-        except RuntimeError:
-            # catch exception with skins which override the xml
-            # but are not up2date like Aeon Nox
-            self.bg_controller = None
-
-    def addItems(self, items):
-        #self.log('addItems:' + str(items ))
-        self.image_list.reset()
-        for item in items:
-            #log('aaaaaa : '+str(item))
-            li = xbmcgui.ListItem(
-                label=item['title'],
-                label2=item['description'],
-                iconImage=item['pic']
-            )
-            li.setProperty(
-                'album_title',
-                self.album_name   #top left-hand side
-            )
-            #li.setProperty('album_url', "item.get('album_url')")
-            li.setProperty('album_id', "0")
-            self.image_list.addItem(li)
-
-    def toggleInfo(self):
-        self.show_info = not self.show_info
-        self.info_controller.setVisible(self.show_info)
-
-    def toggleAspect(self):
-        self.aspect_keep = not self.aspect_keep
-        self.aspect_controller.setVisible(self.aspect_keep)
-
-    def getWindowProperty(self, key):
-        return self.window.getProperty(key)
-
-    def setWindowProperty(self, key, value):
-        return self.window.setProperty(key, value)
-
 
 
 def log(message, level=xbmc.LOGNOTICE):

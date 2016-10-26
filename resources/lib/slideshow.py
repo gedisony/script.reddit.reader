@@ -8,7 +8,7 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, Window, Control
 
 #autoSlideshow
 
-from default import addon, log, translation, addon_path, addonID,SlideshowCacheFolder, reddit_request, getPlayCount
+from default import addon, log, translation, addon_path, addonID,SlideshowCacheFolder, reddit_request
 from domains import sitesManager, sitesBase, parse_reddit_link, listAlbum
 
 from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates, remove_dict_duplicates
@@ -23,43 +23,6 @@ random_post_order = addon.getSetting("random_post_order") == "true"
 random_image_order= addon.getSetting("random_image_order") == "true"
 
 q=Queue()
-
-def slideshowAlbum_old(dictlist, name):
-    log("slideshowAlbum")
-
-    entries=[]        
-    for d in dictlist:
-        media_url=d.get('DirectoryItem_url')
-        title    =d.get('li_label')
-        width    =d.get('width')
-        height   =d.get('height')
-        description=d.get('description')
-        
-        #log(' *********' + repr(description) )
-        entries.append([title,media_url, width, height, len(entries), description])
-
-    def k2(x): return x[1]
-    entries=remove_duplicates(entries, k2)
-
-    for e in entries:
-        q.put(e)
-    
-    #s= AppleTVLikeScreensaver(ev,q)
-    #s= TableDropScreensaver(ev,q)
-    ev=threading.Event()
-    
-    s= HorizontalSlide2(ev,q)
-    #s= ScreensaverManager(ev,q)
-    
-    try:
-        s.start_loop()
-    except Exception as e: 
-        log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
-
-    s.close()
-    del s
-    
-    return
 
 def slideshowAlbum(dictlist, name):
     log("slideshowAlbum")
@@ -112,8 +75,6 @@ def slideshowAlbum(dictlist, name):
     for e in nl:
         q.put(e)
     
-    #s= AppleTVLikeScreensaver(ev,q)
-    #s= TableDropScreensaver(ev,q)
     ev=threading.Event()
     
     #s= HorizontalSlideScreensaver2(ev,q)
@@ -124,11 +85,6 @@ def slideshowAlbum(dictlist, name):
     except Exception as e: 
         log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
 
-    s.close()
-    del s
-    sys.modules.clear()
-    
-    
     return
 
 
@@ -221,8 +177,6 @@ def autoSlideshow(url, name, type):
             else: 
                 append_entry( entries, title,preview,preview_w, preview_h, description )
                 #log('      (N)added preview:%s' % title )
-                        
-
                     
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
@@ -257,22 +211,14 @@ def autoSlideshow(url, name, type):
     for e in entries:
         q.put(e)
 
-    
-    #s= AppleTVLikeScreensaver(ev,q)
-    #s= TableDropScreensaver(ev,q)
     #s= HorizontalSlideScreensaver(ev,q)
     s= ScreensaverManager(ev,q)
     
-    #s.start_loop()
     try:
         s.start_loop()
     except Exception as e: 
         log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
 
-    s.close()
-    del s
-    sys.modules.clear()
-    
     
     return
 
@@ -500,24 +446,6 @@ class ScreensaverBase(object):
 
 
     #for movie, audio or tv shows
-    def _get_json_images(self, method, key, prop):
-        self.log('_get_json_images start')
-        query = {
-            'jsonrpc': '2.0',
-            'id': 0,
-            'method': method,
-            'params': {
-                'properties': [prop],
-            }
-        }
-        response = json.loads(xbmc.executeJSONRPC(json.dumps(query)))
-        images = [
-            element[prop] for element
-            in response.get('result', {}).get(key, [])
-            if element.get(prop)
-        ]
-        self.log('_get_json_images end')
-        return images
 
     def _get_folder_images(self, path):
         self.log('_get_folder_images started with path: %s' % repr(path))
@@ -659,11 +587,6 @@ class HorizontalSlide2(ScreensaverBase):
         self.TEXT_ANIMATIONS= [
                  ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ) , 
                  ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' %(1.45*self.MAX_TIME)  ) ] 
-
-#        self.TEXT_ANIMATIONS= [
-#                 ('visible', 'effect=fade time=800 start=0 end=100 ' ), ]
-#                 ('hidden', 'effect=fade  time=800 start=100 end=0 tween=circle easing=in'   ) ] 
-#        self.TEXT_ANIMATIONS= [ ] 
 
     def init_cycle_controls(self):
         pass
@@ -855,41 +778,6 @@ class HorizontalSlideScreensaver(ScreensaverBase):
 
         
     def stack_cycle_controls(self):
-        # randomly generate a zoom in percent as betavariant
-        # between 10 and 70 and assign calculated width to control.
-        # Remove all controls from window and re-add sorted by size.
-        # This is needed because the bigger (=nearer) ones need to be in front
-        # of the smaller ones.
-        # Then shuffle image list again to have random size order.
-
-#         for image_control in self.image_controls:
-#             zoom = int(random.betavariate(2, 2) * 40) + 10
-#             #zoom = int(random.randint(10, 70))
-#             width = 1280 / 100 * zoom
-#             image_control.setWidth(width)
-#         self.image_controls = sorted(
-#             self.image_controls, key=lambda c: c.getWidth()
-#         )
-#         self.xbmc_window.addControls(self.image_controls)
-#         random.shuffle(self.image_controls)
-
-
-#         for image_control in self.image_controls:
-# #             zoom = int(random.betavariate(2, 2) * 40) + 10
-#             width  = 1280
-#             height = 720    #1280 / 100 * zoom
-#             image_control.setHeight(height)
-#             image_control.setWidth(width)
-            
-            
-#         self.image_controls = sorted(
-#             self.image_controls, key=lambda c: c.getWidth()
-#         )
-#         self.xbmc_window.addControls(self.image_controls)
-#         random.shuffle(self.image_controls)
-        
-        #self.xbmc_window.addControls(self.tni_controls[0])
-        #self.xbmc_window.addControls(self.tni_controls[1])
             
         for txt_ctl, img_ctl in self.tni_controls:
             self.xbmc_window.addControl(img_ctl)
@@ -960,15 +848,6 @@ class HorizontalSlideScreensaver(ScreensaverBase):
                 self.image_label.setVisible(False)
                 self.txt_background.setVisible(False)
                 
-    #             text_control.setText(desc_and_image[0])
-    #             text_control.setPosition(10, 685)
-    #             text_control.setWidth(1280)
-    #             text_control.setHeight(40)
-    #             text_control.setAnimations( self.TEXT_ANIMATIONS )
-    #             text_control.setVisible(True)
-    #         
-
-
         image_control.setImage(desc_and_image[1])
         image_control.setPosition(0, 0)
         image_control.setWidth(1280)   #16:9
@@ -1124,282 +1003,6 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         # show the image
         image_control.setVisible(True)
 
-
-class TableDropScreensaver(ScreensaverBase):
-
-    MODE = 'TableDrop'
-    BACKGROUND_IMAGE = 'srr_blackbg.jpg'
-    IMAGE_CONTROL_COUNT = 20
-    FAST_IMAGE_COUNT = 0
-    NEXT_IMAGE_TIME = 1500
-    MIN_WIDTH = 500
-    MAX_WIDTH = 700
-
-    def load_settings(self):
-        self.NEXT_IMAGE_TIME = 1500 #int(addon.getSetting('tabledrop_wait'))
-
-    def process_image(self, image_control, image_url):
-        ROTATE_ANIMATION = (
-            'effect=rotate start=0 end=%d center=auto time=%d '
-            'delay=0 tween=circle condition=true'
-        )
-        DROP_ANIMATION = (
-            'effect=zoom start=%d end=100 center=auto time=%d '
-            'delay=0 tween=circle condition=true'
-        )
-        FADE_ANIMATION = (
-            'effect=fade start=0 end=100 time=200 '
-            'condition=true'
-        )
-        # hide the image
-        image_control.setVisible(False)
-        image_control.setImage('')
-        # re-stack it (to be on top)
-        self.xbmc_window.removeControl(image_control)
-        self.xbmc_window.addControl(image_control)
-        # calculate all parameters and properties
-        width = random.randint(self.MIN_WIDTH, self.MAX_WIDTH)
-        height = int(width / self.image_aspect_ratio)
-        x_position = random.randint(0, 1280 - width)
-        y_position = random.randint(0, 720 - height)
-        drop_height = random.randint(400, 800)
-        drop_duration = drop_height * 1.5
-        rotation_degrees = random.uniform(-20, 20)
-        rotation_duration = drop_duration
-        animations = [
-            ('conditional', FADE_ANIMATION),
-            ('conditional',
-             ROTATE_ANIMATION % (rotation_degrees, rotation_duration)),
-            ('conditional',
-             DROP_ANIMATION % (drop_height, drop_duration)),
-        ]
-        # set all parameters and properties
-        image_control.setImage(image_url[1])
-        image_control.setPosition(x_position, y_position)
-        image_control.setWidth(width)
-        image_control.setHeight(height)
-        image_control.setAnimations(animations)
-        # show the image
-        image_control.setVisible(True)
-
-
-class StarWarsScreensaver(ScreensaverBase):
-
-    MODE = 'StarWars'
-    BACKGROUND_IMAGE = 'stars.jpg'
-    IMAGE_CONTROL_COUNT = 6
-    SPEED = 0.5
-
-    def load_settings(self):
-        self.SPEED = float(addon.getSetting('starwars_speed'))
-        self.EFFECT_TIME = 9000.0 / self.SPEED
-        self.NEXT_IMAGE_TIME = self.EFFECT_TIME / 7.6
-
-    def process_image(self, image_control, image_url):
-        TILT_ANIMATION = (
-            'effect=rotatex start=0 end=55 center=auto time=0 '
-            'condition=true'
-        )
-        MOVE_ANIMATION = (
-            'effect=slide start=0,1280 end=0,-2560 time=%d '
-            'tween=linear condition=true'
-        )
-        # hide the image
-        image_control.setImage('')
-        image_control.setVisible(False)
-        # re-stack it (to be on top)
-        self.xbmc_window.removeControl(image_control)
-        self.xbmc_window.addControl(image_control)
-        # calculate all parameters and properties
-        width = 1280
-        height = 720
-        x_position = 0
-        y_position = 0
-        animations = [
-            ('conditional', TILT_ANIMATION),
-            ('conditional', MOVE_ANIMATION % self.EFFECT_TIME),
-        ]
-        # set all parameters and properties
-        image_control.setPosition(x_position, y_position)
-        image_control.setWidth(width)
-        image_control.setHeight(height)
-        image_control.setAnimations(animations)
-        image_control.setImage(image_url)
-        # show the image
-        image_control.setVisible(True)
-
-
-class RandomZoomInScreensaver(ScreensaverBase):
-
-    MODE = 'RandomZoomIn'
-    IMAGE_CONTROL_COUNT = 7
-    NEXT_IMAGE_TIME = 2000
-    EFFECT_TIME = 5000
-
-    def load_settings(self):
-        self.NEXT_IMAGE_TIME = 2000  # int(addon.getSetting('randomzoom_wait'))
-        self.EFFECT_TIME = 5000      # int(addon.getSetting('randomzoom_effect'))
-
-    def process_image(self, image_control, image_url):
-        ZOOM_ANIMATION = (
-            'effect=zoom start=1 end=100 center=%d,%d time=%d '
-            'tween=quadratic condition=true'
-        )
-        # hide the image
-
-        #ctl3=ControlImage(0, 0, 1920, 1080, image_url, aspectRatio=2)
-        #self.xbmc_window.addControl(ctl3)
-        
-        image_control.setVisible(False)
-        image_control.setImage('')
-        # re-stack it (to be on top)
-        self.xbmc_window.removeControl(image_control)
-        self.xbmc_window.addControl(image_control)
-        
-        
-        # calculate all parameters and properties
-        width = 1280
-        height = 720
-        x_position = 0
-        y_position = 0
-        zoom_x = random.randint(0, 1280)
-        zoom_y = random.randint(0, 720)
-        animations = [
-            ('conditional', ZOOM_ANIMATION % (zoom_x, zoom_y, self.EFFECT_TIME)),
-        ]
-        # set all parameters and properties
-        image_control.setImage(image_url)
-        image_control.setPosition(x_position, y_position)
-        image_control.setWidth(width)
-        image_control.setHeight(height)
-        image_control.setAnimations(animations)
-        # show the image
-        image_control.setVisible(True)
-
-
-class AppleTVLikeScreensaver(ScreensaverBase):
-
-    MODE = 'AppleTVLike'
-    IMAGE_CONTROL_COUNT = 35
-    FAST_IMAGE_COUNT = 2
-    DISTANCE_RATIO = 0.7
-    SPEED = 1.0
-    CONCURRENCY = 1.0
-    #SCREEN = 0
-
-    def load_settings(self):
-        self.SPEED = 1.0 #float(addon.getSetting('appletvlike_speed'))
-        self.CONCURRENCY = 1.0 #float(addon.getSetting('appletvlike_concurrency'))
-        self.MAX_TIME = int(15000 / self.SPEED)
-        self.NEXT_IMAGE_TIME = int(4500.0 / self.CONCURRENCY / self.SPEED)
-
-    def stack_cycle_controls(self):
-        # randomly generate a zoom in percent as betavariant
-        # between 10 and 70 and assign calculated width to control.
-        # Remove all controls from window and re-add sorted by size.
-        # This is needed because the bigger (=nearer) ones need to be in front
-        # of the smaller ones.
-        # Then shuffle image list again to have random size order.
-
-        for image_control in self.image_controls:
-            zoom = int(random.betavariate(2, 2) * 40) + 10
-            #zoom = int(random.randint(10, 70))
-            width = 1280 / 100 * zoom
-            image_control.setWidth(width)
-        self.image_controls = sorted(
-            self.image_controls, key=lambda c: c.getWidth()
-        )
-        self.xbmc_window.addControls(self.image_controls)
-        random.shuffle(self.image_controls)
-
-    def process_image(self, image_control, image_url):
-        MOVE_ANIMATION = (
-            'effect=slide start=0,720 end=0,-720 center=auto time=%s '
-            'tween=linear delay=0 condition=true'
-        )
-        image_control.setVisible(False)
-        image_control.setImage('')
-        # calculate all parameters and properties based on the already set
-        # width. We can not change the size again because all controls need
-        # to be added to the window in size order.
-        width = image_control.getWidth()
-        zoom = width * 100 / 1280
-        height = int(width / self.image_aspect_ratio)
-        # let images overlap max 1/2w left or right
-        center = random.randint(0, 1280)
-        x_position = center - width / 2
-        y_position = 0
-
-        time = self.MAX_TIME / zoom * self.DISTANCE_RATIO * 100
-
-        animations = [
-            ('conditional', MOVE_ANIMATION % time),
-        ]
-        # set all parameters and properties
-        image_control.setImage(image_url[1])
-        image_control.setPosition(x_position, y_position)
-        image_control.setWidth(width)
-        image_control.setHeight(height)
-        image_control.setAnimations(animations)
-        # show the image
-        image_control.setVisible(True)
-
-
-class GridSwitchScreensaver(ScreensaverBase):
-
-    MODE = 'GridSwitch'
-
-    ROWS_AND_COLUMNS = 4
-    NEXT_IMAGE_TIME = 1000
-    EFFECT_TIME = 500
-    RANDOM_ORDER = False
-
-    IMAGE_CONTROL_COUNT = ROWS_AND_COLUMNS ** 2
-    FAST_IMAGE_COUNT = IMAGE_CONTROL_COUNT
-
-    def load_settings(self):
-        self.NEXT_IMAGE_TIME = int(addon.getSetting('gridswitch_wait'))
-        self.ROWS_AND_COLUMNS = int(addon.getSetting('gridswitch_rows_columns'))
-        self.RANDOM_ORDER = addon.getSetting('gridswitch_random') == 'true'
-        self.IMAGE_CONTROL_COUNT = self.ROWS_AND_COLUMNS ** 2
-        self.FAST_IMAGE_COUNT = self.IMAGE_CONTROL_COUNT
-
-    def stack_cycle_controls(self):
-        # Set position and dimensions based on stack position.
-        # Shuffle image list to have random order.
-        super(GridSwitchScreensaver, self).stack_cycle_controls()
-        for i, image_control in enumerate(self.image_controls):
-            current_row, current_col = divmod(i, self.ROWS_AND_COLUMNS)
-            width = 1280 / self.ROWS_AND_COLUMNS
-            height = 720 / self.ROWS_AND_COLUMNS
-            x_position = width * current_col
-            y_position = height * current_row
-            image_control.setPosition(x_position, y_position)
-            image_control.setWidth(width)
-            image_control.setHeight(height)
-        if self.RANDOM_ORDER:
-            random.shuffle(self.image_controls)
-
-    def process_image(self, image_control, image_url):
-        if not self.image_count < self.FAST_IMAGE_COUNT:
-            FADE_OUT_ANIMATION = (
-                'effect=fade start=100 end=0 time=%d condition=true' % self.EFFECT_TIME
-            )
-            animations = [
-                ('conditional', FADE_OUT_ANIMATION),
-            ]
-            image_control.setAnimations(animations)
-            xbmc.sleep(self.EFFECT_TIME)
-        image_control.setImage(image_url)
-        FADE_IN_ANIMATION = (
-            'effect=fade start=0 end=100 time=%d condition=true' % self.EFFECT_TIME
-        )
-        animations = [
-            ('conditional', FADE_IN_ANIMATION),
-        ]
-        image_control.setAnimations(animations)
-
-
 class ExitMonitor(xbmc.Monitor):
 
     def __init__(self, exit_callback):
@@ -1441,11 +1044,5 @@ def cycle(iterable):
 
 if __name__ == '__main__':
      
-    #RunAddon(script.reddit.reader,mode=autoSlideshow&url=https%3A%2F%2Fwww.reddit.com%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10&name=&type=)
- 
-    #autoSlideshow('https://www.reddit.com/.json?nsfw=no&limit=10','','')
- 
-    sys.modules.clear()
-
-
+     pass
 #save for later:  https://mblaszczak.artstation.com/ 

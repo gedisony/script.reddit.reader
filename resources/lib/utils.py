@@ -16,7 +16,6 @@ image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp'] #exclude 
 
 def create_default_subreddits():
     #create a default file and sites
-    #fh = open(subredditsFile, 'a')
     with open(subredditsFile, 'a') as fh:
     
         #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
@@ -33,7 +32,6 @@ def create_default_subreddits():
         fh.write('videos\n')
         #fh.write('videos/new\n')
         fh.write('woahdude+interestingasfuck+shittyrobots\n')
-        fh.close()
         
     #justiceporn
 

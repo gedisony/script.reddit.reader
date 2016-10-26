@@ -2784,28 +2784,6 @@ class LinkDetails():
         self.poster_h = poster_h
         
 
-def ret_Instagram_thumbnail( media_url, thumbnail_type='m'):
-    #return the instagram thumbnail url 
-
-    #possible thumbnail_types(6/1/2016)
-    #    t = 150 x 150 px
-    #    m = 306 x 306 px
-    #    l = 640 x 640 px
-
-    #just add "/media/?size=m" OR "/media/"  default size is m
-    #https://www.instagram.com/p/BF3x5kajBja/media/?size=m
-    from urlparse import urlparse
-    o=urlparse(media_url)    #from urlparse import urlparse
-    #scheme, netloc, path, params, query, fragment
-    
-    #log("thumb from: "+media_url )
-    #path starts with / use [1:] to skip 1st character
-    #log ("thumb     : %s://%s/%s%s%c" % ( o.scheme, o.netloc, o.path[1:], 'media/?size=', thumbnail_type ) )
-    #return ("%s://%s/%s%s%c" % ( o.scheme, o.netloc, o.path[1:], 'media/?size=', thumbnail_type ) )
-    return ("http://%s/%s%s%c" % ( o.netloc, o.path[1:], 'media/?size=', thumbnail_type ) )
-
-    
-
 def sitesManager( media_url ):
     #picks which class will handle the media identification and extraction for website_name
     for subcls in sitesBase.__subclasses__():
@@ -2933,25 +2911,9 @@ def load_ytdl_sites():
 def ytdl_hoster( url_to_check ):
     pass
 
-#def build_script( mode, url, name="", type="", script_to_call=addonID):
-    #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
-#    return "RunAddon(%s,%s)" %(addonID, "?mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type) )
-
 
 if __name__ == '__main__':
     pass
-
-
-
-
-def listImgurAlbum(album_url, name, type):
-    #log("listImgurAlbum")
-    #from resources.lib.domains import ClassImgur
-    #album_url="http://imgur.com/a/fsjam"
-    ci=ClassImgur()
-        
-    dictlist=ci.ret_album_list(album_url, 'l')
-    display_album_from(dictlist, name)
 
 def display_album_from(dictlist, album_name):
 
@@ -3012,7 +2974,6 @@ def display_album_from(dictlist, album_name):
         #log( str(di[1] ) )
         li.append( di[1] )
          
-    #ui = cGUI('FileBrowser.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
     ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
     
     ui.include_parent_directory_entry=False
@@ -3020,45 +2981,6 @@ def display_album_from(dictlist, album_name):
     
     ui.doModal()
     del ui
-    #WINDOW.clearProperty( 'view_450_slideshow_title' )
-    #log( '   WINDOW.getProperty=' + WINDOW.getProperty('foo') )
-
-# def listTumblrAlbum(t_url, name, type):    
-#     #from resources.lib.domains import ClassTumblr
-#     log("listTumblrAlbum:"+t_url)
-#     t=ClassTumblr(t_url)
-#     
-#     media_url, media_type =t.get_playable_url(t_url, True)
-#     #log('  ' + str(media_url))
-#     
-#     if media_type=='album':
-#         display_album_from( media_url, name )
-#     else:
-#         log("  listTumblrAlbum can't process " + media_type)    
-# 
-# def listEroshareAlbum(e_url, name, type):    
-#     #from resources.lib.domains import ClassTumblr
-#     log("listEroshareAlbum:"+e_url)
-#     e=ClassEroshare()
-#     
-#     dictlist=e.ret_album_list(e_url, '')
-#     display_album_from( dictlist, name )
-# 
-# def listVidbleAlbum(e_url, name, type):    
-#     #from resources.lib.domains import ClassTumblr
-#     log("listVidbleAlbum:"+e_url)
-#     e=ClassVidble()
-#     
-#     dictlist=e.ret_album_list(e_url, '')
-#     display_album_from( dictlist, name )
-# 
-# def listImgboxAlbum(e_url, name, type):    
-#     #from resources.lib.domains import ClassTumblr
-#     log("listImgboxAlbum:"+e_url)
-#     e=ClassImgbox()
-#     
-#     dictlist=e.ret_album_list(e_url, '')
-#     display_album_from( dictlist, name )
 
 def listAlbum(album_url, name, type):
     from slideshow import slideshowAlbum
@@ -3082,16 +3004,6 @@ def listAlbum(album_url, name, type):
         else:
             display_album_from( dictlist, name )
     
-
-def playInstagram(media_url, name, type):
-    #from resources.lib.domains import ClassInstagram
-    log('playInstagram '+ media_url)
-    #instagram video handled by ytdl. links that reddit says is image are handled here.
-    i=ClassInstagram( media_url )
-    image_url=i.get_playable_url(media_url, False)
-    
-    viewImage(image_url,"Instagram","")
-
 
 def viewImage(image_url, name, preview_url):
     #url='d:\\aa\\lego_fusion_beach1.jpg'
@@ -3175,105 +3087,6 @@ def viewImage(image_url, name, preview_url):
     #whis won't work if addon is a video add-on
     #xbmc.executebuiltin("XBMC.SlideShow(" + SlideshowCacheFolder + ")")
 
-
-
-def playFlickr(flickr_url, name, type):
-    #from resources.lib.domains import ClassFlickr
-    log('play flickr '+ flickr_url)
-    f=ClassFlickr( flickr_url )
-
-    try:
-        media_url, media_type =f.get_playable_url(flickr_url, False)
-        #log('  flickr class returned %s %s' %(media_type, media_url))
-        if media_type=='photo':
-            if media_url:
-                viewImage(media_url,"Flickr", f.thumb_url )
-            else:
-                raise Exception(translation(32009))  #Cannot retrieve URL
-        else: #if media_type in ['album','group','gallery']:
-            display_album_from( media_url, name )
-    
-    except Exception as e:
-        log('   playFlickr error:' + str(e) )
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, flickr_url )  )
-
-# def playImgurVideo(imgur_url, name, type):
-#     #from resources.lib.domains import ClassImgur
-#     #log('**************play imgur '+ imgur_url)
-#     f=ClassImgur( imgur_url )
-#  
-#     media_url, media_type =f.get_playable_url(imgur_url, False)
-#     if media_type=='album':
-#         display_album_from( media_url, name )
-#     elif media_type=='video':
-#         playVideo(media_url, name, "")
-#     elif media_type=='image':
-#         viewImage(media_url,"Imgur","")
-
-
-def playGfycatVideo(gfycat_url, name, type):
-    log( "  play gfycat video " + gfycat_url )
-    
-    g=ClassGfycat()
-    GfycatStreamUrl, media_type=g.get_playable_url( gfycat_url )
-    
-    playVideo(GfycatStreamUrl, name, type)
-
-
-def playVidmeVideo(vidme_url, name, type):
-    log('playVidmeVideo')
-    v=ClassVidme(vidme_url)
-    vidme_stream_url=v.get_playable_url(vidme_url, True)
-    if vidme_stream_url:
-        playVideo(vidme_stream_url, name, type)
-    else:
-        media_status=v.whats_wrong()
-        xbmc.executebuiltin('XBMC.Notification("Vidme","%s")' % media_status  )
-        
-def playStreamable(media_url, name, type):
-    log('playStreamable '+ media_url)
-    
-    s=ClassStreamable(media_url)
-    playable_url=s.get_playable_url(media_url, True)
-
-    if playable_url:
-        playVideo(playable_url, name, type)
-    else:
-        #media_status=s.whats_wrong()  #streamable does not tell us if access to video is denied beforehand
-        xbmc.executebuiltin('XBMC.Notification("Streamable","%s")' % "Access Denied"  )
-    
-def playVineVideo(vine_url, name, type):
-    #from resources.lib.domains import ClassVine
-    #log('playVineVideo')
-    
-    v=ClassVine(vine_url)
-    #vine_stream_url='https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4'
-    vine_stream_url=v.get_playable_url(vine_url, True)    #instead of querying vine(for the .mp4 link) for each item when listing the directory item(addLink()). we do that query here. better have the delay here than for each item when listing the directory item 
-    
-    if vine_stream_url:
-        playVideo(vine_stream_url, name, type)
-    else:
-        #media_status=v.whats_wrong()
-        xbmc.executebuiltin('XBMC.Notification("Vine","%s")' % 'media_status'  )
-        #xbmc.executebuiltin("PlayerControl('repeatOne')")  #how do i make this video play again? 
-
-#ytdl handles liveleak videos now.
-def playLiveLeakVideo(id, name, type):
-    playVideo(getLiveLeakStreamUrl(id), name, type)
-
-def getLiveLeakStreamUrl(id):
-    #log("getLiveLeakStreamUrl ID="+str(id) )
-    #sometimes liveleak items are news articles and not video. 
-    url=None
-    content = opener.open("http://www.liveleak.com/view?i="+id).read()
-    matchHD = re.compile('hd_file_url=(.+?)&', re.DOTALL).findall(content)
-    matchSD = re.compile('file: "(.+?)"', re.DOTALL).findall(content)
-    if matchHD and ll_qualiy=="720p":
-        url = urllib.unquote_plus(matchHD[0])
-    elif matchSD:
-        url = matchSD[0]
-    #log("**********getLiveLeakStreamUrl hd_file_url="+url)
-    return url
 
 
 
