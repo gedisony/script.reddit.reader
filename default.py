@@ -145,7 +145,9 @@ else:
     nsfw = "nsfw:no+"
 
 def log(message, level=xbmc.LOGNOTICE):
-    xbmc.log("reddit_reader:"+message, level=level)
+    t=threading.currentThread()
+    
+    xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
 
 
 #def getDbPath():
@@ -357,18 +359,15 @@ def index(url,name,type):
     
 #MODE listSubReddit(url, name, type)  
 def listSubReddit(url, title_bar_name, type):
-    from resources.lib.domains import parse_filename_and_ext_from_url
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
     
-    #show_listSubReddit_debug=False
     show_listSubReddit_debug=True
     credate = ""
     is_a_video=False
     title_line2=""
 
-    thumb_w=0
-    thumb_h=0
+    thumb_w=0; thumb_h=0
 
     #the +'s got removed by url conversion 
     title_bar_name=title_bar_name.replace(' ','+')
@@ -389,6 +388,131 @@ def listSubReddit(url, title_bar_name, type):
     if not content:
         xbmc_busy(False)
         return
+    
+    threads = []
+    #q_posts = Queue() #input queue for worker(json entry of a single post)
+    q_liz = Queue()   #output queue (listitem)
+    
+    #7-15-2016  removed the "replace(..." statement below cause it was causing error
+    #content = json.loads(content.replace('\\"', '\''))
+    content = json.loads(content) 
+    
+    #log("query returned %d items " % len(content['data']['children']) )
+    posts_count=len(content['data']['children'])
+    
+    hms = has_multiple_subreddits(content['data']['children'])
+    
+    if hms==False:
+        #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link. 
+        try: g=content['data']['children'][0]['data']['subreddit']
+        except: g=""
+        if g:
+            title_bar_name=g
+            #preserve the &after string so that functions like play slideshow and play all videos can 'play' the correct page 
+            #  extract the &after string from currentUrl -OR- send it with the 'type' argument when calling this function.
+            currentUrl=assemble_reddit_filter_string('',g) + '&after=' + type
+
+    for idx, entry in enumerate(content['data']['children']):
+        try:
+            #have threads process each reddit post
+            t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz,), name='#t%.2d'%idx)
+            threads.append(t)
+            t.start()
+
+        except Exception as e:
+            log(" EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+            pass
+
+
+    #wait for all threads to finish before collecting the list items
+    for t in threads:
+        #log('    joining %s' %t.getName())
+        t.join()    
+
+    xbmc_busy(False)
+    
+    #compare the number of entries to the returned results
+    #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
+    if q_liz.qsize() != len(content['data']['children']):
+        log('some threads did not return a listitem')
+
+    #for t in threads: log('isAlive %s %s' %(t.getName(), repr(t.isAlive()) )  )
+
+    #liu=[ qi for qi in sorted(q_liz.queue) ]
+    li=[ liz for idx,liz in sorted(q_liz.queue) ]
+    #log(repr(li))
+    
+    #empty the queue. 
+    with q_liz.mutex:
+        q_liz.queue.clear()    
+
+    try:
+        #this part makes sure that you load the next page instead of just the first
+        after=""
+        after = content['data']['after']
+        if after: 
+            if "&after=" in currentUrl:
+                nextUrl = currentUrl[:currentUrl.find("&after=")]+"&after="+after
+            else:
+                nextUrl = currentUrl+"&after="+after
+            
+            # plot shows up on estuary. etc. ( avoids the "No information available" message on description ) 
+            info_label={ "plot": translation(32004) } 
+             
+            #addDir(translation(32004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
+            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': translation(32004)} )
+            
+            li.append(liz)
+        
+        #if show_listSubReddit_debug :log("NEXT PAGE="+nextUrl) 
+    except Exception as e:
+        log(" EXCEPTzION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+        
+        pass
+    
+    xbmc_busy(False)
+    
+    title_bar_name=urllib.unquote_plus(title_bar_name)
+    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)    
+    
+    #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
+    #xbmc.sleep(8000)
+
+def listSubReddit_old(url, title_bar_name, type):
+    #this is the old version of listSubReddit. it is kept here for debugging purposes.  
+    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
+    
+    show_listSubReddit_debug=True
+    credate = ""
+    is_a_video=False
+    title_line2=""
+
+    thumb_w=0; thumb_h=0
+
+    #the +'s got removed by url conversion 
+    title_bar_name=title_bar_name.replace(' ','+')
+    #log("  title_bar_name %s " %(title_bar_name) )
+
+    log("listSubReddit r/%s url=%s" %(title_bar_name,url) )
+    t_on = translation(32071)  #"on"
+    #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
+    t_pts = u"\U00002709"  # translation(30072)   envelope symbol
+    t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
+    
+    li=[]
+
+    currentUrl = url
+    xbmc_busy()    
+    content = reddit_request(url)  #content = opener.open(url).read()
+    
+    if not content:
+        xbmc_busy(False)
+        return
+    
+    threads = []
+    #q_posts = Queue() #input queue for worker(json entry of a single post)
+    q_liz = Queue()   #output queue (listitem)
     
     #7-15-2016  removed the "replace(..." statement below cause it was causing error
     #content = json.loads(content.replace('\\"', '\''))
@@ -567,6 +691,8 @@ def listSubReddit(url, title_bar_name, type):
         except Exception as e:
             log(" EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
             pass
+        
+    #**end loop for each reddit post
     
     #log("**reddit query returned "+ str(idx) +" items")
     #window = xbmcgui.Window(xbmcgui.getCurrentWindowId())
@@ -605,6 +731,10 @@ def listSubReddit(url, title_bar_name, type):
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
 
+
+
+
+
 def skin_launcher(mode,**kwargs ):
     
     from resources.lib.utils import xbmcVersion
@@ -632,8 +762,6 @@ def skin_launcher(mode,**kwargs ):
         log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
         
-
-
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id='', post_index=1,post_total=1,many_subreddit=False ):
     from resources.lib.utils import ret_info_type_icon, assemble_reddit_filter_string,build_script
     from resources.lib.domains import parse_reddit_link, sitesBase
@@ -724,9 +852,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
         
 
-#    log( '          reddit thumb[%s] ' %(iconimage ))
-#    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-#    if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+    #log( '          reddit thumb[%s] ' %(iconimage ))
+    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
         #log('###' + repr(ld.playable_url) )
@@ -741,12 +869,13 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         if iconimage in ["","nsfw", "default"]:
             iconimage=ld.thumb
 
+        #link_action set in domains.py - parse_reddit_link
         if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
             property_link_type=ld.link_action
             DirectoryItem_url =ld.playable_url
         else:
             property_link_type='script'
-            if ld.link_action=='viewTallImage' : #viewTallImage take different args
+            if ld.link_action=='viewTallImage' : #viewTallImage take different args  
                 DirectoryItem_url = build_script(mode=ld.link_action, 
                                                  url=ld.playable_url,
                                                  name=str(preview_w),
@@ -768,6 +897,172 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         pass
 
     return liz
+
+def reddit_post_worker(idx, entry, q_out):
+    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
+
+    try:
+        credate = ""
+        is_a_video=False
+        title_line2=""
+    
+        thumb_w=0
+        thumb_h=0
+    
+        t_on = translation(32071)  #"on"
+        #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
+        t_pts = u"\U00002709"  # translation(30072)   envelope symbol
+        t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
+        
+        data=entry.get('data')
+        
+        show_listSubReddit_debug=True
+        
+        if data:
+            title = unescape(data.get('title').encode('utf-8'))
+        
+            is_a_video = determine_if_video_media_from_reddit_json(entry)
+            if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
+        
+            post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']      
+            #log('  %s  %s ' % (post_id, entry['data']['name'] ))
+            
+            try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
+            except: description = ''
+            #log('    description  [%s]' %description)
+            try:    post_selftext=unescape(data.get('selftext').encode('utf-8'))
+            except: post_selftext=''
+            #log('    post_selftext[%s]' %post_selftext)
+            
+            description=post_selftext+'[CR]'+description if post_selftext else description
+            #log('    combined     [%s]' %description)
+                
+            commentsUrl = urlMain+data.get('permalink').encode('utf-8')
+            #log("commentsUrl"+str(idx)+"="+commentsUrl)
+            
+            try:
+                aaa = data.get('created_utc')
+                credate = datetime.datetime.utcfromtimestamp( aaa )
+                now_utc = datetime.datetime.utcnow()
+                pretty_date=pretty_datediff(now_utc, credate)
+                credate = str(credate)
+            except:
+                credate = ""
+                credateTime = ""
+    
+            subreddit=data.get('subreddit').encode('utf-8')
+            
+            if post_excluded_from( subreddit_filter, subreddit ):
+                log( '    r/%s excluded by subreddit_filter' %subreddit )
+                return;
+            
+            try: author = data.get('author').encode('utf-8')
+            except: author = ""
+            
+            try: domain= data.get('domain').encode('utf-8')
+            except: domain = ""
+            #log("     DOMAIN%.2d=%s" %(idx,domain))
+            if post_excluded_from( domain_filter, domain ):
+                log( '    %s excluded by domain_filter' %domain )
+                return;
+            
+            ups = data.get('score')       #downs not used anymore
+            try:num_comments = data.get('num_comments')
+            except:num_comments = 0
+            
+            #log("DESCRIPTION"+str(idx)+"=["+description+"]")
+            try:
+                media_url = data.get('url').encode('utf-8')
+            except:
+                media_url = data.get('media')['oembed']['url'].encode('utf-8')
+                
+            thumb = data.get('thumbnail').encode('utf-8')
+            #log("       THUMB%.2d=%s" %( idx, thumb ))
+            
+            if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
+                thumb=""               
+    
+            if thumb=="":
+                try: thumb = data.get('data')['media']['oembed']['thumbnail_url'].encode('utf-8').replace('&amp;','&')
+                except: pass
+            
+            try:
+                #collect_thumbs(entry)
+                preview=data.get('preview')['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
+                #poster = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
+                #t=thumb.split('?')[0]
+                #can't preview gif thumbnail on thumbnail view, use alternate provided by reddit
+                #if t.endswith('.gif'):
+                    #log('  thumb ends with .gif')
+                #    thumb = entry['data']['thumbnail'].encode('utf-8')
+                
+                try:
+                    thumb_h = float( data.get('preview')['images'][0]['source']['height'] )
+                    thumb_w = float( data.get('preview')['images'][0]['source']['width'] )
+                except:
+                    thumb_w=0
+                    thumb_h=0
+    
+            except Exception as e:
+                #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+                thumb_w=0
+                thumb_h=0
+                preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
+    
+            #preview images are 'keep' stretched to fit inside 1080x1080. 
+            #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image  
+            if thumb_w > 0 and thumb_w < 280:
+                #log('*******preview is small ')
+                thumb=preview
+                thumb_w=0
+                thumb_h=0
+                preview=""
+    
+            try:
+                over_18 = data.get('over_18')
+            except:
+                over_18 = False
+    
+            title_line2=""
+            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
+            #title_line2 = "[I][COLOR dimgrey]%s by %s [COLOR darkslategrey]r/%s[/COLOR] %d pts.[/COLOR][/I]" %(pretty_date,author,subreddit,ups)
+            #http://www.w3schools.com/colors/colors_names.asp
+            #title_line2 = "[I][COLOR dimgrey]%s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
+            #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
+            #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
+            #if show_listSubReddit_debug :log("   IS_A_VIDEO"+str(idx)+"="+str(is_a_video))
+            #if show_listSubReddit_debug :log("        THUMB"+str(idx)+"="+thumb)
+            #if show_listSubReddit_debug :log("    MediaURL%.2d=%s" % (idx,media_url) )
+            #log( "["+description+"]1["+ str(date)+"]2["+ str( count)+"]3["+ str( commentsUrl)+"]4["+ str( subreddit)+"]5["+ video_url +"]6["+ str( over_18))+"]"
+        
+            liz=addLink(title=title, 
+                    title_line2=title_line2,
+                    iconimage=thumb, 
+                    previewimage=preview,
+                    preview_w=thumb_w,
+                    preview_h=thumb_h,
+                    domain=domain,
+                    description=description, 
+                    credate=credate, 
+                    reddit_says_is_video=is_a_video, 
+                    site=commentsUrl, 
+                    subreddit=subreddit, 
+                    link_url=media_url, 
+                    over_18=over_18,
+                    posted_by=author,
+                    num_comments=num_comments,
+                    post_id=post_id,
+                    #post_index=idx,
+                    #post_total=0,
+                    #many_subreddit=hms
+                    )
+        
+            q_out.put( [idx, liz] )  #we put the idx back for easy sorting
+        
+    except Exception:
+        self.log( '  #reddit_post_workerf EXCEPTION:' + repr(sys.exc_info()) )
+        
 
 
 q = Queue()
@@ -1558,6 +1853,7 @@ def viewTallImage(image_url, width, height):
                                     ]  )
         xbmc.sleep(scroll_time*2)
         useWindow.removeControls( [img_control,img_loading] )
+
     
 def zoom_n_slide(image, width, height):
     from resources.lib.utils import calculate_zoom_slide
@@ -1937,6 +2233,7 @@ if __name__ == '__main__':
 
     from resources.lib.domains import viewImage, listAlbum
     from resources.lib.slideshow import autoSlideshow
+    from resources.lib.converthtml import parseHTML
     
     if mode=='':mode='index'  #default mode is to list start page (index)
     #plugin_modes holds the mode string and the function that will be called given the mode
@@ -1950,7 +2247,8 @@ if __name__ == '__main__':
                     ,'autoSlideshow'        : autoSlideshow                           
                     ,'listAlbum'            : listAlbum        #slideshowAlbum
                     ,'viewImage'            : viewImage
-                    ,'viewTallImage'        : viewTallImage                    
+                    ,'viewTallImage'        : viewTallImage
+                    ,'parseHTML'            : parseHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
                     ,'zoom_n_slide'         : zoom_n_slide
@@ -1968,6 +2266,72 @@ if __name__ == '__main__':
     
     #whenever a list item is clicked, this part handles it.
     plugin_modes[mode](url,name,typez)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 '''

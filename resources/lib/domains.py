@@ -19,7 +19,6 @@ from utils import build_script, parse_filename_and_ext_from_url, image_exts, lin
 
 use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 
-
 from CommonFunctions import parseDOM
 import pprint
 
@@ -897,7 +896,6 @@ class ClassStreamable(sitesBase):
             r = requests.get(api_url)
             #log(r.text)
             if r.status_code == 200:   #http status code 200 is success
-                #log("success")
                 j=json.loads(r.text.replace('\\"', '\''))
                 
                 if j.get('files'):  #we are not guaranteed that 'mp4-mobile' etc. exists.
@@ -928,6 +926,8 @@ class ClassStreamable(sitesBase):
                         return "https:" + url_hq, sitesBase.TYPE_VIDEO
                     else:
                         return "https:" + url_mq, sitesBase.TYPE_VIDEO
+            else:
+                log('      %s: %s '  %(self.__class__.__name__, r.text ) )
         else:
             log('      %s: cant get video id '  %(self.__class__.__name__ ) )
 
@@ -2771,6 +2771,7 @@ class genericVideo(sitesBase):
 
     def get_playable_url(self, media_url, is_probably_a_video):
         pass
+
     
 class LinkDetails():
     def __init__(self, media_type, link_action, playable_url='', thumb='', poster='', poster_w=0, poster_h=0 ):
@@ -2807,7 +2808,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                 pass
             
             prepped_media_url, media_type = hoster.get_playable(link_url, assume_is_video)
-            log( '    parsed: %s %s %s ' % ( hoster.link_action, media_type,  prepped_media_url ) )
+            #log( '    parsed: [%s] type=%s url=%s ' % ( hoster.link_action, media_type,  prepped_media_url ) )
             
             if needs_preview:
                 thumb=hoster.get_thumb_url()
