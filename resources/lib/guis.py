@@ -256,6 +256,7 @@ class listSubRedditGUI(cGUI):
     BTN_ZOOM_N_SLIDE=6053
     BTN_PLAY_ALL=6054
     BTN_SLIDESHOW=6055
+    BTN_READ_HTML=6056
     BTN_PLAY_FROM_HERE=6057
     
     def onInit(self):
@@ -271,22 +272,21 @@ class listSubRedditGUI(cGUI):
     
     def onAction(self, action):
         
-        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
-            self.close()
-
         try:focused_control=self.getFocusId()
         except:focused_control=0
         #log( "  onAction focused control=" +  str(focused_control) + " " + str( self.a ))
         
         if focused_control==self.main_control_id:  #main_control_id is the listbox
+
+            if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+                self.close()
         
             self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
 
             item_type   =item.getProperty('item_type').lower()
             
-                        
-            if action == xbmcgui.ACTION_MOVE_LEFT:
+            if action in [ xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_CONTEXT_MENU ] :                        
                 #show side menu panel
                 self.setFocusId(self.SIDE_SLIDE_PANEL)
                 
@@ -306,8 +306,9 @@ class listSubRedditGUI(cGUI):
                 
 
         if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW]:   
-            if action == xbmcgui.ACTION_MOVE_RIGHT:
+            if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
                 self.setFocusId(self.main_control_id)
+
 
             if focused_control==self.SUBREDDITS_LIST and ( action in [ xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_CONTEXT_MENU ]  ) :
                 item = self.subreddits_listbox.getSelectedItem()
@@ -416,6 +417,16 @@ class listSubRedditGUI(cGUI):
             #build_script( mode, url, name="", type="", script_to_call=addonID)
             action=build_script('autoSlideshow', self.reddit_query_of_this_gui,'','')
             log('  SLIDESHOW '+ action)
+            self.busy_execute_sleep(action, 1000,False)
+            pass
+
+        elif controlID == self.BTN_READ_HTML:
+            #action='RunAddon(script.reddit.reader,mode=autoPlay&url=%s&name=&type=)' % self.reddit_query_of_this_gui
+            #build_script( mode, url, name="", type="", script_to_call=addonID)
+            #action=build_script('autoSlideshow', self.reddit_query_of_this_gui,'','')
+            link=listbox_selected_item.getProperty('link_url')
+            action=build_script('readHTML', link,'','')
+            log('  READ_HTML '+ action)
             self.busy_execute_sleep(action, 1000,False)
             pass
             

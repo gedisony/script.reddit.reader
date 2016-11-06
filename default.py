@@ -2233,7 +2233,7 @@ if __name__ == '__main__':
 
     from resources.lib.domains import viewImage, listAlbum
     from resources.lib.slideshow import autoSlideshow
-    from resources.lib.converthtml import parseHTML
+    from resources.lib.converthtml import readHTML
     
     if mode=='':mode='index'  #default mode is to list start page (index)
     #plugin_modes holds the mode string and the function that will be called given the mode
@@ -2248,7 +2248,7 @@ if __name__ == '__main__':
                     ,'listAlbum'            : listAlbum        #slideshowAlbum
                     ,'viewImage'            : viewImage
                     ,'viewTallImage'        : viewTallImage
-                    ,'parseHTML'            : parseHTML        
+                    ,'readHTML'             : readHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
                     ,'zoom_n_slide'         : zoom_n_slide
