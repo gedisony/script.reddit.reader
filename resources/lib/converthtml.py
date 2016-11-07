@@ -51,7 +51,7 @@ def readHTML(link_url, a, b):
     #log( pprint.pformat( h2t ) )
     
     for idx, line in enumerate(h2t):
-        #log(line)
+        log(line)
         
         if len(line)<25:
             #log('*len ignored:' )
@@ -124,13 +124,15 @@ def line_rejected( text ):
 
 
 def get_alt_and_link(source_url, text):
+    log('get_alt_and_link:' + text )
     #parses the ![...](...) pattern returned by html2text
     from urlparse import urlparse
     domain = '{uri.netloc}'.format( uri=urlparse( source_url ) )
     url_path = '{uri.path}'.format( uri=urlparse( source_url ) ).split('/')
     url_path= '/'.join(  url_path[:-1] )  #url_path needs more testing
 
-
+    alt,uri='',''
+    
     link_re = re.compile('!\[(.*?)\]\((.*?)\)')  # catch the ![...](...) pattern used in links
     #result = prog.findall(post_text)
     link=link_re.findall(text)
