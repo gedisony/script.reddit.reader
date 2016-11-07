@@ -109,14 +109,14 @@ def readHTML(link_url, a, b):
     #ui.setProperty('comments', 'no')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
     
     #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
-    ui.title_bar_text=''
+    ui.title_bar_text='html2text'
     ui.include_parent_directory_entry=False
 
     ui.doModal()
     del ui
 
 def line_rejected( text ):
-    re_1=re.compile('(\*\s[0-9a-zA-Z ]{1,20}$)', re.MULTILINE )   # up to 20 characters
+    re_1=re.compile('(\*\s[0-9a-zA-Z _]{1,20}$)', re.MULTILINE )   # up to 20 characters
     
     asterisk_line=re_1.findall(text)  #matches  * TV
     if asterisk_line:                 #         * News

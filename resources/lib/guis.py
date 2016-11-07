@@ -37,6 +37,17 @@ def dump(obj):
         if hasattr( obj, attr ):
             log( "obj.%s = %s" % (attr, getattr(obj, attr)))
 
+class ExitMonitor(xbmc.Monitor):
+    def __init__(self, exit_callback):
+        self.exit_callback = exit_callback
+
+#     def onScreensaverDeactivated(self):
+#         self.exit_callback()
+
+    def abortRequested(self):
+        self.exit_callback()
+
+
 class cGUI(xbmcgui.WindowXML):
     # view_461_comments.xml   
     include_parent_directory_entry=True
@@ -62,6 +73,7 @@ class cGUI(xbmcgui.WindowXML):
         #important to reset the listbox. when control comes back to this GUI(after calling another gui). 
         #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
         self.gui_listbox.reset()
+        self.exit_monitor = ExitMonitor(self.close_gui)#monitors for abortRequested and calls close on the gui
         
         if self.title_bar_text:
             self.ctl_title_bar = self.getControl(1)
@@ -117,10 +129,13 @@ class cGUI(xbmcgui.WindowXML):
             elif item_type=='script':
                 #"script.web.viewer, http://m.reddit.com/login"
                 #log(  di_url )
-                xbmc.executebuiltin("ActivateWindow(busydialog)")
-                xbmc.executebuiltin( di_url  )
-                xbmc.sleep(5000)
-                xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                
+                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                #xbmc.executebuiltin( di_url  )
+                #xbmc.sleep(5000)
+                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+                
+                self.busy_execute_sleep(di_url, 3000, close=False)   #note: setting close to false seems to cause kodi not to close properly (will wait on this thread) 
                 
                 #modes=['listImgurAlbum','viewImage','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
                 #if any(x in di_url for x in modes):
@@ -188,6 +203,11 @@ class cGUI(xbmcgui.WindowXML):
             xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         pass
 
+    def close_gui(self):
+        log('  close gui via exit monitor')
+        self.close()
+        pass
+    
 class indexGui(cGUI):
     #this is the gui that handles the initial screen. 
     
