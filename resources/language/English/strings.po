@@ -122,7 +122,11 @@ msgid "from here"
 msgstr ""
 
 msgctxt "#32058"
-msgid "html2text"
+msgid "View using html2text"
+msgstr ""
+
+msgctxt "#32059"
+msgid "Read Comments"
 msgstr ""
 
 

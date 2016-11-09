@@ -603,7 +603,7 @@
 					<top>0</top>
 					<height>60</height>
 					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
+					<textwidth>380</textwidth>
 					<aligny>center</aligny>
 					<textcolor>white</textcolor>
 					<invalidcolor>invalid</invalidcolor>
@@ -612,6 +612,25 @@
 					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
 					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32058]</label>
+			</control>
+
+			<control type="button" id="6058">
+				<visible>true</visible><description>view comments</description>
+				<enable>true</enable>
+					<width>530</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>60</height>
+					<radioposx>330</radioposx>
+					<textwidth>380</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32059]</label>
 			</control>
 
 			<control type="button" id="6052">
@@ -777,7 +796,7 @@
 				<left>2</left>
 				<top>3</top>
 				<width>530</width>
-				<height>740</height>
+				<height>620</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<!-- pagecontrol>55600</pagecontrol-->

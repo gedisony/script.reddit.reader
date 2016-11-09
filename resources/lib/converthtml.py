@@ -51,7 +51,7 @@ def readHTML(link_url, a, b):
     #log( pprint.pformat( h2t ) )
     
     for idx, line in enumerate(h2t):
-        log(line)
+        #log(line)
         
         if len(line)<25:
             #log('*len ignored:' )
@@ -124,7 +124,7 @@ def line_rejected( text ):
 
 
 def get_alt_and_link(source_url, text):
-    log('get_alt_and_link:' + text )
+    #log('get_alt_and_link:' + text )
     #parses the ![...](...) pattern returned by html2text
     from urlparse import urlparse
     domain = '{uri.netloc}'.format( uri=urlparse( source_url ) )

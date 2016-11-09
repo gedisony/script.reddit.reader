@@ -278,6 +278,7 @@ class listSubRedditGUI(cGUI):
     BTN_SLIDESHOW=6055
     BTN_READ_HTML=6056
     BTN_PLAY_FROM_HERE=6057
+    BTN_COMMENTS=6058
     
     def onInit(self):
         cGUI.onInit(self)
@@ -449,6 +450,15 @@ class listSubRedditGUI(cGUI):
             log('  READ_HTML '+ action)
             self.busy_execute_sleep(action, 1000,False)
             pass
+
+        elif controlID == self.BTN_COMMENTS:
+            action=listbox_selected_item.getProperty('comments_action')
+            log('  BTN_COMMENTS '+ action)
+            if action:
+                #if there are no comments, the comments_action property is not created for this listitem
+                self.busy_execute_sleep(action,3000,False )
+            pass
+
             
 class commentsGUI(cGUI):
     
