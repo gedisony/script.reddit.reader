@@ -1,3 +1,6 @@
+0.6.5
+ - bugfixes
+
 0.6.4  (11-05-2016)
  - add html2text parsing- for those sites that you just gotta read  
  

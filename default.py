@@ -95,10 +95,11 @@ subreddit_filter     = addon.getSetting("subreddit_filter")
 main_gui_skin        = addon.getSetting("main_gui_skin")
 
 sitemsPerPage        = addon.getSetting("itemsPerPage")
-try: itemsPerPage = int(sitemsPerPage)
+try: itemsPerPage    = ["10", "25", "50", "75", "100"][ int(sitemsPerPage) ]
 except: itemsPerPage = 50    
 
-itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
+#itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
+
 TitleAddtlInfo        = addon.getSetting("TitleAddtlInfo") == "true"   #Show additional post info on title</string>
 
 #--- settings related to context menu "Show Comments"

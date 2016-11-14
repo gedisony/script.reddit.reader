@@ -116,7 +116,7 @@ def autoSlideshow(url, name, type):
     for j_entry in data_children:
         try:
             title = unescape(j_entry['data']['title'].encode('utf-8'))
-            log("  TITLE:%s "  %( title ) )
+            log("  TITLE:%s [r/%s]"  %( title, j_entry.get('data').get('subreddit') )  )
 
             try:    description = unescape(j_entry['data']['media']['oembed']['description'].encode('utf-8'))
             except: description = ''
@@ -182,7 +182,7 @@ def autoSlideshow(url, name, type):
             log( '  autoPlay exception:' + str(e) )
             pass
 
-    log( repr(entries))
+    #log( repr(entries))
 
     entries = remove_dict_duplicates( entries, 'DirectoryItem_url')
     
@@ -192,8 +192,7 @@ def autoSlideshow(url, name, type):
 #     #for i,e in enumerate(entries): log('  e2-%d %s' %(i, e[1]) )
     
     for i, e in enumerate(entries): 
-        #log('  possible playable items(%d) %s...%s' %(e[4], e[0].ljust(15)[:15], e[1]) )
-        log('  possible playable items(%d) %s...%dx%d  %s' %(i, e['li_label'].ljust(15)[:15], e['width'],e['height'],  e['DirectoryItem_url']) )
+        log('  possible playable items({0}) {1}...{2}x{3}  {4}'.format( i, e['li_label'].ljust(15)[:15], repr(e.get('width')),repr(e.get('height')),  e.get('DirectoryItem_url')) )
         
     if len(entries)==0:
         log('  Play All: no playable items' )
