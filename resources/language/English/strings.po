@@ -186,8 +186,13 @@ msgctxt "#32072"
 msgid "cmts"
 msgstr ""
 
+msgctxt "#32073"
+msgid "Search"
+msgstr ""
 
-
+msgctxt "#32074"
+msgid "Reload"
+msgstr ""
 
 
 #settings screen settings.xml

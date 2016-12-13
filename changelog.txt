@@ -1,3 +1,7 @@
+0.6.6
+ - add ytdl parsing for unknown links in autoplay
+ - add search and reload on context menu 
+ 
 0.6.5
  - bugfixes
 

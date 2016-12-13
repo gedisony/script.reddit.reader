@@ -23,8 +23,6 @@ import requests
 import threading
 from Queue import Queue, Empty
 
-
-
 #this used to be a plugin. not that we're a script, we don't get free sys.argv's
 #this import for the youtube_dl addon causes our addon to start slower. we'll import it when we need to playYTDLVideo
 if len(sys.argv) > 1:
@@ -464,6 +462,7 @@ def listSubReddit(url, title_bar_name, type):
             liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': translation(32004)} )
             
             li.append(liz)
+            
         
         #if show_listSubReddit_debug :log("NEXT PAGE="+nextUrl) 
     except Exception as e:
@@ -474,8 +473,11 @@ def listSubReddit(url, title_bar_name, type):
     xbmc_busy(False)
     
     title_bar_name=urllib.unquote_plus(title_bar_name)
-    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)    
-    
+    ui=skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)
+    #set properties to the window(to be retrieved by gui methods)
+    ui.setProperty('actual_url_used_to_generate_these_posts',url)    #used by reload function - specially done for r/random and r/randnsfw (could have used currentUrl)
+    ui.doModal()
+    del ui
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
 
@@ -727,17 +729,15 @@ def listSubReddit_old(url, title_bar_name, type):
     xbmc_busy(False)
     
     title_bar_name=urllib.unquote_plus(title_bar_name)
-    skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)    
-    
+    ui=skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)    
+    ui.doModal()
+    del ui
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class. 
     #xbmc.sleep(8000)
 
 
-
-
-
 def skin_launcher(mode,**kwargs ):
-    
+    #launches the gui using .xml file defined in settings (incomplete)
     from resources.lib.utils import xbmcVersion
     from resources.lib.guis import listSubRedditGUI
         
@@ -756,9 +756,9 @@ def skin_launcher(mode,**kwargs ):
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
         ui.reddit_query_of_this_gui=currentUrl
         #ui.include_parent_directory_entry=True
-    
-        ui.doModal()
-        del ui
+        #ui.doModal()
+        #del ui
+        return ui
     except Exception as e:
         log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
@@ -1064,11 +1064,7 @@ def reddit_post_worker(idx, entry, q_out):
     except Exception:
         self.log( '  #reddit_post_workerf EXCEPTION:' + repr(sys.exc_info()) )
         
-
-
 q = Queue()
-
-#MODE autoPlay        - name not used
 def autoPlay(url, name, type):
     from resources.lib.domains import sitesBase, parse_reddit_link 
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
@@ -1108,19 +1104,15 @@ def autoPlay(url, name, type):
             ld=parse_reddit_link(link_url=media_url, assume_is_video=False, needs_preview=False, get_playable_url=True )
 
             if ld:
-                
                 log('      type:%s %s' %( ld.media_type, ld.link_action)   )
                 if ld.media_type in [sitesBase.TYPE_VIDEO, sitesBase.TYPE_VIDS, sitesBase.TYPE_MIXED]:
-                    if type.startswith("UNWATCHED_") and getPlayCount(url) < 0:
-                        #log("      UNWATCHED_" )
-                        entries.append([title,ld.playable_url, ld.link_action])
-                    elif type.startswith("UNFINISHED_") and getPlayCount(url) == 0:
-                        #log("      UNFINISHED_" )
-                        entries.append([title,ld.playable_url, ld.link_action])
-                    else:  # type.startswith("ALL_")
-                        #log("      ALL_" )
-                        entries.append([title,ld.playable_url, ld.link_action])
-                    
+                    entries.append([title,ld.playable_url, ld.link_action])
+            else:
+                #log('    checking if ytdl supports %s' %media_url )
+                playable_video_url=ydtl_get_playable_url(media_url)
+                if playable_video_url:
+                    for u in playable_video_url:
+                        entries.append([title, u, sitesBase.DI_ACTION_PLAYABLE])
                 
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
@@ -1132,7 +1124,10 @@ def autoPlay(url, name, type):
     #for i,e in enumerate(entries): log('  e2-%d %s:' %(i, e[1]) )
 
     for i,e in enumerate(entries): 
-        log('  possible playable items(%d) %s...%s' %(i, e[0].ljust(15)[:15], e[1]) )
+        try:
+            log('  possible playable items(%.2d) %s...%s (%s)' %(i, e[0].ljust(15)[:15], e[1],e[2]) )
+        except:
+            pass
         
     if len(entries)==0:
         log('  Play All: no playable items' )
@@ -1264,6 +1259,7 @@ class Worker(threading.Thread):
                 time.sleep(0.1)
 
     def do_work(self):
+        from resources.lib.domains import sitesBase
         #log( ' wor-ker (%(threadName)-10s)')
         
         url_to_check=""
@@ -1276,24 +1272,21 @@ class Worker(threading.Thread):
             #xbmc.sleep(2000)
             title=entry[0]
             url_to_check=entry[1]
+            action=entry[2]
+            
             if url_to_check.startswith('plugin://'):
-                playable_url=url_to_check
-                pass
-            else:
+                self.queue.put( [title, url_to_check] )
+            elif action==sitesBase.DI_ACTION_PLAYABLE:
+                self.queue.put( [title, url_to_check] )
+            elif action==sitesBase.DI_ACTION_YTDL:
                 playable_url = ydtl_get_playable_url( url_to_check )  #<-- will return a playable_url or a list of playable urls
-            #playable_url= '(worked)' + title.ljust(15)[:15] + '... '+ w_url
-            #work
-            if playable_url:
-                if isinstance(playable_url, basestring):
-                    entry[1]=playable_url
-                    log('    p-%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], playable_url)  )
-                    self.queue.put(entry)
-                else:
+                
+                if playable_url:
                     for u in playable_url:
                         log('    p-(multiple)%d %s... %s' %(self.queue.qsize(), title.ljust(15)[:15], u)  )
                         self.queue.put( [title, u] )
-            else:
-                log('      p-(ytdl-failed) %s' %( title )  )
+                else:
+                    log('      p-(ytdl-failed) %s' %( title )  )
 
 
 #MODE playVideo       - name, type not used
@@ -1345,9 +1338,9 @@ def ydtl_get_playable_url( url_to_check ):
                     choices.append(s['xbmc_url'])
                 #index = some_function_asking_the_user_to_choose(choices)
                 #vid.selectStream(0) #You can also pass in the the dict for the chosen stream
-                return choices  #vid.streamURL()   
     
-            return vid.streamURL()                         #This is what Kodi (XBMC) will play    
+            choices.append(vid.streamURL())
+            return choices                             
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
@@ -1885,6 +1878,9 @@ def zoom_n_slide(image, width, height):
         del newWindow
     except Exception as e:
         log("  EXCEPTION zoom_n_slide:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
+
+def parse_and_play(url, name, type):
+    pass
     
 
 def callwebviewer(url, name, type):
@@ -2252,6 +2248,7 @@ if __name__ == '__main__':
                     ,'readHTML'             : readHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
+                    ,'play'                 : parse_and_play
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits
                     ,'callwebviewer'        : callwebviewer
@@ -2413,6 +2410,16 @@ if need to change things...
 
 git rebase --interactive HEAD~2
 (bunch of vi stuff later...)
+   *pick one 
+   *squash the rest...
+
+(second vi stuff)
+   use the "[script.reddit.reader] 0.5.7" comment and # the rest
+
+(end bunch of vi stuff...)
+
+** sometimes need to use "git rebase --abort" to start over
+
 git push origin script.reddit.reader --force
 
 

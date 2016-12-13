@@ -279,6 +279,8 @@ class listSubRedditGUI(cGUI):
     BTN_READ_HTML=6056
     BTN_PLAY_FROM_HERE=6057
     BTN_COMMENTS=6058
+    BTN_SEARCH=6059
+    BTN_RELOAD=6060
     
     def onInit(self):
         cGUI.onInit(self)
@@ -326,7 +328,7 @@ class listSubRedditGUI(cGUI):
                     self.busy_execute_sleep(comments_action,3000,False )
                 
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW]:   
+        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW, self.BTN_READ_HTML, self.BTN_COMMENTS, self.BTN_SEARCH, self.BTN_RELOAD]:   
             if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
                 self.setFocusId(self.main_control_id)
 
@@ -343,7 +345,7 @@ class listSubRedditGUI(cGUI):
         pass 
 
     def onClick(self, controlID):
-        from utils import build_script
+        from utils import build_script, assemble_reddit_filter_string
         #log( ' clicked on control id %d'  %controlID )
         
         listbox_selected_item=self.gui_listbox.getSelectedItem()
@@ -459,6 +461,40 @@ class listSubRedditGUI(cGUI):
                 self.busy_execute_sleep(action,3000,False )
             pass
 
+        elif controlID == self.BTN_SEARCH:
+            from default import translation
+            
+            #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
+            #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
+            pos=self.reddit_query_of_this_gui.find('/.json')
+            if pos != -1 and pos > 22:
+                pos+=1  #insert 'search' between '/' and '.json'
+                search_query=self.reddit_query_of_this_gui[:pos] + 'search' + self.reddit_query_of_this_gui[pos:]
+            
+                keyboard = xbmc.Keyboard('', translation(32073))
+                keyboard.doModal()
+                if keyboard.isConfirmed() and keyboard.getText():
+                    search_text=keyboard.getText() 
+                    
+                    #restrict_sr = limit result to subreddit   
+                    #sort & t not changeable for now
+                    search_query=search_query+'&q=' + urllib.unquote_plus(search_text) + '&restrict_sr=on&sort=relevance&t=all'
+                    
+                    action=build_script("listSubReddit", search_query,'Search Result' ) 
+                    log('  BTN_SEARCH '+ action)
+                    if action:
+                        self.busy_execute_sleep(action,3000,False )
+            pass
+
+        elif controlID == self.BTN_RELOAD:
+            #log( self.reddit_query_of_this_gui)  #<-- r/random will return a random subredddit. 
+            #actual_url_ will tell us whether r/random was used to generate this list
+            actual_query_of_this_gui=self.getProperty('actual_url_used_to_generate_these_posts')  
+            action=build_script("listSubReddit", actual_query_of_this_gui ) 
+            log('  BTN_RELOAD '+ action)
+            if action:
+                self.busy_execute_sleep(action,3000,False )
+            pass
             
 class commentsGUI(cGUI):
     

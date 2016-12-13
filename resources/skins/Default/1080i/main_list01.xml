@@ -651,8 +651,46 @@
 					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
 				<label>$ADDON[script.reddit.reader 32051]</label>
 				<label2>$INFO[Container(55).ListItem.Genre]</label2>
-				
 			</control>
+			
+			<control type="button" id="6059">
+				<visible>true</visible><description>Search</description>
+				<enable>true</enable>
+					<width>530</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>60</height>
+					<radioposx>330</radioposx>
+					<textwidth>320</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32073]</label>
+			</control>
+			
+			<control type="button" id="6060">
+				<visible>true</visible><description>Search</description>
+				<enable>true</enable>
+					<width>530</width>
+					<textoffsetx>20</textoffsetx>
+					<top>0</top>
+					<height>60</height>
+					<radioposx>330</radioposx>
+					<textwidth>320</textwidth>
+					<aligny>center</aligny>
+					<textcolor>white</textcolor>
+					<invalidcolor>invalid</invalidcolor>
+					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
+					<texturenofocus border="30">srr_separator.png</texturenofocus>
+					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
+					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
+				<label>$ADDON[script.reddit.reader 32074]</label>
+			</control>
+			
 			<control type="button" id="6053">
 				<visible>false</visible><description>zoom_n_slide</description>
 				<enable>!String.IsEmpty(Container(55).ListItem.Property(zoom_n_slide_action))</enable>
@@ -796,7 +834,7 @@
 				<left>2</left>
 				<top>3</top>
 				<width>530</width>
-				<height>620</height>
+				<height>480</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<!-- pagecontrol>55600</pagecontrol-->

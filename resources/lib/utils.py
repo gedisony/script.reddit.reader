@@ -200,7 +200,7 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
             #   pass
  
         site_filter=""
-        if search_string:  #search string overrides our supported sites filter
+        if search_string:  
             search_string = urllib.unquote_plus(search_string)
             url+= "/search.json?q=" + urllib.quote_plus(search_string)
         elif skip_site_filters: 
