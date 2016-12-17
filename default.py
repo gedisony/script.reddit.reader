@@ -1496,7 +1496,6 @@ def listLinksInComment(url, name, type):
         try:submitter=content[0]['data']['children'][0]['data']['author']
         except: submitter=''
         
-        
         #the post title is provided in json, we'll just use that instead of messages from addLink()
         try:post_title=content[0]['data']['children'][0]['data']['title']
         except:post_title=''
@@ -1549,9 +1548,6 @@ def listLinksInComment(url, name, type):
                 
             ld=parse_reddit_link(link_url=link_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
 
-
-            
-            
             if author==submitter:#add a submitter tag
                 author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author 
             else:

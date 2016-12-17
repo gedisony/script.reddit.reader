@@ -1864,7 +1864,10 @@ class ClassGfycat(sitesBase):
 
     def get_video_id(self):
         self.video_id=''
-        match = re.findall('gfycat.com/(.*)', self.media_url)
+        #https://thumbs.gfycat.com/DefenselessVillainousHapuku-size_restricted.gif
+        #https://thumbs.gfycat.com/DefenselessVillainousHapuku
+        #match = re.findall('gfycat.com/(.*)', self.media_url)
+        match = re.findall('gfycat.com/(.+?)(?:-|$)', self.media_url)
         if match:
             self.video_id=match[0]
 
