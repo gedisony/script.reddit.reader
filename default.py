@@ -96,24 +96,14 @@ sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage    = ["10", "25", "50", "75", "100"][ int(sitemsPerPage) ]
 except: itemsPerPage = 50    
 
-#itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
-
-TitleAddtlInfo        = addon.getSetting("TitleAddtlInfo") == "true"   #Show additional post info on title</string>
-
 #--- settings related to context menu "Show Comments"
 CommentTreshold          = addon.getSetting("CommentTreshold") 
 try: int_CommentTreshold = int(CommentTreshold)
 except: int_CommentTreshold = -1000    #if CommentTreshold can't be converted to int, show all comments 
 
-#ll_qualiy  = int(addon.getSetting("ll_qualiy"))
-#ll_qualiy  = ["480p", "720p"][ll_qualiy]
-#ll_downDir = str(addon.getSetting("ll_downDir"))
-
 try:istreamable_quality=int(addon.getSetting("streamable_quality"))  #values 0 or 1
 except:istreamable_quality=0
 streamable_quality  =["full", "mobile"][istreamable_quality]       #https://streamable.com/documentation
-
-#gfy_downDir = str(addon.getSetting("gfy_downDir"))
 
 use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true" 
 use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
@@ -126,8 +116,6 @@ nsfwFile            = xbmc.translatePath("special://profile/addon_data/"+addonID
 default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
 #ytdl_sites_file          = xbmc.translatePath(profile_path+"/ytdl_sites")
 default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_sites" )
-
-#C:\Users\myusername\AppData\Roaming\Kodi\userdata\addon_data\plugin.video.reddit_viewer
 
 #last slash at the end is important
 SlideshowCacheFolder    = xbmc.translatePath("special://profile/addon_data/"+addonID+"/slideshowcache/") #will use this to cache images for slideshow 
@@ -149,30 +137,6 @@ def log(message, level=xbmc.LOGNOTICE):
     
     xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
 
-
-#def getDbPath():
-#    path = xbmc.translatePath("special://userdata/Database")
-#    files = os.listdir(path)
-#    latest = ""
-#    for file in files:
-#        if file[:8] == 'MyVideos' and file[-3:] == '.db':
-#            if file > latest:
-#                latest = file
-#    if latest:
-#        return os.path.join(path, latest)
-#    else:
-#        return ""
-#def getPlayCount(url):
-#    if dbPath:
-#        c.execute('SELECT playCount FROM files WHERE strFilename=?', [url])
-#        result = c.fetchone()
-#        if result:
-#            result = result[0]
-#            if result:
-#                return int(result)
-#            return 0
-#    return -1
-    
 def manage_subreddits(subreddit, name, type):
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
     #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list 
@@ -306,27 +270,9 @@ def index(url,name,type):
     from resources.lib.utils import assemble_reddit_filter_string, create_default_subreddits
     li=[]
 
-    #ui = cGUI('DialogSelect.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
-    #ui.show()
-    #xbmc.sleep(2000)
-
-#     log( "sys.argv[0]="+ sys.argv[0] ) #plugin://plugin.video.reddit_viewer/
-#     log( "addonID=" + addonID )     #plugin.video.reddit_viewer
-#     log( "path=" + addon.getAddonInfo('path') )
-#     log( "profile=" + addon.getAddonInfo('profile') )
-
-    #testing code
-    #h="as asd [S]asdasd[/S] asdas "
-    #log(markdown_to_bbcode(h))
-    #addDir('test', "url", "next_mode", "", "subreddit" )
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
 
-    #log( "  show_nsfw  "+str(show_nsfw) + "  [" + nsfw+"]")
-
-    #log( "--------------------"+ addon.getAddonInfo('path') )
-    #log( "--------------------"+ addon.getAddonInfo('profile') )
-     
     #this part errors on android. comment out until feature is implemented
 #     if not os.path.exists(ytdl_psites_file): 
 #         #copy over default file
@@ -464,8 +410,6 @@ def listSubReddit(url, title_bar_name, type):
             
             li.append(liz)
             
-        
-        #if show_listSubReddit_debug :log("NEXT PAGE="+nextUrl) 
     except Exception as e:
         log(" EXCEPTzION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
         
@@ -562,15 +506,7 @@ def listSubReddit_old(url, title_bar_name, type):
             try:
                 aaa = entry['data']['created_utc']
                 credate = datetime.datetime.utcfromtimestamp( aaa )
-                #log("creation_date="+str(credate))
-                
-                ##from datetime import datetime
-                #now = datetime.datetime.now()
-                #log("     now_date="+str(now))
-                ##from dateutil import tz
                 now_utc = datetime.datetime.utcnow()
-                #log("     utc_date="+str(now_utc))
-                #log("  pretty_date="+pretty_datediff(now_utc, credate))
                 pretty_date=pretty_datediff(now_utc, credate)
                 credate = str(credate)
             except:
@@ -597,10 +533,6 @@ def listSubReddit_old(url, title_bar_name, type):
             try:num_comments = entry['data']['num_comments']
             except:num_comments = 0
             
-            #description = "[COLOR blue]r/"+ subreddit + "[/COLOR]  [I]" + str(ups)+" pts  |  "+str(comments)+" cmnts  |  by "+author+"[/I]\n"+description
-            #description = "[COLOR blue]r/"+ subreddit + "[/COLOR]  [I]" + str(ups)+" pts.  |  by "+author+"[/I]\n"+description
-            #description = title_line2+"\n"+description
-            #if show_listSubReddit_debug :log("DESCRIPTION"+str(idx)+"=["+description+"]")
             try:
                 media_url = entry['data']['url'].encode('utf-8')
             except:
@@ -609,7 +541,6 @@ def listSubReddit_old(url, title_bar_name, type):
             #media_url=media_url.lower()  #!!! note: do not lowercase!!!     
             
             thumb = entry['data']['thumbnail'].encode('utf-8')
-            #if show_listSubReddit_debug : log("       THUMB%.2d=%s" %( idx, thumb ))
             
             if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""               
@@ -621,12 +552,6 @@ def listSubReddit_old(url, title_bar_name, type):
             try:
                 #collect_thumbs(entry)
                 preview=entry['data']['preview']['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-                #poster = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
-                #t=thumb.split('?')[0]
-                #can't preview gif thumbnail on thumbnail view, use alternate provided by reddit
-                #if t.endswith('.gif'):
-                    #log('  thumb ends with .gif')
-                #    thumb = entry['data']['thumbnail'].encode('utf-8')
                 
                 try:
                     thumb_h = float( entry['data']['preview']['images'][0]['source']['height'] )
@@ -657,17 +582,6 @@ def listSubReddit_old(url, title_bar_name, type):
 
             title_line2=""
             title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
-            #title_line2 = "[I][COLOR dimgrey]%s by %s [COLOR darkslategrey]r/%s[/COLOR] %d pts.[/COLOR][/I]" %(pretty_date,author,subreddit,ups)
-            #http://www.w3schools.com/colors/colors_names.asp
-            #title_line2 = "[I][COLOR dimgrey]%s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
-            #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
-            #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
-            #if show_listSubReddit_debug :log("   IS_A_VIDEO"+str(idx)+"="+str(is_a_video))
-            #if show_listSubReddit_debug :log("        THUMB"+str(idx)+"="+thumb)
-            #if show_listSubReddit_debug :log("    MediaURL%.2d=%s" % (idx,media_url) )
-            #if show_listSubReddit_debug :log("       HOSTER"+str(idx)+"="+hoster)
-            #log("    VIDEOID"+str(idx)+"="+videoID)
-            #log( "["+description+"]1["+ str(date)+"]2["+ str( count)+"]3["+ str( commentsUrl)+"]4["+ str( subreddit)+"]5["+ video_url +"]6["+ str( over_18))+"]"
 
             liz=addLink(title=title, 
                     title_line2=title_line2,
@@ -698,10 +612,6 @@ def listSubReddit_old(url, title_bar_name, type):
         
     #**end loop for each reddit post
     
-    #log("**reddit query returned "+ str(idx) +" items")
-    #window = xbmcgui.Window(xbmcgui.getCurrentWindowId())
-    #log("focusid:"+str(window.getFocusId()))
-
     try:
         #this part makes sure that you load the next page instead of just the first
         after=""
@@ -780,12 +690,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     if over_18: 
         mpaa="R"
-        #description = "[B]" + hoster + "[/B]:[COLOR red][NSFW][/COLOR] "+title+"\n" + description
-        #il_description = "[COLOR red][NSFW][/COLOR] "+ h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
         title_line2 = "[COLOR red][NSFW][/COLOR] "+title_line2
     else:
         mpaa=""
-        #il_description = h+"[CR]" + "[COLOR grey]" + description + "[/COLOR]"
 
     post_title=title
     if len(post_title) > 40:
@@ -795,7 +702,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
     
-    #log( "  PLOT:" +il_description )
     liz=xbmcgui.ListItem(label=post_title
                          ,label2=title_line2
                          ,iconImage=""
@@ -828,11 +734,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setProperty('post_id', post_id )
     
     liz.setInfo(type='video', infoLabels=il)
-    #
-    
-    #liz.addStreamInfo('video', { 'codec': 'preview_ar','aspect': preview_ar, 'width': preview_w, 'height': preview_h } )  #how to retrieve?
-    #liz.setProperty('aspectt', '2.0')   #retrieve this with $INFO[ListItem.property(aspectt)]
-    #liz.setInfo(type='pictures', infoLabels={'exif:resolution': '%d,%d' %( preview_w, preview_h)  } ) $INFO[ListItem.PictureResolution]
 
     #use clearart to indicate if link is video, album or image. here, we default to unsupported.
     clearart=ret_info_type_icon('', '')
@@ -853,7 +754,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
         
-
     #log( '          reddit thumb[%s] ' %(iconimage ))
     #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
@@ -990,14 +890,7 @@ def reddit_post_worker(idx, entry, q_out):
                 except: pass
             
             try:
-                #collect_thumbs(entry)
                 preview=data.get('preview')['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-                #poster = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8')
-                #t=thumb.split('?')[0]
-                #can't preview gif thumbnail on thumbnail view, use alternate provided by reddit
-                #if t.endswith('.gif'):
-                    #log('  thumb ends with .gif')
-                #    thumb = entry['data']['thumbnail'].encode('utf-8')
                 
                 try:
                     thumb_h = float( data.get('preview')['images'][0]['source']['height'] )
@@ -1028,15 +921,6 @@ def reddit_post_worker(idx, entry, q_out):
     
             title_line2=""
             title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
-            #title_line2 = "[I][COLOR dimgrey]%s by %s [COLOR darkslategrey]r/%s[/COLOR] %d pts.[/COLOR][/I]" %(pretty_date,author,subreddit,ups)
-            #http://www.w3schools.com/colors/colors_names.asp
-            #title_line2 = "[I][COLOR dimgrey]%s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(pretty_date,t_on, subreddit,num_comments, t_pts)
-            #title_line2 = "[I]"+str(idx)+". [COLOR dimgrey]"+ media_url[0:50]  +"[/COLOR][/I] "  # +"    "+" [COLOR darkslategrey]r/"+subreddit+"[/COLOR] "+str(ups)+" pts.[/COLOR][/I]"
-            #if show_listSubReddit_debug :log("      OVER_18"+str(idx)+"="+str(over_18))
-            #if show_listSubReddit_debug :log("   IS_A_VIDEO"+str(idx)+"="+str(is_a_video))
-            #if show_listSubReddit_debug :log("        THUMB"+str(idx)+"="+thumb)
-            #if show_listSubReddit_debug :log("    MediaURL%.2d=%s" % (idx,media_url) )
-            #log( "["+description+"]1["+ str(date)+"]2["+ str( count)+"]3["+ str( commentsUrl)+"]4["+ str( subreddit)+"]5["+ video_url +"]6["+ str( over_18))+"]"
         
             liz=addLink(title=title, 
                     title_line2=title_line2,
@@ -1140,9 +1024,6 @@ def autoPlay(url, name, type):
     if len(entries) < entries_to_buffer:
         entries_to_buffer=len(entries)
         #log('entries to buffer reduced to %d' %entries_to_buffer )
-
-    #if type.endswith("_RANDOM"):
-    #    random.shuffle(entries)
 
     #for title, url in entries:
     #    log("  added to playlist:"+ title + "  " + url )
@@ -1500,8 +1381,6 @@ def listLinksInComment(url, name, type):
         #the post title is provided in json, we'll just use that instead of messages from addLink()
         try:post_title=content[0]['data']['children'][0]['data']['title']
         except:post_title=''
-        #for i, h in enumerate(harvest):
-        #    log("aaaaa first harvest "+link_url)
     
         #harvest links in the post itself    
         r_linkHunter(content[1]['data']['children'])
@@ -1560,8 +1439,6 @@ def listLinksInComment(url, name, type):
                 t_prepend=r"[B]Post text:[/B]"
     
             
-                
-            
     
             #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
             plot=h[3].replace('](', '] (')
@@ -1576,7 +1453,6 @@ def listLinksInComment(url, name, type):
             liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
 
             
-
             #force all links to ytdl to see if it can be played
             if link_url:
                 #log('      there is a link from %s' %domain)

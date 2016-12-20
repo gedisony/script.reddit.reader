@@ -3,3 +3,4 @@
 .settings/
 *.py[co]
 *.pyo
+thumbs.db
