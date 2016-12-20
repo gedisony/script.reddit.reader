@@ -1,3 +1,6 @@
+0.6.7
+ - remove liveleak quality setting (no longer needed)
+
 0.6.6
  - add ytdl parsing for unknown links in autoplay
  - add search and reload on context menu 
