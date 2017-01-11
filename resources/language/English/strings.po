@@ -52,33 +52,13 @@ msgctxt "#32011"
 msgid "Cannot parse ID from link"
 msgstr ""
 
-
-msgctxt "#30012"
-msgid "Randomly play all"
+#YTDL dialogProgressBG message 
+msgctxt "#32012"
+msgid "Checking link.."
 msgstr ""
 
-msgctxt "#30013"
-msgid "Automatically play videos"
-msgstr ""
-
-msgctxt "#30014"
-msgid "Randomly play unwatched"
-msgstr ""
-
-msgctxt "#30015"
-msgid "Randomly play unfinished"
-msgstr ""
-
-msgctxt "#30016"
-msgid "Play all"
-msgstr ""
-
-msgctxt "#30017"
-msgid "Play unwatched"
-msgstr ""
-
-msgctxt "#30018"
-msgid "Play unfinished"
+msgctxt "#32013"
+msgid "Playing"
 msgstr ""
 
 

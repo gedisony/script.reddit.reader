@@ -1,3 +1,7 @@
+0.6.8
+ - add loading indicator
+ - use URLResolver to check some links  
+ 
 0.6.7
  - remove liveleak quality setting (no longer needed)
 

@@ -164,7 +164,7 @@ def manage_subreddits(subreddit, name, type):
     else:                         #-1 -> escape pressed or [cancel]
         pass
     
-    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+    xbmc_busy(False)
     #this is a hack to force the subreddit listing to refresh.
     #   the calling gui needs to close after calling this function 
     #   after we are done editing the subreddits file, we call index() (the start of program) again. 
@@ -195,7 +195,7 @@ def addSubreddit(subreddit, name, type):
         #ok = dialog.ok('Add subreddit', 'Add a subreddit (videos)','or  Multiple subreddits (music+listentothis)','or  Multireddit (/user/.../m/video)')
         #would be great to have some sort of help to show first time user here
         
-        keyboard = xbmc.Keyboard('', translation(30001))
+        keyboard = xbmc.Keyboard('', translation(32001))
         keyboard.doModal()
         if keyboard.isConfirmed() and keyboard.getText():
             subreddit = keyboard.getText()
@@ -241,7 +241,7 @@ def editSubreddit(subreddit, name, type):
         
     contentNew = ""
 
-    keyboard = xbmc.Keyboard(subreddit, translation(30003))
+    keyboard = xbmc.Keyboard(subreddit, translation(32003))
     keyboard.doModal()
     if keyboard.isConfirmed() and keyboard.getText():
         newsubreddit = keyboard.getText()
@@ -329,6 +329,12 @@ def listSubReddit(url, title_bar_name, type):
 
     currentUrl = url
     xbmc_busy()    
+
+    dialog_progress = xbmcgui.DialogProgressBG()
+    dialog_progress_heading='Loading'
+    dialog_progress.create(dialog_progress_heading )
+    dialog_progress.update(0,dialog_progress_heading, title_bar_name  )
+    
     content = reddit_request(url)  #content = opener.open(url).read()
     
     if not content:
@@ -361,7 +367,7 @@ def listSubReddit(url, title_bar_name, type):
     for idx, entry in enumerate(content['data']['children']):
         try:
             #have threads process each reddit post
-            t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz,), name='#t%.2d'%idx)
+            t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz), name='#t%.2d'%idx)
             threads.append(t)
             t.start()
 
@@ -371,9 +377,11 @@ def listSubReddit(url, title_bar_name, type):
 
 
     #wait for all threads to finish before collecting the list items
-    for t in threads:
+    for idx, t in enumerate(threads):
         #log('    joining %s' %t.getName())
         t.join()    
+        loading_percentage=int((float(idx)/posts_count)*100)
+        dialog_progress.update( loading_percentage,dialog_progress_heading  )
 
     xbmc_busy(False)
     
@@ -391,6 +399,9 @@ def listSubReddit(url, title_bar_name, type):
     #empty the queue. 
     with q_liz.mutex:
         q_liz.queue.clear()    
+
+    dialog_progress.update( 100,dialog_progress_heading  )
+    dialog_progress.close() #it is important to close xbmcgui.DialogProgressBG
 
     try:
         #this part makes sure that you load the next page instead of just the first
@@ -951,7 +962,7 @@ def reddit_post_worker(idx, entry, q_out):
         
 q = Queue()
 def autoPlay(url, name, type):
-    from resources.lib.domains import sitesBase, parse_reddit_link 
+    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
@@ -1141,7 +1152,7 @@ class Worker(threading.Thread):
                 time.sleep(0.1)
 
     def do_work(self):
-        from resources.lib.domains import sitesBase
+        from resources.lib.domains import sitesBase, ydtl_get_playable_url
         #log( ' wor-ker (%(threadName)-10s)')
         
         url_to_check=""
@@ -1173,9 +1184,8 @@ class Worker(threading.Thread):
 
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
-    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-    #log("playVideo:"+url)
-    
+    xbmc_busy(False)
+
     if url : #sometimes url is a list of url or just a single string
         if isinstance(url, basestring):
             pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -1194,35 +1204,6 @@ def playVideo(url, name, type):
             xbmc.Player().play(pl, windowed=False)  
     else:
         log("playVideo(url) url is blank")
-        
-def ydtl_get_playable_url( url_to_check ):
-    from resources.lib.utils import link_url_is_playable
-    #log('ydtl_get_playable_url:' +url_to_check )
-    if link_url_is_playable(url_to_check)=='video':
-        return url_to_check
-
-    choices = []
-    
-    if YDStreamExtractor.mightHaveVideo(url_to_check,resolve_redirects=True):
-        log('      YDStreamExtractor.mightHaveVideo[true]=' + url_to_check)
-        #xbmc_busy()
-        #https://github.com/ruuk/script.module.youtube.dl/blob/master/lib/YoutubeDLWrapper.py
-        vid = YDStreamExtractor.getVideoInfo(url_to_check,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
-        if vid:
-            log("        getVideoInfo playableURL="+vid.streamURL())
-            #log("        %s  %s %s" %( vid.sourceName , vid.description, vid.thumbnail ))   #usually just 'generic' and blank on everything else
-            if vid.hasMultipleStreams():
-                #vid.info  <-- The info property contains the original youtube-dl info
-                log("          vid hasMultipleStreams %d" %len(vid._streams) )
-                for s in vid.streams():
-                    title = s['title']
-                    #log('            choices: %s... %s' %( title.ljust(15)[:15], s['xbmc_url']  )   )
-                    choices.append(s['xbmc_url'])
-                #index = some_function_asking_the_user_to_choose(choices)
-                #vid.selectStream(0) #You can also pass in the the dict for the chosen stream
-    
-            choices.append(vid.streamURL())
-            return choices                             
         
 def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
@@ -1304,13 +1285,22 @@ def playYTDLVideo(url, name, type):
 
 #     extractors.sort()
 #     for n in extractors: log("'%s'," %n)
-    xbmc_busy()
+
+    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
     from urlparse import urlparse
+
+    xbmc_busy()
+
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
 
+    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
+    dialog_progress_YTDL.create('YTDL' )
+    dialog_progress_YTDL.update(10,'YTDL',translation(32012)  )
+
     try:
         stream_url = ydtl_get_playable_url(url)
+        dialog_progress_YTDL.update(80,'YTDL',translation(32013)  )
         #log( ' ytdl stream url ' + repr(stream_url ))
         #if len(stream_url) == 1:
         #    playVideo(stream_url, name, type)
@@ -1322,11 +1312,13 @@ def playYTDLVideo(url, name, type):
             #log("getVideoInfo failed==" )
             xbmc.executebuiltin('XBMC.Notification("%s", "%s (YTDL)" )'  %( translation(32010), domain )  )  
 
-    
     except Exception as e:
         #log( "zz   " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
 
+    finally:
+        dialog_progress_YTDL.update(100,'YTDL' ) #not sure if necessary to set to 100 before closing dialogprogressbg
+        dialog_progress_YTDL.close()
 
 def listLinksInComment(url, name, type):
     from resources.lib.domains import parse_reddit_link, sitesBase
@@ -1361,6 +1353,12 @@ def listLinksInComment(url, name, type):
     url=  urllib.quote_plus(url,safe=':/') 
     url+= '.json'
     xbmc_busy()
+
+    dialog_progress = xbmcgui.DialogProgressBG()
+    dialog_progress_heading='Loading'
+    dialog_progress.create(dialog_progress_heading )
+    dialog_progress.update(0,dialog_progress_heading, 'Comments'  )
+    
     content = reddit_request(url)        
     if not content: return
     #content = r''
@@ -1400,6 +1398,10 @@ def listLinksInComment(url, name, type):
     
         comment_score=0
         for i, h in enumerate(harvest):
+            
+            loading_percentage=int((float(i)/len(harvest))*100)
+            dialog_progress.update( loading_percentage,dialog_progress_heading  )
+
             #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
             comment_score=h[0]
             #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
@@ -1535,6 +1537,9 @@ def listLinksInComment(url, name, type):
     except Exception as e:
         log('  ' + str(e) )
         #xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )        
+
+    dialog_progress.update( 100,dialog_progress_heading  )
+    dialog_progress.close()
         
     xbmc_busy(False)
     #for di in directory_items:
@@ -1753,6 +1758,9 @@ def zoom_n_slide(image, width, height):
         log("  EXCEPTION zoom_n_slide:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
 
 def parse_and_play(url, name, type):
+    #this mode is intended to receive links from a modified kore remote
+    #i don't think this is allowed per http://forum.kodi.tv/showthread.php?tid=178881
+    #
     pass
     
 
@@ -2093,15 +2101,16 @@ if __name__ == '__main__':
     #log("content_type:"+content_type)
     
     #log("params="+sys.argv[1]+"  ")
-#     log("----------------------")
-#     log("params="+ str(params))
-#     log("mode="+ mode)
-#     log("type="+ typez) 
-#     log("name="+ name)
-#     log("url="+  url)
-#     log("-----------------------")
+    log( repr(sys.argv))
+    log("----------------------")
+    log("params="+ str(params))
+    log("mode="+ mode)
+    log("type="+ typez) 
+    log("name="+ name)
+    log("url="+  url)
+    log("-----------------------")
 
-    from resources.lib.domains import viewImage, listAlbum
+    from resources.lib.domains import viewImage, listAlbum, playURLRVideo
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.converthtml import readHTML
     
@@ -2121,6 +2130,7 @@ if __name__ == '__main__':
                     ,'readHTML'             : readHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
+                    ,'playURLRVideo'        : playURLRVideo
                     ,'play'                 : parse_and_play
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits

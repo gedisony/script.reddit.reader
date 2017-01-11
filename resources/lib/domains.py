@@ -10,6 +10,7 @@ import json
 import xbmc
 import xbmcgui
 #sys.setdefaultencoding("utf-8")
+import urlresolver
 
 from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log, dump, translation
@@ -63,6 +64,7 @@ class sitesBase(object):
     TYPE_REDDIT='reddit'
     DI_ACTION_PLAYABLE='playable'
     DI_ACTION_YTDL='playYTDLVideo'
+    DI_ACTION_URLR='playURLRVideo'
     
     def __init__(self, link_url):
         self.media_url=link_url
@@ -214,7 +216,7 @@ class sitesBase(object):
 """
 
 class ClassYoutube(sitesBase):      
-    regex='(youtube.com/)|(youtu.be/)'      
+    regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'      
     video_id=''
     
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
@@ -431,7 +433,7 @@ class ClassImgur(sitesBase):
         
         #return o.scheme+"://"+o.netloc+"/"+filename+ thumbnail_type +"."+ext
         thumb= ("%s://%s/%s%c.%s" % ( o.scheme, o.netloc, filename, thumbnail_type, ext ) ) 
-        log('      imgur thumb:' + thumb)
+        #log('      imgur thumb:' + thumb)
 
         return thumb
 
@@ -560,7 +562,7 @@ class ClassImgur(sitesBase):
             self.link_action=self.DI_ACTION_PLAYABLE
             
             self.thumb_url=media_url.replace(webm_or_mp4,'.jpg')
-            self.poster_url=self.thumb_url            
+            self.poster_url=self.thumb_url
         elif ext in image_exts:    #image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp']
             self.thumb_url=media_url
             self.poster_url=self.thumb_url
@@ -621,10 +623,10 @@ class ClassVidme(sitesBase):
         return str( self.media_status )
 
 class ClassVine(sitesBase):
-    regex='(vine.co)' 
+    regex='(vine\.co)' 
     
     def get_playable_url(self, media_url, is_probably_a_video=True):
-        
+        contentUrl=''
         #media_url='"image": "https://v.cdn.vine.co/r/videos/38B4A9174D1177703702723739648_37968e655a0.1.5.1461921223578533188.mp4.jpg?versionId=hv6zBo4kGHPH8NdQeJVo_JRGSVXV73Cc"'
         #msp=re.compile('videos\/(.*?\.mp4)')
         msp=re.compile('(https?://.*/videos/.*?\.mp4)') 
@@ -669,7 +671,7 @@ class ClassVine(sitesBase):
         return '',''
 
 class ClassVimeo(sitesBase):      
-    regex='(vimeo.com/)'      
+    regex='(vimeo\.com/)'      
     video_id=''
     
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
@@ -722,7 +724,7 @@ class ClassVimeo(sitesBase):
         return self.thumb_url
 
 class ClassGiphy(sitesBase):
-    regex='(giphy.com)'
+    regex='(giphy\.com)'
     #If your app is a form of a bot (ie. hubot), for internal purposes, open source, or for a class project, 
     #  we highly recommend you institute the beta key for your app. 
     #  Unless you're making thousands of requests per IP, you shouldn't have any issues.    
@@ -806,7 +808,7 @@ class ClassGiphy(sitesBase):
         return self.thumb_url
                 
 class ClassDailymotion(sitesBase):
-    regex='(dailymotion.com)'
+    regex='(dailymotion\.com)'
     
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
         if not media_url:
@@ -952,7 +954,7 @@ class ClassStreamable(sitesBase):
         return self.thumb_url
 
 class ClassTumblr(sitesBase):
-    regex='(tumblr.com)'
+    regex='(tumblr\.com)'
     
     api_key='no0FySaKYuQHKl0EBQnAiHxX7W0HY4gKvlmUroLS2pCVSevIVy'
     include_gif_in_get_playable=True
@@ -1090,7 +1092,7 @@ class ClassTumblr(sitesBase):
         return self.dictList    
 
 class ClassBlogspot(sitesBase):
-    regex='(blogspot.com)'
+    regex='(blogspot\.com)'
     include_gif_in_get_playable=True
     
     #go here:  https://console.developers.google.com/apis/credentials?project=_
@@ -1328,7 +1330,7 @@ class ClassInstagram(sitesBase):
         pass
 
 class ClassGyazo(sitesBase):
-    regex='(gyazo.com)'
+    regex='(gyazo\.com)'
     
     def get_playable_url(self, media_url, is_probably_a_video=True):
 
@@ -1745,7 +1747,7 @@ class ClassFlickr(sitesBase):
         return ''
 
 class ClassGifsCom(sitesBase):
-    regex='(gifs.com)'
+    regex='(gifs\.com)'
     #also vidmero.com
     
     api_key='gifs577da09e94ee1'   #gifs577da0485bf2a'
@@ -1866,7 +1868,6 @@ class ClassGfycat(sitesBase):
         self.video_id=''
         #https://thumbs.gfycat.com/DefenselessVillainousHapuku-size_restricted.gif
         #https://thumbs.gfycat.com/DefenselessVillainousHapuku
-        #match = re.findall('gfycat.com/(.*)', self.media_url)
         match = re.findall('gfycat.com/(.+?)(?:-|$)', self.media_url)
         if match:
             self.video_id=match[0]
@@ -2772,7 +2773,36 @@ class genericVideo(sitesBase):
     def get_thumb_url(self):
         pass
 
-    def get_playable_url(self, media_url, is_probably_a_video):
+    def get_playable(self, media_url='', is_probably_a_video=False ):
+        if not media_url:
+            media_url=self.media_url
+
+        #check if video is urlresolver supported 
+        if urlresolver.HostedMediaFile(media_url).valid_url():
+            self.link_action=sitesBase.DI_ACTION_URLR   
+            return media_url, sitesBase.TYPE_VIDEO
+        
+        #we don't resolve the urlresolver links. some sites (openload.co) opens a dialog to pair.   
+#        resolved_url = urlresolver.resolve(media_url)
+#        if resolved_url:
+#            log( ' ---urlresolved_url-----' + repr( resolved_url )  )
+#            self.link_action=sitesBase.DI_ACTION_PLAYABLE
+#            return resolved_url, sitesBase.TYPE_VIDEO
+            
+        filename,ext=parse_filename_and_ext_from_url(media_url)
+        if ext in ["mp4","webm"]:
+            self.link_action=self.DI_ACTION_PLAYABLE
+            return self.media_url,self.TYPE_VIDEO
+
+        if ext in image_exts:  #excludes .gif
+            self.thumb_url=media_url
+            self.poster_url=self.thumb_url
+            return self.media_url,self.TYPE_IMAGE
+
+        return self.get_playable_url(self.media_url, is_probably_a_video=False )
+    
+
+    def get_playable_url(self, link_url, is_probably_a_video):
         pass
 
     
@@ -2805,8 +2835,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
     hoster = sitesManager( link_url )
     #log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
 
-    if hoster:
-        try:
+    try:
+        if hoster:
             if get_playable_url:
                 pass
             
@@ -2839,9 +2869,30 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url)
             return ld
+
+        else:
+            #check if video is urlresolver supported 
+            if urlresolver.HostedMediaFile(link_url).valid_url():
+                #log( ' ---urlresolver valid_url-----'   )
+                #    we don't resolve the urlresolver links. some sites (openload.co) opens a dialog and that's annoying when directory listing     
+                #    resolved_url = urlresolver.resolve(media_url)
+                #    if resolved_url:
+                #        log( ' ---urlresolved_url-----' + repr( resolved_url )  )
+                #        self.link_action=sitesBase.DI_ACTION_PLAYABLE
+                #        return resolved_url, sitesBase.TYPE_VIDEO
+
+                ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
+                return ld
+            
+            if False: #resolve_undetermined:  (abandoned, too slow)
+                log('sending undetermined link to ytdl...')
+                media_url=ydtl_get_playable_url(link_url)
+                if media_url:
+                    ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_PLAYABLE, media_url[0], '', '')
+                    return ld
         
-        except Exception as e:
-            log("  EXCEPTION parse_reddit_link "+ str( sys.exc_info()[0]) + "  " + str(e) )
+    except Exception as e:
+        log("  EXCEPTION parse_reddit_link "+ str( sys.exc_info()[0]) + "  " + str(e) )
 
     if ytdl_sites:  pass
     else: load_ytdl_sites()
@@ -2911,10 +2962,41 @@ def load_ytdl_sites():
             line = line.rstrip()
             ytdl_sites.append(line)
 
+def ydtl_get_playable_url( url_to_check ):
+    from resources.lib.utils import link_url_is_playable
+    from default import YDStreamExtractor
+    import random
+    #log('ydtl_get_playable_url:' +url_to_check )
+    if link_url_is_playable(url_to_check)=='video':
+        return url_to_check
 
-def ytdl_hoster( url_to_check ):
-    pass
+    choices = []
 
+    if YDStreamExtractor.mightHaveVideo(url_to_check,resolve_redirects=True):
+        #dialog_progress_YTDL.update(33+random.randint(0,10),'YTDL'  )
+        #log('      YDStreamExtractor.mightHaveVideo[true]=' + url_to_check)
+        #xbmc_busy()
+        #https://github.com/ruuk/script.module.youtube.dl/blob/master/lib/YoutubeDLWrapper.py
+        vid = YDStreamExtractor.getVideoInfo(url_to_check,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
+        #dialog_progress_YTDL.update(66,'YTDL'  )
+        if vid:
+            #log("        getVideoInfo playableURL="+vid.streamURL())
+            #log("        %s  %s %s" %( vid.sourceName , vid.description, vid.thumbnail ))   #usually just 'generic' and blank on everything else
+            if vid.hasMultipleStreams():
+                #vid.info  <-- The info property contains the original youtube-dl info
+                log("          video hasMultipleStreams %d" %len(vid._streams) )
+                for s in vid.streams():
+                    title = s['title']
+                    #log('            choices: %s... %s' %( title.ljust(15)[:15], s['xbmc_url']  )   )
+                    choices.append(s['xbmc_url'])
+                #index = some_function_asking_the_user_to_choose(choices)
+                #vid.selectStream(0) #You can also pass in the the dict for the chosen stream
+                #return choices  #vid.streamURL()   
+    
+            choices.append(vid.streamURL())
+            return choices                             
+
+    return None
 
 if __name__ == '__main__':
     pass
@@ -3007,7 +3089,6 @@ def listAlbum(album_url, name, type):
             slideshowAlbum( dictlist, name )
         else:
             display_album_from( dictlist, name )
-    
 
 def viewImage(image_url, name, preview_url):
     #url='d:\\aa\\lego_fusion_beach1.jpg'
@@ -3091,6 +3172,35 @@ def viewImage(image_url, name, preview_url):
     #whis won't work if addon is a video add-on
     #xbmc.executebuiltin("XBMC.SlideShow(" + SlideshowCacheFolder + ")")
 
+def playURLRVideo(url, name, type):
+
+    from urlparse import urlparse
+    parsed_uri = urlparse( url )
+    domain = '{uri.netloc}'.format(uri=parsed_uri)
+    #log( '-----------------'+ domain +'---------------------- play url resolver  ' + repr(url ))
+
+    #ytdl seems better than urlresolver for getting the playable url...
+    
+    #hmf = urlresolver.HostedMediaFile(url)
+    #log( ' --------------valid_url-----' + repr( hmf.valid_url() )  )
+    
+    try:
+        media_url = urlresolver.resolve(url)
+        if media_url:
+            log( '  URLResolver stream url=' + repr(media_url ))
+            
+            #listitem = xbmcgui.ListItem(path=media_url)   
+            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+            
+            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+            pl.clear()
+            pl.add(media_url, xbmcgui.ListItem(name))
+            xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
+
+        else:
+            xbmc.executebuiltin('XBMC.Notification("%s", "%s (URLresolver" )'  %( translation(30192), domain )  )
+    except Exception as e:
+        xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
 
 
 
