@@ -229,6 +229,10 @@ msgctxt "#32114"
 msgid "All links in comments are enabled and youtube_dl add-on will attempt to play unsupported types"
 msgstr ""
 
+msgctxt "#32115"
+msgid "Repeat gif playback"
+msgstr ""
+
 
 #setting category
 

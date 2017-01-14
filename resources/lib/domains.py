@@ -59,6 +59,7 @@ class sitesBase(object):
     TYPE_IMAGE='image'
     TYPE_ALBUM='album'
     TYPE_VIDEO='video'
+    TYPE_GIF='gifvideo'   #this indicates that the video needs to be repeated
     TYPE_VIDS ='vids'
     TYPE_MIXED='mixed'
     TYPE_REDDIT='reddit'
@@ -83,17 +84,20 @@ class sitesBase(object):
             return None
     
     def get_playable(self, media_url='', is_probably_a_video=False ):
+        media_type=''
         if not media_url:
             media_url=self.media_url
             
         filename,ext=parse_filename_and_ext_from_url(media_url)
         if self.include_gif_in_get_playable:
             if ext in ["mp4","webm","gif"]:
+                media_type=self.TYPE_VIDEO
                 if ext=='gif':
+                    media_type=self.TYPE_GIF
                     self.link_action=sitesBase.DI_ACTION_PLAYABLE
                     self.thumb_url=media_url
                     self.poster_url=self.thumb_url
-                return media_url,self.TYPE_VIDEO
+                return media_url,media_type
         else:
             if ext in ["mp4","webm"]:
                 self.link_action=self.DI_ACTION_PLAYABLE
@@ -286,6 +290,8 @@ class ClassImgur(sitesBase):
     #when is_an_album() is called to check a /gallery/ link, we ask imgur; it returns more info than needed, we store some of it here   
     is_an_album_type=""
     is_an_album_link=""
+    images_count=0
+    image_url_of_a_single_image_album=''
     
     def get_album_thumb(self, media_url):
 
@@ -317,20 +323,26 @@ class ClassImgur(sitesBase):
     def is_an_album(self, media_url):
         #determins if an imgur url is an album
         
+        request_url=''
+        media_url=media_url.split('?')[0] #get rid of the query string
+
         #links with an /a/ is an album e.g: http://imgur.com/a/3SaoS
         if "/a/" in media_url:
-            return True
-
-        #links with /gallery/ is trickier. sometimes it is an album sometimes it is just one image
-        #filename,ext=parse_filename_and_ext_from_url(media_url) #there is no need to check for filename if there is /gallery/
-        if '/gallery/' in media_url:
-            gallery_name = media_url.split("/gallery/",1)[1]
-            if gallery_name=="": 
+            album_id=media_url.split("/a/",1)[1]
+            #sometimes album contain only one image. we check if this is true and results in many requests to imgur and SLOWs down directory listing for album-heavy subreddits like r/DIY
+            request_url="https://api.imgur.com/3/album/"+album_id
+            #return True
+        else:
+            #links with /gallery/ is trickier. sometimes it is an album sometimes it is just one image
+            if '/gallery/' in media_url:
+                gallery_name = media_url.split("/gallery/",1)[1]
+                if gallery_name=="": 
+                    return False
+                request_url="https://api.imgur.com/3/gallery/"+gallery_name
+            else:  #'gallery' not found in media url
                 return False
-        else:  #'gallery' not found in media url
-            return False
     
-        request_url="https://api.imgur.com/3/gallery/"+gallery_name 
+         
         #log("    imgur:check if album- request_url---"+request_url )
         r = requests.get(request_url, headers=ClassImgur.request_header)
         #log(r.text)
@@ -340,26 +352,33 @@ class ClassImgur(sitesBase):
             #log(" in_gallery=" + str(j['data']['in_gallery'])    )
 
             #we already incurred the bandwidth asking imgur about album info. might as well use the data provided
-            if 'type' in j['data']:
-                self.is_an_album_type = j['data']['type']   #"image/png"
-                
-            if 'link' in j['data']:
-                self.is_an_album_link= j['data']['link']
+            jdata=j.get('data')
+            if jdata:
+                self.is_an_album_type= jdata.get('type')   #"image/png"
+                self.is_an_album_link= jdata.get('link')
                 
             #this link (https://imgur.com/gallery/VNPcuYP) returned an extra 'h' on j['data']['link']  ("http:\/\/i.imgur.com\/VNPcuYPh.gif") 
             #causing the video not to play. so, we grab mp4 link if present
-            if 'mp4' in j['data']:
-                self.is_an_album_link= j['data']['mp4']
+                if jdata.get('mp4'):
+                    self.is_an_album_link= jdata.get('mp4')
+
+            self.images_count=jdata.get('images_count')
+            #log('    imgur album images count ' + repr(self.images_count))
+            if self.images_count == 1:
+                self.image_url_of_a_single_image_album=jdata.get('images')[0].get('link')
+                log( '  *** album with 1 image ' + self.image_url_of_a_single_image_album)
+                return False
+            else: 
+                return True
             
             #sometimes 'is_album' key is not returned, so we also check for 'in_gallery' 
-            if 'is_album' in j['data']:
-                is_album_key=j['data']['is_album']
-                return is_album_key
-            else:
-                try:in_gallery_key=j['data']['in_gallery']
-                except: in_gallery_key=False
-                return in_gallery_key
-            
+#            if 'is_album' in j['data']:
+#                is_album_key=jdata.get('is_album')
+#                return is_album_key
+#            else:
+#                try:in_gallery_key=jdata.get('in_gallery')
+#                except: in_gallery_key=False
+#                return in_gallery_key
             
         else: #status code not 200... what to do... 
             return True  #i got a 404 on one item that turns out to be an album when checked in browser. i'll just return true
@@ -371,7 +390,7 @@ class ClassImgur(sitesBase):
         media_url=media_url.split('?')[0] #get rid of the query string
         img_id =media_url.split("com/",1)[1]  #.... just get whatever is after "imgur.com/"   hope nothing is beyond the id
         
-        log("    ask_imgur_for_link: "+img_id )
+        #log("    ask_imgur_for_link: "+img_id )
         
         #6/30/2016: noticed a link like this: http://imgur.com/topic/Aww/FErKmLG
         if '/' in img_id:
@@ -530,14 +549,18 @@ class ClassImgur(sitesBase):
         is_album=self.is_an_album(media_url)
         #log('  imgur says is_an_album:'+str(is_album))
         if is_album:
-            log('    imgur link is an album '+ media_url)
+            #log('    imgur link is an album '+ media_url)
             return media_url, sitesBase.TYPE_ALBUM   
         else:
             if '/gallery/' in media_url: 
                 #media_url=media_url.replace("/gallery/","/")
                 #is_an_album will ask imgur if a link has '/gallery/' in it and stores it in is_an_album_link
                 media_url=self.is_an_album_link
-                log('      media_link from /gallery/: '+  media_url )
+                #log('      media_link from /gallery/: '+  media_url )
+
+        #use the image link if there is only one image in an album/gallery
+        if self.image_url_of_a_single_image_album:
+            media_url=self.image_url_of_a_single_image_album
 
         filename,ext=parse_filename_and_ext_from_url(media_url) 
 
@@ -554,11 +577,12 @@ class ClassImgur(sitesBase):
             #else:
             #    media_url=media_url+".jpg"               
             #    is_video=False
-                
+        
         if ext in ['gif', 'gifv'] :
             media_url=media_url.replace(".gifv",webm_or_mp4) #can also use .mp4.  crass but this method uses no additional bandwidth.  see playImgurVideo
             media_url=media_url.replace(".gif",webm_or_mp4)  #xbmc won't play gif but replacing .webm works!
-            self.media_type=sitesBase.TYPE_VIDEO
+            #self.media_type=sitesBase.TYPE_VIDEO
+            self.media_type=sitesBase.TYPE_GIF
             self.link_action=self.DI_ACTION_PLAYABLE
             
             self.thumb_url=media_url.replace(webm_or_mp4,'.jpg')
@@ -741,7 +765,7 @@ class ClassGiphy(sitesBase):
             
                 self.link_action=sitesBase.DI_ACTION_PLAYABLE
                 log('    simple replace ' + self.media_url )
-                return self.media_url, sitesBase.TYPE_VIDEO   
+                return self.media_url, sitesBase.TYPE_VIDEO    #giphy auto loops x times
         
         if self.get_media_info():
             self.link_action=sitesBase.DI_ACTION_PLAYABLE
@@ -1755,6 +1779,7 @@ class ClassGifsCom(sitesBase):
     #request_url="https://api.gifs.com"   r=requests.get(request_url, headers=ClassGifsCom.headers)
 
     def get_playable(self, media_url='', is_probably_a_video=False ):
+        media_type=self.TYPE_VIDEO
         if not media_url:
             media_url=self.media_url
             
@@ -1762,11 +1787,12 @@ class ClassGifsCom(sitesBase):
         #log('    file:%s.%s' %(filename,ext)  )
         if ext in ["mp4","webm","gif"]:
             if ext=='gif':
+                media_type=self.TYPE_GIF
                 self.link_action=sitesBase.DI_ACTION_PLAYABLE
                 self.thumb_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.jpg' %(filename))
                 self.poster_url=self.thumb_url
                 self.media_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.mp4' %(filename))   #just replacing gif to mp4 works
-            return self.media_url, self.TYPE_VIDEO
+            return self.media_url, media_type
 
         if ext in image_exts:  #excludes .gif
             self.link_action='viewImage'
@@ -1856,7 +1882,7 @@ class ClassGfycat(sitesBase):
                     log('      %dx%d %s' %(self.media_w,self.media_h,stream_url)  )
                     
                     self.link_action=sitesBase.DI_ACTION_PLAYABLE
-                    return stream_url, sitesBase.TYPE_VIDEO
+                    return stream_url, self.TYPE_GIF #sitesBase.TYPE_VIDEO
             else:
                 log('    error: %s :%s' %(self.__class__.__name__, repr( content.status_code ) ) )         
         else:
@@ -2754,7 +2780,7 @@ class genericImage(sitesBase):
         filename,ext=parse_filename_and_ext_from_url(u)
         #log( "  parsed filename" + filename + " ext---" + ext)
         if ext=='gif':  
-            self.media_type = sitesBase.TYPE_VIDEO
+            self.media_type = self.TYPE_GIF #sitesBase.TYPE_VIDEO
             self.link_action =sitesBase.DI_ACTION_PLAYABLE  #playable uses pluginUrl directly   
         else:
             self.media_type=sitesBase.TYPE_IMAGE
@@ -2848,6 +2874,10 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                 #poster=hoster.poster_url
                 #log('      poster_url:'+poster)
 
+            #override gif link_action from DI_ACTION_PLAYABLE to loopedPlayback()
+            if media_type==sitesBase.TYPE_GIF:
+                hoster.link_action='loopedPlayback'
+
             if not hoster.link_action:
                 if media_type==sitesBase.TYPE_IMAGE:
                     if image_ar>0 and image_ar < 0.7: #special action for tall images 
@@ -2857,6 +2887,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                         
                 if media_type==sitesBase.TYPE_ALBUM:
                     hoster.link_action='listAlbum'
+                    
+                
 #                 if media_type==sitesBase.TYPE_RDIT_IMG:  #reddit preview image is as good as the one from link
 #                     media_type=sitesBase.TYPE_IMAGE
 #                     hoster.link_action='viewImage'
@@ -2965,7 +2997,6 @@ def load_ytdl_sites():
 def ydtl_get_playable_url( url_to_check ):
     from resources.lib.utils import link_url_is_playable
     from default import YDStreamExtractor
-    import random
     #log('ydtl_get_playable_url:' +url_to_check )
     if link_url_is_playable(url_to_check)=='video':
         return url_to_check
@@ -3202,7 +3233,26 @@ def playURLRVideo(url, name, type):
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
 
-
+def setting_gif_repeat_count(): 
+    srepeat_gif_video= addon.getSetting("repeat_gif_video")
+    try: repeat_gif_video = int(srepeat_gif_video)
+    except: repeat_gif_video = 0    
+    #repeat_gif_video          = [0, 1, 3, 10, 100][repeat_gif_video]
+    return [0, 1, 3, 10, 100][repeat_gif_video]
+    
+def loopedPlayback(url, name, type):
+    #for gifs
+    log('*******************loopedplayback ' + url)
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear()
+    pl.add(url, xbmcgui.ListItem(name))
+    for x in range( 0, setting_gif_repeat_count() ):
+#        #log('u='+ repr(u))
+        #log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'+repr(x))
+        pl.add(url, xbmcgui.ListItem(name))
+    
+    #pl.add(url, xbmcgui.ListItem(name))
+    xbmc.Player().play(pl, windowed=False) 
 
 '''
 #special credit to https://www.reddit.com/r/learnpython/comments/4pl11h/dynamically_instantiate_class_from_class_method/

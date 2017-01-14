@@ -962,12 +962,13 @@ def reddit_post_worker(idx, entry, q_out):
         
 q = Queue()
 def autoPlay(url, name, type):
-    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
+    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url, setting_gif_repeat_count
     from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
 
+    gif_repeat_count=setting_gif_repeat_count()
     entries = []
     watchdog_counter=0
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -1001,8 +1002,14 @@ def autoPlay(url, name, type):
 
             if ld:
                 log('      type:%s %s' %( ld.media_type, ld.link_action)   )
-                if ld.media_type in [sitesBase.TYPE_VIDEO, sitesBase.TYPE_VIDS, sitesBase.TYPE_MIXED]:
-                    entries.append([title,ld.playable_url, ld.link_action])
+                if ld.media_type in [sitesBase.TYPE_VIDEO, sitesBase.TYPE_GIF, sitesBase.TYPE_VIDS, sitesBase.TYPE_MIXED]:
+                    
+                    if ld.media_type==sitesBase.TYPE_GIF:
+                        entries.append([title,ld.playable_url, sitesBase.DI_ACTION_PLAYABLE])
+                        for x in range( 0, gif_repeat_count ):
+                            entries.append([title,ld.playable_url, sitesBase.DI_ACTION_PLAYABLE])
+                    else:
+                        entries.append([title,ld.playable_url, ld.link_action])
             else:
                 #log('    checking if ytdl supports %s' %media_url )
                 playable_video_url=ydtl_get_playable_url(media_url)
@@ -1015,8 +1022,8 @@ def autoPlay(url, name, type):
             pass
     
     #for i,e in enumerate(entries): log('  e1-%d %s:' %(i, e[1]) )
-    def k2(x): return x[1]
-    entries=remove_duplicates(entries, k2)
+    #def k2(x): return x[1]
+    #entries=remove_duplicates(entries, k2)   #***disable removal of duplicates because it will also remove looping for gif videos 
     #for i,e in enumerate(entries): log('  e2-%d %s:' %(i, e[1]) )
 
     for i,e in enumerate(entries): 
@@ -2110,7 +2117,7 @@ if __name__ == '__main__':
     log("url="+  url)
     log("-----------------------")
 
-    from resources.lib.domains import viewImage, listAlbum, playURLRVideo
+    from resources.lib.domains import viewImage, listAlbum, playURLRVideo,loopedPlayback
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.converthtml import readHTML
     
@@ -2130,7 +2137,9 @@ if __name__ == '__main__':
                     ,'readHTML'             : readHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
+                    #,'loopedPlayback'       : loopedPlayback
                     ,'playURLRVideo'        : playURLRVideo
+                    ,'loopedPlayback'       : loopedPlayback
                     ,'play'                 : parse_and_play
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits

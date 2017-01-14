@@ -43,6 +43,8 @@
         <!-- setting id="use_ytdl_for_yt"                  type="bool" label="32112" default="false"/-->
         <setting id="use_ytdl_for_unknown"             type="bool" label="32113" default="false"/>
         <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32114" default="false"/>
+        <setting type="sep" />
+        <setting id="repeat_gif_video"                 type="enum" label="32115" values="0|1|3|10|100" default="0"/>
     </category>
     <category label="32400"> 
     	<setting                              type="lsep"        label="32401"               enable="true"   />

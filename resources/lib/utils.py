@@ -335,6 +335,8 @@ def ret_info_type_icon(info_type, modecommand, domain=''):
 
     elif info_type==sitesBase.TYPE_ALBUM: 
         icon="type_album.png"            
+    elif info_type==sitesBase.TYPE_GIF: 
+        icon="type_gif.png"            
     elif info_type==sitesBase.TYPE_IMAGE:
         icon="type_image.png"
     elif info_type==sitesBase.TYPE_REDDIT:

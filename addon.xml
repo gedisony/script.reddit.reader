@@ -2,7 +2,7 @@
 <addon
     id="script.reddit.reader"
     name="Reddit Reader"
-    version="0.6.8"
+    version="0.6.9"
     provider-name="gedisony">
     <requires>
         <import addon="xbmc.python"                     version="2.20.0"/>
@@ -28,6 +28,8 @@
         <forum>http://forum.kodi.tv/showthread.php?tid=287355</forum>
         <license>GNU GENERAL PUBLIC LICENSE. Version 2, June 1991</license>
         <email>gediso+ny at gmail dot com</email>
+		<news>v0.6.9  (2017-1-13)
+              - Added option to repeat playback of gif video</news>        
 		<disclaimer>This add-on is not published nor endorsed by reddit inc.</disclaimer>
 		<assets>
 			<icon>icon.png</icon>
