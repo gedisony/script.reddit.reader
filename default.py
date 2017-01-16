@@ -379,7 +379,7 @@ def listSubReddit(url, title_bar_name, type):
     #wait for all threads to finish before collecting the list items
     for idx, t in enumerate(threads):
         #log('    joining %s' %t.getName())
-        t.join()    
+        t.join(timeout=20)    
         loading_percentage=int((float(idx)/posts_count)*100)
         dialog_progress.update( loading_percentage,dialog_progress_heading  )
 
@@ -758,6 +758,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     if previewimage: needs_preview=False  
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
     
+    
     ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
 
     if previewimage=="":
@@ -794,6 +795,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                                                  name=str(preview_w),
                                                  type=str(preview_h) ) 
             else:  
+                #log( '****' + repr( ld.dictlist ))
                 DirectoryItem_url = build_script(mode=ld.link_action, 
                                                  url=ld.playable_url, 
                                                  name=post_title , 
@@ -804,7 +806,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setProperty('item_type',property_link_type)
         #liz.setProperty('onClick_action',DirectoryItem_url)
         liz.setProperty('onClick_action',DirectoryItem_url)
-        
+        liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
+        #log( liz.getProperty('album_images'))
     else:
         #unsupported type here:
         pass

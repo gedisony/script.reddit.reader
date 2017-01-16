@@ -7,6 +7,17 @@
     	
 	<controls>
 	
+		<control type="image">
+			<left>0</left>
+			<top>0</top>
+			<width>1920</width>
+			<height>1200</height>
+			<visible>false</visible>
+			<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+			<texture>SKINDEFAULT.jpg</texture>
+			
+		</control>
+
 	
 		<!--BEGIN include name="DefaultBackground"-->
 		
@@ -100,6 +111,7 @@
 					<width>1000</width>
 					<height>1080</height>
 					<texture>focus_f3.png</texture>
+					<visible>True</visible>
 				</control>
 
 				<control type="textbox" id="65592"><description>partner with id 203</description>

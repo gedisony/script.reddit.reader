@@ -21,11 +21,14 @@ import os
 import re
 import sys
 import urllib
+import json
 
 import xbmc
 import xbmcaddon
 import xbmcgui
 from xbmcgui import ControlButton
+
+
 #import xbmcplugin
 
 addon = xbmcaddon.Addon()
@@ -281,6 +284,8 @@ class listSubRedditGUI(cGUI):
     BTN_COMMENTS=6058
     BTN_SEARCH=6059
     BTN_RELOAD=6060
+    IMG_POST_PREVIEW=201
+    IMG_POST_PREVIEW2=203
     
     def onInit(self):
         cGUI.onInit(self)
@@ -321,6 +326,25 @@ class listSubRedditGUI(cGUI):
                 #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
                 
             if action == xbmcgui.ACTION_MOVE_RIGHT:
+                #liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
+                #this is set in addlink() default.py
+                #dictlist defined in lib/domains.py
+#                dictlist=json.loads(item.getProperty('album_images'))
+#                #log( repr(dictlist)) 
+#                if dictlist:
+#                    img_ctl=self.getControl( self.IMG_POST_PREVIEW2 )
+#                    #log(repr(img_ctl))
+#                    img_ctl.setVisible(False)
+#                    
+#                    log( repr(dictlist[1].get('DirectoryItem_url')))
+#                    next_img=dictlist[1].get('DirectoryItem_url')
+#                    
+#                    item.setArt({'banner',next_img, })
+#                    #img_ctl.setImage(next_img)
+#                    xbmc.sleep(500)
+#                    img_ctl.setVisible(True)
+#                    return
+                
                 comments_action=item.getProperty('comments_action')
                 log( "   RIGHT(comments) pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, comments_action )   )
                 if comments_action:

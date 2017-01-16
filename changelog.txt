@@ -1,3 +1,6 @@
+0.7.0
+ - add timeout to url requests  
+ 
 0.6.9
  - Added option to repeat playback of gif video
 0.6.8
