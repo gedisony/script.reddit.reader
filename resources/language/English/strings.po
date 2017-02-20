@@ -207,7 +207,7 @@ msgid "Comments threshold"
 msgstr ""
 
 msgctxt "#32107"
-msgid "Enable NSFW content"
+msgid "Hide NSFW content"
 msgstr ""
 
 msgctxt "#32108"

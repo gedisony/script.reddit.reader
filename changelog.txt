@@ -1,3 +1,9 @@
+0.7.2 (02-20-2017)
+ - add support for imgflip.com links
+ 
+0.7.1
+ - update fanart image
+
 0.7.0
  - add timeout to url requests  
  

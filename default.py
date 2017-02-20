@@ -16,7 +16,6 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import urlparse
-#import SimpleDownloader
 import requests
 
 
@@ -29,12 +28,8 @@ if len(sys.argv) > 1:
     a=['mode=playYTDLVideo','mode=autoPlay']
     if any(x in sys.argv[1] for x in a):
         import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
-      
-#     if 'mode=playYTDLVideo' in sys.argv[1] :
-#         import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
 else:
     pass 
-
 
 #YDStreamExtractor.disableDASHVideo(True) #Kodi (XBMC) only plays the video for DASH streams, so you don't want these normally. Of course these are the only 1080p streams on YouTube
 from urllib import urlencode
@@ -75,19 +70,10 @@ opener.addheaders = [('User-Agent', reddit_userAgent)]
 #API requests with a bearer token should be made to https://oauth.reddit.com, NOT www.reddit.com.
 urlMain = "https://www.reddit.com"
 
-
-# settings for automatically play videos
-# showAll              = addon.getSetting("showAll") == "true"
-# showUnwatched        = addon.getSetting("showUnwatched") == "true"
-# showUnfinished       = addon.getSetting("showUnfinished") == "true"
-# showAllNewest        = addon.getSetting("showAllNewest") == "true"
-# showUnwatchedNewest  = addon.getSetting("showUnwatchedNewest") == "true"
-# showUnfinishedNewest = addon.getSetting("showUnfinishedNewest") == "true"
-
 default_frontpage    = addon.getSetting("default_frontpage") 
 no_index_page        = addon.getSetting("no_index_page") == "true"
 
-show_nsfw            = addon.getSetting("show_nsfw") == "true"
+hide_nsfw            = addon.getSetting("hide_nsfw") == "true"
 domain_filter        = addon.getSetting("domain_filter")
 subreddit_filter     = addon.getSetting("subreddit_filter")
 main_gui_skin        = addon.getSetting("main_gui_skin")
@@ -126,13 +112,7 @@ if not os.path.isdir(addonUserDataFolder):
 if not os.path.isdir(SlideshowCacheFolder):
     os.mkdir(SlideshowCacheFolder)
 
-
-if show_nsfw:
-    nsfw = ""
-else:
-    nsfw = "nsfw:no+"
-
-def log(message, level=xbmc.LOGNOTICE):
+def log(message, level=xbmc.LOGDEBUG):
     t=threading.currentThread()
     
     xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
@@ -273,22 +253,9 @@ def index(url,name,type):
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
 
-    #this part errors on android. comment out until feature is implemented
-#     if not os.path.exists(ytdl_psites_file): 
-#         #copy over default file
-#         #there is no os.copy() command. have to use shutil or just read and write to file ourself
-#         #open(ytdl_psites_file, "w").write(open( default_ytdl_psites_file ).read())
-#         log( "default ytdl_sites file not found. copying from addon installation.")
-#         shutil.copy(default_ytdl_psites_file, ytdl_psites_file)
-# 
-#     if not os.path.exists(ytdl_sites_file): 
-#         log( "default ytdl_sites file not found. copying from addon installation.")
-#         shutil.copy(default_ytdl_sites_file, ytdl_sites_file)
-
     if no_index_page:   
         log( "   default_frontpage " +default_frontpage )
         if default_frontpage:
-            #log( "   ssssssss " + assemble_reddit_filter_string("","")  )
             listSubReddit( assemble_reddit_filter_string("",default_frontpage) , default_frontpage, "") 
         else:
             listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
@@ -305,7 +272,7 @@ def index(url,name,type):
     
 #MODE listSubReddit(url, name, type)  
 def listSubReddit(url, title_bar_name, type):
-    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
     
     show_listSubReddit_debug=True
@@ -366,6 +333,9 @@ def listSubReddit(url, title_bar_name, type):
 
     for idx, entry in enumerate(content['data']['children']):
         try:
+            if post_is_filtered_out( entry ):
+                continue
+            
             #have threads process each reddit post
             t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz), name='#t%.2d'%idx)
             threads.append(t)
@@ -439,7 +409,7 @@ def listSubReddit(url, title_bar_name, type):
 
 def listSubReddit_old(url, title_bar_name, type):
     #this is the old version of listSubReddit. it is kept here for debugging purposes.  
-    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
     
     show_listSubReddit_debug=True
@@ -473,8 +443,6 @@ def listSubReddit_old(url, title_bar_name, type):
     #q_posts = Queue() #input queue for worker(json entry of a single post)
     q_liz = Queue()   #output queue (listitem)
     
-    #7-15-2016  removed the "replace(..." statement below cause it was causing error
-    #content = json.loads(content.replace('\\"', '\''))
     content = json.loads(content) 
     
     #log("query returned %d items " % len(content['data']['children']) )
@@ -494,6 +462,9 @@ def listSubReddit_old(url, title_bar_name, type):
 
     for idx, entry in enumerate(content['data']['children']):
         try:
+            if post_is_filtered_out( j_entry ):
+                continue
+            
             title = unescape(entry['data']['title'].encode('utf-8'))
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
@@ -526,19 +497,12 @@ def listSubReddit_old(url, title_bar_name, type):
 
             subreddit=entry['data']['subreddit'].encode('utf-8')
             
-            if post_excluded_from( subreddit_filter, subreddit ):
-                log( '    r/%s excluded by subreddit_filter' %subreddit )
-                continue;
-            
             try: author = entry['data']['author'].encode('utf-8')
             except: author = ""
             
             try: domain= entry['data']['domain'].encode('utf-8')
             except: domain = ""
             #log("     DOMAIN%.2d=%s" %(idx,domain))
-            if post_excluded_from( domain_filter, domain ):
-                log( '    %s excluded by domain_filter' %domain )
-                continue;
             
             ups = entry['data']['score']       #downs not used anymore
             try:num_comments = entry['data']['num_comments']
@@ -719,18 +683,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                          ,thumbnailImage=''
                          ,path='')   #path not used by gui.
 
-    #liz.setArt({"thumb": iconimage, "poster":poster_url, "banner":poster_url, "fanart":poster_url, "landscape":poster_url   })
-    
-    #----- assign actions
-    if preview_ar>0 and preview_ar < 0.7 and preview_h > 1090 :   #vertical image taken by 16:9 camera will have 0.5625 aspect ratio. anything narrower than that, we will zoom_n_slide
-        #from resources.lib.utils import link_url_is_playable
-        #log('*****%f '%preview_ar)
-        #if link_url_is_playable(link_url):
-        #log('*****has zoom_n_slide_action ')
-        #liz.setProperty('zoom_n_slide_action', build_script('zoom_n_slide', link_url,str(preview_w),str(preview_h) ) )
-        #actual ar check in parse_reddit_link     
-        pass 
-        
     if preview_ar>1.25:   #this measurement is related to control id 203's height
         #log('    ar and description criteria met') 
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
@@ -815,7 +767,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     return liz
 
 def reddit_post_worker(idx, entry, q_out):
-    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import unescape, pretty_datediff, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
 
     try:
@@ -869,19 +821,12 @@ def reddit_post_worker(idx, entry, q_out):
     
             subreddit=data.get('subreddit').encode('utf-8')
             
-            if post_excluded_from( subreddit_filter, subreddit ):
-                log( '    r/%s excluded by subreddit_filter' %subreddit )
-                return;
-            
             try: author = data.get('author').encode('utf-8')
             except: author = ""
             
             try: domain= data.get('domain').encode('utf-8')
             except: domain = ""
             #log("     DOMAIN%.2d=%s" %(idx,domain))
-            if post_excluded_from( domain_filter, domain ):
-                log( '    %s excluded by domain_filter' %domain )
-                return;
             
             ups = data.get('score')       #downs not used anymore
             try:num_comments = data.get('num_comments')
@@ -966,7 +911,7 @@ def reddit_post_worker(idx, entry, q_out):
 q = Queue()
 def autoPlay(url, name, type):
     from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url, setting_gif_repeat_count
-    from resources.lib.utils import unescape, pretty_datediff, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates
+    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, remove_duplicates
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
@@ -1219,82 +1164,6 @@ def playYTDLVideo(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
     #log("playYTDLVideo="+url)
     #url='https://www.youtube.com/shared?ci=W8n3GMW5RCY'
-    #url='http://burningcamel.com/video/waster-blonde-amateur-gets-fucked'
-    #url='http://www.3sat.de/mediathek/?mode=play&obj=51264'
-    #url='http://www.rappler.com/nation/141700-full-text-leila-de-lima-privilege-speech-extrajudicial-killings'
-    #url='https://www.vidble.com/album/KtAymux9' 
-
-    #from BeautifulsSoup import BeautifulSoup
-    #r = urllib.urlopen('http://www.aflcio.org/Legislation-and-Politics/Legislative-Alerts').read() 
-    #soup = BeautifulSoup(r) 
-    #text =  soup.get_text() 
-    
-
-#these checks done in around May 2016
-#does not work:  18porn.xyz 5min.com alphaporno.com analxtv.com aniboom.com asiantubesex.com asianxtv.com bdsmstreak.com bigtits.com bondagetube.tv bustnow.com camwhores.tv chumleaf.com dailee.com dailygirlscute.com
-# desianalporn.com dirtydirtyangels.com eporner.com eroshare.com fapgod.com fapxl.com flingtube.com flyflv.com fookgle.com foxgay.com freudbox.com fucktube.com fux.com fux.com goshgay.com gotporn.com hdpornstar.com
-# hdvideos.porn hdvideos.porn hentaidream.me hvdporn.com indianxxxhd.com jizzbox.com jizzxman.com kalporn.com kuntfutube.com lubetube.com lxxlx.com lxxlx.com maxjizztube.com moviesand.com moviesguy.com
-# nosvideo.com nurglestube.com onlypron.com openload.online orgasm.com pk5.net played.to(site is gone) player.moviefap.com(www.moviefap.com works) porn.com pornative.com porncor.com porndig.com pornerbros.com
-# porness.tv porness.tv pornheed.com pornhvd.com pornmax.xyz pornovo.com pornsharia.com porntube pornurl.pw pornvil.com pornwaiter.com pornwebms.com pornworms.com redclip.xyz sexix.net sextvx.com sexu.com
-# sherloxxx.com shooshtime.com sluttyred.com spankingtube.tv stickyxtube.com thumbzilla.com userporn.com vidmega.net vidshort.net vidxnet.com virtualtaboo.com voyeurweb.com watchersweb.com watchxxxfree.com
-# woporn.net x1xporn.com xfapzap.com xfig.net xpornvid.com xrhub.com xstigma.com xxxbunker.com yazum.com yobt.com younow.com youpunish.com yourdailypornvideos.com yourfreeporn.us yourlust yporn.tv yteenporn.com
-# yuvutu.com zoig.com zuzandra.com
- 
- 
-# also does not work (non porn)
-#  163.com 1tv.ru 1up.com 220.ro 24video.xxx 3sat.de 56.com adultswim.com afreeca.com akb48ma.com atresplayer.com azubu.tv bet.com biobiochile.cl biqle.com blinkx.com blip.tv blogtv.com bloomberg.com/news/videos
-# bpb.de brainpop.com bravotv.com byutv.org cbc.ca chirbit.com cloudtime.to(almost) cloudyvideos.com cracked.com crackle.com crackle.com criterion.com ctv.ca culturebox.francetvinfo.fr cultureunplugged.com cwtv.com
-# daum.net dctp.tv democracynow.org douyutv.com dumpert.nl eitb.tv engagemedia.org ex.fm expotv.com fc-zenit.ru flickr.com Flipagram.com Formula1.com fotki.com fox.com/watch(few works) foxsports.com france2.fr
-# franceculture.fr franceinter.fr francetv.fr/videos francetvinfo.fr ft.dk giantbomb.com hbo.com History.com hitbox.tv hlamer.ru howcast.com HowStuffWorks.com hrt.hr hulu.com iconosquare.com ikudonsubs.com
-# infoq.com ivi.ru izlesene.com kamcord.com/v karrierevideos.at KrasView.ru kuwo.cn la7.it lafango.com laola1.tv le.com mail.ru media.ccc.de mefeedia.com metacafe.com metacritic.com mitele.es moevideo.net,playreplay.net,videochart.net
-# motionpictur.com movieclips.com mtv.de mtviggy.com muenchen.tv myspace.com myvi.ru myvideo.de myvideo.de myvideo.ge nbcolympics.com netzkino.de nfb.ca nicovideo.jp nicovideo.jp normalboots.com nowness.com
-# nrk.no ntr.nl ntv.ru/video ocw.mit.edu odnoklassniki.ru/video olympics.cbc.ca onet.tv onionstudios.com/videos openload.co orf.at parliamentlive.tv patas.in periscope.tv play.fm pluzz.francetv.fr rutube.ru
-# sciencestage.com sevenload.com techchannel.att.com trilulilu.ro tudou.com v.baidu.com vbox7.com video.foxnews.com video.kankan.com video.yahoo.com videohive.net videojug.com videos.sapo.pt(many but not all)
-# vidoosh.tv vidspot.net(might work, can't find recent post) vzaar.com www.bbc.co.uk/iplayer
-
-
-
-# news site (can't find sample to test) 
-# bleacherreport.com crooksandliars.com DailyMail.com channel5.com Funimation.com gamersyde.com gamespot.com gazeta.pl helsinki.fi hotnewhiphop.com lemonde.fr mnet.com motorsport.com MSN.com
-# n-tv.de ndr.de NDTV.com NextMedia.com noz.de pcmag.com people.com idnes.cz lidovky.cz pluralsight.com plus.google.com
-
-
-# these sites have mixed media. can handle the video in these sites: 
-# 20min.ch 5min.com archive.org Allocine.fr(added) br.de bt.no  buzzfeed.com condenast.com firstpost.com gameinformer.com gputechconf.com heise.de HotStar.com(some play) lrt.lt natgeo.com
-# nbcsports.com  patreon.com 
-# 9c9media.com(no posts)
-
-#ytdl plays this fine but no video?
-#coub.com
-
-#supported but is an audio only site 
-#acast.com AudioBoom.com audiomack.com bandcamp.com clyp.it democracynow.org? freesound.org hark.com hearthis.at hypem.com libsyn.com mixcloud.com
-#Minhateca.com.br(direct mp3) 
-
-# 
-# ytdl also supports these sites: 
-# myvideo.co.za  ?
-#bluegartr.com  (gif)
-# behindkink.com   (not sure)
-# facebook.com  (need to work capturing only videos)
-# features.aol.com  (inconsistent)
-# livestream.com (need to work capturing only videos)
-# mail.ru inconsistent(need to work capturing only videos)
-# miomio.tv(some play but most won't)
-# ooyala.com(some play but most won't)
-#  
-    
-#     extractors=[]
-#     from youtube_dl.extractor import gen_extractors
-#     for ie in gen_extractors():  
-#         #extractors.append(ie.IE_NAME)
-#         try:
-#             log("[%s] %s " %(ie.IE_NAME, ie._VALID_URL) )
-#         except Exception as e:
-#             log( "zz   " + str(e) )
-
-#     extractors.sort()
-#     for n in extractors: log("'%s'," %n)
 
     from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
     from urlparse import urlparse
@@ -1450,8 +1319,6 @@ def listLinksInComment(url, name, type):
             elif kind=='t3':
                 t_prepend=r"[B]Post text:[/B]"
     
-            
-    
             #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines 
             plot=h[3].replace('](', '] (')
             plot= markdown_to_bbcode(plot)
@@ -1508,20 +1375,12 @@ def listLinksInComment(url, name, type):
                 
                 #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
                 #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
-
-
     
                 #turn link green  
                 if DirectoryItem_url:          
                     plot= "[COLOR greenyellow][%s] %s"%(domain, plot )  + "[/COLOR]"
                     liz.setLabel(tab+plot)
         
-                    #if poster_url:
-                    #    thumb_url=poster_url
-                        
-                    #if thumb_url: pass
-                    #else: thumb_url="DefaultVideo.png"
-                    
                     #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
                     liz.setArt({"thumb": ld.poster })
         
@@ -1536,17 +1395,12 @@ def listLinksInComment(url, name, type):
             else:
                 #this section are for comments that have no links or unsupported links
                 if not ShowOnlyCommentsWithlink:
-                    #liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(h[0]), "director": author } )
-                    #liz.setProperty('IsPlayable', 'false')
-                    
                     directory_items.append( ("", liz, ) )
-                    #xbmcplugin.addDirectoryItem(handle=pluginhandle,url="",listitem=liz,isFolder=False)
                 
                 #END section are for comments that have no links or unsupported links
     
     except Exception as e:
         log('  ' + str(e) )
-        #xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( e, 'Flickr' )  )        
 
     dialog_progress.update( 100,dialog_progress_heading  )
     dialog_progress.close()
@@ -1772,47 +1626,10 @@ def parse_and_play(url, name, type):
     #i don't think this is allowed per http://forum.kodi.tv/showthread.php?tid=178881
     #
     pass
-    
-
-def callwebviewer(url, name, type):
-    log( " callwebviewer")
-
-    #this is how you call the webviewer addon. 
-    #u="script.web.viewer, http://m.reddit.com/login"
-    #xbmc.executebuiltin('RunAddon(%s)' %u )
-    
-    import resources.pyxbmct as pyxbmct
-
-    # Create a window instance.
-    window = pyxbmct.AddonFullWindow('Hello, World!')
-    # Set the window width, height and the grid resolution: 2 rows, 3 columns.
-    window.setGeometry(1920, 1080, 9, 16)
-    
-    #image is 1200x2220
-    image=pyxbmct.Image('http://i.imgur.com/lYdRVRi.png', aspectRatio=2)
-    
-    window.placeControl(image, 0, 0, 9, 16 )
-    
-    #doesn't work. leaving it alone for now (7/27/2016)
-    image.setAnimations([('WindowOpen', 'effect type="zoom" end="150" center="0" time="1800"')])
-    
-    #image.setAnimations([('WindowOpen', 'effect type="zoom" end="150" center="0" time="1800"',), 
-    #                     ('WindowOpen', 'effect type="slide" end="2220"  delay="1800" time="1800"',)])
-
-    
-    # Connect a key action to a function.
-    window.connect(pyxbmct.ACTION_NAV_BACK, window.close)
-    # Show the created window.
-    window.doModal()
-    # Delete the window instance when it is no longer used.
-    del window 
-
-    log( " done callwebviewer")
 
 def reddit_request( url ):
     #this function replaces     content = opener.open(url).read()
     #  for calls to reddit  
-
     
     #if there is a refresh_token, we use oauth.reddit.com instead of www.reddit.com
     if reddit_refresh_token:
@@ -2057,26 +1874,12 @@ def reddit_revoke_refresh_token(url, name, type):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( str(e), 'Revoking refresh token' )  )
         log("  Revoking refresh token EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )    
     
-    
 def xbmc_busy(busy=True):
     if busy:
         xbmc.executebuiltin("ActivateWindow(busydialog)")
     else:
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         
-    
-def downloadurl( source_url, destination=""):
-    try:
-        filename,ext=parse_filename_and_ext_from_url(source_url)
-        if destination=="":
-            urllib.urlretrieve(source_url, filename+"."+ext)
-        else:
-            urllib.urlretrieve(source_url, destination)
-        
-    except:
-        log("download ["+source_url+"] failed")
-
-
 def dump(obj):
     for attr in dir(obj):
         if hasattr( obj, attr ):
@@ -2088,11 +1891,6 @@ def parameters_string_to_dict(parameters):
 
 
 if __name__ == '__main__':
-    # (10/2/2016) --- directly connecting to our databases is not allowed.
-    #dbPath = getDbPath()
-    #if dbPath:
-    #    conn = sqlite3.connect(dbPath)
-    #    c = conn.cursor()
 
     if len(sys.argv) > 1: 
         params=parameters_string_to_dict(sys.argv[1])
@@ -2111,14 +1909,14 @@ if __name__ == '__main__':
     #log("content_type:"+content_type)
     
     #log("params="+sys.argv[1]+"  ")
-    log( repr(sys.argv))
-    log("----------------------")
-    log("params="+ str(params))
-    log("mode="+ mode)
-    log("type="+ typez) 
-    log("name="+ name)
-    log("url="+  url)
-    log("-----------------------")
+#    log( repr(sys.argv))
+#    log("----------------------")
+#    log("params="+ str(params))
+#    log("mode="+ mode)
+#    log("type="+ typez) 
+#    log("name="+ name)
+#    log("url="+  url)
+#    log("-----------------------")
 
     from resources.lib.domains import viewImage, listAlbum, playURLRVideo,loopedPlayback
     from resources.lib.slideshow import autoSlideshow
@@ -2140,13 +1938,11 @@ if __name__ == '__main__':
                     ,'readHTML'             : readHTML        
                     ,'listLinksInComment'   : listLinksInComment
                     ,'playYTDLVideo'        : playYTDLVideo
-                    #,'loopedPlayback'       : loopedPlayback
                     ,'playURLRVideo'        : playURLRVideo
                     ,'loopedPlayback'       : loopedPlayback
                     ,'play'                 : parse_and_play
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits
-                    ,'callwebviewer'        : callwebviewer
                     ,'get_refresh_token'    : reddit_get_refresh_token
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
@@ -2159,68 +1955,6 @@ if __name__ == '__main__':
     
     #whenever a list item is clicked, this part handles it.
     plugin_modes[mode](url,name,typez)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2270,7 +2004,7 @@ $ git checkout -b script.reddit.reader
 *** remove the "-master"  --> plugin.video.reddit_viewer
 *** 
 *** this is what i did:
-$ git commit -m "[script.reddit.reader] 0.5.7"
+$ git commit -m "[script.reddit.reader] 0.7.1"
 
 On branch add-on-branch-name
 Untracked files:
@@ -2281,7 +2015,7 @@ nothing added to commit but untracked files present
 edipc@DESKTOP-5C55U1P MINGW64 ~/kodi stuff/repo-plugins (add-on-branch-name)
 $ git add .    <---- did this to fix the error.
 
-$ git commit -m "[script.reddit.reader] 0.5.7"  <------- this will now work
+$ git commit -m "[script.reddit.reader] 0.7.1"  <------- this will now work
 
 
 #Push your topic branch up to your fork:
@@ -2295,21 +2029,25 @@ upper left : base fork: xbmc/repo-plugins         base:    jarvis
 upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
 (click on green button create pull request)
 
-*** the clear title till be [plugin.video.reddit_viewer] 2.7.1
+*** the clear title will be [script.reddit.reader] 0.7.1
 *** (don't know what description) left it as blank
 
 *** sent pull request on 6/27/2016
+
+
+
+
 
 
 if need to change things...
 
 git rebase --interactive HEAD~2
 (bunch of vi stuff later...)
-   *pick one 
+   *pick one  ("pick" the top of the list and "s" the bottom rest)
    *squash the rest...
 
 (second vi stuff)
-   use the "[script.reddit.reader] 0.5.7" comment and # the rest
+   use the "[script.reddit.reader] 0.7.1" comment and # the rest
 
 (end bunch of vi stuff...)
 

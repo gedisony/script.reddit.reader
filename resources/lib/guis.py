@@ -597,7 +597,7 @@ class commentsGUI(cGUI):
         self.links_on_top=False
 
 
-def log(message, level=xbmc.LOGNOTICE):
+def log(message, level=xbmc.LOGDEBUG):
     xbmc.log("reddit_viewer GUI:"+message, level=level)
 
 
