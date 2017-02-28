@@ -2,7 +2,7 @@
 
 import re
 import xbmcgui
-import requests 
+import requests
 import bs4
 import pprint
 
@@ -14,16 +14,16 @@ def readHTML(link_url, a, b):
     from resources.lib.guis import commentsGUI
 
     from resources.lib.html2text import HTML2Text
-    
+
     from urlparse import urlparse
-    
+
 
     listitems=[]
-    
+
     log('readHTML:' + link_url )
 
 
-    #log( unicodetoascii("####weren\xe2\x80\x99t") )    
+    #log( unicodetoascii("####weren\xe2\x80\x99t") )
     #return
 
 #    aaa=u'I\xe2\x80\x99ve just finished a marathon of watching \xe2\x80\x9cBREAKING BAD\xe2\x80\x9d \xe2\x80\x93 from episode one of the First Season \xe2\x80\x93 to the last eight episodes of the Sixth Seaso'
@@ -31,12 +31,12 @@ def readHTML(link_url, a, b):
 #    #aab=str(aaa)
 #    log('###1#' + str(aaa).encode('utf-8') )
 #    log('###2#' + aab )
-#    
+#
 #    return
 
-    #fake the user agent. to hopefully get a mobile version of the website 
+    #fake the user agent. to hopefully get a mobile version of the website
     headers = {'User-Agent': 'Opera/9.80 (J2ME/MIDP; Opera Mini/9.80 (S60; SymbOS; Opera Mobi/23.348; U; en) Presto/2.5.25 Version/10.54'}
-    
+
     page = requests.get( link_url, headers=headers )
     #log( repr( page.text ))
 
@@ -44,23 +44,23 @@ def readHTML(link_url, a, b):
     h.ignore_links = True
     h.body_width   = 0    #don't wrap text at 78 chars (default)
     #log(  h.handle( page.text ) )
-    
+
     h2t=h.handle( page.text )
-    
+
     h2t=h2t.split('\n\n')
     #log( pprint.pformat( h2t ) )
-    
+
     for idx, line in enumerate(h2t):
         #log(line)
-        
+
         if len(line)<25:
             #log('*len ignored:' )
             continue
-        
+
         if line_rejected( line ):
             #log('*line_rejected:' )
             continue
-        
+
         if '![' in line:
             alt,uri=get_alt_and_link(link_url, line)
             if uri:
@@ -72,18 +72,18 @@ def readHTML(link_url, a, b):
                 liz=listitem(str(len(line)), markdown_to_bbcode(line) )
             pass
         else:
-            liz=listitem( label=line[0:30].replace('\n',''), 
+            liz=listitem( label=line[0:30].replace('\n',''),
                           plot=line,
                           link='',
                           art_thumb='',
-                          domain='', 
+                          domain='',
                           votes=len(line) )
-        
+
         if liz:
             listitems.append(liz)
-    
 
-    
+
+
 #    text = soup.get_text()
 #    tl=text.split('\n')
 #
@@ -95,9 +95,9 @@ def readHTML(link_url, a, b):
 #        plot=markdown_to_bbcode(text)
 #        plot=unescape(plot)  #convert html entities e.g.:(&#39;)
 #
-#        liz=xbmcgui.ListItem(label=text[0:50] , 
+#        liz=xbmcgui.ListItem(label=text[0:50] ,
 #                             label2="",
-#                             iconImage="", 
+#                             iconImage="",
 #                             thumbnailImage="")
 #
 #        liz.setInfo( type="Video", infoLabels={ "Title": '', "plot": plot, "studio": '', "votes": 0, "director": '' } )
@@ -107,7 +107,7 @@ def readHTML(link_url, a, b):
 
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=listitems, id=55)
     #ui.setProperty('comments', 'no')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
-    
+
     #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text='html2text'
     ui.include_parent_directory_entry=False
@@ -117,7 +117,7 @@ def readHTML(link_url, a, b):
 
 def line_rejected( text ):
     re_1=re.compile('(\*\s[0-9a-zA-Z _]{1,20}$)', re.MULTILINE )   # up to 20 characters
-    
+
     asterisk_line=re_1.findall(text)  #matches  * TV
     if asterisk_line:                 #         * News
         return True                   #         * Sports
@@ -132,7 +132,7 @@ def get_alt_and_link(source_url, text):
     url_path= '/'.join(  url_path[:-1] )  #url_path needs more testing
 
     alt,uri='',''
-    
+
     link_re = re.compile('!\[(.*?)\]\((.*?)\)')  # catch the ![...](...) pattern used in links
     #result = prog.findall(post_text)
     link=link_re.findall(text)
@@ -145,7 +145,7 @@ def get_alt_and_link(source_url, text):
         #  3- data:     data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA.....
         #
         if uri.startswith('http'):
-            pass  
+            pass
         elif uri.startswith('//'):
             uri='http:'+uri
         elif uri.startswith('/'):  #relative to domain
@@ -155,15 +155,15 @@ def get_alt_and_link(source_url, text):
             pass
         else:          #relative to page
             uri='http://'+domain+url_path+'/'+uri  #not tested
-        
+
     return alt,uri
-    
+
 def listitem(label, plot, link='', art_thumb='', domain='', votes=0 ):
     #builds the listitem object used in the gui
     #from resources.lib.utils import unescape
-    liz=xbmcgui.ListItem(label=label, 
+    liz=xbmcgui.ListItem(label=label,
                          label2="",
-                         iconImage="", 
+                         iconImage="",
                          thumbnailImage="")
 
     liz.setInfo( type="Video", infoLabels={ "plot": unicodetoascii(plot), "studio": domain, "votes": votes, "director": '' } )
@@ -173,7 +173,7 @@ def listitem(label, plot, link='', art_thumb='', domain='', votes=0 ):
 
     if art_thumb:
         liz.setArt({"thumb": art_thumb })
-        
+
     liz.setProperty('link_url', link )  #just used as text at bottom of the screen
 
     return liz
@@ -211,25 +211,25 @@ def unicodetoascii(text):
             ord('\xe2\x81\xbd'.decode('utf-8')): ord("("),
             ord('\xe2\x81\xbe'.decode('utf-8')): ord(")"),
         }
-    
-    #return text.decode('utf-8').translate(uni2ascii).encode('ascii','ignore')  #special chars disappear    
+
+    #return text.decode('utf-8').translate(uni2ascii).encode('ascii','ignore')  #special chars disappear
     return text.decode('utf-8').translate(uni2ascii).encode('utf-8')
-    
+
 def soup_method_bak():
 #    soup = bs4.BeautifulSoup(page.text )  #soup = bs4.BeautifulSoup(page.text.encode('utf-8')  )   won't work
 #    #log( repr( soup.title ))
 #    try:    title=soup.title.string
 #    except: title=''
-#    
+#
 #    log( repr( title ))
 #
 #    #p=soup.find_all('p')
 #    #log( pprint.pformat(p) )
 #
 #    #log( repr(url_path ))
-#    
+#
 #    #log( 'path: ' + url_path )
-#    
+#
 #
 #    for elem in soup.findAll(['script', 'style']):
 #        elem.extract()  #removes a tag or string from the tree. It returns the tag or string that was extracted:
@@ -243,9 +243,9 @@ def soup_method_bak():
 #            #  2- relative: /....jpg   or ....jpg
 #            #  3- data:     data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA.....
 #            #
-#            src=elem.get('src') 
+#            src=elem.get('src')
 #            if src.startswith('http'):
-#                pass  
+#                pass
 #            elif src.startswith('//'):
 #                src='http:'+src
 #            elif src.startswith('/'):  #relative to domain
@@ -260,7 +260,7 @@ def soup_method_bak():
 #            #log( repr(elem.get('alt')) + ' --' + repr(elem.get('src')) )
 #            #log( 'src='+src )
 #            liz=listitem(elem.get('alt'), elem.text, '', src )
-#            
+#
 #        elif elem.name == 'a':
 #            #log( '****%.3d %s' %( idx, repr( elem )[0:200]  ) )
 #            pass
@@ -270,10 +270,10 @@ def soup_method_bak():
 #            pass
 #        else:
 #            log( '****%.3d <%s> %s' %( idx, elem.name, repr( elem.text )[0:200]  ) )
-#            
+#
 #        if liz:
 #            listitems.append(liz)
-    
+
     pass
 
 def unicodetoascii2(text):
@@ -281,8 +281,8 @@ def unicodetoascii2(text):
     uni2ascii = {
             '\xe2\x80\x99': ord("'"),
         }
-    
-    #return text.decode('utf-8').translate(uni2ascii).encode('ascii','ignore')  #special chars disappear    
+
+    #return text.decode('utf-8').translate(uni2ascii).encode('ascii','ignore')  #special chars disappear
     return text.translate(uni2ascii)
 
 

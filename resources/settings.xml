@@ -4,29 +4,39 @@
         <setting id="no_index_page"         type="bool"   label="32103" default="true" />
         <setting id="default_frontpage"     type="text"   label="32102" values="" default=""/>
         <setting type="sep" />
-    	<setting id="CommentTreshold"          type="select" label="32106" values="All|0|5|10|50|100"/>
+        <setting id="repeat_gif_video"         type="enum" label="32115" values="0|1|3|10|100" default="1"/>        
         <setting type="sep" />
-        <setting id="hide_nsfw"                type="bool"   label="32107" default="false"/>
+        <setting id="use_slideshow_for_album"  type="bool" label="32222" default="true"/>
         <setting type="sep" />
-    	<setting id="domain_filter"            type="text" label="32104" default=""/>
-        <setting id="subreddit_filter"         type="text" label="32105" default=""/>
         <setting id="main_gui_skin"            type="text" label="32108" default="main_list01.xml"/>
     </category>
 
     <category label="32200">
     	<setting id="slideshow_mode"           type="enum"   label="32201" lvalues="32202|32203|32204" default="1"/>
-    	
         <setting id="slideshow_speed"          type="slider" label="32221" default="1" range="0.20,0.20,2.0" option="float"/>
-        <setting id="use_slideshow_for_album"  type="bool"   label="32222" default="true"/>
         <setting id="include_albums"           type="bool"   label="32223" default="true"/>
         <setting id="use_reddit_preview"       type="bool"   label="32224" default="true"/>
         <setting id="show_title"               type="bool"   label="32225" default="false"/>
         <setting id="random_post_order"        type="bool"   label="32226" default="false"/>
         <setting id="random_image_order"       type="bool"   label="32227" default="false"/>
+        <setting type="lsep"                                 label="32228" enable="true" />
+		<setting id="screensaver_subreddit"    type="text"   label="32301" values="" default=""/>
     </category>
+
     <category label="32300">
-    	<setting id="screensaver_subreddit"    type="text"   label="32301" values="" default=""/>
+        <!-- setting id="hide_video"           type="bool" label="30301" default="false"/>
+        <setting id="hide_IMG"             type="bool" label="30302" default="false"/>
+        <setting id="hide_reddit"          type="bool" label="30303" default="false"/>
+        <setting id="hide_undetermined"    type="bool" label="30304" default="false"/-->
+        <!-- setting id="resolve_undetermined" type="bool" label="30305" default="false"/-->
+
+    	<setting id="CommentTreshold"          type="select" label="32106" values="All|0|5|10|50|100"/>
+        <setting type="sep" />
+        <setting id="hide_nsfw"                type="bool" label="32107" default="false"/>
+    	<setting id="domain_filter"            type="text" label="32104" default=""/>
+        <setting id="subreddit_filter"         type="text" label="32105" default=""/>
     </category>
+
 
     <category label="32150">
         <setting id="ll_qualiy"                        type="enum"        label="32154" values="480p|720p" default="1"/>
@@ -35,7 +45,7 @@
         <setting id="use_ytdl_for_unknown"             type="bool" label="32113" default="false"/>
         <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32114" default="false"/>
         <setting type="sep" />
-        <setting id="repeat_gif_video"                 type="enum" label="32115" values="0|1|3|10|100" default="1"/>
+
     </category>
     <category label="32400"> 
     	<setting                              type="lsep"        label="32401"               enable="true"   />

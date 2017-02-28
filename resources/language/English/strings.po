@@ -302,10 +302,14 @@ msgctxt "#32227"
 msgid "Totally randomize images (album order not preserved)"
 msgstr ""
 
+msgctxt "#32228"
+msgid "Source subreddit for screensaver images"
+msgstr ""
+
 #30192-30299 empty
 
 msgctxt "#32300"
-msgid "Screensaver"
+msgid "Filters"
 msgstr ""
 
 msgctxt "#32301"
