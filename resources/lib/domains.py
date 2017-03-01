@@ -371,9 +371,9 @@ class ClassImgur(sitesBase):
         self.images_count=jdata.get('images_count')
         #log('    imgur album images count ' + repr(self.images_count))
         if self.images_count == 1:
-            #if there is an mp4 tag in the json, use that value.  
-            #     there have been instances where the 'link' tag leads to a gif. that does not have the same name as the .mp4 equivalent (it has an extra 'h' at the end)  
-            #     so renaming by changing the .gif to .mp4 wouldn't work. 
+            #if there is an mp4 tag in the json, use that value.
+            #     there have been instances where the 'link' tag leads to a gif. that does not have the same name as the .mp4 equivalent (it has an extra 'h' at the end)
+            #     so renaming by changing the .gif to .mp4 wouldn't work.
             #        credit to mac1202 2/26/2017 for finding this bug.
             if jdata.get('images')[0].get('mp4'):
                 self.image_url_of_a_single_image_album=jdata.get('images')[0].get('mp4')
@@ -642,7 +642,7 @@ class ClassVidme(sitesBase):
         if status != 'success':
             raise Exception( "vidme video: " +vid_info.get('state'))
 
-        self.thumb_url=vid_info.get("thumbnail_url") 
+        self.thumb_url=vid_info.get("thumbnail_url")
 
         #if 'ta6C' in media_url: log(r.text)
         self.link_action=self.DI_ACTION_PLAYABLE
@@ -1365,11 +1365,11 @@ class ClassGyazo(sitesBase):
             if media_type=='photo':
                 self.thumb_url=media_url
                 self.poster_url=self.thumb_url
-    
+
                 self.media_type=sitesBase.TYPE_IMAGE
                 self.media_url=media_url
             elif media_type=='video':
-                #url tag missing... 3/1/2017 - discovered that there is no more url tag for video. (we can stil parse the html tag for 'src' and parse that link for the <video autoplay..src=.mp4  
+                #url tag missing... 3/1/2017 - discovered that there is no more url tag for video. (we can stil parse the html tag for 'src' and parse that link for the <video autoplay..src=.mp4
                 #   but to heck with that, just send link to ytdl
                 #self.link_action=sitesBase.DI_ACTION_PLAYABLE
                 self.link_action=sitesBase.DI_ACTION_YTDL
@@ -1753,7 +1753,7 @@ class ClassGifsCom(sitesBase):
 
     api_key='gifs577da09e94ee1'   #gifs577da0485bf2a'
     headers = { 'Gifs-API-Key': api_key, 'Content-Type': "application/json" }
-    #request_url="https://api.gifs.com"  
+    #request_url="https://api.gifs.com"
 
     def get_playable(self, media_url='', is_probably_a_video=False ):
         media_type=self.TYPE_VIDEO

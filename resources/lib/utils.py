@@ -391,7 +391,7 @@ def post_excluded_from( filter, str_to_check):
     return False
 
 def add_to_csv_setting(setting_id, string_to_add):
-    #adds a string to the end of a setting id in settings.xml 
+    #adds a string to the end of a setting id in settings.xml
     #this is assuming that it is a comma separated list used in filtering subreddit / domain
     import xbmcaddon
     addon=xbmcaddon.Addon()
@@ -434,7 +434,7 @@ def post_is_filtered_out( entry ):
 
 def addtoFilter(to_filter, name, type_of_filter):
     #type_of_filter=domain or subreddit
-    from default import hide_nsfw, domain_filter, subreddit_filter
+    from default import domain_filter, subreddit_filter
     if type_of_filter=='domain':
         #log( domain_filter +'+' + to_filter)
         add_to_csv_setting('domain_filter',to_filter)
@@ -446,7 +446,6 @@ def addtoFilter(to_filter, name, type_of_filter):
     else:
         return
     pass
- 
 
 def prettify_reddit_query(subreddit_entry):
     #for search queries; make the reddit query string presentable
