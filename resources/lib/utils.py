@@ -20,12 +20,12 @@ def create_default_subreddits():
 
         #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
         fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(32006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
-        fh.write('Documentaries+ArtisanVideos\n')
+        fh.write('Documentaries+ArtisanVideos+lectures+LearnUselessTalents\n')
         fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
         fh.write('random\n')
         #fh.write('randnsfw\n')
         fh.write('[Frontpage]\n')
-        fh.write('all\n')
+        fh.write('popular\n')
         fh.write('gametrailers+tvtrailers+trailers\n')
         fh.write('music+listentothis+musicvideos\n')
         fh.write('site:youtube.com\n')
@@ -390,6 +390,26 @@ def post_excluded_from( filter, str_to_check):
             return True
     return False
 
+def add_to_csv_setting(setting_id, string_to_add):
+    #adds a string to the end of a setting id in settings.xml 
+    #this is assuming that it is a comma separated list used in filtering subreddit / domain
+    import xbmcaddon
+    addon=xbmcaddon.Addon()
+    csv_setting=addon.getSetting(setting_id)
+    csv_list=csv_setting.split(',')
+    csv_list=[x.lower().strip() for x in csv_list]
+    csv_list.append(string_to_add)
+
+    csv_list = filter(None, csv_list)                 #removes empty string
+    addon.setSetting(setting_id, ",".join(csv_list))
+
+    if setting_id=='domain_filter':
+        s=colored_subreddit( string_to_add, 'tan',False )
+    elif setting_id=='subreddit_filter':
+        s=colored_subreddit( string_to_add )
+
+    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( s, translation(30020)+' '+setting_id.replace('_',' ') ) ) #translation(30020)=Added to
+
 def post_is_filtered_out( entry ):
     from default import hide_nsfw, domain_filter, subreddit_filter
 
@@ -411,6 +431,22 @@ def post_is_filtered_out( entry ):
         return True
 
     return False
+
+def addtoFilter(to_filter, name, type_of_filter):
+    #type_of_filter=domain or subreddit
+    from default import hide_nsfw, domain_filter, subreddit_filter
+    if type_of_filter=='domain':
+        #log( domain_filter +'+' + to_filter)
+        add_to_csv_setting('domain_filter',to_filter)
+        pass
+    elif type_of_filter=='subreddit':
+        #log( subreddit_filter +'+' + to_filter )
+        add_to_csv_setting('subreddit_filter',to_filter)
+        pass
+    else:
+        return
+    pass
+ 
 
 def prettify_reddit_query(subreddit_entry):
     #for search queries; make the reddit query string presentable
@@ -511,21 +547,23 @@ def parse_filename_and_ext_from_url(url=""):
     return "", ""
 
 def link_url_is_playable(url):
-    url=url.split('?')[0]
-    #log('        split[0]:' + url)
+    ext=ret_url_ext(url)
+    if ext in image_exts:
+        return 'image'
+    if ext in ['mp4','webm','mpg','gifv','gif']:
+        return 'video'
+            #if ext == 'gif':
+            #    return 'gif'
+    return False
+
+def ret_url_ext(url):
     if url:
-        filename,ext=parse_filename_and_ext_from_url(url)
-        #log('        [%s][%s]' %(filename,ext) )
-        if ext in image_exts:
-            #log('        is image:' + url)
-            return 'image'
-
-        if ext in ['mp4','webm','mpg','gifv','gif']:
-            return 'video'
-
-        #if ext == 'gif':
-        #    return 'gif'
-
+        url=url.split('?')[0]
+        #log('        split[0]:' + url)
+        if url:
+            filename,ext=parse_filename_and_ext_from_url(url)
+            #log('        [%s][%s]' %(filename,ext) )
+            return ext
     return False
 
 #remove duplicates.  http://stackoverflow.com/questions/7961363/removing-duplicates-in-lists
@@ -597,6 +635,17 @@ def unescape(text):
     text=text.replace('&nbsp;',' ')
     text=text.replace('\n\n','\n')
     return text
+
+def strip_emoji(text):
+    #http://stackoverflow.com/questions/33404752/removing-emojis-from-a-string-in-python
+    emoji_pattern = re.compile(
+        u"(\ud83d[\ude00-\ude4f])|"  # emoticons
+        u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
+        u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
+        u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
+        u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
+        "+", flags=re.UNICODE)
+    return emoji_pattern.sub(r'', text) # no emoji
 
 def markdown_to_bbcode(s):
     #https://gist.github.com/sma/1513929

@@ -61,6 +61,10 @@ msgctxt "#32013"
 msgid "Playing"
 msgstr ""
 
+#error message notification to the user when link is 404 etc.  
+msgctxt "#32021"
+msgid "Parsing error"
+msgstr ""
 
 #: used in gui to zoom+scroll down a very tall image 
 msgctxt "#32050"

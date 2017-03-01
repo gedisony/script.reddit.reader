@@ -765,7 +765,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     return liz
 
 def reddit_post_worker(idx, entry, q_out):
-    from resources.lib.utils import unescape, pretty_datediff, determine_if_video_media_from_reddit_json, has_multiple_subreddits
+    from resources.lib.utils import unescape, strip_emoji, pretty_datediff, determine_if_video_media_from_reddit_json, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
 
     try:
@@ -787,6 +787,7 @@ def reddit_post_worker(idx, entry, q_out):
 
         if data:
             title = unescape(data.get('title').encode('utf-8'))
+            title = strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
@@ -1925,7 +1926,7 @@ if __name__ == '__main__':
 #    log("url="+  url)
 #    log("-----------------------")
 
-    from resources.lib.domains import viewImage, listAlbum, playURLRVideo,loopedPlayback
+    from resources.lib.domains import viewImage, listAlbum, playURLRVideo,loopedPlayback,error_message
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.converthtml import readHTML
 
@@ -1948,6 +1949,7 @@ if __name__ == '__main__':
                     ,'playURLRVideo'        : playURLRVideo
                     ,'loopedPlayback'       : loopedPlayback
                     ,'play'                 : parse_and_play
+                    ,'error_message'        : error_message
                     ,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits
                     ,'get_refresh_token'    : reddit_get_refresh_token
