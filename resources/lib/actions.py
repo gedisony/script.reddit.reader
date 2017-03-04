@@ -461,17 +461,17 @@ def update_youtube_dl_core(url,name,action_type):
         extractedPath = os.path.join(profile,'youtube-dl')
         extracted_core_path=os.path.join(extractedPath,'youtube_dl')
         #ytdl_core_path  xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
-    
+
         try:
             if os.path.exists(extractedPath):
                 shutil.rmtree(extractedPath, ignore_errors=True)
-                update_dl_status('Old version removed')
+                update_dl_status('temp files removed')
 
             update_dl_status('Downloading {0} ...'.format(newVersion))
-            log('From: {0}'.format(LATEST_URL))
-            log('  to: {0}'.format(archivePath))
+            log('  From: {0}'.format(LATEST_URL))
+            log('    to: {0}'.format(archivePath))
             urllib.urlretrieve(LATEST_URL,filename=archivePath)
-    
+
             if os.path.exists(archivePath):
                 update_dl_status('Extracting ...')
 
@@ -482,30 +482,32 @@ def update_youtube_dl_core(url,name,action_type):
                 update_dl_status('Download failed')
         except Exception as e:
             update_dl_status('Error:' + str(e))
-    
+
         update_dl_status('Updating...')
-        
-        
-        if os.path.exists(extracted_core_path): 
-            log( 'exists:'+extracted_core_path)
-        
-        log( 'checking:'+ytdl_core_path)
-        if os.path.exists(ytdl_core_path): 
-            log( 'exists:'+ytdl_core_path)
-            #shutil.move(src, dst)
-            
-        try:
-            shutil.move(extracted_core_path, ytdl_core_path)
-            update_dl_status('Update complete')
-            note_ytdl_versions()
-        except Exception as e:
-            log( 'move failed:'+str(e))
-            
-        
-        
+
+
+        if os.path.exists(extracted_core_path):
+            log( '  extracted dir exists:'+extracted_core_path)
+
+            if os.path.exists(ytdl_core_path):
+                log( '  destination dir exists:'+ytdl_core_path)
+                shutil.rmtree(ytdl_core_path, ignore_errors=True)
+                update_dl_status('    Old ytdl core removed')
+                xbmc.sleep(1000)
+            try:
+                shutil.move(extracted_core_path, ytdl_core_path)
+                update_dl_status('Update complete')
+                xbmc.sleep(1000)
+                ourVersion=ytdl_get_version_info('local')
+                setSetting('ytdl_btn_check_version', "{0}".format(ourVersion))
+
+            except Exception as e:
+                update_dl_status('Failed...')
+                log( 'move failed:'+str(e))
+
     elif action_type=='checkversion':
         note_ytdl_versions()
-    
+
 
 def note_ytdl_versions():
     #display ytdl versions and return latest version
