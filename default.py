@@ -839,8 +839,9 @@ def playYTDLVideo(url, name, type):
         ydl_info=ytdl.extract_info(url, download=False)
         #in youtube_dl utils.py def unified_timestamp(date_str, day_first=True):
         # there was an error playing https://vimeo.com/14652586 
-        # change except ValueError: 
-        #     to except:    (remove ValueError)
+        #   on line 1195:
+        # change          except ValueError: 
+        #     to          except:    (remove ValueError)
 
         #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
         video_infos=_selectVideoQuality(ydl_info, quality=1, disable_dash=True)

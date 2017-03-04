@@ -434,7 +434,6 @@ def ytdl_get_version_info(which_one='latest'):
     if which_one=='latest':
         try:
             newVersion = urllib2.urlopen(YTDL_VERSION_URL).read().strip()
-            log( newVersion )
             return newVersion
         except:
             return "0.0"
@@ -453,18 +452,15 @@ def update_youtube_dl_core(url,name,action_type):
     import tarfile
     import shutil
 
-    #log('Checking for new youtube_dl core version...')
-    
-    #currentVersion = util.getSetting('core_version')
-
     if action_type=='download':
         newVersion=note_ytdl_versions()
-        
         LATEST_URL=YTDL_LATEST_URL_TEMPLATE.format(newVersion)
-    
+
         profile = xbmc.translatePath(profile_path)  #xbmc.translatePath(addon.getAddonInfo('profile')).decode('utf-8')
         archivePath = os.path.join(profile,'youtube_dl.tar.gz')
         extractedPath = os.path.join(profile,'youtube-dl')
+        extracted_core_path=os.path.join(extractedPath,'youtube_dl')
+        #ytdl_core_path  xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
     
         try:
             if os.path.exists(extractedPath):
@@ -472,8 +468,8 @@ def update_youtube_dl_core(url,name,action_type):
                 update_dl_status('Old version removed')
 
             update_dl_status('Downloading {0} ...'.format(newVersion))
-            log('Downloading: {0}'.format(LATEST_URL))
-            log('         to: {0}'.format(archivePath))
+            log('From: {0}'.format(LATEST_URL))
+            log('  to: {0}'.format(archivePath))
             urllib.urlretrieve(LATEST_URL,filename=archivePath)
     
             if os.path.exists(archivePath):
@@ -489,18 +485,19 @@ def update_youtube_dl_core(url,name,action_type):
     
         update_dl_status('Updating...')
         
-        extracted_core_path=os.path.join(extractedPath,'youtube_dl')
+        
         if os.path.exists(extracted_core_path): 
             log( 'exists:'+extracted_core_path)
         
         log( 'checking:'+ytdl_core_path)
-        if os.path.exists(ytdl_core_path): #xbmcvfs.exists(ytdl_core_path):  #xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
+        if os.path.exists(ytdl_core_path): 
             log( 'exists:'+ytdl_core_path)
             #shutil.move(src, dst)
             
         try:
             shutil.move(extracted_core_path, ytdl_core_path)
             update_dl_status('Update complete')
+            note_ytdl_versions()
         except Exception as e:
             log( 'move failed:'+str(e))
             

@@ -391,7 +391,7 @@ msgid "youtube-dl"
 msgstr ""
 
 msgctxt "#32451"
-msgid "[Core version]"
+msgid "[Check local version]"
 msgstr ""
 
 msgctxt "#32452"
