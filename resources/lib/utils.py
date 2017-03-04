@@ -751,6 +751,24 @@ def empty_slideshow_folder():
             log("empty_slideshow_folder error:"+e)
 '''
 
+# Recursively follow redirects until there isn't a location header
+# Credit to: Zachary Witte @ http://www.zacwitte.com/resolving-http-redirects-in-python
+def resolve_http_redirect(url, depth=0):
+    if depth > 10:
+        raise Exception("Redirected "+depth+" times, giving up.")
+    o = urlparse.urlparse(url, allow_fragments=True)
+    conn = httplib.HTTPConnection(o.netloc)
+    path = o.path
+    if o.query:
+        path += '?' + o.query
+    conn.request("HEAD", path, headers={'User-Agent': YoutubeDLWrapper.std_headers['User-Agent']})
+    res = conn.getresponse()
+    headers = dict(res.getheaders())
+    if 'location' in headers and headers['location'] != url:
+        return resolve_http_redirect(headers['location'], depth+1)
+    else:
+        return url
+
 
 if __name__ == '__main__':
     pass

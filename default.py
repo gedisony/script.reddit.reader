@@ -17,6 +17,7 @@ import xbmcgui
 import xbmcaddon
 import urlparse
 import requests
+import xbmcvfs
 
 
 import threading
@@ -24,12 +25,12 @@ from Queue import Queue, Empty
 
 #this used to be a plugin. not that we're a script, we don't get free sys.argv's
 #this import for the youtube_dl addon causes our addon to start slower. we'll import it when we need to playYTDLVideo
-if len(sys.argv) > 1:
-    a=['mode=playYTDLVideo','mode=autoPlay']
-    if any(x in sys.argv[1] for x in a):
-        import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
-else:
-    pass
+#if len(sys.argv) > 1:
+#    a=['mode=playYTDLVideo','mode=autoPlay']
+#    if any(x in sys.argv[1] for x in a):
+#        import YDStreamExtractor      #note: you can't just add this import in code, you need to re-install the addon with <import addon="script.module.youtube.dl"        version="16.521.0"/> in addon.xml
+#else:
+#    pass
 
 #YDStreamExtractor.disableDASHVideo(True) #Kodi (XBMC) only plays the video for DASH streams, so you don't want these normally. Of course these are the only 1080p streams on YouTube
 from urllib import urlencode
@@ -96,7 +97,7 @@ use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comm
 
 addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
 subredditsFile      = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits")
-nsfwFile            = xbmc.translatePath("special://profile/addon_data/"+addonID+"/nsfw")
+
 
 #ytdl_psites_file         = xbmc.translatePath(profile_path+"/ytdl_sites_porn")
 default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
@@ -104,144 +105,26 @@ default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_site
 default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_sites" )
 
 #last slash at the end is important
-SlideshowCacheFolder    = xbmc.translatePath("special://profile/addon_data/"+addonID+"/slideshowcache/") #will use this to cache images for slideshow
+ytdl_core_path=xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
+
+if xbmcvfs.exists(ytdl_core_path):
+    #from resources.lib.youtube_dl.version import __version__
+    xbmc.log('using ytdl core', level=xbmc.LOGNOTICE)
+else:
+    #*** it seems like the script.module.youtube_dl version gets imported if the one from resources.lib is missing
+    xbmc.log('using ytdl addon ', level=xbmc.LOGNOTICE)
+
 
 if not os.path.isdir(addonUserDataFolder):
     os.mkdir(addonUserDataFolder)
 
-if not os.path.isdir(SlideshowCacheFolder):
-    os.mkdir(SlideshowCacheFolder)
+#if not os.path.isdir(SlideshowCacheFolder):
+#    os.mkdir(SlideshowCacheFolder)
 
 def log(message, level=xbmc.LOGNOTICE):
     t=threading.currentThread()
 
     xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
-
-def manage_subreddits(subreddit, name, type):
-    log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
-    #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list
-
-    #http://forum.kodi.tv/showthread.php?tid=148568
-    dialog = xbmcgui.Dialog()
-    #funcs = (        addSubreddit,        editSubreddit,        removeSubreddit,    )
-    #elected_index = dialog.select(subreddit, ['add new subreddi', 'edit   subreddit', 'remove subreddit'])
-    selected_index = dialog.select(subreddit, [translation(32001), translation(32003), translation(32002)])
-
-    #the if statements below is not as elegant as autoselecting the func from funcs but more flexible in the case with add subreddit where we should not send a subreddit parameter
-    #    func = funcs[selected_index]
-    #     #assign item from funcs to func
-    #    func(subreddit, name, type)
-    log('selected_index ' + str(selected_index))
-    if selected_index == 0:       # 0->first item
-        addSubreddit('','','')
-        pass
-    elif selected_index == 1:     # 1->second item
-        editSubreddit(subreddit,'','')
-        pass
-    elif selected_index == 2:     # 2-> third item
-        removeSubreddit(subreddit,'','')
-        pass
-    else:                         #-1 -> escape pressed or [cancel]
-        pass
-
-    xbmc_busy(False)
-    #this is a hack to force the subreddit listing to refresh.
-    #   the calling gui needs to close after calling this function
-    #   after we are done editing the subreddits file, we call index() (the start of program) again.
-    index("","","")
-
-
-def addSubreddit(subreddit, name, type):
-    from resources.lib.utils import this_is_a_multihub, format_multihub
-    log( 'addSubreddit ' + subreddit)
-    alreadyIn = False
-
-    with open(subredditsFile, 'r') as fh:
-        content = fh.readlines()
-        #fh.close()
-
-    if subreddit:
-        for line in content:
-            #log('line=['+line+']toadd=['+subreddit+']')
-            if line.strip()==subreddit.strip():
-                #log('  MATCH '+line+'='+subreddit)
-                alreadyIn = True
-        if not alreadyIn:
-            with open(subredditsFile, 'a') as fh:
-                fh.write(subreddit+'\n')
-                #fh.close()
-    else:
-        #dialog = xbmcgui.Dialog()
-        #ok = dialog.ok('Add subreddit', 'Add a subreddit (videos)','or  Multiple subreddits (music+listentothis)','or  Multireddit (/user/.../m/video)')
-        #would be great to have some sort of help to show first time user here
-
-        keyboard = xbmc.Keyboard('', translation(32001))
-        keyboard.doModal()
-        if keyboard.isConfirmed() and keyboard.getText():
-            subreddit = keyboard.getText()
-
-            #cleanup user input. make sure /user/ and /m/ is lowercase
-            if this_is_a_multihub(subreddit):
-                subreddit = format_multihub(subreddit)
-
-            for line in content:
-                if line.lower()==subreddit.lower()+"\n":
-                    alreadyIn = True
-            if not alreadyIn:
-                with open(subredditsFile, 'a') as fh:
-                    fh.write(subreddit+'\n')
-                    #fh.close()
-
-        xbmc.executebuiltin("Container.Refresh")
-
-#MODE removeSubreddit      - name, type not used
-def removeSubreddit(subreddit, name, type):
-    log( 'removeSubreddit ' + subreddit)
-
-    with open(subredditsFile, 'r') as fh:
-        content = fh.readlines()
-
-    contentNew = ""
-    for line in content:
-        if line!=subreddit+'\n':
-            #log('line='+line+'toremove='+subreddit)
-            contentNew+=line
-    with open(subredditsFile, 'w') as fh:
-        fh.write(contentNew)
-        #fh.close()
-    xbmc.executebuiltin("Container.Refresh")
-
-def editSubreddit(subreddit, name, type):
-    from resources.lib.utils import this_is_a_multihub, format_multihub
-    log( 'editSubreddit ' + subreddit)
-
-    with open(subredditsFile, 'r') as fh:
-        content = fh.readlines()
-        #fh.close()
-
-    contentNew = ""
-
-    keyboard = xbmc.Keyboard(subreddit, translation(32003))
-    keyboard.doModal()
-    if keyboard.isConfirmed() and keyboard.getText():
-        newsubreddit = keyboard.getText()
-        #cleanup user input. make sure /user/ and /m/ is lowercase
-        if this_is_a_multihub(newsubreddit):
-            newsubreddit = format_multihub(newsubreddit)
-
-        for line in content:
-            if line.strip()==subreddit.strip() :      #if matches the old subreddit,
-                #log("adding: %s  %s  %s" %(line, subreddit, newsubreddit)  )
-                contentNew+=newsubreddit+'\n'
-            else:
-                contentNew+=line
-
-        with open(subredditsFile, 'w') as fh:
-            fh.write(contentNew)
-            #fh.close()
-
-        xbmc.executebuiltin("Container.Refresh")
-
 
 def index(url,name,type):
     ## this is where the __main screen is created
@@ -404,221 +287,6 @@ def listSubReddit(url, title_bar_name, type):
     del ui
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class.
     #xbmc.sleep(8000)
-
-def listSubReddit_old(url, title_bar_name, type):
-    #this is the old version of listSubReddit. it is kept here for debugging purposes.
-    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, has_multiple_subreddits
-    from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
-
-    show_listSubReddit_debug=True
-    credate = ""
-    is_a_video=False
-    title_line2=""
-
-    thumb_w=0; thumb_h=0
-
-    #the +'s got removed by url conversion
-    title_bar_name=title_bar_name.replace(' ','+')
-    #log("  title_bar_name %s " %(title_bar_name) )
-
-    log("listSubReddit r/%s url=%s" %(title_bar_name,url) )
-    t_on = translation(32071)  #"on"
-    #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
-    t_pts = u"\U00002709"  # translation(30072)   envelope symbol
-    t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
-
-    li=[]
-
-    currentUrl = url
-    xbmc_busy()
-    content = reddit_request(url)  #content = opener.open(url).read()
-
-    if not content:
-        xbmc_busy(False)
-        return
-
-    threads = []
-    #q_posts = Queue() #input queue for worker(json entry of a single post)
-    q_liz = Queue()   #output queue (listitem)
-
-    content = json.loads(content)
-
-    #log("query returned %d items " % len(content['data']['children']) )
-    posts_count=len(content['data']['children'])
-
-    hms = has_multiple_subreddits(content['data']['children'])
-
-    if hms==False:
-        #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link.
-        try: g=content['data']['children'][0]['data']['subreddit']
-        except: g=""
-        if g:
-            title_bar_name=g
-            #preserve the &after string so that functions like play slideshow and play all videos can 'play' the correct page
-            #  extract the &after string from currentUrl -OR- send it with the 'type' argument when calling this function.
-            currentUrl=assemble_reddit_filter_string('',g) + '&after=' + type
-
-    for idx, entry in enumerate(content['data']['children']):
-        try:
-            if post_is_filtered_out( j_entry ):
-                continue
-
-            title = unescape(entry['data']['title'].encode('utf-8'))
-            is_a_video = determine_if_video_media_from_reddit_json(entry)
-            if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
-
-            post_id = entry['kind'] + '_' + entry['data']['id']  #same as entry['data']['name']
-            #log('  %s  %s ' % (post_id, entry['data']['name'] ))
-
-            try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
-            except: description = ''
-            #log('    description  [%s]' %description)
-            try:    post_selftext=unescape(entry['data']['selftext'].encode('utf-8'))
-            except: post_selftext=''
-            #log('    post_selftext[%s]' %post_selftext)
-
-            description=post_selftext+'[CR]'+description if post_selftext else description
-            #log('    combined     [%s]' %description)
-
-            commentsUrl = urlMain+entry['data']['permalink'].encode('utf-8')
-            #if show_listSubReddit_debug :log("commentsUrl"+str(idx)+"="+commentsUrl)
-
-            try:
-                aaa = entry['data']['created_utc']
-                credate = datetime.datetime.utcfromtimestamp( aaa )
-                now_utc = datetime.datetime.utcnow()
-                pretty_date=pretty_datediff(now_utc, credate)
-                credate = str(credate)
-            except:
-                credate = ""
-                credateTime = ""
-
-            subreddit=entry['data']['subreddit'].encode('utf-8')
-
-            try: author = entry['data']['author'].encode('utf-8')
-            except: author = ""
-
-            try: domain= entry['data']['domain'].encode('utf-8')
-            except: domain = ""
-            #log("     DOMAIN%.2d=%s" %(idx,domain))
-
-            ups = entry['data']['score']       #downs not used anymore
-            try:num_comments = entry['data']['num_comments']
-            except:num_comments = 0
-
-            try:
-                media_url = entry['data']['url'].encode('utf-8')
-            except:
-                media_url = entry['data']['media']['oembed']['url'].encode('utf-8')
-
-            #media_url=media_url.lower()  #!!! note: do not lowercase!!!
-
-            thumb = entry['data']['thumbnail'].encode('utf-8')
-
-            if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
-                thumb=""
-
-            if thumb=="":
-                try: thumb = entry['data']['media']['oembed']['thumbnail_url'].encode('utf-8').replace('&amp;','&')
-                except: pass
-
-            try:
-                #collect_thumbs(entry)
-                preview=entry['data']['preview']['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-
-                try:
-                    thumb_h = float( entry['data']['preview']['images'][0]['source']['height'] )
-                    thumb_w = float( entry['data']['preview']['images'][0]['source']['width'] )
-                except:
-                    thumb_w=0
-                    thumb_h=0
-
-            except Exception as e:
-                #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-                thumb_w=0
-                thumb_h=0
-                preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
-
-            #preview images are 'keep' stretched to fit inside 1080x1080.
-            #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image
-            if thumb_w > 0 and thumb_w < 280:
-                #log('*******preview is small ')
-                thumb=preview
-                thumb_w=0
-                thumb_h=0
-                preview=""
-
-            try:
-                over_18 = entry['data']['over_18']
-            except:
-                over_18 = False
-
-            title_line2=""
-            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
-
-            liz=addLink(title=title,
-                    title_line2=title_line2,
-                    iconimage=thumb,
-                    previewimage=preview,
-                    preview_w=thumb_w,
-                    preview_h=thumb_h,
-                    domain=domain,
-                    description=description,
-                    credate=credate,
-                    reddit_says_is_video=is_a_video,
-                    site=commentsUrl,
-                    subreddit=subreddit,
-                    link_url=media_url,
-                    over_18=over_18,
-                    posted_by=author,
-                    num_comments=num_comments,
-                    post_id=post_id,
-                    post_index=idx,
-                    post_total=posts_count,
-                    many_subreddit=hms)
-
-            li.append(liz)
-
-        except Exception as e:
-            log(" EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-            pass
-
-    #**end loop for each reddit post
-
-    try:
-        #this part makes sure that you load the next page instead of just the first
-        after=""
-        after = content['data']['after']
-        if after:
-            if "&after=" in currentUrl:
-                nextUrl = currentUrl[:currentUrl.find("&after=")]+"&after="+after
-            else:
-                nextUrl = currentUrl+"&after="+after
-
-            # plot shows up on estuary. etc. ( avoids the "No information available" message on description )
-            info_label={ "plot": translation(32004) }
-
-            #addDir(translation(32004), nextUrl, 'listSubReddit', "", subreddit,info_label)   #Next Page
-
-            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': translation(32004)} )
-
-            li.append(liz)
-
-        #if show_listSubReddit_debug :log("NEXT PAGE="+nextUrl)
-    except Exception as e:
-        log(" EXCEPTzION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-
-        pass
-
-    xbmc_busy(False)
-
-    title_bar_name=urllib.unquote_plus(title_bar_name)
-    ui=skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)
-    ui.doModal()
-    del ui
-    #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class.
-    #xbmc.sleep(8000)
-
 
 def skin_launcher(mode,**kwargs ):
     #launches the gui using .xml file defined in settings (incomplete)
@@ -1135,18 +803,17 @@ class Worker(threading.Thread):
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
     xbmc_busy(False)
+    
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear()
 
     if url : #sometimes url is a list of url or just a single string
         if isinstance(url, basestring):
-            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-            pl.clear()
             pl.add(url, xbmcgui.ListItem(name))
             xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
         	#listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
             #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
         else:
-            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-            pl.clear()
             for u in url:
                 #log('u='+ repr(u))
                 #pl.add(u)
@@ -1156,6 +823,56 @@ def playVideo(url, name, type):
         log("playVideo(url) url is blank")
 
 def playYTDLVideo(url, name, type):
+    from resources.lib.YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    import pprint
+
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear()
+
+    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
+    dialog_progress_YTDL.create('Youtube_dl' )
+    dialog_progress_YTDL.update(10,'Youtube_dl',translation(32012)  )
+
+    #use YoutubeDLWrapper by ruuk to avoid  bad file error 
+    ytdl=YoutubeDLWrapper()
+    try:
+        ydl_info=ytdl.extract_info(url, download=False)
+        #in youtube_dl utils.py def unified_timestamp(date_str, day_first=True):
+        # there was an error playing https://vimeo.com/14652586 
+        # change except ValueError: 
+        #     to except:    (remove ValueError)
+
+        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
+        video_infos=_selectVideoQuality(ydl_info, quality=1, disable_dash=True)
+        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
+        dialog_progress_YTDL.update(80,'Youtube_dl',translation(32013)  )
+
+        for video_info in video_infos:
+            url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
+            title=video_info.get('title') or name
+            ytdl_format=video_info.get('ytdl_format')
+            if ytdl_format:
+                description=ytdl_format.get('description')
+            li=xbmcgui.ListItem(label=title, 
+                                label2='',
+                                iconImage=video_info.get('thumbnail'),
+                                thumbnailImage=video_info.get('thumbnail'),
+                                path=url)
+            li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
+            pl.add(url, li)
+
+        xbmc.Player().play(pl, windowed=False)
+
+    except Exception as e:
+        err_msg=str(e)+';'  #ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest vers....
+        short_err=err_msg.split(';')[0]
+        log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( "Youtube_dl", short_err )  )
+#    finally:
+    dialog_progress_YTDL.update(100,'Youtube_dl' ) #not sure if necessary to set to 100 before closing dialogprogressbg
+    dialog_progress_YTDL.close()
+
+def playYTDLVideoOLD(url, name, type):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
     #log("playYTDLVideo="+url)
     #url='https://www.youtube.com/shared?ci=W8n3GMW5RCY'
@@ -1530,109 +1247,12 @@ def r_linkHunter(json_node,d=0):
 def translation(id):
     return addon.getLocalizedString(id).encode('utf-8')
 
-def viewTallImage(image_url, width, height):
-    from resources.lib.utils import unescape
-    log( 'viewTallImage %s: %sx%s' %(image_url, width, height))
-    #image_url=unescape(image_url) #special case for handling reddituploads urls
-    #log( 'viewTallImage %s: %sx%s' %(image_url, width, height))
-
-    xbmc_busy(False)
-
-    can_quit=True
-    if can_quit==True:
-        useWindow=xbmcgui.WindowDialog()
-        useWindow.setCoordinateResolution(0)
-
-        try:
-            w=int(float(width))
-            h=int(float(height))
-            optimal_h=int(h*1.5)
-            #log( '    **' + repr(h))
-            loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
-
-            img_control = xbmcgui.ControlImage(0, 800, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
-            img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
-
-            #the cached image is of lower resolution. we force nocache by using setImage() instead of defining the image in ControlImage()
-            img_control.setImage(image_url, False)
-
-            useWindow.addControls( [ img_loading, img_control])
-            #useWindow.addControl(  img_control )
-
-            scroll_time=(int(h)/int(w))*20000
-
-            img_control.setAnimations( [
-                                        ('conditional', "condition=true effect=fade  delay=0    start=0   end=100   time=4000 "  ) ,
-                                        ('conditional', "condition=true effect=slide delay=2000 start=0,-%d end=0,0 tween=sine easing=in time=%d pulse=true" %( (h*1.4), scroll_time) ),
-                                        ]  )
-
-            useWindow.doModal()
-            useWindow.removeControls( [img_control,img_loading] )
-            del useWindow
-        except Exception as e:
-            log("  EXCEPTION viewTallImage:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-
-    else:
-        # can be done this way but can't get keypress to exit animation
-        useWindow = xbmcgui.Window( xbmcgui.getCurrentWindowId() )
-        xbmc_busy(False)
-        w=int(float(width))
-        h=int(float(height))
-        optimal_h=int(h*1.5)
-        #log( '    **' + repr(h))
-        loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
-
-        img_control = xbmcgui.ControlImage(0, 1080, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
-        img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
-
-        #the cached image is of lower resolution. we force nocache by using setImage() instead of defining the image in ControlImage()
-        img_control.setImage(image_url, False)
-        useWindow.addControls( [ img_loading, img_control])
-        scroll_time=int(h)*(int(h)/int(w))*10
-        img_control.setAnimations( [
-                                    ('conditional', "condition=true effect=fade  delay=0    start=0   end=100   time=4000 "  ) ,
-                                    ('conditional', "condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %( (h*1.6) ,scroll_time) ),
-                                    ('conditional', "condition=true effect=fade  delay=%s   start=100 end=0     time=2000 " %(scroll_time*1.8) ) ,
-                                    ]  )
-        xbmc.sleep(scroll_time*2)
-        useWindow.removeControls( [img_control,img_loading] )
-
-
-def zoom_n_slide(image, width, height):
-    from resources.lib.utils import calculate_zoom_slide
-    #url=image, name=width, type=height
-    log( 'zoom_n_slide %s: %sx%s' %(image, width, height))
-
-    try:
-        w=int(width)
-        h=int(height)
-        zoom,slide=calculate_zoom_slide(w,h)
-
-        newWindow=xbmcgui.Window()
-        newWindow.setCoordinateResolution(0)
-        #ctl3=xbmcgui.ControlImage(0, 0, 1920, 1080, 'http://i.imgur.com/E0qPa3D.jpg', aspectRatio=2)
-        ctl3=xbmcgui.ControlImage(0, 0, 1920, 1080, image, aspectRatio=2)
-        newWindow.addControl(ctl3)
-
-        scroll_time=int(height)*(int(height)/int(width))*2
-
-        zoom_effect="effect=zoom loop=true delay=1000 center=960 end=%d time=1000" %zoom
-        fade_effect="condition=true effect=slide delay=2000 start=0,0 end=0,-%d time=%d pulse=true" %(slide,scroll_time)
-
-        ctl3.setAnimations([('WindowOpen', zoom_effect), ('conditional', fade_effect,) ])
-
-        #newWindow.show()
-        #xbmc.sleep(8000)
-        newWindow.doModal()
-        del newWindow
-    except Exception as e:
-        log("  EXCEPTION zoom_n_slide:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-
 def parse_and_play(url, name, type):
     #this mode is intended to receive links from a modified kore remote
     #i don't think this is allowed per http://forum.kodi.tv/showthread.php?tid=178881
     #
     pass
+
 
 def reddit_request( url ):
     #this function replaces     content = opener.open(url).read()
@@ -1926,9 +1546,9 @@ if __name__ == '__main__':
 #    log("url="+  url)
 #    log("-----------------------")
 
-    from resources.lib.domains import viewImage, listAlbum, playURLRVideo,loopedPlayback,error_message
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.converthtml import readHTML
+    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core
 
     if mode=='':mode='index'  #default mode is to list start page (index)
     #plugin_modes holds the mode string and the function that will be called given the mode
@@ -1950,8 +1570,9 @@ if __name__ == '__main__':
                     ,'loopedPlayback'       : loopedPlayback
                     ,'play'                 : parse_and_play
                     ,'error_message'        : error_message
-                    ,'zoom_n_slide'         : zoom_n_slide
+                    #,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits
+                    ,'update_youtube_dl_core':update_youtube_dl_core
                     ,'get_refresh_token'    : reddit_get_refresh_token
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token

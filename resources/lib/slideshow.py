@@ -8,8 +8,9 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, Window, Control
 
 #autoSlideshow
 
-from default import addon, log, translation, addon_path, addonID,SlideshowCacheFolder, reddit_request
-from domains import sitesManager, sitesBase, parse_reddit_link, listAlbum
+from default import addon, log, translation, addon_path, addonID, reddit_request
+from domains import sitesManager, sitesBase, parse_reddit_link
+from actions import listAlbum
 
 from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates, remove_dict_duplicates
 
@@ -426,7 +427,8 @@ class ScreensaverBase(object):
         images = []
 
         if source == 'image_folder':
-            path = SlideshowCacheFolder  #addon.getSetting('image_path')
+            #image folder source not used 
+            path = '' #SlideshowCacheFolder  #addon.getSetting('image_path')
             if path:
                 images = self._get_folder_images(path)
         elif source == 'q':

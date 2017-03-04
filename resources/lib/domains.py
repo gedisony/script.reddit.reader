@@ -154,13 +154,25 @@ class sitesBase(object):
         if match:
             return match[0]
 
-    def is_gif_extension(self, media_url):
+    def set_media_type_thumb_and_action(self,media_url,default_type=TYPE_VIDEO, default_action=DI_ACTION_YTDL):
         filename,ext=parse_filename_and_ext_from_url(media_url)
+        self.media_url=media_url
         if ext=='gif':
-            self.media_type=self.TYPE_GIF
-            return True
+            self.media_type=self.TYPE_GIF #sitesBase.TYPE_VIDEO
+            self.link_action=self.DI_ACTION_PLAYABLE  #playable uses pluginUrl directly
+        elif ext in image_exts:    #image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp']
+            self.media_type=self.TYPE_IMAGE
+        elif ext in ["mp4","webm"]:
+            self.media_type=self.TYPE_VIDEO
+            self.link_action=self.DI_ACTION_PLAYABLE
         else:
-            return False
+            self.media_type=default_type
+            self.link_action=default_action
+
+        if self.media_type in [self.TYPE_GIF, self.TYPE_IMAGE]:
+            #assign thumb and poster image if there is none yet.
+            self.thumb_url=media_url if self.thumb_url else self.thumb_url
+            self.poster_url=media_url if self.poster_url else self.poster_url
 
     def assemble_images_dictList(self,images_list):
         title=''
@@ -241,7 +253,7 @@ class ClassYoutube(sitesBase):
             media_url=self.media_url
 
         self.get_video_id()
-        log('      youtube video id:' + self.video_id )
+        #log('      youtube video id:' + self.video_id )
 
         if self.video_id:
             #if use_ytdl_for_yt:
@@ -401,8 +413,7 @@ class ClassImgur(sitesBase):
         #log("  ask_imgur_for_link: "+media_url )
 
         media_url=media_url.split('?')[0] #get rid of the query string
-        img_id =media_url.split("com/",1)[1]  #.... just get whatever is after "imgur.com/"   hope nothing is beyond the id
-
+        img_id=media_url.split("com/",1)[1]  #.... just get whatever is after "imgur.com/"   hope nothing is beyond the id
         #log("    ask_imgur_for_link: "+img_id )
 
         #6/30/2016: noticed a link like this: http://imgur.com/topic/Aww/FErKmLG
@@ -412,14 +423,13 @@ class ClassImgur(sitesBase):
 
         if img_id:
             request_url="https://api.imgur.com/3/image/"+img_id
-            #log("  imgur check link- request_url---"+request_url )
             r = self.requests_get(request_url, headers=ClassImgur.request_header)
-            j = r.json()    #j = json.loads(r.text)
+            j=r.json() 
 
-            #log('link is ' + j['data'].get('link') )
-            return j['data'].get('link')
-
-        return ''
+            if j['data'].get('mp4'):
+                return j['data'].get('mp4')
+            else:
+                return j['data'].get('link')
 
     def get_thumb_url(self, link_url='', thumbnail_type='b'):
         #return the thumbnail url given the image url
@@ -543,14 +553,11 @@ class ClassImgur(sitesBase):
         pass
 
     def get_playable_url(self, media_url, is_probably_a_video): #is_probably_a_video means put video extension on it if media_url has no ext
-
         webm_or_mp4='.mp4'  #6/18/2016  using ".webm" has stopped working
         media_url=media_url.split('?')[0] #get rid of the query string?
 
         is_album=self.is_an_album(media_url)
-        #log('  imgur says is_an_album:'+str(is_album))
         if is_album:
-            #log('    imgur link is an album '+ media_url)
             return media_url, sitesBase.TYPE_ALBUM
         else:
             if '/gallery/' in media_url:
@@ -565,10 +572,7 @@ class ClassImgur(sitesBase):
 
         filename,ext=parse_filename_and_ext_from_url(media_url)
 
-        #if is_probably_a_video=='yes': #is_a_video accdg. to the reddit json.
-        #log('    ext[%s]' %ext)
         if ext == "":
-            #ask imgur for the media link
             media_url=self.ask_imgur_for_link(media_url)
             filename,ext=parse_filename_and_ext_from_url(media_url)
             #below is a faster alternative but not as accurate.
@@ -579,7 +583,7 @@ class ClassImgur(sitesBase):
             #    media_url=media_url+".jpg"
             #    is_video=False
 
-        if ext in ['gif', 'gifv'] :
+        if ext in ['gif', 'gifv', 'mp4'] :   #NOTE: we're treating all mp4 links as gif and set them to loop playback
             media_url=media_url.replace(".gifv",webm_or_mp4) #can also use .mp4.  crass but this method uses no additional bandwidth.  see playImgurVideo
             media_url=media_url.replace(".gif",webm_or_mp4)  #xbmc won't play gif but replacing .webm works!
             #self.media_type=sitesBase.TYPE_VIDEO
@@ -593,7 +597,6 @@ class ClassImgur(sitesBase):
             self.poster_url=self.thumb_url
 
             self.media_type=sitesBase.TYPE_IMAGE
-            #self.link_action=viewImagew'
         else:
             self.media_type=sitesBase.TYPE_VIDEO
             self.link_action=self.DI_ACTION_PLAYABLE
@@ -642,7 +645,7 @@ class ClassVidme(sitesBase):
         if status != 'success':
             raise Exception( "vidme video: " +vid_info.get('state'))
 
-        self.thumb_url=vid_info.get("thumbnail_url")
+        self.thumb_url=vid_info.get("thumbnail_url") 
 
         #if 'ta6C' in media_url: log(r.text)
         self.link_action=self.DI_ACTION_PLAYABLE
@@ -726,7 +729,6 @@ class ClassVimeo(sitesBase):
             self.link_action=sitesBase.DI_ACTION_YTDL
             return media_url, self.TYPE_VIDEO
 
-
     def get_video_id(self):
 #         match = re.compile('vimeo.com/(.*)', re.DOTALL).findall(self.media_url)
 #         if match:
@@ -736,7 +738,6 @@ class ClassVimeo(sitesBase):
         if match:
             #log('      long regex got:' + repr(match) )
             self.video_id=match[0]
-
 
     def get_thumb_url(self, quality0123=1):
         #http://stackoverflow.com/questions/1361149/get-img-thumbnails-from-vimeo
@@ -1336,7 +1337,6 @@ class ClassInstagram(sitesBase):
     def get_thumb_url(self):
         if self.thumb_url:
             return self.thumb_url
-        pass
 
 class ClassGyazo(sitesBase):
     regex='(gyazo\.com)'
@@ -1383,7 +1383,6 @@ class ClassGyazo(sitesBase):
     def get_thumb_url(self):
         if self.thumb_url:
             return self.thumb_url
-        pass
 
 class ClassFlickr(sitesBase):
     regex='(flickr\.com|flic\.kr)'
@@ -2220,7 +2219,6 @@ class ClassReddit(sitesBase):
             #banner_img=j.get('banner_img')
             self.thumb_url=icon_img
             self.poster_url=banner_img
-            #log( repr(self.thumb_url) )
 
 class ClassKindgirls(sitesBase):
     regex='(kindgirls.com)'
@@ -2572,34 +2570,20 @@ class ClassImgTrex(sitesBase):
             media_url=self.media_url
         return self.get_playable_url(self.media_url, is_probably_a_video=False )
 
-    def get_playable_url(self, media_url, is_probably_a_video=False ):
-        content = self.requests_get( media_url)
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+        content = self.requests_get(link_url)
 
         #is_album=parseDOM(content.text, name='img', attrs = { "class": "pic" }, ret='galleryimg' )  #this should return "no" but does not
         #log( '  isalbum:' + pprint.pformat(is_album, indent=1) )
         #add album checking code here. i think the galleryimg property in the img tag holds a clue but can't find gallery sample
 
-        image=parseDOM(content.text, name='img', attrs = { "class": "pic" }, ret="src")[0]
+        image=parseDOM(content.text, name='img', attrs = { "class": "pic" }, ret="src")
         #log( '  ' + repr(image ) )
-
-        #super(ClassImgTrex, self).get_playable(image)
-        filename,ext=parse_filename_and_ext_from_url(image)
-        if self.include_gif_in_get_playable:
-            if ext in ["mp4","webm","gif"]:
-                if ext=='gif':
-                    self.link_action=sitesBase.DI_ACTION_PLAYABLE
-                    self.thumb_url=image
-                    self.poster_url=self.thumb_url
-                return image,self.TYPE_GIF
-        else:
-            if ext in ["mp4","webm"]:
-                self.link_action=self.DI_ACTION_PLAYABLE
-                return image,self.TYPE_VIDEO
-
-        if ext in image_exts:  #excludes .gif     ***** there were instances where imgtrex returned image extension as .jpg but it is actually .gif.    we can't do anything about this.
-            self.thumb_url=image
-            self.poster_url=self.thumb_url
-            return image,self.TYPE_IMAGE
+        #if 'sYS' in link_url: log( repr(image) )
+        if image[0]:
+            #***** there were instances where imgtrex returned image extension as .jpg but it is actually .gif.    we can't do anything about this.
+            self.set_media_type_thumb_and_action(image[0])
+            return self.media_url, self.media_type
 
     def ret_album_list(self, album_url, thumbnail_size_code=''):
         return None
@@ -2617,18 +2601,12 @@ class ClassImgFlip(sitesBase):
         i=parseDOM(content.text, "meta", attrs = { "property": "og:image" }, ret="content" )
         iw=parseDOM(content.text, "meta", attrs = { "property": "og:image:width" }, ret="content" )
         ih=parseDOM(content.text, "meta", attrs = { "property": "og:image:height" }, ret="content" )
-        if i[0]:
+        if i:
             image=i[0]
-            if self.is_gif_extension(image):
-                self.media_type=self.TYPE_GIF
-            else:
-                self.media_type=self.TYPE_IMAGE
-
-            self.thumb_url=image
+            self.set_media_type_thumb_and_action(image)
             self.media_w=iw[0]
             self.media_h=ih[0]
-            self.poster_url=self.thumb_url
-            return image,self.media_type
+            return self.media_url,self.media_type
         else:
             log('      %s: cant find <meta property'  %(self.__class__.__name__ ) )
 
@@ -2637,6 +2615,43 @@ class ClassImgFlip(sitesBase):
 
     def get_thumb_url(self):
         pass
+
+class ClassSupload(sitesBase):
+    regex='(supload.com)'
+
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+        self.media_url=link_url
+
+        #u=media_url.split('?')[0]
+        html=self.requests_get(link_url)
+        i=parseDOM(html.text, "meta", attrs = { "property": "og:image" }, ret="content" )
+        if i[0]:
+            og_image=i[0]
+            self.thumb_url=og_image
+            self.poster_url=og_image
+        else:
+            log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
+
+        self.media_type=sitesBase.TYPE_IMAGE
+        self.media_url=og_image
+
+        #og image is not good enough. we try to retrieve a better image by parsing html
+        section_imageWrapper=parseDOM(html.text, "section", attrs = { "class": "imageWrapper" }, ret=None )
+        #if 'xr9g' in link_url: log( pprint.pformat(section_imageWrapper) )
+        if section_imageWrapper:
+            #can also parse <a href for best image quality
+            #srcset=parseDOM(section_imageWrapper, "img", attrs={}, ret='srcset' )
+            #if 'xr9g' in link_url: log( pprint.pformat(srcset) )
+            img=parseDOM(section_imageWrapper, "img", attrs={}, ret='src' )
+            if img:
+                self.set_media_type_thumb_and_action(img[0])
+
+        return self.media_url, self.media_type
+
+    def get_thumb_url(self):
+        self.thumb_url=self.media_url
+        self.poster_url=self.media_url
+        return self.thumb_url
 
 class genericAlbum1(sitesBase):
     regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)|(hentailair.xyz)|(designyoutrust.com)'
@@ -2745,25 +2760,17 @@ class genericAlbum1(sitesBase):
 class genericImage(sitesBase):
     regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
 
-    def get_playable_url(self, media_url, is_probably_a_video=False ):
-        media_url=media_url.replace('&amp;','&')  #this replace is only for  RedditUploads but seems harmless for the others...
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+        media_url=link_url.replace('&amp;','&')  #this replace is only for  RedditUploads but seems harmless for the others...
         self.media_url=media_url
 
-        #from urlparse import urlparse
-        #hoster=urlparse(media_url).netloc
-
         u=media_url.split('?')[0]
-        filename,ext=parse_filename_and_ext_from_url(u)
-        #log( "  parsed filename" + filename + " ext---" + ext)
-        if ext=='gif':
-            self.media_type = self.TYPE_GIF #sitesBase.TYPE_VIDEO
-            self.link_action =sitesBase.DI_ACTION_PLAYABLE  #playable uses pluginUrl directly
-        else:
-            self.media_type=sitesBase.TYPE_IMAGE
-            self.thumb_url=self.media_url
-            self.poster_url=self.media_url
-
-        return self.media_url, self.media_type
+        self.set_media_type_thumb_and_action(u, 
+                                             default_type=self.TYPE_IMAGE,
+                                             default_action='')
+        #note that we didn't use self.media_url below  (u is assigned to self.media_url upon calling set_media_type_thumb_and_action()
+        #RedditUploads require all the stuff after the image to work
+        return media_url, self.media_type 
 
     def get_thumb_url(self):
         self.thumb_url=self.media_url
@@ -2771,26 +2778,17 @@ class genericImage(sitesBase):
         return self.thumb_url
 
 class genericVideo(sitesBase):
-    regex='(\.(mp4|webm|avi|3gp|MPEG|WMV|ASF|FLV|MKV|MKA)(?:\?|$))'
+    regex='(\.(mp4|webm|avi|3gp|gif|MPEG|WMV|ASF|FLV|MKV|MKA)(?:\?|$))'
     def get_thumb_url(self):
         pass
 
-    def get_playable(self, media_url='', is_probably_a_video=False ):
-        if not media_url:
-            media_url=self.media_url
+    def get_playable(self, link_url='', is_probably_a_video=False ):
+        if not link_url:
+            link_url=self.media_url
 
-        filename,ext=parse_filename_and_ext_from_url(media_url)
-        if ext in ["mp4","webm"]:
-            self.link_action=self.DI_ACTION_PLAYABLE
-            return self.media_url,self.TYPE_VIDEO
+        self.set_media_type_thumb_and_action(link_url)
 
-        if ext in image_exts:  #excludes .gif
-            self.thumb_url=media_url
-            self.poster_url=self.thumb_url
-            return self.media_url,self.TYPE_IMAGE
-
-        return self.get_playable_url(self.media_url, is_probably_a_video=False )
-
+        return self.media_url,self.media_type
 
     def get_playable_url(self, link_url, is_probably_a_video):
         pass
@@ -2824,7 +2822,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
     album_dict_list=None
     hoster = sitesManager( link_url )
-    log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
+    #log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
 
     try:
         if hoster:
@@ -2855,17 +2853,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                     album_dict_list=hoster.dictList
                     hoster.link_action='listAlbum'
 
-#                 if media_type==sitesBase.TYPE_RDIT_IMG:  #reddit preview image is as good as the one from link
-#                     media_type=sitesBase.TYPE_IMAGE
-#                     hoster.link_action='viewImage'
-#                     if previewimage:
-#                         prepped_media_url=previewimage
-#                     else:
-#                         #if there was no preview image, hoster.get_thumb_url() would have gotten the preview image
-#                         prepped_media_url=hoster.poster_url
-
-
-            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url, dictlist=album_dict_list)
+            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url, dictlist=album_dict_list )
             return ld
 
         else:
@@ -2891,7 +2879,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                     return ld
 
     except Exception as e:
-        log("  EXCEPTION parse_reddit_link "+ str( sys.exc_info()[0]) + "  " + str(e) )
+        log("  EXCEPTION parse_reddit_link "+ str( sys.exc_info()[0]) + " - " + str(e) )
         ld=LinkDetails('', sitesBase.DI_ACTION_ERROR, str(e) )
         return ld
 
@@ -3000,235 +2988,6 @@ def ydtl_get_playable_url( url_to_check ):
 
 if __name__ == '__main__':
     pass
-
-def display_album_from(dictlist, album_name):
-
-    directory_items=[]
-    label=""
-
-    using_custom_gui=True
-
-    for idx, d in enumerate(dictlist):
-        ti=d['li_thumbnailImage']
-        media_url=d.get('DirectoryItem_url')
-
-        #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
-        log('  display_album_from list:'+ media_url + "  " )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
-
-        #There is only 1 textbox for Title and description in our custom gui.
-        #  I don't know how to achieve this in the xml file so it is done here:
-        #  combine title and description without [CR] if label is empty. [B]$INFO[Container(53).ListItem.Label][/B][CR]$INFO[Container(53).ListItem.Plot]
-        #  new note: this is how it is done:
-        #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
-        combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
-        combined += d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
-        d['infoLabels']['plot'] = combined
-        #d['infoLabels']['genre'] = "0,-2000"
-        #d['infoLabels']['year'] = 1998
-        #log( d['infoLabels'].get('plot') )
-
-        liz=xbmcgui.ListItem(label=label,
-                             label2=d['li_label2'],
-                             iconImage='',
-                             thumbnailImage='')
-
-        #classImgur puts the media_url into  d['DirectoryItem_url']  no modification.
-        #we modify it here...
-        #url_for_DirectoryItem = sys.argv[0]+"?url="+ urllib.quote_plus(d['DirectoryItem_url']) +"&mode=viewImage"
-        #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
-        #if poster_url=="": poster_url=ti
-
-
-        liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
-        #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })
-        liz.setArt({"thumb": ti, "banner":media_url })
-
-
-        directory_items.append( (media_url, liz, False,) )
-
-    from resources.lib.guis import cGUI
-
-    #msg=WINDOW.getProperty(url)
-    #WINDOW.clearProperty( url )
-    #log( '   msg=' + msg )
-
-    #<label>$INFO[Window(10000).Property(foox)]</label>
-    #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
-
-    li=[]
-    for di in directory_items:
-        #log( str(di[1] ) )
-        li.append( di[1] )
-
-    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
-
-    ui.include_parent_directory_entry=False
-    #ui.title_bar_text=WINDOW.getProperty(url)
-
-    ui.doModal()
-    del ui
-
-def listAlbum(album_url, name, type):
-    from slideshow import slideshowAlbum
-    log("listAlbum:"+album_url)
-
-    hoster = sitesManager( album_url )
-    #log( '  %s %s ' %(hoster.__class__.__name__, album_url ) )
-
-    if hoster:
-        dictlist=hoster.ret_album_list(album_url)
-
-        if type=='return_dictlist':  #used in autoSlideshow
-            return dictlist
-
-        if not dictlist:
-            xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( translation(32200), translation(32055) )  )  #slideshow, no playable items
-            return
-
-        if addon.getSetting('use_slideshow_for_album') == 'true':
-            slideshowAlbum( dictlist, name )
-        else:
-            display_album_from( dictlist, name )
-
-def viewImage(image_url, name, preview_url):
-    #url='d:\\aa\\lego_fusion_beach1.jpg'
-
-    from resources.lib.guis import cGUI
-
-    log('  viewImage %s, %s, %s' %( image_url, name, preview_url))
-
-    #msg=WINDOW.getProperty(url)
-    #WINDOW.clearProperty( url )
-    #log( '   msg=' + msg )
-    msg=""
-    li=[]
-    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=image_url)
-    liz.setInfo( type='video', infoLabels={"plot": msg, } )
-    liz.setArt({"thumb": preview_url, "banner":image_url })
-
-    li.append(liz)
-    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
-    ui.include_parent_directory_entry=False
-
-    ui.doModal()
-    del ui
-    return
-
-#     from resources.lib.guis import qGUI
-#
-#     ui = qGUI('view_image.xml' ,  addon_path, defaultSkin='Default', defaultRes='1080i')
-#     #no need to download the image. kodi does it automatically!!!
-#     ui.image_path=url
-#     ui.doModal()
-#     del ui
-#     return
-#
-#     #this is a workaround to not being able to show images on video addon
-#     log('viewImage:'+url +'  ' + name )
-#
-#     ui = ssGUI('tbp_main.xml' , addon_path)
-#     items=[]
-#
-#     items.append({'pic': url ,'description': "", 'title' : name })
-#
-#     ui.items=items
-#     ui.album_name=""
-#     ui.doModal()
-#     del ui
-
-    #this will also work:
-    #download the image, then view it with view_image.xml.
-#     url=url.split('?')[0]
-#
-#     filename,ext=parse_filename_and_ext_from_url(url)
-#     #empty_slideshow_folder()  # we're showing only 1 file
-#     xbmc.executebuiltin('ActivateWindow(busydialog)')
-#
-#     os.chdir(SlideshowCacheFolder)
-#     download_file= filename+"."+ext
-#     if os.path.exists(download_file):
-#         log("  file exists")
-#     else:
-#         log('  downloading %s' %(download_file))
-#         downloadurl(url, download_file)
-#         log('  downloaded %s' %(download_file))
-#     xbmc.executebuiltin('Dialog.Close(busydialog)')
-#
-#     ui = qGUI('view_image.xml' , addon_path, 'default')
-#
-#     ui.image_path=SlideshowCacheFolder + fd + download_file  #fd = // or \ depending on os
-#     ui.doModal()
-#     return
-
-    #download_file=download_file.replace(r"\\",r"\\\\")
-
-    #addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
-    #i cannot get this to work reliably...
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(addonUserDataFolder) )
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(r"d:\\aa\\") )
-    #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"file":"%s"}}}' %(download_file) )
-    #return
-
-    #whis won't work if addon is a video add-on
-    #xbmc.executebuiltin("XBMC.SlideShow(" + SlideshowCacheFolder + ")")
-
-def playURLRVideo(url, name, type):
-
-    from urlparse import urlparse
-    parsed_uri = urlparse( url )
-    domain = '{uri.netloc}'.format(uri=parsed_uri)
-    #log( '-----------------'+ domain +'---------------------- play url resolver  ' + repr(url ))
-
-    #ytdl seems better than urlresolver for getting the playable url...
-
-    #hmf = urlresolver.HostedMediaFile(url)
-    #log( ' --------------valid_url-----' + repr( hmf.valid_url() )  )
-
-    try:
-        media_url = urlresolver.resolve(url)
-        if media_url:
-            log( '  URLResolver stream url=' + repr(media_url ))
-
-            #listitem = xbmcgui.ListItem(path=media_url)
-            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
-
-            pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-            pl.clear()
-            pl.add(media_url, xbmcgui.ListItem(name))
-            xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
-
-        else:
-            xbmc.executebuiltin('XBMC.Notification("%s", "%s (URLresolver" )'  %( translation(30192), domain )  )
-    except Exception as e:
-        xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
-
-def setting_gif_repeat_count():
-    srepeat_gif_video= addon.getSetting("repeat_gif_video")
-    try: repeat_gif_video = int(srepeat_gif_video)
-    except: repeat_gif_video = 0
-    #repeat_gif_video          = [0, 1, 3, 10, 100][repeat_gif_video]
-    return [0, 1, 3, 10, 100][repeat_gif_video]
-
-def loopedPlayback(url, name, type):
-    #for gifs
-    log('*******************loopedplayback ' + url)
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()
-    pl.add(url, xbmcgui.ListItem(name))
-    for x in range( 0, setting_gif_repeat_count() ):
-#        #log('u='+ repr(u))
-        #log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'+repr(x))
-        pl.add(url, xbmcgui.ListItem(name))
-
-    #pl.add(url, xbmcgui.ListItem(name))
-    xbmc.Player().play(pl, windowed=False)
-
-def error_message(message, name, type):
-    if name:
-        sub_msg=name
-    else:
-        sub_msg=translation(32021) #Parsing error
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( message, sub_msg  ) )
 
 '''
 #special credit to https://www.reddit.com/r/learnpython/comments/4pl11h/dynamically_instantiate_class_from_class_method/

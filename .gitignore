@@ -3,4 +3,5 @@
 .settings/
 *.py[co]
 *.pyo
+resources/lib/youtube_dl/**
 thumbs.db
