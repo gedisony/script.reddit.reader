@@ -39,22 +39,13 @@ sys.setdefaultencoding("utf-8")
 
 addon         = xbmcaddon.Addon()
 addonID       = addon.getAddonInfo('id')  #script.reddit.reader
-addon_path    = addon.getAddonInfo('path')     #where the addon resides
+addon_path    = addon.getAddonInfo('path')      #where the addon resides
 profile_path  = addon.getAddonInfo('profile')   #where user settings are stored
 
 WINDOW        = xbmcgui.Window(10000)
 #technique borrowed from LazyTV.
 #  WINDOW is like a mailbox for passing data from caller to callee.
 #    e.g.: addLink() needs to pass "image description" to viewImage()
-
-osWin         = xbmc.getCondVisibility('system.platform.windows')
-osOsx         = xbmc.getCondVisibility('system.platform.osx')
-osLinux       = xbmc.getCondVisibility('system.platform.linux')
-
-if osWin:
-    fd="\\"
-else:
-    fd="/"
 
 socket.setdefaulttimeout(30)
 opener = urllib2.build_opener()

@@ -2624,34 +2624,67 @@ class ClassSupload(sitesBase):
 
         #u=media_url.split('?')[0]
         html=self.requests_get(link_url)
-        i=parseDOM(html.text, "meta", attrs = { "property": "og:image" }, ret="content" )
-        if i[0]:
-            og_image=i[0]
+
+        meta_og_type=parseDOM(html.text, "meta", attrs = { "property": "og:type" }, ret="content" )
+        og_image_list=parseDOM(html.text, "meta", attrs = { "property": "og:image" }, ret="content" )
+
+        #if 'dqg' in link_url:log(repr(og_image_list))
+        if og_image_list:
+            og_image=og_image_list[0]
             self.thumb_url=og_image
             self.poster_url=og_image
         else:
             log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
 
-        self.media_type=sitesBase.TYPE_IMAGE
-        self.media_url=og_image
+        if meta_og_type:
+            if meta_og_type[0]=='image':
+                self.media_type=sitesBase.TYPE_IMAGE
+                self.media_url=og_image
+            elif meta_og_type[0]=='video':
+                self.media_type=sitesBase.TYPE_VIDEO
+            else:
+                log('      unknown meta og type:'+meta_og_type)
+        else:
+            log('      no meta og type')
+            raise Exception("Could not determine media type" )
 
         #og image is not good enough. we try to retrieve a better image by parsing html
         section_imageWrapper=parseDOM(html.text, "section", attrs = { "class": "imageWrapper" }, ret=None )
-        #if 'xr9g' in link_url: log( pprint.pformat(section_imageWrapper) )
+        #if 'dqg' in link_url: log( pprint.pformat(section_imageWrapper) )
         if section_imageWrapper:
-            #can also parse <a href for best image quality
-            #srcset=parseDOM(section_imageWrapper, "img", attrs={}, ret='srcset' )
-            #if 'xr9g' in link_url: log( pprint.pformat(srcset) )
-            img=parseDOM(section_imageWrapper, "img", attrs={}, ret='src' )
-            if img:
-                self.set_media_type_thumb_and_action(img[0])
 
+            if meta_og_type=='image':
+                #can also parse <a href for best image quality
+                #srcset=parseDOM(section_imageWrapper, "img", attrs={}, ret='srcset' )
+                #if 'xr9g' in link_url: log( pprint.pformat(srcset) )
+                img=parseDOM(section_imageWrapper, "img", attrs={}, ret='src' )
+                if img:
+                    self.set_media_type_thumb_and_action(img[0])
+            elif meta_og_type=='video':
+                video_url=parseDOM(html.text, "meta", attrs = { "property": "og:video" }, ret="content" )
+                if video_url:
+                    self.set_media_type_thumb_and_action(video_url[0])
+                    #supload classify gif as video. we need to determine if video is a gif so that we'll call looped playback
+                    #  in the og_image header, if it is a gif, there will be 2  og_image. one is jpg, other is a gif. 
+                    #      we test for the presence of this .gif
+                    if self.is_a_gif(og_image_list):
+                        #override the media type assigned by set_media_type_thumb_and_action() from video to gif
+                        self.media_type=sitesBase.TYPE_GIF
+
+
+        #log( '['+self.media_type+']:'+self.media_url)
         return self.media_url, self.media_type
 
     def get_thumb_url(self):
         self.thumb_url=self.media_url
         self.poster_url=self.media_url
         return self.thumb_url
+
+    def is_a_gif(self, og_image_list):
+        for i in og_image_list:
+            if '.gif' in i:
+                return True
+        return False
 
 class genericAlbum1(sitesBase):
     regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)|(hentailair.xyz)|(designyoutrust.com)'
