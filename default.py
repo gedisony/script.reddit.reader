@@ -794,7 +794,7 @@ class Worker(threading.Thread):
 #MODE playVideo       - name, type not used
 def playVideo(url, name, type):
     xbmc_busy(False)
-    
+
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
 
@@ -824,14 +824,14 @@ def playYTDLVideo(url, name, type):
     dialog_progress_YTDL.create('Youtube_dl' )
     dialog_progress_YTDL.update(10,'Youtube_dl',translation(32012)  )
 
-    #use YoutubeDLWrapper by ruuk to avoid  bad file error 
+    #use YoutubeDLWrapper by ruuk to avoid  bad file error
     ytdl=YoutubeDLWrapper()
     try:
         ydl_info=ytdl.extract_info(url, download=False)
         #in youtube_dl utils.py def unified_timestamp(date_str, day_first=True):
-        # there was an error playing https://vimeo.com/14652586 
+        # there was an error playing https://vimeo.com/14652586
         #   on line 1195:
-        # change          except ValueError: 
+        # change          except ValueError:
         #     to          except:    (remove ValueError)
 
         #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
@@ -845,7 +845,7 @@ def playYTDLVideo(url, name, type):
             ytdl_format=video_info.get('ytdl_format')
             if ytdl_format:
                 description=ytdl_format.get('description')
-            li=xbmcgui.ListItem(label=title, 
+            li=xbmcgui.ListItem(label=title,
                                 label2='',
                                 iconImage=video_info.get('thumbnail'),
                                 thumbnailImage=video_info.get('thumbnail'),
