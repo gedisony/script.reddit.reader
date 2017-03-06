@@ -306,27 +306,13 @@ def ret_info_type_icon(info_type, modecommand, domain=''):
     #log( "  info_type=%s mode=%s"  %(info_type, modecommand) )
 
     from domains import sitesBase
-
-
-
-#     icon="type_unsupp.png"
-#     if info_type=='video':
-#         icon="type_video.png"
-#         if modecommand=='playYTDLVideo':
-#             icon="type_ytdl.png"
-#
-#     elif info_type=='album':
-#         icon="type_album.png"
-#     elif info_type=='pictures':
-#         icon="type_image.png"
-#     elif info_type=='reddit':
-#         icon="alienicon.png"
-
     icon="type_unsupp.png"
     if info_type==sitesBase.TYPE_VIDEO:
         icon="type_video.png"
-        if modecommand=='playYTDLVideo':
+        if modecommand==sitesBase.DI_ACTION_YTDL:
             icon="type_ytdl.png"
+        if modecommand==sitesBase.DI_ACTION_URLR:
+            icon="type_urlr.png"
         #if 'giphy.com' in domain:
         #    icon="type_giphy.gif"
 
@@ -539,7 +525,6 @@ def parse_filename_and_ext_from_url(url=""):
                 ext=re.split("\?|#",ext)[0]
 
             return filename, ext.lower()
-
     except:
         pass
 
