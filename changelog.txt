@@ -1,3 +1,6 @@
+0.7.5 (03-05-2017)
+ - urlresolver parsing returned
+
 0.7.4 (03-04-2017)
  - add ability to download latest youtube-dl core
 

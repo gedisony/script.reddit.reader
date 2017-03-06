@@ -66,6 +66,7 @@ class sitesBase(object):
     TYPE_REDDIT='reddit'
     DI_ACTION_PLAYABLE='playable'
     DI_ACTION_YTDL='playYTDLVideo'
+    DI_ACTION_URLR='playURLRVideo'
     DI_ACTION_ERROR='error_message'
 
     def __init__(self, link_url):
@@ -243,6 +244,12 @@ class sitesBase(object):
     for item in dictList:
         print ' '.join([item[key] for key in keys])
 """
+
+def url_resolver_support(link_url):
+    import urlresolver
+    if urlresolver.HostedMediaFile(link_url).valid_url():
+        return True
+    return False
 
 class ClassYoutube(sitesBase):
     regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
@@ -424,7 +431,7 @@ class ClassImgur(sitesBase):
         if img_id:
             request_url="https://api.imgur.com/3/image/"+img_id
             r = self.requests_get(request_url, headers=ClassImgur.request_header)
-            j=r.json() 
+            j=r.json()
 
             if j['data'].get('mp4'):
                 return j['data'].get('mp4')
@@ -645,7 +652,7 @@ class ClassVidme(sitesBase):
         if status != 'success':
             raise Exception( "vidme video: " +vid_info.get('state'))
 
-        self.thumb_url=vid_info.get("thumbnail_url") 
+        self.thumb_url=vid_info.get("thumbnail_url")
 
         #if 'ta6C' in media_url: log(r.text)
         self.link_action=self.DI_ACTION_PLAYABLE
@@ -2665,7 +2672,7 @@ class ClassSupload(sitesBase):
                 if video_url:
                     self.set_media_type_thumb_and_action(video_url[0])
                     #supload classify gif as video. we need to determine if video is a gif so that we'll call looped playback
-                    #  in the og_image header, if it is a gif, there will be 2  og_image. one is jpg, other is a gif. 
+                    #  in the og_image header, if it is a gif, there will be 2  og_image. one is jpg, other is a gif.
                     #      we test for the presence of this .gif
                     if self.is_a_gif(og_image_list):
                         #override the media type assigned by set_media_type_thumb_and_action() from video to gif
@@ -2798,12 +2805,12 @@ class genericImage(sitesBase):
         self.media_url=media_url
 
         u=media_url.split('?')[0]
-        self.set_media_type_thumb_and_action(u, 
+        self.set_media_type_thumb_and_action(u,
                                              default_type=self.TYPE_IMAGE,
                                              default_action='')
         #note that we didn't use self.media_url below  (u is assigned to self.media_url upon calling set_media_type_thumb_and_action()
         #RedditUploads require all the stuff after the image to work
-        return media_url, self.media_type 
+        return media_url, self.media_type
 
     def get_thumb_url(self):
         self.thumb_url=self.media_url
@@ -2820,6 +2827,9 @@ class genericVideo(sitesBase):
             link_url=self.media_url
 
         self.set_media_type_thumb_and_action(link_url)
+        if url_resolver_support(link_url):
+            self.link_action=self.DI_ACTION_URLR
+            self.media_type=self.TYPE_VIDEO
 
         return self.media_url,self.media_type
 
@@ -2890,19 +2900,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
             return ld
 
         else:
-            #we skip the urlresolver check here coz it slows the addon down. we automatically try urlresolver anyway if ytdl can't get a link
-            #check if video is urlresolver supported
-            #if urlresolver.HostedMediaFile(link_url).valid_url():
-                #log( ' ---urlresolver valid_url-----'   )
-                #    we don't resolve the urlresolver links. some sites (openload.co) opens a dialog and that's annoying when directory listing
-                #    resolved_url = urlresolver.resolve(media_url)
-                #    if resolved_url:
-                #        log( ' ---urlresolved_url-----' + repr( resolved_url )  )
-                #        self.link_action=sitesBase.DI_ACTION_PLAYABLE
-                #        return resolved_url, sitesBase.TYPE_VIDEO
-
-            #    ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
-            #    return ld
+            if url_resolver_support(link_url):
+                ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
 
             if False: #resolve_undetermined:  (abandoned, too slow)
                 log('sending undetermined link to ytdl...')

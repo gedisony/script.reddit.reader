@@ -375,26 +375,18 @@ def playURLRVideo(url, name, type):
     from urlparse import urlparse
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
-    #log( '-----------------'+ domain +'---------------------- play url resolver  ' + repr(url ))
-
-    #ytdl seems better than urlresolver for getting the playable url...
-
     #hmf = urlresolver.HostedMediaFile(url)
-    #log( ' --------------valid_url-----' + repr( hmf.valid_url() )  )
-
     try:
         media_url = urlresolver.resolve(url)
         if media_url:
             log( '  URLResolver stream url=' + repr(media_url ))
 
-            #listitem = xbmcgui.ListItem(path=media_url)
-            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
             pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
             pl.clear()
             pl.add(media_url, xbmcgui.ListItem(name))
             xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
-
         else:
+            log( "  Can't URL Resolve:" + repr(url))
             xbmc.executebuiltin('XBMC.Notification("%s", "%s (URLresolver" )'  %( translation(30192), domain )  )
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )

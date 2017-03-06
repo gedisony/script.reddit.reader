@@ -98,23 +98,17 @@ default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_site
 #last slash at the end is important
 ytdl_core_path=xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
 
-if xbmcvfs.exists(ytdl_core_path):
-    #from resources.lib.youtube_dl.version import __version__
-    xbmc.log('using ytdl core', level=xbmc.LOGNOTICE)
-else:
-    #*** it seems like the script.module.youtube_dl version gets imported if the one from resources.lib is missing
-    xbmc.log('using ytdl addon ', level=xbmc.LOGNOTICE)
-
+#if xbmcvfs.exists(ytdl_core_path):
+#    xbmc.log('using ytdl core', level=xbmc.LOGNOTICE)
+#else:
+#    #*** it seems like the script.module.youtube_dl version gets imported if the one from resources.lib is missing
+#    xbmc.log('using ytdl addon ', level=xbmc.LOGNOTICE)
 
 if not os.path.isdir(addonUserDataFolder):
     os.mkdir(addonUserDataFolder)
 
-#if not os.path.isdir(SlideshowCacheFolder):
-#    os.mkdir(SlideshowCacheFolder)
-
 def log(message, level=xbmc.LOGNOTICE):
     t=threading.currentThread()
-
     xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
 
 def index(url,name,type):
@@ -860,6 +854,10 @@ def playYTDLVideo(url, name, type):
         short_err=err_msg.split(';')[0]
         log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( "Youtube_dl", short_err )  )
+
+        #try urlresolver
+        log('   trying urlresolver...')
+        playURLRVideo(url, name, type)
 #    finally:
     dialog_progress_YTDL.update(100,'Youtube_dl' ) #not sure if necessary to set to 100 before closing dialogprogressbg
     dialog_progress_YTDL.close()
@@ -1562,7 +1560,6 @@ if __name__ == '__main__':
                     ,'loopedPlayback'       : loopedPlayback
                     ,'play'                 : parse_and_play
                     ,'error_message'        : error_message
-                    #,'zoom_n_slide'         : zoom_n_slide
                     ,'manage_subreddits'    : manage_subreddits
                     ,'update_youtube_dl_core':update_youtube_dl_core
                     ,'get_refresh_token'    : reddit_get_refresh_token
