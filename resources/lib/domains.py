@@ -2,27 +2,24 @@
 # -*- coding: utf-8 -*-
 
 import urllib
-import urllib2
 import sys
 import re
 import requests
 import json
-import xbmc
-import xbmcgui
 #sys.setdefaultencoding("utf-8")
 
-from default import addon, addonID, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import log, dump, translation
+from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
+from default import log, translation
 
-from default import default_ytdl_psites_file, default_ytdl_sites_file, playVideo, addon_path, use_ytdl_for_unknown_in_comments, reddit_userAgent
-from utils import build_script, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
+from default import default_ytdl_psites_file, default_ytdl_sites_file, use_ytdl_for_unknown_in_comments, reddit_userAgent
+from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
 
 use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 
 REQUEST_TIMEOUT=5 #requests.get timeout in seconds
 
 from CommonFunctions import parseDOM
-import pprint
+#import pprint
 
 keys=[ 'li_label'           #  the text that will show for the list
       ,'li_label2'          #
@@ -140,9 +137,6 @@ class sitesBase(object):
             else:
                 log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
 
-    def all_same(self, items ):
-        #returns True if all items the same
-        return all(x == items[0] for x in items)
     #def combine_title_and_description(self, title, description):
     #    return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )
 
@@ -190,7 +184,7 @@ class sitesBase(object):
                 #log( 'assemble_images_dictList STRING')
                 image_url=item
                 thumbnail=image_url
-            elif type(item) is list:
+            elif  isinstance(item, list):    #type(item) is list:
                 if len(item)==1:
                     #log( 'assemble_images_dictList LEN1')
                     image_url=item[0]
@@ -204,7 +198,7 @@ class sitesBase(object):
                     title=item[0]
                     image_url=item[1]
                     thumbnail=item[2]
-            elif type(item) is dict:
+            elif isinstance(item, dict):  #type(item) is dict:
                 title    =item.get('title') if item.get('title') else ''
                 desc     =item.get('description') if item.get('description') else ''
                 image_url=item.get('url')
@@ -230,26 +224,31 @@ class sitesBase(object):
                ,desc
                 ]
             self.dictList.append(dict(zip(keys, e)))
-"""
-    keys = ['FirstName', 'LastName', 'SSID']
 
-    name1 = ['Michael', 'Kirk', '224567']
-    name2 = ['Linda', 'Matthew', '123456']
+#    keys = ['FirstName', 'LastName', 'SSID']
+#
+#    name1 = ['Michael', 'Kirk', '224567']
+#    name2 = ['Linda', 'Matthew', '123456']
+#
+#    dictList = []
+#    dictList.append(dict(zip(keys, name1)))
+#    dictList.append(dict(zip(keys, name2)))
+#
+#    print dictList
+#    for item in dictList:
+#        print ' '.join([item[key] for key in keys])
 
-    dictList = []
-    dictList.append(dict(zip(keys, name1)))
-    dictList.append(dict(zip(keys, name2)))
 
-    print dictList
-    for item in dictList:
-        print ' '.join([item[key] for key in keys])
-"""
+def all_same(items):
+    #returns True if all items the same
+    return all(x == items[0] for x in items)
 
 def url_resolver_support(link_url):
     import urlresolver
     if urlresolver.HostedMediaFile(link_url).valid_url():
         return True
     return False
+
 
 class ClassYoutube(sitesBase):
     regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
@@ -280,7 +279,7 @@ class ClassYoutube(sitesBase):
         if match:
             self.video_id=match[0]
 
-    def get_thumb_url(self, quality0123=1):
+    def get_thumb_url(self):
         """
             Each YouTube video has 4 generated images. They are predictably formatted as follows:
 
@@ -300,7 +299,7 @@ class ClassYoutube(sitesBase):
 
             #http://stackoverflow.com/questions/2068344/how-do-i-get-a-youtube-video-thumbnail-from-the-youtube-api
         """
-
+        quality0123=1
         if not self.video_id:
             self.get_video_id()
 
@@ -335,7 +334,7 @@ class ClassImgur(sitesBase):
         j = r.json()    #j = json.loads(r.text)
 
         thumb_image_id=j['data'].get('cover')
-        images_count=j['data'].get('images_count')
+        #images_count=j['data'].get('images_count')
 
         if thumb_image_id:
             #we're not guaranteed that it is jpg but it seems to work with png files as well...
@@ -746,7 +745,7 @@ class ClassVimeo(sitesBase):
             #log('      long regex got:' + repr(match) )
             self.video_id=match[0]
 
-    def get_thumb_url(self, quality0123=1):
+    def get_thumb_url(self):
         #http://stackoverflow.com/questions/1361149/get-img-thumbnails-from-vimeo
         if not self.video_id:
             self.get_video_id(self)
@@ -979,7 +978,7 @@ class ClassStreamable(sitesBase):
                 return
         #if match: self.video_id=match[0]
 
-    def get_thumb_url(self, image_url="", thumbnail_type='b'):
+    def get_thumb_url(self):
         log('    getting thumbnail [%s] %s' %(self.video_id, self.media_url ) )
         if not self.video_id:
             self.get_video_id()
@@ -1112,9 +1111,9 @@ class ClassTumblr(sitesBase):
             #log('len of photos ' + str(  len(post['photos']) )  )
             self.thumb_url=post['photos'][0]['alt_sizes'][1]['url']    #alt_sizes 0-5
 
-            list=(        [ photo.get('caption'), photo.get('original_size').get('url'), photo['alt_sizes'][3]['url'] ]  for photo in post['photos']   )
+            list_=(        [ photo.get('caption'), photo.get('original_size').get('url'), photo['alt_sizes'][3]['url'] ]  for photo in post['photos']   )
 
-            self.assemble_images_dictList( list )
+            self.assemble_images_dictList( list_ )
 
         else:
             log('      %s wrong media type: %s '  %(self.__class__.__name__ ), media_type )
@@ -1652,8 +1651,6 @@ class ClassFlickr(sitesBase):
             return ''
 
         self.fmedia_type="photo"
-        ret_url=""
-        photo_id=0
 
         #figure out the media type; this determines how we extract the ID and api call to use
         self.fmedia_type=self.flickr_link_type(album_url)
@@ -1918,7 +1915,7 @@ class ClassEroshare(sitesBase):
                     #log('    multiple: %s orig=%s ' %( item.get('type').lower(), item.get('url_orig') ))
                     media_types.append( item.get('type').lower() )
 
-                if self.all_same(media_types):
+                if all_same(media_types):
                     if media_types[0]==self.TYPE_IMAGE:
                         log('    eroshare link has all images %d' %len(items) )
                         self.media_type=self.TYPE_ALBUM
@@ -2366,7 +2363,7 @@ class Class500px(sitesBase):
             j=json.loads(r.text)   #.replace('\\"', '\'')
             j=j.get('photo')
 
-            title=j.get('name')
+            #title=j.get('name')
             self.poster_url=j.get('image_url')
             self.media_w=j.get('width')  #width and height not accurate unless image size 6  (not sure if applies to all)
             self.media_h=j.get('height')
@@ -2523,7 +2520,7 @@ class ClassSlimg(sitesBase):
         j=r.json()
         j=j.get('data')
 
-        media_count=j.get('media_count')
+        #media_count=j.get('media_count')
         images=[]
         for i in j.get('media'):
 
@@ -2644,10 +2641,11 @@ class ClassSupload(sitesBase):
             log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
 
         if meta_og_type:
-            if meta_og_type[0]=='image':
+            meta_og_type=meta_og_type[0]
+            if meta_og_type=='image':
                 self.media_type=sitesBase.TYPE_IMAGE
                 self.media_url=og_image
-            elif meta_og_type[0]=='video':
+            elif meta_og_type=='video':
                 self.media_type=sitesBase.TYPE_VIDEO
             else:
                 log('      unknown meta og type:'+meta_og_type)
@@ -2687,6 +2685,7 @@ class ClassSupload(sitesBase):
         self.poster_url=self.media_url
         return self.thumb_url
 
+    @classmethod
     def is_a_gif(self, og_image_list):
         for i in og_image_list:
             if '.gif' in i:
@@ -2936,7 +2935,6 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 def url_is_supported(url_to_check):
     #search our supported_sites[] to see if media_url can be handled by plugin
     #log('    ?url_is_supported:'+ url_to_check)
-    dont_support=False
     if ytdl_sites:  pass
     else: load_ytdl_sites()
 

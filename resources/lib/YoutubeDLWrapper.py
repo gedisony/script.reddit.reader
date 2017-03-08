@@ -416,13 +416,13 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             formatID = None
             if prefFormat:
                 info = prefFormat
-                logBase = '[{3}] Using Preferred Format: {0} ({1}x{2})'
+                #logBase = '[{3}] Using Preferred Format: {0} ({1}x{2})'
             elif defFormat:
                 info = defFormat
-                logBase = '[{3}] Using Default Format: {0} ({1}x{2})'
+                #logBase = '[{3}] Using Default Format: {0} ({1}x{2})'
             else:
                 info = fallback
-                logBase = '[{3}] Using Fallback Format: {0} ({1}x{2})'
+                #logBase = '[{3}] Using Fallback Format: {0} ({1}x{2})'
             url = info['url']
             formatID = info['format_id']
             #util.LOG(logBase.format(formatID, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')), debug=True)

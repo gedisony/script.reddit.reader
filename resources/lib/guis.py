@@ -104,9 +104,6 @@ class cGUI(xbmcgui.WindowXML):
         if self.gui_listbox_SelectedPosition > 0:
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
 
-        pass
-
-
     def onClick(self, controlID):
 
         if controlID == self.main_control_id:

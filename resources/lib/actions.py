@@ -24,13 +24,10 @@ def manage_subreddits(subreddit, name, type):
     #log('selected_index ' + str(selected_index))
     if selected_index == 0:       # 0->first item
         addSubreddit('','','')
-        pass
     elif selected_index == 1:     # 1->second item
         editSubreddit(subreddit,'','')
-        pass
     elif selected_index == 2:     # 2-> third item
         removeSubreddit(subreddit,'','')
-        pass
     else:                         #-1 -> escape pressed or [cancel]
         pass
 
@@ -347,7 +344,7 @@ def display_album_from(dictlist, album_name):
     ui.doModal()
     del ui
 
-def listAlbum(album_url, name, type):
+def listAlbum(album_url, name, typex):
     from slideshow import slideshowAlbum
     from domains import sitesManager
     log("listAlbum:"+album_url)
@@ -370,7 +367,7 @@ def listAlbum(album_url, name, type):
         else:
             display_album_from( dictlist, name )
 
-def playURLRVideo(url, name, type):
+def playURLRVideo(url, name, typex):
     import urlresolver
     from urlparse import urlparse
     parsed_uri = urlparse( url )
@@ -391,7 +388,7 @@ def playURLRVideo(url, name, type):
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
 
-def loopedPlayback(url, name, type):
+def loopedPlayback(url, name, typex):
     #for gifs
     #log('*******************loopedplayback ' + url)
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -405,7 +402,7 @@ def loopedPlayback(url, name, type):
     #pl.add(url, xbmcgui.ListItem(name))
     xbmc.Player().play(pl, windowed=False)
 
-def error_message(message, name, type):
+def error_message(message, name, typex):
     if name:
         sub_msg=name
     else:

@@ -17,20 +17,13 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-import random
 import sys
-
-if sys.version_info >= (2, 7):
-    import json
-else:
-    import simplejson as json
 
 import xbmc
 import xbmcaddon
-import xbmcvfs
 import re
 import urllib
-from xbmcgui import ControlImage, WindowDialog
+from xbmcgui import WindowDialog
 
 addon = xbmcaddon.Addon()
 ADDON_NAME = addon.getAddonInfo('name')
@@ -39,29 +32,26 @@ ADDON_PATH = addon.getAddonInfo('path')
 default_frontpage    = addon.getSetting("screensaver_subreddit")
 sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage = int(sitemsPerPage)
-except: itemsPerPage = 50    
+except: itemsPerPage = 50
 itemsPerPage          = ["10", "25", "50", "75", "100"][itemsPerPage]
 
 
 def this_is_a_multihub(subreddit):
     #subreddits and multihub are stored in the same file
     #i think we can get away with just testing for user/ to determine multihub
-    if subreddit.lower().startswith('user/') or subreddit.lower().startswith('/user/'): #user can enter multihub with or without the / in the beginning
-        return True
-    else:
-        return False
-    
+    return subreddit.lower().startswith('user/') or subreddit.lower().startswith('/user/') #user can enter multihub with or without the / in the beginning
+
 def assemble_reddit_filter_string(subreddit, domain="" ):
     url = "https://www.reddit.com"
 
     if subreddit.startswith('?'):
         #special dev option
-        url+='/search.json'+subreddit 
+        url+='/search.json'+subreddit
         return url
 
     if subreddit.startswith('http'):
-        #special dev option2 
-        #url=subreddit.replace('/search', '/search.json')  
+        #special dev option2
+        #url=subreddit.replace('/search', '/search.json')
         url=subreddit
         return url
 
@@ -80,16 +70,15 @@ def assemble_reddit_filter_string(subreddit, domain="" ):
         if this_is_a_multihub(subreddit):
             #e.g: https://www.reddit.com/user/sallyyy19/m/video/search?q=multihub&restrict_sr=on&sort=relevance&t=all
             #https://www.reddit.com/user/sallyyy19/m/video
-            #url+='/user/sallyyy19/m/video'     
+            #url+='/user/sallyyy19/m/video'
             #format_multihub(subreddit)
             if subreddit.startswith('/'):
                 url+=subreddit  #user can enter multihub with or without the / in the beginning
             else: url+='/'+subreddit
         else:
-            if subreddit: 
+            if subreddit:
                 url+= "/r/"+subreddit
- 
-        site_filter=""
+
         url+= "/.json?"
 
     url += "&limit="+str(itemsPerPage)
@@ -101,5 +90,5 @@ if __name__ == '__main__':
 
     #xbmc.executescript("script.reddit.reader,mode=autoSlideshow&url=https%3A%2F%2Fwww.reddit.com%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10&name=&type=")
     xbmc.executebuiltin("RunAddon(script.reddit.reader,mode=autoSlideshow&url=%s&name=&type=%s)" %(urllib.quote_plus(reddit_url), '') )
-        
+
 

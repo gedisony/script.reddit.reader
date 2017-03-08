@@ -4,18 +4,18 @@ import xbmcvfs
 import random
 import sys
 
-from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, Window, ControlTextBox, ControlLabel
+from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, ControlTextBox, ControlLabel
 
 #autoSlideshow
 
 from default import addon, log, translation, addon_path, addonID, reddit_request
-from domains import sitesManager, sitesBase, parse_reddit_link
+from domains import sitesBase, parse_reddit_link
 from actions import listAlbum
 
-from utils import unescape, post_excluded_from, determine_if_video_media_from_reddit_json, remove_duplicates, remove_dict_duplicates
+from utils import unescape, remove_dict_duplicates
 
 import threading
-from Queue import Queue, Empty
+from Queue import Queue
 
 ADDON_NAME = addonID      #addon.getAddonInfo('name')  <--changed to id
 ADDON_PATH = addon_path   #addon.getAddonInfo('path')
@@ -83,19 +83,19 @@ def slideshowAlbum(dictlist, name):
 
     try:
         s.start_loop()
-    except Exception as e:
-        log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+    except Exception as ex:
+        log("  EXCEPTION slideshowAlbum:="+ str( sys.exc_info()[0]) + "  " + str(ex) )
 
     return
 
 
-def autoSlideshow(url, name, type):
+def autoSlideshow(url, name, type_):
 
     log('starting slideshow '+ url)
     ev=threading.Event()
 
     entries = []
-    watchdog_counter=0
+    #watchdog_counter=0
     preview_w=0
     preview_h=0
     image=''
@@ -107,7 +107,7 @@ def autoSlideshow(url, name, type):
     #content = json.loads(content.replace('\\"', '\''))
     content = json.loads(content)
 
-    log("slideshow %s:Parsing %d items: %s" %( type, len(content['data']['children']), 'random' if random_post_order else 'normal order' )    )
+    log("slideshow %s:Parsing %d items: %s" %( type_, len(content['data']['children']), 'random' if random_post_order else 'normal order' )    )
 
     data_children = content['data']['children']
 
@@ -181,7 +181,6 @@ def autoSlideshow(url, name, type):
 
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
-            pass
 
     #log( repr(entries))
 
@@ -480,7 +479,7 @@ class ScreensaverBase(object):
         )])
         self.background_control.setImage(bg_img)
 
-    def process_image(self, image_control, image_url):
+    def process_image(self, image_control, desc_and_image):
         # Needs to be implemented in sub class
         raise NotImplementedError
 
@@ -631,7 +630,7 @@ class HorizontalSlide2(ScreensaverBase):
             #process_image done by subclass( assign animation and stuff to image control )
             self.toggle_info_display()
 
-            self.process_image(image_control_id)
+            self.process_image(image_control_id, '')
 
             self.current_desc_and_image=self.next_desc_and_image
             #image_url = image_url_cycle.next()
@@ -698,7 +697,7 @@ class HorizontalSlide2(ScreensaverBase):
             self.txt_group_control.setVisible(False)
         pass
 
-    def process_image(self, image_control_id):
+    def process_image(self, image_control_id, desc_and_image):
 
         #width,height,ar = self.ret_image_ar(desc_and_image)
         #log('  %dx%d %f' %(width,height,ar ) )
@@ -878,7 +877,7 @@ class FadeScreensaver( HorizontalSlide2, ScreensaverBase):
                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ),
                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ]
 
-    def process_image(self, image_control_id):
+    def process_image(self, image_control_id, desc_and_image):
 
         description=self.next_desc_and_image[4]
         if description and self.SHOW_TITLE:
