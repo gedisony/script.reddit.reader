@@ -1,3 +1,7 @@
+0.7.5 (03-07-2017)
+ - recognize time skip
+ - code cleanup codacity suggestions
+
 0.7.5 (03-05-2017)
  - urlresolver parsing returned
 

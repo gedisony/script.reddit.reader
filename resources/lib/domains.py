@@ -249,7 +249,6 @@ def url_resolver_support(link_url):
         return True
     return False
 
-
 class ClassYoutube(sitesBase):
     regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
     video_id=''
@@ -258,14 +257,19 @@ class ClassYoutube(sitesBase):
         if not media_url:
             media_url=self.media_url
 
+        addtl_param=''
         self.get_video_id()
         #log('      youtube video id:' + self.video_id )
 
+        #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
         if self.video_id:
             #if use_ytdl_for_yt:
-            # (10/2/2016) --- please only use script.module.youtube.dl if possible and remove these dependencies.
+            tsc=self.get_time_skip_code()
+            if tsc:
+                addtl_param='?t={0}'.format(tsc)
+
             self.link_action='playYTDLVideo'
-            return "http://youtube.com/v/" + self.video_id, self.TYPE_VIDEO
+            return "http://youtube.com/v/{0}{1}".format(self.video_id,addtl_param), self.TYPE_VIDEO
             #else:
             #    self.link_action=self.DI_ACTION_PLAYABLE
             #    return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
@@ -278,6 +282,24 @@ class ClassYoutube(sitesBase):
         match = re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL).findall(self.media_url)
         if match:
             self.video_id=match[0]
+
+    def get_time_skip_code(self):
+        try:
+            # Python 3
+            from urllib.parse import urlparse, parse_qs
+        except ImportError:
+            # Python 2
+            from urlparse import urlparse, parse_qs
+
+        o = urlparse(self.media_url)
+        query = parse_qs(o.query)
+        # extract the URL without query parameters
+        #log( repr(query) )
+        if 't' in query:
+            #youtube time skip is present in url
+            try: t=int(query['t'][0])
+            except:t=None
+            return t
 
     def get_thumb_url(self):
         """
