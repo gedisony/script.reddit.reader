@@ -344,7 +344,7 @@ def display_album_from(dictlist, album_name):
     ui.doModal()
     del ui
 
-def listAlbum(album_url, name, typex):
+def listAlbum(album_url, name, type_):
     from slideshow import slideshowAlbum
     from domains import sitesManager
     log("listAlbum:"+album_url)
@@ -363,13 +363,11 @@ def listAlbum(album_url, name, typex):
             return
 
         if addon.getSetting('use_slideshow_for_album') == 'true':
-            log("listAlbum using slideshow")
             slideshowAlbum( dictlist, name )
         else:
             display_album_from( dictlist, name )
-            log("listAlbum using view 450")
 
-def playURLRVideo(url, name, typex):
+def playURLRVideo(url, name, type_):
     import urlresolver
     from urlparse import urlparse
     parsed_uri = urlparse( url )
@@ -390,7 +388,7 @@ def playURLRVideo(url, name, typex):
     except Exception as e:
         xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
 
-def loopedPlayback(url, name, typex):
+def loopedPlayback(url, name, type_):
     #for gifs
     #log('*******************loopedplayback ' + url)
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
@@ -404,7 +402,7 @@ def loopedPlayback(url, name, typex):
     #pl.add(url, xbmcgui.ListItem(name))
     xbmc.Player().play(pl, windowed=False)
 
-def error_message(message, name, typex):
+def error_message(message, name, type_):
     if name:
         sub_msg=name
     else:

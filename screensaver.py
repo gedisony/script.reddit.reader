@@ -2,15 +2,12 @@
 # -*- coding: utf-8 -*-
 import xbmc
 import xbmcaddon
-
 import urllib
 
 addon = xbmcaddon.Addon()
-
 default_frontpage    = addon.getSetting("screensaver_subreddit")
 
 from resources.lib.utils import assemble_reddit_filter_string, this_is_a_multihub
-
 
 if __name__ == '__main__':
     xbmc.log('starting reddit_reader screensaver',xbmc.LOGNOTICE)
