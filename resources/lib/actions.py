@@ -363,9 +363,11 @@ def listAlbum(album_url, name, typex):
             return
 
         if addon.getSetting('use_slideshow_for_album') == 'true':
+            log("listAlbum using slideshow")
             slideshowAlbum( dictlist, name )
         else:
             display_album_from( dictlist, name )
+            log("listAlbum using view 450")
 
 def playURLRVideo(url, name, typex):
     import urlresolver

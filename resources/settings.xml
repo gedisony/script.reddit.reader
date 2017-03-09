@@ -6,7 +6,7 @@
         <setting type="sep" />
         <setting id="repeat_gif_video"         type="enum" label="32115" values="0|1|3|10|100" default="1"/>        
         <setting type="sep" />
-        <setting id="use_slideshow_for_album"  type="bool" label="32222" default="true"/>
+        <setting id="use_slideshow_for_album"  type="bool" label="32222" default="false"/>
         <setting type="sep" />
         <setting id="main_gui_skin"            type="text" label="32108" default="main_list01.xml"/>
     </category>
