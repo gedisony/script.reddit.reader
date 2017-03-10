@@ -3,12 +3,13 @@ import xbmc
 import xbmcgui
 #import xbmcvfs
 import sys
+import shutil
 
 from default import log, translation, xbmc_busy, subredditsFile, addon, addon_path, profile_path, ytdl_core_path
 
-def manage_subreddits(subreddit, name, type):
+def manage_subreddits(subreddit, name, type_):
     from default import index
-    log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type) )
+    log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type_) )
     #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list
 
     #http://forum.kodi.tv/showthread.php?tid=148568
@@ -20,7 +21,7 @@ def manage_subreddits(subreddit, name, type):
     #the if statements below is not as elegant as autoselecting the func from funcs but more flexible in the case with add subreddit where we should not send a subreddit parameter
     #    func = funcs[selected_index]
     #     #assign item from funcs to func
-    #    func(subreddit, name, type)
+    #    func(subreddit, name, type_)
     #log('selected_index ' + str(selected_index))
     if selected_index == 0:       # 0->first item
         addSubreddit('','','')
@@ -37,7 +38,7 @@ def manage_subreddits(subreddit, name, type):
     #   after we are done editing the subreddits file, we call index() (the start of program) again.
     index("","","")
 
-def addSubreddit(subreddit, name, type):
+def addSubreddit(subreddit, name, type_):
     from utils import this_is_a_multihub, format_multihub
     log( 'addSubreddit ' + subreddit)
     alreadyIn = False
@@ -80,7 +81,7 @@ def addSubreddit(subreddit, name, type):
 
         xbmc.executebuiltin("Container.Refresh")
 
-def removeSubreddit(subreddit, name, type):
+def removeSubreddit(subreddit, name, type_):
     log( 'removeSubreddit ' + subreddit)
 
     with open(subredditsFile, 'r') as fh:
@@ -96,7 +97,7 @@ def removeSubreddit(subreddit, name, type):
         #fh.close()
     xbmc.executebuiltin("Container.Refresh")
 
-def editSubreddit(subreddit, name, type):
+def editSubreddit(subreddit, name, type_):
     from utils import this_is_a_multihub, format_multihub
     log( 'editSubreddit ' + subreddit)
 
@@ -347,7 +348,7 @@ def display_album_from(dictlist, album_name):
 def listAlbum(album_url, name, type_):
     from slideshow import slideshowAlbum
     from domains import sitesManager
-    log("listAlbum:"+album_url)
+    log("    listAlbum:"+album_url)
 
     hoster = sitesManager( album_url )
     #log( '  %s %s ' %(hoster.__class__.__name__, album_url ) )
@@ -355,7 +356,7 @@ def listAlbum(album_url, name, type_):
     if hoster:
         dictlist=hoster.ret_album_list(album_url)
 
-        if type=='return_dictlist':  #used in autoSlideshow
+        if type_=='return_dictlist':  #used in autoSlideshow
             return dictlist
 
         if not dictlist:
@@ -439,7 +440,6 @@ def update_youtube_dl_core(url,name,action_type):
 #credit to ruuk for most of the download code
     import os, urllib, urllib2
     import tarfile
-    import shutil
 
     if action_type=='download':
         newVersion=note_ytdl_versions()
@@ -485,6 +485,10 @@ def update_youtube_dl_core(url,name,action_type):
                 xbmc.sleep(1000)
             try:
                 shutil.move(extracted_core_path, ytdl_core_path)
+                update_dl_status('    New core copied')
+                xbmc.sleep(1000)
+                ytdl_apply_additional_patch()
+                xbmc.sleep(1000)
                 update_dl_status('Update complete')
                 xbmc.sleep(1000)
                 ourVersion=ytdl_get_version_info('local')
@@ -496,6 +500,13 @@ def update_youtube_dl_core(url,name,action_type):
 
     elif action_type=='checkversion':
         note_ytdl_versions()
+
+def ytdl_apply_additional_patch():
+    #utils.py in youtube_dl have errors on certain video links. I think this is kodi specific. apply custom fix
+    patchfile_1=xbmc.translatePath(addon_path+"/resources/ytdl_patch_utils.py" )
+    patchdest_1=xbmc.translatePath(addon_path+"/resources/lib/youtube_dl/utils.py" )
+    update_dl_status('Applying patch')
+    shutil.copy(patchfile_1, patchdest_1)
 
 
 def note_ytdl_versions():

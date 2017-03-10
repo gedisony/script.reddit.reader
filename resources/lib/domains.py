@@ -2714,6 +2714,62 @@ class ClassSupload(sitesBase):
                 return True
         return False
 
+class ClassAcidcow(sitesBase):
+    regex='(acidcow.com)'
+
+    include_gif_in_get_playable=True
+    p=['acidcow.com', '', ['div', { "class": "newsarea" },None],
+                        ['div', {"class": "fb-like"}, "data-image"]
+        ]
+
+    def get_playable_url(self, link_url, is_probably_a_video=False ):
+        self.media_url=link_url
+        import pprint
+        #u=media_url.split('?')[0]
+        html=self.requests_get(link_url)
+        #if '11616' in link_url:log(html.text)
+
+        images=self.get_images(html.text,self.p)
+        if images:
+            #if '11616' in link_url:log(pprint.pformat(images))
+            self.media_type=self.TYPE_ALBUM
+            return self.media_url, self.media_type
+        else:
+            #default to youtube-dl video. 
+            #direct image link posts are already taken care of in get_playable()
+            #the only video sample i found is not playable via ytdl. TODO: .mp4 is in javascript block
+            #    http://acidcow.com/video/61149-russian_soldiers_got_the_steel_balls.html
+            self.link_action=self.DI_ACTION_YTDL
+            return self.media_url, self.TYPE_VIDEO
+
+    def ret_album_list(self, album_url, thumbnail_size_code=''):
+        html=self.requests_get(album_url)
+
+        images=self.get_images(html.text,self.p)
+        if images:
+            #TODO: parse image descriptions --http://acidcow.com/pics/83717-the-top-15-most-evil-and-ruthless-cult-leaders-from-history-15-pics.html
+            self.assemble_images_dictList(images)
+            return self.dictList
+
+    def get_images(self, html, p):
+        images=[]
+        #log( '***name=%s, attrs=%s, ret=%s)' %(p[2][0], p[2][1], p[2][2]))
+        big_div=parseDOM(html, name=p[2][0], attrs=p[2][1], ret=p[2][2])
+        if big_div:
+            #log('     %d     big_div=%s' %( len(big_div), pprint.pformat(big_div)) )
+            imgs = parseDOM(big_div,name=p[3][0], attrs=p[3][1], ret=p[3][2])
+            #imgs = parseDOM(big_div,name='img', attrs={}, ret='src')
+            #log('     %d       imags=%s' %( len(imgs)   , pprint.pformat(imgs) )   )
+            #images.append(imgs)
+            images.extend(imgs)
+
+        return images
+
+    def get_thumb_url(self):
+        self.thumb_url=self.media_url
+        self.poster_url=self.media_url
+        return self.thumb_url
+
 class genericAlbum1(sitesBase):
     regex='(http://www.houseofsummersville.com/)|(weirdrussia.com)|(cheezburger.com)|(hentailair.xyz)|(designyoutrust.com)'
     #links are checked for valid image extensions. use no_ext to bypass this check

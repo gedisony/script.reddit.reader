@@ -1,4 +1,10 @@
-0.7.5 (03-07-2017)
+0.7.7 (03-09-2017)
+ - fix slideshow bug
+ - add acidcow.com album parsing
+ - add a patch for youtube_dl utils.py
+ - apply patch during youtube dl update 
+
+0.7.6 (03-07-2017)
  - recognize time skip
  - code cleanup codacity suggestions
 

@@ -785,14 +785,17 @@ def playVideo(url, name, type_):
 
 def playYTDLVideo(url, name, type_):
     from resources.lib.YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    #from resources.lib.actions import ytdl_get_version_info
     import pprint
 
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
 
+    dialog_progress_title='Youtube_dl'  #.format(ytdl_get_version_info())
+
     dialog_progress_YTDL = xbmcgui.DialogProgressBG()
-    dialog_progress_YTDL.create('Youtube_dl' )
-    dialog_progress_YTDL.update(10,'Youtube_dl',translation(32012)  )
+    dialog_progress_YTDL.create(dialog_progress_title )
+    dialog_progress_YTDL.update(10,dialog_progress_title,translation(32012)  )
 
     #use YoutubeDLWrapper by ruuk to avoid  bad file error
     ytdl=YoutubeDLWrapper()
@@ -802,12 +805,12 @@ def playYTDLVideo(url, name, type_):
         # there was an error playing https://vimeo.com/14652586
         #   on line 1195:
         # change          except ValueError:
-        #     to          except:    (remove ValueError)
+        #     to          except (ValueError,TypeError):
 
         #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
         video_infos=_selectVideoQuality(ydl_info, quality=1, disable_dash=True)
         log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
-        dialog_progress_YTDL.update(80,'Youtube_dl',translation(32013)  )
+        dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         for video_info in video_infos:
             url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
@@ -840,13 +843,12 @@ def playYTDLVideo(url, name, type_):
         short_err=err_msg.split(';')[0]
         log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( "Youtube_dl", short_err )  )
-
         #try urlresolver
         log('   trying urlresolver...')
         playURLRVideo(url, name, type_)
-#    finally:
-    dialog_progress_YTDL.update(100,'Youtube_dl' ) #not sure if necessary to set to 100 before closing dialogprogressbg
-    dialog_progress_YTDL.close()
+    finally:
+        dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
+        dialog_progress_YTDL.close()
 
 def playYTDLVideoOLD(url, name, type_):
     #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
