@@ -14,8 +14,6 @@ import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import urlparse
-import xbmcvfs
-
 
 import threading
 from Queue import Queue, Empty
@@ -134,7 +132,7 @@ def index(url,name,type_):
     return
 
 def listSubReddit(url, title_bar_name, type_):
-    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, has_multiple_subreddits
+    from resources.lib.utils import pretty_datediff, post_is_filtered_out, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
 
     #the +'s got removed by url conversion
@@ -237,8 +235,6 @@ def listSubReddit(url, title_bar_name, type_):
 
     except Exception as e:
         log(" EXCEPTzION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-
-        pass
 
     xbmc_busy(False)
 
@@ -373,13 +369,13 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                 DirectoryItem_url = build_script(mode=ld.link_action,
                                                  url=ld.playable_url,
                                                  name=str(preview_w),
-                                                 type=str(preview_h) )
+                                                 type_=str(preview_h) )
             else:
                 #log( '****' + repr( ld.dictlist ))
                 DirectoryItem_url = build_script(mode=ld.link_action,
                                                  url=ld.playable_url,
                                                  name=post_title ,
-                                                 type=previewimage )
+                                                 type_=previewimage )
 
         #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
 
@@ -395,9 +391,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     return liz
 
 def reddit_post_worker(idx, entry, q_out):
-    from resources.lib.utils import unescape, strip_emoji, pretty_datediff, determine_if_video_media_from_reddit_json
-    from resources.lib.utils import assemble_reddit_filter_string,compose_list_item
-
+    from resources.lib.utils import strip_emoji, pretty_datediff, determine_if_video_media_from_reddit_json, clean_str
     try:
         credate = ""
         is_a_video=False
@@ -412,30 +406,23 @@ def reddit_post_worker(idx, entry, q_out):
         t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
 
         data=entry.get('data')
-
-        show_listSubReddit_debug=True
-
         if data:
-            title = unescape(data.get('title').encode('utf-8'))
-            title = strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
+            title=clean_str(data,['title'])
+            title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
-            if show_listSubReddit_debug : log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
+            log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
 
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
 
-            try:    description = unescape(entry['data']['media']['oembed']['description'].encode('utf-8'))
-            except: description = ''
-            #log('    description  [%s]' %description)
-            try:    post_selftext=unescape(data.get('selftext').encode('utf-8'))
-            except: post_selftext='' 
-            #log('    post_selftext[%s]' %post_selftext)
+            description=clean_str(data,['media','oembed','description'])
+            post_selftext=clean_str(data,['selftext'])
 
             description=post_selftext+'[CR]'+description if post_selftext else description
             #log('    combined     [%s]' %description)
 
-            commentsUrl = urlMain+data.get('permalink').encode('utf-8')
+            commentsUrl = urlMain+clean_str(data,['permalink'])
             #log("commentsUrl"+str(idx)+"="+commentsUrl)
 
             try:
@@ -444,68 +431,55 @@ def reddit_post_worker(idx, entry, q_out):
                 now_utc = datetime.datetime.utcnow()
                 pretty_date=pretty_datediff(now_utc, credate)
                 credate = str(credate)
-            except:
+            except (AttributeError,TypeError,ValueError):
                 credate = ""
 
-            subreddit=data.get('subreddit').encode('utf-8')
-
-            try: author = data.get('author').encode('utf-8')
-            except: author = ""
-
-            try: domain= data.get('domain').encode('utf-8')
-            except: domain = ""
+            subreddit=clean_str(data,['subreddit'])
+            author=clean_str(data,['author'])
+            domain=clean_str(data,['domain'])
             #log("     DOMAIN%.2d=%s" %(idx,domain))
 
-            ups = data.get('score')       #downs not used anymore
-            try:num_comments = data.get('num_comments')
-            except:num_comments = 0
+            ups = data.get('score',0)       #downs not used anymore
+            num_comments = data.get('num_comments',0)
 
-            try:
-                media_url = data.get('url').encode('utf-8')
-            except:
-                media_url = data.get('media')['oembed']['url'].encode('utf-8')
 
-            thumb = data.get('thumbnail').encode('utf-8')
+            media_url=clean_str(data,['url'])
+            if media_url=='':
+                media_url=clean_str(data,['media','oembed','url'])
+            #log("     MEDIA%.2d=%s" %(idx,media_url))
+
+            thumb=clean_str(data,['thumbnail'])
 
             if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""
 
             if thumb=="":
-                try: thumb = data.get('data')['media']['oembed']['thumbnail_url'].encode('utf-8').replace('&amp;','&')
-                except: pass
+                thumb=clean_str(data,['media','oembed','thumbnail_url']).replace('&amp;','&')
 
             try:
                 preview=data.get('preview')['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-
                 try:
                     thumb_h = float( data.get('preview')['images'][0]['source']['height'] )
                     thumb_w = float( data.get('preview')['images'][0]['source']['width'] )
-                except:
-                    thumb_w=0
-                    thumb_h=0
+                except (AttributeError,TypeError,ValueError):
+                    #log("   thumb_w _h EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+                    thumb_w=0; thumb_h=0
 
-            except Exception as e:
+            except (AttributeError,TypeError,ValueError):
                 #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-                thumb_w=0
-                thumb_h=0
-                preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
+                thumb_w=0; thumb_h=0; preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
 
             #preview images are 'keep' stretched to fit inside 1080x1080.
             #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image
             if thumb_w > 0 and thumb_w < 280:
                 #log('*******preview is small ')
                 thumb=preview
-                thumb_w=0
-                thumb_h=0
-                preview=""
+                thumb_w=0; thumb_h=0; preview=""
 
-            try:
-                over_18 = data.get('over_18')
-            except:
-                over_18 = False
+            over_18=data.get('over_18')
 
             title_line2=""
-            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [COLOR teal]r/%s[/COLOR] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
+            title_line2 = "[I][COLOR dimgrey]%d%c %s %s [B][COLOR cadetblue]r/%s[/COLOR][/B] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
 
             liz=addLink(title=title,
                     title_line2=title_line2,
@@ -530,13 +504,14 @@ def reddit_post_worker(idx, entry, q_out):
                     )
             q_out.put( [idx, liz] )  #we put the idx back for easy sorting
 
-    except Exception:
-        self.log( '  #reddit_post_workerf EXCEPTION:' + repr(sys.exc_info()) )
+    except Exception as e:
+        log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) )
 
 q = Queue()
 def autoPlay(url, name, type_):
-    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url, setting_gif_repeat_count
-    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, remove_duplicates
+    from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
+    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, remove_duplicates, clean_str,strip_emoji
+    from resources.lib.actions import setting_gif_repeat_count
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
     #then play the playlist
@@ -560,7 +535,8 @@ def autoPlay(url, name, type_):
 
     for j_entry in content['data']['children']:
         try:
-            title = unescape(j_entry['data']['title'].encode('utf-8'))
+            title=unescape(j_entry['data']['title'].encode('utf-8'))
+            title=strip_emoji(title)
 
             try:
                 media_url = j_entry['data']['url']
@@ -579,7 +555,7 @@ def autoPlay(url, name, type_):
 
                     if ld.media_type==sitesBase.TYPE_GIF:
                         entries.append([title,ld.playable_url, sitesBase.DI_ACTION_PLAYABLE])
-                        for x in range( 0, gif_repeat_count ):
+                        for _ in range( 0, gif_repeat_count ):
                             entries.append([title,ld.playable_url, sitesBase.DI_ACTION_PLAYABLE])
                     else:
                         entries.append([title,ld.playable_url, ld.link_action])
@@ -850,57 +826,6 @@ def playYTDLVideo(url, name, type_):
         dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
         dialog_progress_YTDL.close()
 
-def playYTDLVideoOLD(url, name, type_):
-    #url = "http://www.youtube.com/watch?v=_yVv9dx88x0"   #a youtube ID will work as well and of course you could pass the url of another site
-    #log("playYTDLVideo="+url)
-    #url='https://www.youtube.com/shared?ci=W8n3GMW5RCY'
-
-    from resources.lib.domains import parse_reddit_link, ydtl_get_playable_url
-    from urlparse import urlparse
-    import urlresolver
-
-    xbmc_busy()
-
-    parsed_uri = urlparse( url )
-    domain = '{uri.netloc}'.format(uri=parsed_uri)
-
-    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
-    dialog_progress_YTDL.create('YTDL' )
-    dialog_progress_YTDL.update(10,'YTDL',translation(32012)  )
-
-    try:
-        stream_url = ydtl_get_playable_url(url)
-        dialog_progress_YTDL.update(80,'YTDL',translation(32013)  )
-        #log( ' ytdl stream url ' + repr(stream_url ))
-        #if len(stream_url) == 1:
-        #    playVideo(stream_url, name, type)
-
-        if stream_url:
-            playVideo(stream_url, name, type_)
-
-        else:
-            dialog_progress_YTDL.update(40,'YTDL', 'Trying URLResolver' )
-            log('YTDL Unable to get playable URL, Trying UrlResolver...' )
-
-            #ytdl seems better than urlresolver for getting the playable url...
-            media_url = urlresolver.resolve(url)
-            if media_url:
-                dialog_progress_YTDL.update(88,'YTDL', 'Playing' )
-                #log( '------------------------------------------------urlresolver stream url ' + repr(media_url ))
-                listitem = xbmcgui.ListItem(path=media_url)
-                xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
-            else:
-                log('UrlResolver cannot get a playable url' )
-                xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( translation(32010), domain )  )
-
-    except Exception as e:
-        #log( "zz   " + str(e) )
-        xbmc.executebuiltin('XBMC.Notification("%s(YTDL)","%s")' %(  domain, str(e))  )
-
-    finally:
-        dialog_progress_YTDL.update(100,'YTDL' ) #not sure if necessary to set to 100 before closing dialogprogressbg
-        dialog_progress_YTDL.close()
-
 def listLinksInComment(url, name, type_):
     from resources.lib.domains import parse_reddit_link, sitesBase
     from resources.lib.utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
@@ -951,12 +876,16 @@ def listLinksInComment(url, name, type_):
         #harvest links in the post text (just 1)
         r_linkHunter(content[0]['data']['children'])
 
-        try:submitter=content[0]['data']['children'][0]['data']['author']
-        except: submitter=''
+        try:
+            submitter=content[0]['data']['children'][0]['data']['author']
+        except (AttributeError,TypeError,ValueError): 
+            submitter=''
 
         #the post title is provided in json, we'll just use that instead of messages from addLink()
-        try:post_title=content[0]['data']['children'][0]['data']['title']
-        except:post_title=''
+        try:
+            post_title=content[0]['data']['children'][0]['data']['title']
+        except (AttributeError,TypeError,ValueError):
+            post_title=''
 
         #harvest links in the post itself
         r_linkHunter(content[1]['data']['children'])
@@ -993,8 +922,11 @@ def listLinksInComment(url, name, type_):
 
             author=h[7]
 
-            from urlparse import urlparse
-            domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
+            if link_url.startswith('/r/'):
+                domain='subreddit'
+            else:
+                from urlparse import urlparse
+                domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
 
             #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
             if comment_score < int_CommentTreshold:
@@ -1037,7 +969,7 @@ def listLinksInComment(url, name, type_):
                 if not ld:
                     #log('      link is not supported ')
                     if use_ytdl_for_unknown_in_comments:
-                        log('      ********* activating unsupported link:' + link_url)
+                        #log('      ********* activating unsupported link:' + link_url)
                         #domain='[?]'
                         liz.setProperty('item_type','script')
                         liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
@@ -1047,8 +979,6 @@ def listLinksInComment(url, name, type_):
 
                         clearart=ret_info_type_icon('', '')
                         liz.setArt({ "clearart": clearart  })
-
-
             if ld:
                 #use clearart to indicate if link is video, album or image. here, we default to unsupported.
                 #clearart=ret_info_type_icon(setInfo_type, mode_type)
@@ -1063,7 +993,7 @@ def listLinksInComment(url, name, type_):
                     DirectoryItem_url = build_script(mode=ld.link_action,
                                                      url=ld.playable_url,
                                                      name='' ,
-                                                     type='' )
+                                                     type_='' )
 
                 #(score, link_desc, link_http, post_text, post_html, d, )
                 #list_item_name=str(h[0]).zfill(3)
@@ -1136,7 +1066,7 @@ def listLinksInComment(url, name, type_):
 harvest=[]
 def r_linkHunter(json_node,d=0):
     from resources.lib.domains import url_is_supported
-    from resources.lib.utils import unescape
+    from resources.lib.utils import clean_str 
     #recursive function to harvest stuff from the reddit comments json reply
     prog = re.compile('<a href=[\'"]?([^\'" >]+)[\'"]>(.*?)</a>')
     for e in json_node:
@@ -1144,31 +1074,24 @@ def r_linkHunter(json_node,d=0):
         link_http=""
         author=""
         created_utc=""
+        e_data=e.get('data')
+        score=e_data.get('score',0)
         if e['kind']=='t1':     #'t1' for comments   'more' for more comments (not supported)
-
             #log("replyid:"+str(d)+" "+e['data']['id'])
             #body=e['data']['body'].encode('utf-8')
 
             #log("reply:"+str(d)+" "+body.replace('\n','')[0:80])
+            try: replies=e_data.get('replies')['data']['children']
+            except (AttributeError,TypeError): replies=""
 
-            try: replies=e['data']['replies']['data']['children']
-            except: replies=""
-
-            try: score=e['data']['score']
-            except: score=0
-
-            try: post_text=unescape( e['data']['body'].encode('utf-8') )
-            except: post_text=""
+            post_text=clean_str(e_data,['body'])
             post_text=post_text.replace("\n\n","\n")
 
-            try: post_html=unescape( e['data']['body_html'].encode('utf-8') )
-            except: post_html=""
+            post_html=clean_str(e_data,['body_html'])
 
-            try: created_utc=e['data']['created_utc']
-            except: created_utc=""
+            created_utc=e_data.get('created_utc','')
 
-            try: author=e['data']['author'].encode('utf-8')
-            except: author=""
+            author=clean_str(e_data,['author'])
 
             #i initially tried to search for [link description](https:www.yhotuve.com/...) in the post_text but some posts do not follow this convention
             #prog = re.compile('\[(.*?)\]\((https?:\/\/.*?)\)')
@@ -1191,16 +1114,8 @@ def r_linkHunter(json_node,d=0):
             d-=1
 
         if e['kind']=='t3':     #'t3' for post text (a description of the post)
-            #log(str(e))
-            #log("replyid:"+str(d)+" "+e['data']['id'])
-            try: score=e['data']['score']
-            except: score=0
-
-            try: self_text=unescape( e['data']['selftext'].encode('utf-8') )
-            except: self_text=""
-
-            try: self_text_html=unescape( e['data']['selftext_html'].encode('utf-8') )
-            except: self_text_html=""
+            self_text=clean_str(e_data,['selftext'])
+            self_text_html=clean_str(e_data,['selftext_html'])
 
             result = prog.findall(self_text_html)
             if len(result) > 0 :
@@ -1213,14 +1128,8 @@ def r_linkHunter(json_node,d=0):
                 if len(self_text) > 0: #don't post an empty titles
                     harvest.append((score, link_desc, link_http, self_text, self_text_html, d, "t3",author,created_utc,)   )
 
-#MODE queueVideo       -type not used
-#def queueVideo(url, name, type):
-#    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-#    listitem = xbmcgui.ListItem(name)
-#    playlist.add(url, listitem)
-
-def translation(id):
-    return addon.getLocalizedString(id).encode('utf-8')
+def translation(id_):
+    return addon.getLocalizedString(id_).encode('utf-8')
 
 def parse_and_play(url, name, type_):
     #this mode is intended to receive links from a modified kore remote
@@ -1660,8 +1569,10 @@ git rebase --interactive HEAD~2
 git push origin script.reddit.reader --force
 
 
-'''
-'''
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
 new github notes (7/1/2016) special thanks to Skipmode A1  http://forum.kodi.tv/showthread.php?tid=280882&pid=2365444#pid2365444
 
 rem For a total restart: Delete repo-plugins from your repo on Github

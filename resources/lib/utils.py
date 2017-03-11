@@ -2,7 +2,6 @@ import urllib
 import xbmc, xbmcgui
 import re, htmlentitydefs
 import time
-from urllib import urlencode
 
 from default import log, translation, urlMain, itemsPerPage, addonID, subredditsFile
 
@@ -80,7 +79,7 @@ def compose_list_item(label,label2,iconImage,property_item_type, onClick_action,
     return liz
 
 
-def build_script( mode, url, name="", type="", script_to_call=''):
+def build_script( mode, url, name="", type_="", script_to_call=''):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'
     if script_to_call: #plugin://plugin.video.reddit_viewer/
         #not used
@@ -91,7 +90,7 @@ def build_script( mode, url, name="", type="", script_to_call=''):
         #remove unicode characters in name.
         name=name.decode('unicode_escape').encode('ascii','ignore')
         script_to_call=addonID
-        return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type) )
+        return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type_) )
 
 def build_playable_param( mode, url, name="", type="", script_to_call=addonID):
     #builds the  di_url for  pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO); pl.clear();  pl.add(di_url, item) ; xbmc.Player().play(pl, windowed=True)
@@ -140,7 +139,7 @@ def subreddit_alias( subreddit_entry_from_file ):
 
     #get the viewID
     try:viewid= subreddit[subreddit.index("(") + 1:subreddit.rindex(")")]
-    except:viewid=""
+    except (ValueError,TypeError):viewid=""
     #log( "viewID=%s for r/%s" %( viewid, subreddit ) )
 
     if viewid:
@@ -198,7 +197,6 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
                 #url+= "/r/all"
             #   pass
 
-        site_filter=""
         if search_string:
             search_string = urllib.unquote_plus(search_string)
             url+= "/search.json?q=" + urllib.quote_plus(search_string)
@@ -207,7 +205,6 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
         else:
             #no more supported_sites filter OR... OR... OR...
             url+= "/.json?"
-            pass
 
     url += "&limit="+str(itemsPerPage)
     #url += "&limit=12"
@@ -243,7 +240,7 @@ def collect_thumbs( entry ):
            ]
         #log('  got 1')
         dictList.append(dict(zip(keys, e)))
-    except Exception as e:
+    except (ValueError,TypeError,AttributeError):
         #log( "zz   " + str(e) )
         pass
 
@@ -254,7 +251,8 @@ def collect_thumbs( entry ):
            ]
         #log('  got 2')
         dictList.append(dict(zip(keys, e)))
-    except: pass
+    except(ValueError,TypeError,AttributeError):
+        pass
 
     try:
         e=[ entry['data']['thumbnail'].encode('utf-8')        #thumbnail is always in 140px wide (?)
@@ -263,7 +261,7 @@ def collect_thumbs( entry ):
            ]
         #log('  got 3')
         dictList.append(dict(zip(keys, e)))
-    except:
+    except (ValueError,TypeError,AttributeError):
         pass
     #log( json.dumps(dictList, indent=4)  )
     #log( str(dictList)  )
@@ -274,10 +272,10 @@ def determine_if_video_media_from_reddit_json( entry ):
     is_a_video=False
 
     try:
-        media_url = entry['data']['media']['oembed']['url']   #+'"'
-    except:
-        media_url = entry['data']['url']   #+'"'
-
+        media_url = entry.get('data')['media']['oembed']['url']   #+'"'
+    except (KeyError,TypeError,AttributeError):
+        #log("   media_url EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+        media_url = entry.get('data')['url']   #+'"'
 
     # also check  "post_hint" : "rich:video"
 
@@ -294,7 +292,7 @@ def determine_if_video_media_from_reddit_json( entry ):
             is_a_video=True
         else:
             is_a_video=False
-    except:
+    except (KeyError,TypeError,AttributeError):
         is_a_video=False
 
     return is_a_video
@@ -420,7 +418,7 @@ def post_is_filtered_out( entry ):
 
 def addtoFilter(to_filter, name, type_of_filter):
     #type_of_filter=domain or subreddit
-    from default import domain_filter, subreddit_filter
+    #from default import domain_filter, subreddit_filter
     if type_of_filter=='domain':
         #log( domain_filter +'+' + to_filter)
         add_to_csv_setting('domain_filter',to_filter)
@@ -459,8 +457,6 @@ def prettify_reddit_query(subreddit_entry):
 def calculate_zoom_slide(img_w, img_h):
     screen_w = 1920
     screen_h = 1080
-
-    startx=0
 
     #determine how much xbmc would shrink the image to fit screen
 
@@ -722,6 +718,19 @@ def xbmcVersion():
 
     return version
 
+def clean_str(dict_obj, keys_list, default=''):
+    dd=dict_obj
+    try:
+        for k in keys_list:
+            dd=dict_obj.get(k)
+            if dd is None:
+                return default
+            else:
+                continue
+        return unescape(dd.encode('utf-8'))
+    except AttributeError as e:
+        log( str(e) )
+        return default
 
 '''
 def empty_slideshow_folder():

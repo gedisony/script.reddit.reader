@@ -9,7 +9,7 @@ import json
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import log, translation
+from default import log
 
 from default import default_ytdl_psites_file, default_ytdl_sites_file, use_ytdl_for_unknown_in_comments, reddit_userAgent
 from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
@@ -180,7 +180,7 @@ class sitesBase(object):
         isPlayable=None
         for item in images_list:
             #log('      type: %s' %( type(item)  ) )
-            if type(item) in [str,unicode]:  #if isinstance(item, basestring):
+            if isinstance(item, (basestring,unicode) ):   #type(item) in [str,unicode]:  #if isinstance(item, basestring):
                 #log( 'assemble_images_dictList STRING')
                 image_url=item
                 thumbnail=image_url
@@ -2206,13 +2206,14 @@ class ClassReddit(sitesBase):
     def get_playable_url(self, link_url, is_probably_a_video):
         from utils import assemble_reddit_filter_string
         self.get_video_id()
-        #log('    subreddit=' + self.video_id )
+        #log('    **get_playable_url subreddit=' + self.video_id )
 
         self.media_type=sitesBase.TYPE_REDDIT
 
         if self.video_id:   #link_url is in the form of "r/subreddit". this type of link is found in comments
             self.link_action='listSubReddit'
             reddit_url=assemble_reddit_filter_string('',self.video_id)
+            #log('    '+reddit_url)
             return reddit_url, self.media_type
         else:               #link_url is in the form of https://np.reddit.com/r/teslamotors/comments/50bc6a/tesla_bumped_dying_man_up_the_production_queue_so/d72vfbg?context=2
             if '/comments/' in link_url:
@@ -2223,16 +2224,20 @@ class ClassReddit(sitesBase):
 
     def get_video_id(self):
         self.video_id=''
-        match = re.findall( '^\/r\/(.+)(?:\/|$)' , self.media_url)
+        match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://.+?\.reddit\.com\/r\/(.+?)(?:\/|$)' , self.media_url)
+        #returns an array of tuples
         if match:
-            self.video_id=match[0]
+            for m in match[0]:
+                if m: #just use the first non-empty match 
+                    self.video_id=m
+                    return
 
     def get_thumb_url(self):
         if self.video_id:
             #get subreddit icon_img, header_img or banner_img
             headers = {'User-Agent': reddit_userAgent}
             req='https://www.reddit.com/r/%s/about.json' %self.video_id
-            #log( req )
+            log( req )
             #log('headers:' + repr(headers))
             r = self.requests_get( req, headers=headers)
             j=r.json()
@@ -3061,38 +3066,25 @@ def load_ytdl_sites():
 
 def ydtl_get_playable_url( url_to_check ):
     from resources.lib.utils import link_url_is_playable
-    from default import YDStreamExtractor
+    from resources.lib.YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+
     #log('ydtl_get_playable_url:' +url_to_check )
     if link_url_is_playable(url_to_check)=='video':
         return url_to_check
 
-    choices = []
+    video_urls=[]
+    ytdl=YoutubeDLWrapper()
+    try:
+        ydl_info=ytdl.extract_info(url_to_check, download=False)
 
-    if YDStreamExtractor.mightHaveVideo(url_to_check,resolve_redirects=True):
-        #dialog_progress_YTDL.update(33+random.randint(0,10),'YTDL'  )
-        #log('      YDStreamExtractor.mightHaveVideo[true]=' + url_to_check)
-        #xbmc_busy()
-        #https://github.com/ruuk/script.module.youtube.dl/blob/master/lib/YoutubeDLWrapper.py
-        vid = YDStreamExtractor.getVideoInfo(url_to_check,0,True)  #quality is 0=SD, 1=720p, 2=1080p and is a maximum
-        #dialog_progress_YTDL.update(66,'YTDL'  )
-        if vid:
-            #log("        getVideoInfo playableURL="+vid.streamURL())
-            #log("        %s  %s %s" %( vid.sourceName , vid.description, vid.thumbnail ))   #usually just 'generic' and blank on everything else
-            if vid.hasMultipleStreams():
-                #vid.info  <-- The info property contains the original youtube-dl info
-                log("          video hasMultipleStreams %d" %len(vid._streams) )
-                for s in vid.streams():
-                    title = s['title']
-                    #log('            choices: %s... %s' %( title.ljust(15)[:15], s['xbmc_url']  )   )
-                    choices.append(s['xbmc_url'])
-                #index = some_function_asking_the_user_to_choose(choices)
-                #vid.selectStream(0) #You can also pass in the the dict for the chosen stream
-                #return choices  #vid.streamURL()
+        video_infos=_selectVideoQuality(ydl_info, quality=1, disable_dash=True)
 
-            choices.append(vid.streamURL())
-            return choices
+        for video_info in video_infos:
+            video_urls.append(video_info.get('xbmc_url'))
+        return video_urls
 
-    return None
+    except:
+        return None
 
 if __name__ == '__main__':
     pass
