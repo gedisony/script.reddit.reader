@@ -459,11 +459,12 @@ class ClassImgur(sitesBase):
             else:
                 return j['data'].get('link')
 
-    def get_thumb_url(self, link_url='', thumbnail_type='b'):
+    def get_thumb_url(self, link_url=''):
         #return the thumbnail url given the image url
         #accomplished by appending a 'b' at the end of the filename
         #this won't work if there is a '/gallery/' in the url
 
+        thumbnail_type='b'
         #possible thumbnail_types
         #    s = Small Square (90�90)
         #    b = Big Square (160�160)
@@ -513,7 +514,7 @@ class ClassImgur(sitesBase):
             album_name=""
         return album_name
 
-    def ret_album_list(self, album_url, thumbnail_size_code='b'):
+    def ret_album_list(self, album_url):
         #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
         # see ret_thumb_url for thumbnail_size_code values
 
@@ -537,7 +538,7 @@ class ClassImgur(sitesBase):
             #log(r.text)
             j = r.json()   #json.loads(r.text)
 
-            images=self.ret_images_dict_from_album_json(j,thumbnail_size_code)
+            images=self.ret_images_dict_from_album_json(j)
             #for i in images: log( '##' + repr(i))
             self.assemble_images_dictList(images)
         else:
@@ -545,7 +546,7 @@ class ClassImgur(sitesBase):
 
         return self.dictList
 
-    def ret_images_dict_from_album_json(self, j, thumbnail_size_code='b'):
+    def ret_images_dict_from_album_json(self, j):
         images=[]
         #2 types of json received:
         #first, data is an array of objects
@@ -555,7 +556,7 @@ class ClassImgur(sitesBase):
         else:
             imgs=j.get('data')
 
-        for idx, entry in enumerate(imgs):
+        for _, entry in enumerate(imgs):
             link_type =entry.get('type')         #image/jpeg
             if link_type=='image/gif':
                 media_url=entry.get('mp4')
@@ -565,7 +566,7 @@ class ClassImgur(sitesBase):
             height   =entry.get('height')
             title    =entry.get('title')
             descrip  =entry.get('description')
-            media_thumb_url=self.get_thumb_url(media_url,thumbnail_size_code)
+            media_thumb_url=self.get_thumb_url(media_url)
 
             images.append( {'title': title,
                             'description': descrip,
@@ -652,9 +653,9 @@ class ClassVidme(sitesBase):
             #try to get media id from link.
             #media_url='https://vid.me/Wo3S/skeletrump-greatest-insults'
             #media_url='https://vid.me/Wo3S'
-            id=re.findall( 'vid\.me/(.+?)(?:/|$)', media_url )   #***** regex capture to end-of-string or delimiter. didn't work while testing on https://regex101.com/#python but will capture fine
+            id_=re.findall( 'vid\.me/(.+?)(?:/|$)', media_url )   #***** regex capture to end-of-string or delimiter. didn't work while testing on https://regex101.com/#python but will capture fine
 
-            request_url="https://api.vid.me/videoByUrl/" + id[0]
+            request_url="https://api.vid.me/videoByUrl/" + id_[0]
             r = requests.get(request_url, headers=ClassVidme.request_header, timeout=REQUEST_TIMEOUT)
             #log(r.text)
             if r.status_code != 200:
@@ -1643,6 +1644,7 @@ class ClassFlickr(sitesBase):
 
         return ret_url, self.TYPE_IMAGE
 
+    @classmethod
     def is_an_album(self,media_url):
         #returns true if link is a bunch of images
         a=['/sets/','/albums/','/s/','/groups/','/g/','/galleries/','/y/']
@@ -1747,7 +1749,7 @@ class ClassFlickr(sitesBase):
 
                 photo_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'b' )
                 thumb_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'n' )
-                poster_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'z' )
+                #poster_url='https://farm%s.staticflickr.com/%s/%s_%s_%c.jpg' %(p['farm'],p['server'],p['id'],p['secret'],'z' )
                 #log(" %d  %s" %(i,photo_url ))
                 #log(" %d  %s" %(i,thumb_url ))
 
@@ -1955,8 +1957,8 @@ class ClassEroshare(sitesBase):
                     self.media_type=self.TYPE_ALBUM
                     return link_url, self.media_type
         else:
-            #try an alternate method
-            log('      var album string not found. trying alternate method ')
+            #try an alternate method (not an album)
+            #log('      var album string not found. trying alternate method ')
 
             div_item_list = parseDOM(content.text, "div", attrs = { "class": "item-list" })
             #log('div_item_list=' + repr(div_item_list))
@@ -2213,7 +2215,6 @@ class ClassReddit(sitesBase):
         if self.video_id:   #link_url is in the form of "r/subreddit". this type of link is found in comments
             self.link_action='listSubReddit'
             reddit_url=assemble_reddit_filter_string('',self.video_id)
-            #log('    '+reddit_url)
             return reddit_url, self.media_type
         else:               #link_url is in the form of https://np.reddit.com/r/teslamotors/comments/50bc6a/tesla_bumped_dying_man_up_the_production_queue_so/d72vfbg?context=2
             if '/comments/' in link_url:
@@ -2237,7 +2238,7 @@ class ClassReddit(sitesBase):
             #get subreddit icon_img, header_img or banner_img
             headers = {'User-Agent': reddit_userAgent}
             req='https://www.reddit.com/r/%s/about.json' %self.video_id
-            log( req )
+            #log( req )
             #log('headers:' + repr(headers))
             r = self.requests_get( req, headers=headers)
             j=r.json()
@@ -2659,7 +2660,7 @@ class ClassSupload(sitesBase):
         meta_og_type=parseDOM(html.text, "meta", attrs = { "property": "og:type" }, ret="content" )
         og_image_list=parseDOM(html.text, "meta", attrs = { "property": "og:image" }, ret="content" )
 
-        #if 'dqg' in link_url:log(repr(og_image_list))
+        #if 'o9g' in link_url:log(repr(meta_og_type)+'\n'+repr(og_image_list))
         if og_image_list:
             og_image=og_image_list[0]
             self.thumb_url=og_image
@@ -2682,9 +2683,8 @@ class ClassSupload(sitesBase):
 
         #og image is not good enough. we try to retrieve a better image by parsing html
         section_imageWrapper=parseDOM(html.text, "section", attrs = { "class": "imageWrapper" }, ret=None )
-        #if 'dqg' in link_url: log( pprint.pformat(section_imageWrapper) )
+        #if 'o9g' in link_url: log( pprint.pformat(section_imageWrapper) )
         if section_imageWrapper:
-
             if meta_og_type=='image':
                 #can also parse <a href for best image quality
                 #srcset=parseDOM(section_imageWrapper, "img", attrs={}, ret='srcset' )
@@ -2694,6 +2694,7 @@ class ClassSupload(sitesBase):
                     self.set_media_type_thumb_and_action(img[0])
             elif meta_og_type=='video':
                 video_url=parseDOM(html.text, "meta", attrs = { "property": "og:video" }, ret="content" )
+                #if 'o9g' in link_url: log( repr(video_url) )
                 if video_url:
                     self.set_media_type_thumb_and_action(video_url[0])
                     #supload classify gif as video. we need to determine if video is a gif so that we'll call looped playback
@@ -2729,7 +2730,7 @@ class ClassAcidcow(sitesBase):
 
     def get_playable_url(self, link_url, is_probably_a_video=False ):
         self.media_url=link_url
-        import pprint
+
         #u=media_url.split('?')[0]
         html=self.requests_get(link_url)
         #if '11616' in link_url:log(html.text)
@@ -2740,7 +2741,7 @@ class ClassAcidcow(sitesBase):
             self.media_type=self.TYPE_ALBUM
             return self.media_url, self.media_type
         else:
-            #default to youtube-dl video. 
+            #default to youtube-dl video.
             #direct image link posts are already taken care of in get_playable()
             #the only video sample i found is not playable via ytdl. TODO: .mp4 is in javascript block
             #    http://acidcow.com/video/61149-russian_soldiers_got_the_steel_balls.html
