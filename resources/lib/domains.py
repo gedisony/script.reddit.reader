@@ -257,19 +257,19 @@ class ClassYoutube(sitesBase):
         if not media_url:
             media_url=self.media_url
 
-        addtl_param=''
+        self.link_action='playYTDLVideo'
         self.get_video_id()
         #log('      youtube video id:' + self.video_id )
-
         #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
+
+        #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
+        #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43 
+        if 't=' in media_url:
+            return media_url, self.TYPE_VIDEO
+
         if self.video_id:
             #if use_ytdl_for_yt:
-            tsc=self.get_time_skip_code()
-            if tsc:
-                addtl_param='?t={0}'.format(tsc)
-
-            self.link_action='playYTDLVideo'
-            return "http://youtube.com/v/{0}{1}".format(self.video_id,addtl_param), self.TYPE_VIDEO
+            return "http://youtube.com/v/{0}".format(self.video_id), self.TYPE_VIDEO
             #else:
             #    self.link_action=self.DI_ACTION_PLAYABLE
             #    return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
@@ -669,8 +669,7 @@ class ClassVidme(sitesBase):
         #for attribute, value in j.iteritems():
         #    log(  str(attribute) + '==' + str(value))
         status = vid_info.get( 'state' )
-
-        log( "    vidme video state: " + status ) #success / suspended / deleted
+        #log( "    vidme video state: " + status ) #success / suspended / deleted
         if status != 'success':
             raise Exception( "vidme video: " +vid_info.get('state'))
 

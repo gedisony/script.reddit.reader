@@ -796,9 +796,9 @@ def playYTDLVideo(url, name, type_):
                 description=ytdl_format.get('description')
                 #check if there is a time skip code
                 try:
-                    start_time=int(float(ytdl_format.get('start_time')))
+                    start_time=ytdl_format.get('start_time',0)   #int(float(ytdl_format.get('start_time')))
                 except (ValueError, TypeError):
-                    start_time=None
+                    start_time=0
 
             li=xbmcgui.ListItem(label=title,
                                 label2='',
@@ -806,13 +806,14 @@ def playYTDLVideo(url, name, type_):
                                 thumbnailImage=video_info.get('thumbnail'),
                                 path=url)
             li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
+            li.setProperty('StartOffset', str(start_time))
             pl.add(url, li)
 
         xbmc.Player().play(pl, windowed=False)
 
         #only use the time skip code if there is only one item in the playlist
-        if start_time and pl.size()==1:
-            xbmc.Player().seekTime(start_time)
+        #if start_time and pl.size()==1:
+        #    xbmc.Player().seekTime(start_time)
 
     except Exception as e:
         err_msg=str(e)+';'  #ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest vers....
