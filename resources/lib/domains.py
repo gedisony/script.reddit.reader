@@ -130,11 +130,12 @@ class sitesBase(object):
             #if m_type=='image': return link_url
             return link_url #will a video link resolve to a preview image?
         else:
-            headers = {"Range": "bytes=0-1000"}
-            content = self.requests_get(link_url, headers)
+            #headers = {"Range": "bytes=0-1000"} content = self.requests_get(link_url, headers)
+            content = self.requests_get(link_url)
             i=parseDOM(content.text, "meta", attrs = { "property": "og:image" }, ret="content" )
-            if i[0]:
-                return i[0]
+            if i:
+                try: return i[0]
+                except IndexError: pass
             else:
                 log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
 
@@ -3027,7 +3028,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
         ld=LinkDetails(sitesBase.TYPE_VIDEO, 'playYTDLVideo', link_url, '', '')
         return ld
 
-def url_is_supported(url_to_check):
+def xurl_is_supported(url_to_check):
     #search our supported_sites[] to see if media_url can be handled by plugin
     #log('    ?url_is_supported:'+ url_to_check)
     if ytdl_sites:  pass

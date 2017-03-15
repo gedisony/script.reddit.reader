@@ -41,8 +41,6 @@
         <setting id="ll_qualiy"                        type="enum"        label="32154" values="480p|720p" default="1"/>
         <setting id="streamable_quality"               type="enum" label="32157" values="full|mobile" default="1" />
         <!-- setting id="use_ytdl_for_yt"                  type="bool" label="32112" default="false"/-->
-        <setting id="use_ytdl_for_unknown"             type="bool" label="32113" default="false"/>
-        <setting id="use_ytdl_for_unknown_in_comments" type="bool" label="32114" default="false"/>
         <setting type="sep" />
     </category>
 

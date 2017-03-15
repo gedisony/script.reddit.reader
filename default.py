@@ -76,8 +76,8 @@ try:istreamable_quality=int(addon.getSetting("streamable_quality"))  #values 0 o
 except ValueError:istreamable_quality=0
 streamable_quality  =["full", "mobile"][istreamable_quality]       #https://streamable.com/documentation
 
-use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true"
-use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
+#use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true"
+#use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
 
 addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
 subredditsFile      = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits")
@@ -203,6 +203,7 @@ def listSubReddit(url, title_bar_name, type_):
     #compare the number of entries to the returned results
     #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
     if q_liz.qsize() != len(content['data']['children']):
+        #some post might be filtered out.
         log('some threads did not return a listitem')
 
     #for t in threads: log('isAlive %s %s' %(t.getName(), repr(t.isAlive()) )  )
@@ -326,9 +327,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setArt({ "clearart": clearart  })
 
     #force all links to ytdl to see if they are playable
-    if use_ytdl_for_unknown:
-        liz.setProperty('item_type','script')
-        liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
+    #if use_ytdl_for_unknown:
+    liz.setProperty('item_type','script')
+    liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
 
     if previewimage: needs_preview=False
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
@@ -967,17 +968,14 @@ def listLinksInComment(url, name, type_):
                 #log('      there is a link from %s' %domain)
                 if not ld:
                     #log('      link is not supported ')
-                    if use_ytdl_for_unknown_in_comments:
-                        #log('      ********* activating unsupported link:' + link_url)
-                        #domain='[?]'
-                        liz.setProperty('item_type','script')
-                        liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
-                        plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
-                        liz.setLabel(tab+plot)
-                        liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
+                    liz.setProperty('item_type','script')
+                    liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
+                    plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
+                    liz.setLabel(tab+plot)
+                    liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
 
-                        clearart=ret_info_type_icon('', '')
-                        liz.setArt({ "clearart": clearart  })
+                    clearart=ret_info_type_icon('', '')
+                    liz.setArt({ "clearart": clearart  })
             if ld:
                 #use clearart to indicate if link is video, album or image. here, we default to unsupported.
                 #clearart=ret_info_type_icon(setInfo_type, mode_type)
@@ -1064,7 +1062,6 @@ def listLinksInComment(url, name, type_):
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
-    from resources.lib.domains import url_is_supported
     from resources.lib.utils import clean_str
     #recursive function to harvest stuff from the reddit comments json reply
     prog = re.compile('<a href=[\'"]?([^\'" >]+)[\'"]>(.*?)</a>')
@@ -1102,9 +1099,7 @@ def r_linkHunter(json_node,d=0):
                 harvest.append((score, link_desc, link_http, post_text, post_html, d, "t1",author,created_utc,)   )
 
                 for link_http,link_desc in result:
-                    if url_is_supported(link_http) :
-                        #store an entry for every supported link.
-                        harvest.append((score, link_desc, link_http, link_desc, post_html, d, "t1",author,created_utc,)   )
+                    harvest.append((score, link_desc, link_http, link_desc, post_html, d, "t1",author,created_utc,)   )
             else:
                 harvest.append((score, link_desc, link_http, post_text, post_html, d, "t1",author,created_utc,)   )
 
@@ -1121,8 +1116,7 @@ def r_linkHunter(json_node,d=0):
                 harvest.append((score, link_desc, link_http, self_text, self_text_html, d, "t3",author,created_utc, )   )
 
                 for link_http,link_desc in result:
-                    if url_is_supported(link_http) :
-                        harvest.append((score, link_desc, link_http, link_desc, self_text_html, d, "t3",author,created_utc, )   )
+                    harvest.append((score, link_desc, link_http, link_desc, self_text_html, d, "t3",author,created_utc, )   )
             else:
                 if len(self_text) > 0: #don't post an empty titles
                     harvest.append((score, link_desc, link_http, self_text, self_text_html, d, "t3",author,created_utc,)   )
