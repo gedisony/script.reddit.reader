@@ -11,7 +11,7 @@ import json
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import log
 
-from default import default_ytdl_psites_file, default_ytdl_sites_file, use_ytdl_for_unknown_in_comments, reddit_userAgent
+from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent
 from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
 
 use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
@@ -3040,8 +3040,8 @@ def xurl_is_supported(url_to_check):
         return True
 
     #if this setting is set to true, all links are supported. it is up to ytdl to see if it actually plays
-    if use_ytdl_for_unknown_in_comments:
-        return True
+    #if use_ytdl_for_unknown_in_comments:
+    #    return True
 
     #originally ytdl sites were matched in supported sites[] but it is getting so big that it is moved to a separate configurable file.
     #check if it matches ytdl sites
