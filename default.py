@@ -10,7 +10,6 @@ import json
 import datetime
 import time
 import xbmc
-import xbmcplugin
 import xbmcgui
 import xbmcaddon
 import urlparse
@@ -132,7 +131,7 @@ def index(url,name,type_):
     return
 
 def listSubReddit(url, title_bar_name, type_):
-    from resources.lib.utils import pretty_datediff, post_is_filtered_out, has_multiple_subreddits
+    from resources.lib.utils import post_is_filtered_out, has_multiple_subreddits
     from resources.lib.utils import assemble_reddit_filter_string,build_script,compose_list_item
 
     #the +'s got removed by url conversion
@@ -505,12 +504,12 @@ def reddit_post_worker(idx, entry, q_out):
             q_out.put( [idx, liz] )  #we put the idx back for easy sorting
 
     except Exception as e:
-        log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) )
+        log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) +'--'+ str(e) )
 
 q = Queue()
 def autoPlay(url, name, type_):
     from resources.lib.domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
-    from resources.lib.utils import unescape, pretty_datediff, post_is_filtered_out, determine_if_video_media_from_reddit_json, remove_duplicates, clean_str,strip_emoji
+    from resources.lib.utils import unescape, post_is_filtered_out, determine_if_video_media_from_reddit_json, strip_emoji
     from resources.lib.actions import setting_gif_repeat_count
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
@@ -540,7 +539,7 @@ def autoPlay(url, name, type_):
 
             try:
                 media_url = j_entry['data']['url']
-            except:
+            except (AttributeError,TypeError,ValueError):
                 media_url = j_entry['data']['media']['oembed']['url']
 
             is_a_video = determine_if_video_media_from_reddit_json(j_entry)
@@ -568,7 +567,6 @@ def autoPlay(url, name, type_):
 
         except Exception as e:
             log( '  autoPlay exception:' + str(e) )
-            pass
 
     #for i,e in enumerate(entries): log('  e1-%d %s:' %(i, e[1]) )
     #def k2(x): return x[1]
@@ -784,8 +782,8 @@ def playYTDLVideo(url, name, type_):
         #     to          except (ValueError,TypeError):
 
         #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
-        video_infos=_selectVideoQuality(ydl_info, quality=1, disable_dash=True)
-        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
+        video_infos=_selectVideoQuality(ydl_info, quality=0, disable_dash=True)
+        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=5) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         for video_info in video_infos:
@@ -879,7 +877,7 @@ def listLinksInComment(url, name, type_):
 
         try:
             submitter=content[0]['data']['children'][0]['data']['author']
-        except (AttributeError,TypeError,ValueError): 
+        except (AttributeError,TypeError,ValueError):
             submitter=''
 
         #the post title is provided in json, we'll just use that instead of messages from addLink()
@@ -1067,7 +1065,7 @@ def listLinksInComment(url, name, type_):
 harvest=[]
 def r_linkHunter(json_node,d=0):
     from resources.lib.domains import url_is_supported
-    from resources.lib.utils import clean_str 
+    from resources.lib.utils import clean_str
     #recursive function to harvest stuff from the reddit comments json reply
     prog = re.compile('<a href=[\'"]?([^\'" >]+)[\'"]>(.*?)</a>')
     for e in json_node:

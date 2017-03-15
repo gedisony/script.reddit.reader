@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+#################################################################################
+#
+#   This file is taken from the awesome youtube-dl addon by ruuk
+#
+#################################################################################
 import sys
 import time
 import datetime
@@ -9,6 +14,7 @@ import xbmc
 #updater.updateCore()
 
 #updater.set_youtube_dl_importPath()
+
 
 from youtube_dl.utils import std_headers, DownloadError  # noqa E402
 
@@ -366,6 +372,8 @@ def _getQualityLimits(quality):
         maxHeight = 720
     return minHeight, maxHeight
 
+from default import log
+import pprint
 
 def _selectVideoQuality(r, quality=1, disable_dash=True):
         import urllib
@@ -396,12 +404,19 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             keys = sorted(index.keys())
             fallback = formats[index[keys[0]]]
+            log( repr(index.keys()) )
+            log( repr(keys) )
             for fmt in keys:
                 fdata = formats[index[fmt]]
+                #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
                 if 'height' not in fdata:
                     continue
                 if disable_dash and 'dash' in fdata.get('format_note', '').lower():
                     continue
+                if 'protocol' in fdata and fdata.get('protocol')=='f4m':
+                    log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
+                    continue
+
                 h = fdata['height']
                 p = fdata.get('preference', 1)
                 if h >= minHeight and h <= maxHeight:
@@ -416,16 +431,23 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             formatID = None
             if prefFormat:
                 info = prefFormat
-                #logBase = '[{3}] Using Preferred Format: {0} ({1}x{2})'
+                logBase = '[{3}] Using Preferred Format: {0} ({1}x{2})'
             elif defFormat:
                 info = defFormat
-                #logBase = '[{3}] Using Default Format: {0} ({1}x{2})'
+                logBase = '[{3}] Using Default Format: {0} ({1}x{2})'
             else:
                 info = fallback
-                #logBase = '[{3}] Using Fallback Format: {0} ({1}x{2})'
+                logBase = '[{3}] Using Fallback Format: {0} ({1}x{2})'
+
+            #how do you decide which format xbmc will play?
+            #info=formats[index[keys[24]]]
+
             url = info['url']
             formatID = info['format_id']
-            #util.LOG(logBase.format(formatID, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')), debug=True)
+            format_desc=info['format']
+            log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
+
+            log('********************************************************************************************')
             if url.find("rtmp") == -1:
                 url += '|' + urllib.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
             else:

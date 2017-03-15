@@ -282,6 +282,8 @@ def viewTallImage(image_url, width, height):
         useWindow.removeControls( [img_control,img_loading] )
 
 def display_album_from(dictlist, album_name):
+    from domains import sitesBase
+    from utils import build_script
     directory_items=[]
     label=""
 
@@ -290,9 +292,11 @@ def display_album_from(dictlist, album_name):
     for idx, d in enumerate(dictlist):
         ti=d['li_thumbnailImage']
         media_url=d.get('DirectoryItem_url')
+        media_type=d.get('type')
+        media_thumb=d.get('thumb')
 
         #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
-        log('  display_album_from list:'+ media_url + "  " )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
+        log('  display_album_from list:'+ media_url + "  " + repr(media_type) )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
 
         #There is only 1 textbox for Title and description in our custom gui.
         #  I don't know how to achieve this in the xml file so it is done here:
@@ -308,8 +312,12 @@ def display_album_from(dictlist, album_name):
 
         liz=xbmcgui.ListItem(label=label,
                              label2=d['li_label2'],
-                             iconImage='',
-                             thumbnailImage='')
+                             iconImage=media_thumb,
+                             thumbnailImage=media_thumb)
+
+        if media_type==sitesBase.TYPE_VIDEO:
+            liz.setProperty('item_type','script')
+            liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
 
         #classImgur puts the media_url into  d['DirectoryItem_url']  no modification.
         #we modify it here...
