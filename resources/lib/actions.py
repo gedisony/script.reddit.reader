@@ -418,6 +418,26 @@ def error_message(message, name, type_):
         sub_msg=translation(32021) #Parsing error
     xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( message, sub_msg  ) )
 
+def playVideo(url, name, type_):
+    xbmc_busy(False)
+
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear()
+
+    if url : #sometimes url is a list of url or just a single string
+        if isinstance(url, basestring):
+            pl.add(url, xbmcgui.ListItem(name))
+            xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
+            #listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
+            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
+        else:
+            for u in url:
+                #log('u='+ repr(u))
+                #pl.add(u)
+                pl.add(u, xbmcgui.ListItem(name))
+            xbmc.Player().play(pl, windowed=False)
+    else:
+        log("playVideo(url) url is blank")
 
 
 
@@ -495,27 +515,17 @@ def update_youtube_dl_core(url,name,action_type):
                 shutil.move(extracted_core_path, ytdl_core_path)
                 update_dl_status('    New core copied')
                 xbmc.sleep(1000)
-                ytdl_apply_additional_patch()
-                xbmc.sleep(1000)
                 update_dl_status('Update complete')
-                xbmc.sleep(1000)
-                ourVersion=ytdl_get_version_info('local')
-                setSetting('ytdl_btn_check_version', "{0}".format(ourVersion))
-
+                xbmc.sleep(2000)
+                #ourVersion=ytdl_get_version_info('local')
+                setSetting('ytdl_btn_check_version', "")
+                setSetting('ytdl_btn_download', "")
             except Exception as e:
                 update_dl_status('Failed...')
                 log( 'move failed:'+str(e))
 
     elif action_type=='checkversion':
         note_ytdl_versions()
-
-def ytdl_apply_additional_patch():
-    #utils.py in youtube_dl have errors on certain video links. I think this is kodi specific. apply custom fix
-    patchfile_1=xbmc.translatePath(addon_path+"/resources/ytdl_patch_utils.py" )
-    patchdest_1=xbmc.translatePath(addon_path+"/resources/lib/youtube_dl/utils.py" )
-    update_dl_status('Applying patch')
-    shutil.copy(patchfile_1, patchdest_1)
-
 
 def note_ytdl_versions():
     #display ytdl versions and return latest version

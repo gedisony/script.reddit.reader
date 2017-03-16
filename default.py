@@ -355,7 +355,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
         liz.setArt({ "clearart": clearart  })
 
-
         if iconimage in ["","nsfw", "default"]:
             iconimage=ld.thumb
 
@@ -380,7 +379,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
 
         liz.setProperty('item_type',property_link_type)
-        #liz.setProperty('onClick_action',DirectoryItem_url)
         liz.setProperty('onClick_action',DirectoryItem_url)
         liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
         #log( liz.getProperty('album_images'))
@@ -734,29 +732,6 @@ class Worker(threading.Thread):
                         self.queue.put( [title, u] )
                 else:
                     log('      p-(ytdl-failed) %s' %( title )  )
-
-
-#MODE playVideo       - name, type not used
-def playVideo(url, name, type_):
-    xbmc_busy(False)
-
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()
-
-    if url : #sometimes url is a list of url or just a single string
-        if isinstance(url, basestring):
-            pl.add(url, xbmcgui.ListItem(name))
-            xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
-        	#listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
-            #xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
-        else:
-            for u in url:
-                #log('u='+ repr(u))
-                #pl.add(u)
-                pl.add(u, xbmcgui.ListItem(name))
-            xbmc.Player().play(pl, windowed=False)
-    else:
-        log("playVideo(url) url is blank")
 
 def playYTDLVideo(url, name, type_):
     from resources.lib.YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
@@ -1425,7 +1400,7 @@ if __name__ == '__main__':
 
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.converthtml import readHTML
-    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core
+    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo
 
     if mode=='':mode='index'  #default mode is to list start page (index)
     #plugin_modes holds the mode string and the function that will be called given the mode
