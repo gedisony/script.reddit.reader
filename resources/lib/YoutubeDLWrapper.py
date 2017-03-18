@@ -370,6 +370,7 @@ import pprint
 
 def _selectVideoQuality(r, quality=1, disable_dash=True):
         import urllib
+        import difflib
         #if quality is None:
         #    quality = util.getSetting('video_quality', 1)
         #disable_dash = util.getSetting('disable_dash_video', True)
@@ -396,9 +397,30 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                 index[formats[i]['format_id']] = i
 
             keys = sorted(index.keys())
+
             fallback = formats[index[keys[0]]]
-            log( repr(index.keys()) )
-            log( repr(keys) )
+            fallback_format_id=fallback.get('format_id','')
+            fallback_protocol=fallback.get('protocol','')
+
+            #log( repr(keys) )
+            #log( "fallback format:"+repr(fallback_format_id) )
+            #log( "fallback_protocol:"+repr(fallback_protocol) )
+
+            #kodi can't play this protocol   from:https://www.zdf.de/familienfieber-100.html
+            banned_protocols=['f4m']
+
+            if fallback_protocol in banned_protocols:
+                alternate_formats=difflib.get_close_matches(fallback_format_id, keys)
+
+                for a in alternate_formats:
+                    #log( "alternate_format:"+repr(a) )
+                    #log( "        protocol:"+repr(formats[index[a]].get('protocol','')) )
+                    alt_protocol=formats[index[a]].get('protocol','')
+                    if alt_protocol not in banned_protocols:
+                        fallback = formats[index[a]]
+                        log('picked alt format:' + a )
+                        break
+
             for fmt in keys:
                 fdata = formats[index[fmt]]
                 #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
@@ -406,7 +428,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                     continue
                 if disable_dash and 'dash' in fdata.get('format_note', '').lower():
                     continue
-                if 'protocol' in fdata and fdata.get('protocol')=='f4m':
+                if 'protocol' in fdata and fdata.get('protocol') in banned_protocols:
                     log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
                     continue
 
@@ -431,9 +453,6 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             else:
                 info = fallback
                 logBase = '[{3}] Using Fallback Format: {0} ({1}x{2})'
-
-            #how do you decide which format xbmc will play?
-            #info=formats[index[keys[24]]]
 
             url = info['url']
             formatID = info['format_id']
@@ -460,3 +479,4 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             )
             idx += 1
         return urls
+

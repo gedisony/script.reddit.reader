@@ -131,7 +131,7 @@ def editSubreddit(subreddit, name, type_):
 def setting_gif_repeat_count():
     srepeat_gif_video= addon.getSetting("repeat_gif_video")
     try: repeat_gif_video = int(srepeat_gif_video)
-    except: repeat_gif_video = 0
+    except ValueError: repeat_gif_video = 0
     #repeat_gif_video          = [0, 1, 3, 10, 100][repeat_gif_video]
     return [0, 1, 3, 10, 100][repeat_gif_video]
 
@@ -287,8 +287,6 @@ def display_album_from(dictlist, album_name):
     directory_items=[]
     label=""
 
-    using_custom_gui=True
-
     for idx, d in enumerate(dictlist):
         ti=d['li_thumbnailImage']
         media_url=d.get('DirectoryItem_url')
@@ -403,7 +401,7 @@ def loopedPlayback(url, name, type_):
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
     pl.add(url, xbmcgui.ListItem(name))
-    for x in range( 0, setting_gif_repeat_count() ):
+    for _ in range( 0, setting_gif_repeat_count() ):
 #        #log('u='+ repr(u))
         #log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'+repr(x))
         pl.add(url, xbmcgui.ListItem(name))
@@ -466,7 +464,7 @@ def ytdl_get_version_info(which_one='latest'):
 
 def update_youtube_dl_core(url,name,action_type):
 #credit to ruuk for most of the download code
-    import os, urllib, urllib2
+    import os, urllib
     import tarfile
 
     if action_type=='download':
@@ -501,7 +499,6 @@ def update_youtube_dl_core(url,name,action_type):
             update_dl_status('Error:' + str(e))
 
         update_dl_status('Updating...')
-
 
         if os.path.exists(extracted_core_path):
             log( '  extracted dir exists:'+extracted_core_path)
