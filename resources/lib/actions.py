@@ -403,8 +403,6 @@ def loopedPlayback(url, name, type_):
     pl.clear()
     pl.add(url, xbmcgui.ListItem(name))
     for _ in range( 0, setting_gif_repeat_count() ):
-#        #log('u='+ repr(u))
-        #log('xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'+repr(x))
         pl.add(url, xbmcgui.ListItem(name))
 
     #pl.add(url, xbmcgui.ListItem(name))
@@ -440,7 +438,6 @@ def playVideo(url, name, type_):
 
 def playYTDLVideo(url, name, type_):
     from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
-    #from resources.lib.actions import ytdl_get_version_info
     import pprint
 
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
