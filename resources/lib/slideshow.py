@@ -601,8 +601,6 @@ class HorizontalSlide2(ScreensaverBase):
         self.title_control=self.xbmc_window.getControl(201)
         self.desc_control=self.xbmc_window.getControl(202)
 
-        pass
-
 
     def start_loop(self):
         self.log('start_loop start')
@@ -632,7 +630,7 @@ class HorizontalSlide2(ScreensaverBase):
             #process_image done by subclass( assign animation and stuff to image control )
             self.toggle_info_display()
 
-            self.process_image(image_control_id, '')
+            self.process_image(image_control_id)
 
             self.current_desc_and_image=self.next_desc_and_image
             #image_url = image_url_cycle.next()
@@ -662,7 +660,6 @@ class HorizontalSlide2(ScreensaverBase):
         self.SHOW_TITLE=not self.SHOW_TITLE
         self.toggle_info_display_requested=False
         self.toggle_info_display(show_next=False)
-        pass
 
     def toggle_info_display(self,show_next=True):
         if show_next:
@@ -697,9 +694,8 @@ class HorizontalSlide2(ScreensaverBase):
             self.txt_group_control.setVisible(True)
         else:
             self.txt_group_control.setVisible(False)
-        pass
 
-    def process_image(self, image_control_id, desc_and_image):
+    def process_image(self, image_control_id):
 
         #width,height,ar = self.ret_image_ar(desc_and_image)
         #log('  %dx%d %f' %(width,height,ar ) )
@@ -879,7 +875,7 @@ class FadeScreensaver( HorizontalSlide2, ScreensaverBase):
                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ),
                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ]
 
-    def process_image(self, image_control_id, desc_and_image):
+    def process_image(self, image_control_id):
 
         description=self.next_desc_and_image[4]
         if description and self.SHOW_TITLE:
