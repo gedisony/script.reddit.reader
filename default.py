@@ -132,7 +132,7 @@ if __name__ == '__main__':
     from resources.lib.autoplay import autoPlay
     from resources.lib.converthtml import readHTML
     from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo, playYTDLVideo
-    from resources.lib.reddit import reddit_request, reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token
+    from resources.lib.reddit import reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token
     from resources.lib.main_listing import index, listSubReddit, listLinksInComment
 
     if mode=='':mode='index'  #default mode is to list start page (index)
