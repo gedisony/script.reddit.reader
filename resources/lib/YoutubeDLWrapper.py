@@ -365,7 +365,7 @@ def _getQualityLimits(quality):
         maxHeight = 720
     return minHeight, maxHeight
 
-from default import log
+from utils import log
 import pprint
 
 def _selectVideoQuality(r, quality=1, disable_dash=True):
@@ -418,7 +418,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                     alt_protocol=formats[index[a]].get('protocol','')
                     if alt_protocol not in banned_protocols:
                         fallback = formats[index[a]]
-                        log('picked alt format:' + a )
+                        #log('picked alt format:' + a )
                         break
 
             for fmt in keys:
@@ -429,7 +429,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                 if disable_dash and 'dash' in fdata.get('format_note', '').lower():
                     continue
                 if 'protocol' in fdata and fdata.get('protocol') in banned_protocols:
-                    log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
+                    #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
                     continue
 
                 h = fdata['height']
@@ -457,9 +457,9 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             url = info['url']
             formatID = info['format_id']
             format_desc=info['format']
-            log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
+            #log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
 
-            log('********************************************************************************************')
+            #log('********************************************************************************************')
             if url.find("rtmp") == -1:
                 url += '|' + urllib.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
             else:
@@ -480,3 +480,5 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             idx += 1
         return urls
 
+if __name__ == '__main__':
+    pass

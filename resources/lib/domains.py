@@ -9,7 +9,7 @@ import json
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import log
+from utils import log
 
 from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent
 from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
@@ -2207,7 +2207,7 @@ class ClassReddit(sitesBase):
     regex='^\/r\/(.+)(?:\/|$)|(reddit.com)'
 
     def get_playable_url(self, link_url, is_probably_a_video):
-        from utils import assemble_reddit_filter_string
+        from reddit import assemble_reddit_filter_string
         self.get_video_id()
         #log('    **get_playable_url subreddit=' + self.video_id )
 

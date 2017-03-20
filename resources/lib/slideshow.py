@@ -8,7 +8,9 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, ControlTextBox,
 
 #autoSlideshow
 
-from default import addon, log, translation, addon_path, addonID, reddit_request
+from default import addon, addon_path, addonID
+from utils import log, translation
+from reddit import reddit_request
 from domains import sitesBase, parse_reddit_link
 from actions import listAlbum
 
@@ -329,7 +331,7 @@ class ScreensaverBase(object):
 
     def init_cycle_controls(self):
         #self.log('  init_cycle_controls start')
-        for i in xrange(self.IMAGE_CONTROL_COUNT):
+        for _ in xrange(self.IMAGE_CONTROL_COUNT):
             img_control = ControlImage(0, 0, 0, 0, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
             txt_control = ControlTextBox(0, 0, 0, 0, font='font16')
 #                     xbfont_left = 0x00000000
@@ -426,7 +428,7 @@ class ScreensaverBase(object):
         images = []
 
         if source == 'image_folder':
-            #image folder source not used 
+            #image folder source not used
             path = '' #SlideshowCacheFolder  #addon.getSetting('image_path')
             if path:
                 images = self._get_folder_images(path)
@@ -449,7 +451,7 @@ class ScreensaverBase(object):
 
     def _get_folder_images(self, path):
         self.log('_get_folder_images started with path: %s' % repr(path))
-        dirs, files = xbmcvfs.listdir(path)
+        _, files = xbmcvfs.listdir(path)
         images = [
             xbmc.validatePath(path + f) for f in files
             if f.lower()[-3:] in ('jpg', 'png')

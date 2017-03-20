@@ -1,0 +1,149 @@
+
+
+github notes:  (6-27-2016)
+
+# Clone your fork of kodi's repo into the current directory in terminal
+git clone git@github.com:gedisony/repo-scripts.git repo-scripts
+
+# Navigate to the newly cloned directory
+cd repo-scripts
+
+# Assign the original repo to a remote called "upstream"
+git remote add upstream https://github.com/xbmc/repo-plugins.git
+
+#
+git checkout jarvis
+
+
+If you cloned a while ago, get the latest changes from upstream:
+
+# Fetch upstream changes
+git fetch upstream
+# Make sure you are on your 'master' branch
+git checkout master
+# Merge upstream changes
+git merge upstream/master
+
+'master' is only used as example here. Please replace it with the correct branch you want to submit your add-on towards.
+*** i think you need to use 'origin/jarvis' instead of 'master'
+
+
+
+#Create a new branch to contain your new add-on or subsequent update:
+$ git checkout -b script.reddit.reader
+
+#The branch name isn't really relevant however a good suggestion is to name it like the addon ID.
+
+
+#Commit your changes in a single commit, or your pull request is unlikely to be merged into the main repository.
+#Use git's interactive rebase feature to tidy up your commits before making them public. The commit for your add-on should have the following naming convention as the following example:
+*** don't know what it means "single commit" (how to commit?)
+*** go to repo-plugins and copy the entire folder plugin.video.reddit_viewer-master
+*** remove the "-master"  --> plugin.video.reddit_viewer
+***
+*** this is what i did:
+$ git commit -m "[script.reddit.reader] 0.7.1"
+
+On branch add-on-branch-name
+Untracked files:
+        plugin.video.reddit_viewer/                <------ error message
+
+nothing added to commit but untracked files present
+
+edipc@DESKTOP-5C55U1P MINGW64 ~/kodi stuff/repo-plugins (add-on-branch-name)
+$ git add .    <---- did this to fix the error.
+
+$ git commit -m "[script.reddit.reader] 0.7.1"  <------- this will now work
+
+
+#Push your topic branch up to your fork:
+
+git push origin script.reddit.reader
+
+#Open a pull request with a clear title and description.
+
+*** on browser: click on pull request
+upper left : base fork: xbmc/repo-plugins         base:    jarvis
+upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
+(click on green button create pull request)
+
+*** the clear title will be [script.reddit.reader] 0.7.1
+*** (don't know what description) left it as blank
+
+*** sent pull request on 6/27/2016
+
+
+
+
+
+
+if need to change things...
+
+git rebase --interactive HEAD~2
+(bunch of vi stuff later...)
+   *pick one  ("pick" the top of the list and "s" the bottom rest)
+   *squash the rest...
+
+(second vi stuff)
+   use the "[script.reddit.reader] 0.7.1" comment and # the rest
+
+(end bunch of vi stuff...)
+
+** sometimes need to use "git rebase --abort" to start over
+
+git push origin script.reddit.reader --force
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+new github notes (7/1/2016) special thanks to Skipmode A1  http://forum.kodi.tv/showthread.php?tid=280882&pid=2365444#pid2365444
+
+rem For a total restart: Delete repo-plugins from your repo on Github
+rem For a total restart: Fork the official kodi repo to your repo on Github
+rem Deleting C:\Kodi_stuff\repo-plugins and Cloning the kodi repo from your github to your pc
+rem Ctrl-C to abort!!!!
+pause
+rmdir /s /q C:\Kodi_stuff\repo-plugins
+cd C:\Kodi_stuff\
+c:
+rem Cloning the kodi repo from your github to your pc
+git clone git@github.com:gedisony/repo-plugins.git repo-plugins
+cd C:\Kodi_stuff\repo-plugins
+
+rem Assign the official kodi repo to a remote called "upstream"
+git remote add upstream https://github.com/xbmc/repo-plugins.git
+
+rem Add the addon in your github as a remote
+git remote add plugin.video.reddit_viewer git@github.com:gedisony/plugin.video.reddit_viewer
+
+rem Fetch your addon from your github
+git fetch plugin.video.reddit_viewer
+
+rem Make a branch for your addon and go to that branch
+git checkout -b branch_2.7.2 plugin.video.reddit_viewer/master
+
+rem go to the jarvis branch
+git checkout jarvis
+
+rem delete the old version of the addon
+git rm .\%1\ -r
+
+rem get the new version of the addon from the branch you created
+git read-tree --prefix=plugin.video.reddit_viewer/ -u branch_2.7.2
+
+rem force remove .git files (not used for me)
+git rm -f C:\Kodi_stuff\repo-plugins\plugin.video.reddit_viewer\.gitattributes
+git rm -f C:\Kodi_stuff\repo-plugins\plugin.video.reddit_viewer\.gitignore
+
+rem show the differences
+git diff --staged
+
+rem Commit the changes
+Git commit -m "[plugin.video.reddit_viewer] 2.7.2"
+
+rem push the stuff to the jarvis branch in your github (if everything went ok):
+git push origin jarvis
+
+*** on browser: click on pull request (similar to one above)

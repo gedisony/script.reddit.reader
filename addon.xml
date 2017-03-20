@@ -2,7 +2,7 @@
 <addon
     id="script.reddit.reader"
     name="Reddit Reader"
-    version="0.7.8"
+    version="0.8.0"
     provider-name="gedisony">
     <requires>
         <import addon="xbmc.python"                     version="2.25.0"/>

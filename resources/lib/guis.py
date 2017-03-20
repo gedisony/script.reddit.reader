@@ -157,7 +157,8 @@ class cGUI(xbmcgui.WindowXML):
             pass
 
     def load_subreddits_file_into_a_listitem(self):
-        from utils import parse_subreddit_entry, build_script, compose_list_item, assemble_reddit_filter_string, prettify_reddit_query
+        from utils import build_script, compose_list_item, prettify_reddit_query
+        from reddit import parse_subreddit_entry, assemble_reddit_filter_string
         entries=[]
         listing=[]
 
@@ -366,7 +367,8 @@ class listSubRedditGUI(cGUI):
         pass
 
     def onClick(self, controlID):
-        from utils import build_script, assemble_reddit_filter_string
+        from utils import build_script
+        from reddit import assemble_reddit_filter_string
         #log( ' clicked on control id %d'  %controlID )
 
         listbox_selected_item=self.gui_listbox.getSelectedItem()
@@ -483,7 +485,7 @@ class listSubRedditGUI(cGUI):
             pass
 
         elif controlID == self.BTN_SEARCH:
-            from default import translation
+            from utils import translation
 
             #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
             #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
@@ -598,5 +600,6 @@ def log(message, level=xbmc.LOGDEBUG):
     xbmc.log("reddit_viewer GUI:"+message, level=level)
 
 
-
+if __name__ == '__main__':
+    pass
 

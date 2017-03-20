@@ -5,10 +5,11 @@ import xbmcgui
 import sys
 import shutil
 
-from default import log, translation, xbmc_busy, subredditsFile, addon, addon_path, profile_path, ytdl_core_path
+from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path
+from utils import xbmc_busy, log, translation
 
 def manage_subreddits(subreddit, name, type_):
-    from default import index
+    from main_listing import index
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type_) )
     #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list
 
@@ -39,7 +40,7 @@ def manage_subreddits(subreddit, name, type_):
     index("","","")
 
 def addSubreddit(subreddit, name, type_):
-    from utils import this_is_a_multihub, format_multihub
+    from reddit import this_is_a_multihub, format_multihub
     log( 'addSubreddit ' + subreddit)
     alreadyIn = False
 
@@ -98,7 +99,7 @@ def removeSubreddit(subreddit, name, type_):
     xbmc.executebuiltin("Container.Refresh")
 
 def editSubreddit(subreddit, name, type_):
-    from utils import this_is_a_multihub, format_multihub
+    from reddit import this_is_a_multihub, format_multihub
     log( 'editSubreddit ' + subreddit)
 
     with open(subredditsFile, 'r') as fh:
@@ -437,9 +438,74 @@ def playVideo(url, name, type_):
     else:
         log("playVideo(url) url is blank")
 
+def playYTDLVideo(url, name, type_):
+    from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    #from resources.lib.actions import ytdl_get_version_info
+    import pprint
 
+    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    pl.clear()
 
+    dialog_progress_title='Youtube_dl'  #.format(ytdl_get_version_info())
 
+    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
+    dialog_progress_YTDL.create(dialog_progress_title )
+    dialog_progress_YTDL.update(10,dialog_progress_title,translation(32012)  )
+
+    #use YoutubeDLWrapper by ruuk to avoid  bad file error
+    ytdl=YoutubeDLWrapper()
+    try:
+        ydl_info=ytdl.extract_info(url, download=False)
+        #in youtube_dl utils.py def unified_timestamp(date_str, day_first=True):
+        # there was an error playing https://vimeo.com/14652586
+        #   on line 1195:
+        # change          except ValueError:
+        #     to          except (ValueError,TypeError):
+        #   this already fixed by ruuk magic. in YoutubeDLWrapper
+
+        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
+        video_infos=_selectVideoQuality(ydl_info, quality=0, disable_dash=True)
+        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=5) )
+        dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
+
+        for video_info in video_infos:
+            url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
+            title=video_info.get('title') or name
+            ytdl_format=video_info.get('ytdl_format')
+            if ytdl_format:
+                description=ytdl_format.get('description')
+                #check if there is a time skip code
+                try:
+                    start_time=ytdl_format.get('start_time',0)   #int(float(ytdl_format.get('start_time')))
+                except (ValueError, TypeError):
+                    start_time=0
+
+            li=xbmcgui.ListItem(label=title,
+                                label2='',
+                                iconImage=video_info.get('thumbnail'),
+                                thumbnailImage=video_info.get('thumbnail'),
+                                path=url)
+            li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
+            li.setProperty('StartOffset', str(start_time))
+            pl.add(url, li)
+
+        xbmc.Player().play(pl, windowed=False)
+
+        #only use the time skip code if there is only one item in the playlist
+        #if start_time and pl.size()==1:
+        #    xbmc.Player().seekTime(start_time)
+
+    except Exception as e:
+        err_msg=str(e)+';'  #ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest vers....
+        short_err=err_msg.split(';')[0]
+        log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
+        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( "Youtube_dl", short_err )  )
+        #try urlresolver
+        log('   trying urlresolver...')
+        playURLRVideo(url, name, type_)
+    finally:
+        dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
+        dialog_progress_YTDL.close()
 
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
