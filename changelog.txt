@@ -1,3 +1,7 @@
+0.8.0 (03-20-2017)
+ - screensaver bugfix
+ - cleanup
+
 0.8.0 (03-19-2017)
  - major code reorganize
 
