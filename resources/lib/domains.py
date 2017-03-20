@@ -285,24 +285,6 @@ class ClassYoutube(sitesBase):
         if match:
             self.video_id=match[0]
 
-    def get_time_skip_code(self):
-        try:
-            # Python 3
-            from urllib.parse import urlparse, parse_qs
-        except ImportError:
-            # Python 2
-            from urlparse import urlparse, parse_qs
-
-        o = urlparse(self.media_url)
-        query = parse_qs(o.query)
-        # extract the URL without query parameters
-        #log( repr(query) )
-        if 't' in query:
-            #youtube time skip is present in url
-            try: t=int(query['t'][0])
-            except:t=None
-            return t
-
     def get_thumb_url(self):
         """
             Each YouTube video has 4 generated images. They are predictably formatted as follows:
