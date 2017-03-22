@@ -422,12 +422,15 @@ def has_multiple_subreddits(content_data_children):
     s=""
     #compare the first subreddit with the rest of the list.
     for entry in content_data_children:
-        if s:
-            if s!=entry['data']['subreddit'].encode('utf-8'):
-                #log("  multiple subreddit")
-                return True
-        else:
-            s=entry['data']['subreddit'].encode('utf-8')
+        try:
+            if s:
+                if s!=entry['data']['subreddit'].encode('utf-8'):
+                    #log("  multiple subreddit")
+                    return True
+            else:
+                s=entry['data']['subreddit'].encode('utf-8')
+        except KeyError:
+            continue
 
     #log("  single subreddit")
     return False
@@ -472,21 +475,20 @@ def collect_thumbs( entry ):
     #log( str(dictList)  )
     return
 
-def determine_if_video_media_from_reddit_json( entry ):
+def determine_if_video_media_from_reddit_json( data ):
+    from utils import clean_str
     #reads the reddit json and determines if link is a video
     is_a_video=False
 
-    try:
-        media_url = entry.get('data')['media']['oembed']['url']   #+'"'
-    except (KeyError,TypeError,AttributeError):
-        #log("   media_url EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-        media_url = entry.get('data')['url']   #+'"'
+    media_url=clean_str(data,['media','oembed','url'],'')
+    if media_url=='':
+        media_url=clean_str(data,['url'])
 
     # also check  "post_hint" : "rich:video"
 
     media_url=media_url.split('?')[0] #get rid of the query string
     try:
-        zzz = entry['data']['media']['oembed']['type']
+        zzz = data['media']['oembed']['type']
         #log("    zzz"+str(idx)+"="+str(zzz))
         if zzz == None:   #usually, entry['data']['media'] is null for not videos but it is also null for gifv especially nsfw
             if ".gifv" in media_url.lower():  #special case for imgur
@@ -501,6 +503,102 @@ def determine_if_video_media_from_reddit_json( entry ):
         is_a_video=False
 
     return is_a_video
+
+def get_subreddit_info( subreddit ):
+    import requests
+    subs_dict={}
+
+    headers = {'User-Agent': reddit_userAgent}
+    req='https://www.reddit.com/r/%s/about.json' %subreddit
+    #log('headers:' + repr(headers))
+    r = requests.get( req, headers=headers, timeout=REQUEST_TIMEOUT )
+    if r.status_code == requests.codes.ok:
+        j=r.json()
+        j=j.get('data')
+        #log( pprint.pformat(j, indent=1) )
+
+        subs_dict.update( {'entry_name':subreddit.lower(),
+                           'display_name':j.get('display_name'),
+                           'banner_img': j.get('banner_img'),
+                           'icon_img': j.get('icon_img'),
+                           'header_img': j.get('header_img'), #not used? usually similar to with icon_img
+                           'title':j.get('title'),
+                           'header_title':j.get('header_title'),
+                           'public_description':j.get('public_description'),
+                           'subreddit_type':j.get('subreddit_type'),
+                           'subscribers':j.get('subscribers'),
+                           'created':j.get('created'),        #public, private
+                           'over18':j.get('over18'),
+                           } )
+
+        #log( pprint.pformat(subs_dict, indent=1) )
+        return subs_dict
+        #log( repr(self.thumb_url) )
+    else:
+        log( '    getting subreddit (%s) info:%s' %(subreddit, r.status_code) )
+
+subreddits_dlist=[]
+def ret_sub_info( subreddit_entry ):
+    #search subreddits_dlist for subreddit_entry and return info about it
+    #randomly pick one if there are multiple subreddits e.g.: gifs+funny
+    import random
+    from utils import load_dict
+    global subreddits_dlist #we make sure we only load the subredditsPickle file once for this instance
+    try:
+        if not subreddits_dlist:
+            if os.path.exists(subredditsPickle):
+                subreddits_dlist=load_dict(subredditsPickle)
+
+        subreddit_search=subreddit_entry.lower()
+        if '/' in subreddit_search:
+            subreddit_search=subreddit_search.split('/')[0]
+
+        if '+' in subreddit_search:
+            subreddit_search=random.choice(subreddit_search.split('+'))
+
+        for sd in subreddits_dlist:
+            #we have an entry in our pickle file about the subreddit entry
+            if sd.get('entry_name')==subreddit_search:
+                return sd
+    except:
+        #sometimes we get a race condition when the save thread is saving and the index function is listing
+        #hopefully the 'global' line up above minimizes this
+        pass
+
+def ret_sub_icon(subreddit):
+    sub_info=ret_sub_info(subreddit)
+
+    if sub_info:
+        #return the first item that isn't blank.
+        return next((item for item in [sub_info.get('icon_img'),sub_info.get('banner_img'),sub_info.get('header_img')] if item ), '')
+        #return sub_info.get('icon_img')
+
+subredditsFile_entries=[]
+def load_subredditsFile():
+    global subredditsFile_entries
+    if not subredditsFile_entries:
+        if os.path.exists(subredditsFile):  #....\Kodi\userdata\addon_data\plugin.video.reddit_viewer\subreddits
+            with open(subredditsFile, 'r') as fh:
+                content = fh.read()
+            spl = content.split('\n')
+
+            for i in range(0, len(spl), 1):
+                if spl[i]:
+                    subreddit = spl[i].strip()
+
+                    subredditsFile_entries.append(subreddit )
+    return subredditsFile_entries
+
+def subreddit_in_favorites( subreddit ):
+    sub_favorites=load_subredditsFile()
+    for entry in sub_favorites:
+        if subreddit.lower() == entry.lower():
+            return True
+        if '+' in entry:
+            spl=entry.split('+')
+            for s in spl:
+                if subreddit.lower() == s.lower():
+                    return True
 
 
 if __name__ == '__main__':

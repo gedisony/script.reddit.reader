@@ -1,4 +1,8 @@
-0.8.0 (03-20-2017)
+0.8.2 (03-21-2017)
+ - can add a users saved posts as a subreddit shortcut
+ - transfer over reddit_viewer functions
+
+0.8.1 (03-20-2017)
  - screensaver bugfix
  - cleanup
 

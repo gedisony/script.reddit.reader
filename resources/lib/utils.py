@@ -13,6 +13,22 @@ TIMEFORMAT = xbmc.getRegion('meridiem')
 #used to filter out image links if content_type is video (when this addon is called from pictures)
 image_exts = ['jpg','png', 'RAW', 'jpeg', 'tiff', 'tga', 'pcx', 'bmp'] #exclude 'gif' as we consider it as gifv
 
+def save_dict( dict_to_save, pickle_filename ):
+    with open(pickle_filename, 'wb') as output:
+        pickle.dump(dict_to_save, output)
+        output.close()
+
+def append_dict( dict_to_save, pickle_filename ):
+    with open(pickle_filename, 'a+b') as output:
+        pickle.dump(dict_to_save, output)
+        output.close()
+
+def load_dict( pickle_filename ):
+    with open(pickle_filename, 'rb') as inputpkl:
+        rows_dict= pickle.load(inputpkl)
+        inputpkl.close()
+    return rows_dict
+
 def xbmc_busy(busy=True):
     if busy:
         xbmc.executebuiltin("ActivateWindow(busydialog)")
@@ -164,20 +180,21 @@ def add_to_csv_setting(setting_id, string_to_add):
 
     xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( s, translation(30020)+' '+setting_id.replace('_',' ') ) ) #translation(30020)=Added to
 
-def post_is_filtered_out( entry ):
+def post_is_filtered_out( data ):
     from default import hide_nsfw, domain_filter, subreddit_filter
 
-    domain=entry['data']['domain'].encode('utf-8')
+    #domain=entry['data']['domain'].encode('utf-8')
+    domain=clean_str(data,['domain'])
     if post_excluded_from( domain_filter, domain ):
         log( '  POST is excluded by domain_filter [%s]' %domain )
         return True
 
-    subreddit=entry['data']['subreddit'].encode('utf-8')
+    subreddit=clean_str(data,['subreddit'])
     if post_excluded_from( subreddit_filter, subreddit ):
         log( '  POST is excluded by subreddit_filter [r/%s]' %subreddit )
         return True
 
-    try:    over_18 = entry['data']['over_18']
+    try:    over_18 = data.get('over_18')
     except: over_18 = False
 
     if over_18 and hide_nsfw:
@@ -192,14 +209,11 @@ def addtoFilter(to_filter, name, type_of_filter):
     if type_of_filter=='domain':
         #log( domain_filter +'+' + to_filter)
         add_to_csv_setting('domain_filter',to_filter)
-        pass
     elif type_of_filter=='subreddit':
         #log( subreddit_filter +'+' + to_filter )
         add_to_csv_setting('subreddit_filter',to_filter)
-        pass
     else:
         return
-    pass
 
 def prettify_reddit_query(subreddit_entry):
     #for search queries; make the reddit query string presentable
@@ -500,8 +514,24 @@ def clean_str(dict_obj, keys_list, default=''):
                 continue
         return unescape(dd.encode('utf-8'))
     except AttributeError as e:
-        log( str(e) )
+        log( 'clean_str:' + str(e) )
         return default
+
+
+def xstr(s):
+    #http://stackoverflow.com/questions/1034573/python-most-idiomatic-way-to-convert-none-to-empty-string
+    if s is None:
+        return ''
+    return str(s)
+
+
+def samealphabetic(*args):
+    #http://stackoverflow.com/questions/16474848/python-compare-strings-ignore-special-characters
+    return len(set(filter(lambda s: s.isalpha(), arg.lower()) for arg in args)) <= 1
+
+def hassamealphabetic(*args):
+    #returns true if there is a same
+    return len(set(filter(lambda s: s.isalpha(), arg) for arg in args)) <= 2
 
 def colored_subreddit(subreddit,color='cadetblue', add_r=True):
     #return "[COLOR "+color+"]r/" + subreddit + "[/COLOR]"

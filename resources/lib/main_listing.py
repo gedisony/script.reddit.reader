@@ -320,9 +320,21 @@ def reddit_post_worker(idx, entry, q_out):
         t_pts = u"\U00002709"  # translation(30072)   envelope symbol
         t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
 
+        #on 3/21/2017 we're adding a new feature that lets users view their saved posts by entering /user/username/saved as their subreddit.
+        #  in addition to saved posts, users can also save comments. we need to handle it by checking for "kind"
+        kind=entry.get('kind')  #t1 for comments  t3 for posts
         data=entry.get('data')
         if data:
-            title=clean_str(data,['title'])
+            if kind=='t3':
+                title = clean_str(data,['title'])
+                description=clean_str(data,['media','oembed','description'])
+                post_selftext=clean_str(data,['selftext'])
+
+                description=post_selftext+'[CR]'+description if post_selftext else description
+            else:
+                title=clean_str(data,['link_title'])
+                description=clean_str(data,['body'])
+
             title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
@@ -330,12 +342,6 @@ def reddit_post_worker(idx, entry, q_out):
 
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
-
-            description=clean_str(data,['media','oembed','description'])
-            post_selftext=clean_str(data,['selftext'])
-
-            description=post_selftext+'[CR]'+description if post_selftext else description
-            #log('    combined     [%s]' %description)
 
             commentsUrl = urlMain+clean_str(data,['permalink'])
             #log("commentsUrl"+str(idx)+"="+commentsUrl)
@@ -357,10 +363,11 @@ def reddit_post_worker(idx, entry, q_out):
             ups = data.get('score',0)       #downs not used anymore
             num_comments = data.get('num_comments',0)
 
+            d_url=clean_str(data,['url'])
+            link_url=clean_str(data,['link_url'])
+            media_oembed_url=clean_str(data,['media','oembed','url'])
 
-            media_url=clean_str(data,['url'])
-            if media_url=='':
-                media_url=clean_str(data,['media','oembed','url'])
+            media_url=next((item for item in [d_url,link_url,media_oembed_url] if item ), '')
             #log("     MEDIA%.2d=%s" %(idx,media_url))
 
             thumb=clean_str(data,['thumbnail'])
