@@ -65,6 +65,11 @@ msgctxt "#32014"
 msgid "Loading.."
 msgstr ""
 
+#show links as the first items in the list of comments (view_461_comments.xml)
+msgctxt "#32015"
+msgid "Sort links on top"
+msgstr ""
+
 msgctxt "#32019"
 msgid "Shortcut added"
 msgstr ""

@@ -526,9 +526,7 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     return cxm_list
 
 def listLinksInComment(url, name, type_):
-    from domains import parse_reddit_link, sitesBase
     from reddit import reddit_request
-    from utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
 
     log('listLinksInComment:%s:%s' %(type_,url) )
 
@@ -593,139 +591,35 @@ def listLinksInComment(url, name, type_):
         #for i, h in enumerate(harvest):
         #    log( '  %d %s %d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
 
-#         h[0]=score,
-#         h[1]=link_desc,
-#         h[2]=link_http,
-#         h[3]=post_text,
-#         h[4]=post_html,
-#         h[5]=d,
-#         h[6]="t1",
-#         h[7]=author,
-#         h[8]=created_utc,
+        c_threads=[]
+        q_liz=Queue()
+        comments_count=len(harvest)
+        for idx, h in enumerate(harvest):
+            #have threads process each comment post
+            t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter), name='#t%.2d'%idx)
+            c_threads.append(t)
+            t.start()
 
-        comment_score=0
-        for i, h in enumerate(harvest):
-
-            loading_percentage=int((float(i)/len(harvest))*100)
+        #wait for all threads to finish before collecting the list items
+        for idx, t in enumerate(c_threads):
+            #log('    joining %s' %t.getName())
+            t.join(timeout=20)
+            loading_percentage=int((float(idx)/comments_count)*100)
             dialog_progress.update( loading_percentage,dialog_progress_heading  )
 
-            #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
-            comment_score=h[0]
-            #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
-            link_url=h[2]
-            desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+        xbmc_busy(False)
 
-            kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.
-            d=h[5]   #depth of the comment
+        #compare the number of entries to the returned results
+        #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
+        if q_liz.qsize() != comments_count:
+            log('some threads did not return a listitem')
 
-            tab=" "*d if d>0 else "-"
+        #for t in threads: log('isAlive %s %s' %(t.getName(), repr(t.isAlive()) )  )
+        li=[ liz for idx,liz in sorted(q_liz.queue) ]
+        #log(repr(li))
 
-            author=h[7]
-
-            if link_url.startswith('/r/'):
-                domain='subreddit'
-            elif link_url.startswith('/u/'):
-                domain='redditor'
-            else:
-                from urlparse import urlparse
-                domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
-
-            #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
-            if comment_score < int_CommentTreshold:
-                #log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
-                continue
-
-            #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, property_link_type =make_addon_url_from(link_url, False, True)
-
-            if link_url:
-                log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
-
-            ld=parse_reddit_link(link_url=link_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
-
-            if author==submitter:#add a submitter tag
-                author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author
-            else:
-                author="[COLOR cadetblue]%s[/COLOR]" %author
-
-            if kind=='t1':
-                t_prepend=r"%s" %( tab )
-            elif kind=='t3':
-                t_prepend=r"[B]Post text:[/B]"
-
-            #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines
-            plot=h[3].replace('](', '] (')
-            plot= markdown_to_bbcode(plot)
-            plot=unescape(plot)  #convert html entities e.g.:(&#39;)
-
-            liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 ,
-                                 label2="",
-                                 iconImage="",
-                                 thumbnailImage="")
-
-            liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
-
-
-            #force all links to ytdl to see if it can be played
-            if link_url:
-                #log('      there is a link from %s' %domain)
-                if not ld:
-                    #log('      link is not supported ')
-                    liz.setProperty('item_type','script')
-                    liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
-                    plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
-                    liz.setLabel(tab+plot)
-                    liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
-
-                    clearart=ret_info_type_icon('', '')
-                    liz.setArt({ "clearart": clearart  })
-            if ld:
-                #use clearart to indicate if link is video, album or image. here, we default to unsupported.
-                #clearart=ret_info_type_icon(setInfo_type, mode_type)
-                clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
-                liz.setArt({ "clearart": clearart  })
-
-                if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
-                    property_link_type=ld.link_action
-                    DirectoryItem_url =ld.playable_url
-                else:
-                    property_link_type='script'
-                    DirectoryItem_url = build_script(mode=ld.link_action,
-                                                     url=ld.playable_url,
-                                                     name='' ,
-                                                     type_='' )
-
-                #(score, link_desc, link_http, post_text, post_html, d, )
-                #list_item_name=str(h[0]).zfill(3)
-
-                #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +link_url + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
-                #log( h[4] + ' -- videoID['+videoID+']' )
-                #log("sss:"+ supportedPluginUrl )
-
-                #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
-                #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
-
-                #turn link green
-                if DirectoryItem_url:
-                    plot= "[COLOR greenyellow][%s] %s"%(domain, plot )  + "[/COLOR]"
-                    liz.setLabel(tab+plot)
-
-                    #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
-                    liz.setArt({"thumb": ld.poster })
-
-                    liz.setProperty('item_type',property_link_type)   #script or playable
-                    liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
-                    liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
-                    #liz.setPath(DirectoryItem_url)
-
-                    directory_items.append( (DirectoryItem_url, liz,) )
-
-                #xbmcplugin.addDirectoryItem(handle=pluginhandle,url=DirectoryItem_url,listitem=liz,isFolder=isFolder)
-            else:
-                #this section are for comments that have no links or unsupported links
-                if not ShowOnlyCommentsWithlink:
-                    directory_items.append( ("", liz, ) )
-
-                #END section are for comments that have no links or unsupported links
+        with q_liz.mutex:
+            q_liz.queue.clear()
 
     except Exception as e:
         log('  ' + str(e) )
@@ -733,24 +627,7 @@ def listLinksInComment(url, name, type_):
     dialog_progress.update( 100,dialog_progress_heading  )
     dialog_progress.close()
 
-    xbmc_busy(False)
-    #for di in directory_items:
-    #    log( str(di) )
-
     from guis import commentsGUI
-
-    li=[]
-    for di in directory_items:
-        #log( '   %s-%s'  %(di[1].getLabel(), di[1].getProperty('onClick_action') ) )
-        li.append( di[1] )
-
-#     li.sort( key=getKey )
-#     log("  sorted")
-#
-#     for l in li:
-#         log( '   %s-%s'  %(l.getLabel(), l.getProperty('onClick_action') ) )
-
-
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     #NOTE: the subreddit selection screen and comments screen use the same gui. there is a button that is only for the comments screen
     ui.setProperty('comments', 'yes')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
@@ -761,6 +638,138 @@ def listLinksInComment(url, name, type_):
 
     ui.doModal()
     del ui
+
+def reddit_comment_worker(idx, h, q_out,submitter):
+    from domains import parse_reddit_link, sitesBase
+    from utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
+
+#         h[0]=score,
+#         h[1]=link_desc,
+#         h[2]=link_http,
+#         h[3]=post_text,
+#         h[4]=post_html,
+#         h[5]=d,
+#         h[6]="t1",
+#         h[7]=author,
+#         h[8]=created_utc,
+    try:
+        #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" "+ h[1] +'|'+ h[3] )
+        comment_score=h[0]
+        #log("score %d < %d (%s)" %(comment_score,int_CommentTreshold, CommentTreshold) )
+        link_url=h[2]
+        desc100=h[3].replace('\n',' ')[0:100] #first 100 characters of description
+
+        kind=h[6] #reddit uses t1 for user comments and t3 for OP text of the post. like a poster describing the post.
+        d=h[5]   #depth of the comment
+        tab=" "*d if d>0 else "-"
+        author=h[7]
+
+        if link_url.startswith('/r/'):
+            domain='subreddit'
+        elif link_url.startswith('/u/'):
+            domain='redditor'
+        elif link_url.startswith('#'):  #don't know what these are. they are to be replaced with image on reddit
+            domain=link_url
+        else:
+            from urlparse import urlparse
+            domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
+
+        #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
+        if comment_score < int_CommentTreshold:
+            log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
+            return
+
+        if link_url:
+            log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
+
+        ld=parse_reddit_link(link_url=link_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
+
+        if author==submitter:#add a submitter tag
+            author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author
+        else:
+            author="[COLOR cadetblue]%s[/COLOR]" %author
+
+        if kind=='t1':
+            t_prepend=r"%s" %( tab )
+        elif kind=='t3':
+            t_prepend=r"[B]Post text:[/B]"
+
+        #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines
+        plot=h[3].replace('](', '] (')
+        plot= markdown_to_bbcode(plot)
+        plot=unescape(plot)  #convert html entities e.g.:(&#39;)
+
+        liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 ,
+                             label2="",
+                             iconImage="",
+                             thumbnailImage="")
+
+        liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
+
+        #force all links to ytdl to see if it can be played
+        if link_url:
+            #log('      there is a link from %s' %domain)
+            if not ld:
+                #log('      link is not supported ')
+                liz.setProperty('item_type','script')
+                liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url) )
+                plot= "[COLOR greenyellow][%s] %s"%('?', plot )  + "[/COLOR]"
+                liz.setLabel(tab+plot)
+                liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
+
+                clearart=ret_info_type_icon('', '')
+                liz.setArt({ "clearart": clearart  })
+        if ld:
+            #use clearart to indicate if link is video, album or image. here, we default to unsupported.
+            #clearart=ret_info_type_icon(setInfo_type, mode_type)
+            clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
+            liz.setArt({ "clearart": clearart  })
+
+            if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
+                property_link_type=ld.link_action
+                DirectoryItem_url =ld.playable_url
+            else:
+                property_link_type='script'
+                DirectoryItem_url = build_script(mode=ld.link_action,
+                                                 url=ld.playable_url,
+                                                 name='' ,
+                                                 type_='' )
+
+            #(score, link_desc, link_http, post_text, post_html, d, )
+            #list_item_name=str(h[0]).zfill(3)
+
+            #log(str(i)+"  score:"+ str(h[0]).zfill(5)+" desc["+ h[1] +']|text:['+ h[3]+']' +link_url + '  videoID['+videoID+']' + 'playable:'+ setProperty_IsPlayable )
+            #log( h[4] + ' -- videoID['+videoID+']' )
+            #log("sss:"+ supportedPluginUrl )
+
+            #fl= re.compile('\[(.*?)\]\(.*?\)',re.IGNORECASE) #match '[...](...)' with a capture group inside the []'s as capturegroup1
+            #result = fl.sub(r"[B]\1[/B]", h[3])              #replace the match with [B] [/B] with capturegroup1 in the middle of the [B]'s
+
+            #turn link green
+            if DirectoryItem_url:
+                plot= "[COLOR greenyellow][%s] %s"%(domain, plot )  + "[/COLOR]"
+                liz.setLabel(tab+plot)
+
+                #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
+                liz.setArt({"thumb": ld.poster })
+
+                liz.setProperty('item_type',property_link_type)   #script or playable
+                liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
+                liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
+                #liz.setPath(DirectoryItem_url)
+
+                #directory_items.append( (DirectoryItem_url, liz,) )
+        else:
+            #this section are for comments that have no links or unsupported links
+            #if not ShowOnlyCommentsWithlink:
+                #directory_items.append( ("", liz, ) )
+            pass
+            #END section are for comments that have no links or unsupported links
+
+        q_out.put( [idx, liz] )
+
+    except Exception as e:
+        log('EXCEPTION comments_worker'+ str(e))
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
