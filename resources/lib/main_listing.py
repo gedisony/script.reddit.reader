@@ -248,6 +248,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
         liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
 
+    if num_comments > 0 or description:
+        liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
+
     liz.setProperty('link_url', link_url )
     #liz.setProperty('post_id', post_id )
 
@@ -621,6 +624,8 @@ def listLinksInComment(url, name, type_):
 
             if link_url.startswith('/r/'):
                 domain='subreddit'
+            elif link_url.startswith('/u/'):
+                domain='redditor'
             else:
                 from urlparse import urlparse
                 domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )

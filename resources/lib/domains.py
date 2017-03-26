@@ -2185,7 +2185,8 @@ class ClassImgbox(sitesBase):
             return self.thumb_url
 
 class ClassReddit(sitesBase):
-    regex='^\/r\/(.+)(?:\/|$)|(reddit.com)'
+    #matching /r/  /u/   and reddit.com
+    regex='^\/r\/(.+)(?:\/|$)|(^\/u\/)(.+)(?:\/|$)|(reddit\.com)'
 
     def get_playable_url(self, link_url, is_probably_a_video):
         from reddit import assemble_reddit_filter_string
@@ -2204,10 +2205,16 @@ class ClassReddit(sitesBase):
                 self.link_action='listSubReddit'
                 reddit_url=assemble_reddit_filter_string('',self.video_id)
                 return reddit_url, self.media_type
-
+            if link_url.startswith('/u/'):
+                author=link_url.split('/u/')[1]
+                self.link_action='listSubReddit'
+                #show links submitted by author
+                reddit_url=assemble_reddit_filter_string("","/user/"+author+'/submitted')
+                return reddit_url, self.media_type
         return '',''
 
     def get_video_id(self):
+        #returns subreddit name
         self.video_id=''
         match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://.+?\.reddit\.com\/r\/(.+?)(?:\/|$)' , self.media_url)
         #returns an array of tuples

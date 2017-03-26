@@ -45,7 +45,6 @@
     </category>
 
     <category label="32450">
-
     	<setting id="ytdl_btn_check_version"  type="action"      label="32451"  action="RunAddon(script.reddit.reader,mode=update_youtube_dl_core&type=checkversion)"/>
         <setting id="ytdl_btn_download"       type="action"      label="32452"  action="RunAddon(script.reddit.reader,mode=update_youtube_dl_core&type=download)"/>
     </category>
