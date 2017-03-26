@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
 	<defaultcontrol always="true">55</defaultcontrol>
-	<backgroundcolor>black</backgroundcolor>
+	<backgroundcolor>background</backgroundcolor>
 
 	<menucontrol>9000</menucontrol>
     	
 	<controls>
 	
-
 	
 		<!--BEGIN include name="DefaultBackground"-->
-		
 			<control type="group"><description>Right side panel</description>
 
 			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
@@ -101,7 +99,6 @@
 					<width>1000</width>
 					<height>1080</height>
 					<texture>focus_f3.png</texture>
-					<visible>True</visible>
 				</control>
 
 				<control type="textbox" id="65592"><description>partner with id 203</description>
@@ -597,241 +594,6 @@
 			<!--  onright>55</onright-->
 			<ondown>9000</ondown>
 			<onback>55</onback>
-
-			<control type="button" id="6056">
-				<visible>true</visible><description>html2text</description>
-				<enable>true</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>380</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32058]</label>
-			</control>
-
-			<control type="button" id="6058">
-				<visible>true</visible><description>view comments</description>
-				<enable>true</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>380</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32059]</label>
-			</control>
-
-			<control type="button" id="6052">
-				<visible>true</visible><description>go to subreddit. subreddit is stored in genre</description>
-				<enable>!String.IsEmpty(Container(55).ListItem.Property(goto_subreddit_action))</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32051]</label>
-				<label2>$INFO[Container(55).ListItem.Genre]</label2>
-			</control>
-			
-			<control type="button" id="6059">
-				<visible>true</visible><description>Search</description>
-				<enable>true</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32073]</label>
-			</control>
-			
-			<control type="button" id="6060">
-				<visible>true</visible><description>Search</description>
-				<enable>true</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32074]</label>
-			</control>
-			
-			<control type="button" id="6053">
-				<visible>false</visible><description>zoom_n_slide</description>
-				<enable>!String.IsEmpty(Container(55).ListItem.Property(zoom_n_slide_action))</enable>
-				<ondown>6050</ondown>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32050]</label>
-			</control>
-
-			<control type="group" id="6050">
-				<height>60</height>
-				<onup>6053</onup>
-				<ondown>6057</ondown>
-				<control type="button" id="6054">
-					<visible>true</visible><description>play all</description>
-					<enable>true</enable>
-						<top>0</top>
-						<left>0</left>
-						<height>60</height>
-						<width>250</width>
-				<onup>6053</onup>
-				<ondown>6055</ondown>
-				<onright>6057</onright>
-						<textoffsetx>20</textoffsetx>
-						<textwidth>320</textwidth>
-						<aligny>center</aligny>
-						<textcolor>white</textcolor>
-						<invalidcolor>invalid</invalidcolor>
-						<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-						<texturenofocus border="30">srr_separator.png</texturenofocus>
-						<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-						<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-					<label>$ADDON[script.reddit.reader 32054]</label>
-				</control>
-				<control type="button" id="6057">
-					<visible>true</visible><description>play from here</description>
-					<enable>true</enable>
-						<top>0</top>
-						<left>250</left>
-						<height>60</height>
-						<width>280</width>
-				<onup>6053</onup>
-				<ondown>6055</ondown>
-				<onleft>6054</onleft>
-						<textoffsetx>20</textoffsetx>
-						<textwidth>320</textwidth>
-						<aligny>center</aligny>
-						<textcolor>white</textcolor>
-						<invalidcolor>invalid</invalidcolor>
-						<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-						<texturenofocus border="30">srr_separator.png</texturenofocus>
-						<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-						<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-					<label>$ADDON[script.reddit.reader 32057]</label>
-				</control>
-			</control>
-
-			<control type="button" id="6055">
-				<visible>true</visible><description>Slideshow all images</description>
-				<enable>true</enable>
-					<width>530</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>60</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$ADDON[script.reddit.reader 32056]</label>
-			</control>
-
-			<!-- control type="edit" id="19"><description>go to subreddit editbox </description>
-				<visible>true</visible>
-				<textwidth>395</textwidth>
-					<width>430</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>70</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>$LOCALIZE[137]</label>
-			</control>
-			<control type="radiobutton" id="199">
-				<visible>true</visible>
-					<width>430</width>
-					<textoffsetx>20</textoffsetx>
-					<top>0</top>
-					<height>70</height>
-					<radioposx>330</radioposx>
-					<textwidth>320</textwidth>
-					<aligny>center</aligny>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-					<texturefocus colordiffuse="FF12A8DA">srr_focus.png</texturefocus>
-					<texturenofocus border="30">srr_separator.png</texturenofocus>
-					<alttexturefocus colordiffuse="FF12A8DA">srr_focus.png</alttexturefocus>
-					<alttexturenofocus border="30">srr_separator.png</alttexturenofocus>
-				<label>mmm $LOCALIZE[587]</label>
-				<selected>Container.Filtered</selected>
-				<onclick>right</onclick>
-				<onclick>Filter</onclick>
-			</control-->
-			
-
-			<!-- control type="label">    focus item won't go below this label 
-				<width>430</width>
-				<textoffsetx>20</textoffsetx>
-				<textoffsety>15</textoffsety>
-				<height>50</height>
-				<font>font12_title</font>
-				<align>left</align>
-				<aligny>top</aligny>
-				<textcolor>FF12A8DA</textcolor>
-				<label>aaaa aaa aaaa</label>
-			</control-->			
 			
 			<control type="list" id="550"><description>This listbox displays the subreddits</description>
 				<left>2</left>

@@ -6,7 +6,7 @@ import sys
 import shutil
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path
-from utils import xbmc_busy, log, translation
+from utils import xbmc_busy, log, translation, xbmc_notify
 
 def manage_subreddits(subreddit, name, type_):
     from main_listing import index
@@ -40,7 +40,8 @@ def manage_subreddits(subreddit, name, type_):
     index("","","")
 
 def addSubreddit(subreddit, name, type_):
-    from reddit import this_is_a_multihub, format_multihub
+    from utils import colored_subreddit
+    from reddit import this_is_a_multireddit, format_multihub
     log( 'addSubreddit ' + subreddit)
     alreadyIn = False
 
@@ -57,7 +58,8 @@ def addSubreddit(subreddit, name, type_):
         if not alreadyIn:
             with open(subredditsFile, 'a') as fh:
                 fh.write(subreddit+'\n')
-                #fh.close()
+            #get_subreddit_entry_info(subreddit)
+        xbmc_notify( colored_subreddit(subreddit), translation(32019) )
     else:
         #dialog = xbmcgui.Dialog()
         #ok = dialog.ok('Add subreddit', 'Add a subreddit (videos)','or  Multiple subreddits (music+listentothis)','or  Multireddit (/user/.../m/video)')
@@ -69,7 +71,7 @@ def addSubreddit(subreddit, name, type_):
             subreddit = keyboard.getText()
 
             #cleanup user input. make sure /user/ and /m/ is lowercase
-            if this_is_a_multihub(subreddit):
+            if this_is_a_multireddit(subreddit):
                 subreddit = format_multihub(subreddit)
 
             for line in content:
@@ -99,12 +101,11 @@ def removeSubreddit(subreddit, name, type_):
     xbmc.executebuiltin("Container.Refresh")
 
 def editSubreddit(subreddit, name, type_):
-    from reddit import this_is_a_multihub, format_multihub
+    from reddit import this_is_a_multireddit, format_multihub
     log( 'editSubreddit ' + subreddit)
 
     with open(subredditsFile, 'r') as fh:
         content = fh.readlines()
-        #fh.close()
 
     contentNew = ""
 
@@ -113,7 +114,7 @@ def editSubreddit(subreddit, name, type_):
     if keyboard.isConfirmed() and keyboard.getText():
         newsubreddit = keyboard.getText()
         #cleanup user input. make sure /user/ and /m/ is lowercase
-        if this_is_a_multihub(newsubreddit):
+        if this_is_a_multireddit(newsubreddit):
             newsubreddit = format_multihub(newsubreddit)
 
         for line in content:
@@ -125,7 +126,6 @@ def editSubreddit(subreddit, name, type_):
 
         with open(subredditsFile, 'w') as fh:
             fh.write(contentNew)
-            #fh.close()
 
         xbmc.executebuiltin("Container.Refresh")
 
@@ -367,7 +367,7 @@ def listAlbum(album_url, name, type_):
             return dictlist
 
         if not dictlist:
-            xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( translation(32200), translation(32055) )  )  #slideshow, no playable items
+            xbmc_notify(translation(32200), translation(32055)) #slideshow, no playable items
             return
 
         if addon.getSetting('use_slideshow_for_album') == 'true':
@@ -392,9 +392,9 @@ def playURLRVideo(url, name, type_):
             xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
         else:
             log( "  Can't URL Resolve:" + repr(url))
-            xbmc.executebuiltin('XBMC.Notification("%s", "%s (URLresolver" )'  %( translation(30192), domain )  )
+            xbmc_notify('URLresolver', translation(32192) )  #Failed to get playable url
     except Exception as e:
-        xbmc.executebuiltin('XBMC.Notification("%s","%s (URLresolver)")' %(  str(e), domain )  )
+        xbmc_notify('URLresolver:'+domain, str(e) )
 
 def loopedPlayback(url, name, type_):
     #for gifs
@@ -413,7 +413,7 @@ def error_message(message, name, type_):
         sub_msg=name
     else:
         sub_msg=translation(32021) #Parsing error
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( message, sub_msg  ) )
+    xbmc_notify(message, sub_msg)
 
 def playVideo(url, name, type_):
     xbmc_busy(False)
@@ -437,17 +437,18 @@ def playVideo(url, name, type_):
         log("playVideo(url) url is blank")
 
 def playYTDLVideo(url, name, type_):
+    dialog_progress_title='Youtube_dl'  #.format(ytdl_get_version_info())
+    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
+    dialog_progress_YTDL.create(dialog_progress_title )
+    dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
+
     from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
     import pprint
 
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
 
-    dialog_progress_title='Youtube_dl'  #.format(ytdl_get_version_info())
-
-    dialog_progress_YTDL = xbmcgui.DialogProgressBG()
-    dialog_progress_YTDL.create(dialog_progress_title )
-    dialog_progress_YTDL.update(10,dialog_progress_title,translation(32012)  )
+    dialog_progress_YTDL.update(20,dialog_progress_title,translation(32012)  )
 
     #use YoutubeDLWrapper by ruuk to avoid  bad file error
     ytdl=YoutubeDLWrapper()
@@ -493,10 +494,12 @@ def playYTDLVideo(url, name, type_):
         #    xbmc.Player().seekTime(start_time)
 
     except Exception as e:
+        ytdl_ver=dialog_progress_title+' v'+ytdl_get_version_info('local')
         err_msg=str(e)+';'  #ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest vers....
         short_err=err_msg.split(';')[0]
         log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
-        xbmc.executebuiltin('XBMC.Notification("%s", "%s" )'  %( "Youtube_dl", short_err )  )
+        xbmc_notify(ytdl_ver, short_err)
+
         #try urlresolver
         log('   trying urlresolver...')
         playURLRVideo(url, name, type_)
@@ -504,6 +507,34 @@ def playYTDLVideo(url, name, type_):
         dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
         dialog_progress_YTDL.close()
 
+def search(url, subreddit, type_):
+    from default import urlMain
+    from main_listing import listSubReddit
+    from utils import translation
+    import urllib
+
+    #reddit search only works with a single subreddit
+    if subreddit:
+        initial_search_string='restrict_sr=on&sort=relevance&t=all&q='
+        initial_url=urlMain+'/r/'+subreddit
+    else:
+        initial_search_string='sort=relevance&t=year&q='
+        initial_url=urlMain
+
+    keyboard = xbmc.Keyboard(initial_search_string, translation(32073))
+    keyboard.doModal()
+    if keyboard.isConfirmed() and keyboard.getText():
+
+        search_string=keyboard.getText()
+
+        if search_string:
+            search_string=urllib.unquote_plus(search_string)
+
+    #    #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
+    #    #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
+        url = initial_url +"/search.json?" +search_string    #+ '+' + nsfw  # + sites_filter skip the sites filter
+
+        listSubReddit(url, 'Search', "")
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
 YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{}.tar.gz'

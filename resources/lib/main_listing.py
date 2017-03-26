@@ -13,7 +13,6 @@ import os,sys
 from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, int_CommentTreshold
 from utils import xbmc_busy, log, translation
 
-
 default_frontpage    = addon.getSetting("default_frontpage")
 no_index_page        = addon.getSetting("no_index_page") == "true"
 main_gui_skin        = addon.getSetting("main_gui_skin")
@@ -45,17 +44,23 @@ def index(url,name,type_):
 
     return
 
-def listSubReddit(url, title_bar_name, type_):
-    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_busy
-    from reddit import reddit_request, has_multiple_subreddits, assemble_reddit_filter_string
+#global variables used for creating the context menu
+GCXM_hasmultiplesubreddit=False
+GCXM_hasmultipledomain=False
+GCXM_hasmultipleauthor=False
+GCXM_actual_url_used_to_generate_these_posts=''
+GCXM_reddit_query_of_this_gui=''
 
+def listSubReddit(url, subreddit_key, type_):
+    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_busy
+    from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
+
+    global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
     #the +'s got removed by url conversion
-    title_bar_name=title_bar_name.replace(' ','+')
+    title_bar_name=subreddit_key.replace(' ','+')
     #log("  title_bar_name %s " %(title_bar_name) )
 
     log("listSubReddit r/%s url=%s" %(title_bar_name,url) )
-
-    li=[]
 
     currentUrl = url
     xbmc_busy()
@@ -69,6 +74,7 @@ def listSubReddit(url, title_bar_name, type_):
 
     if not content:
         xbmc_busy(False)
+        dialog_progress.update( 100,dialog_progress_heading  )
         return
 
     threads = []
@@ -81,8 +87,10 @@ def listSubReddit(url, title_bar_name, type_):
 
     #log("query returned %d items " % len(content['data']['children']) )
     posts_count=len(content['data']['children'])
+    filtered_out_posts=0
 
-    hms = has_multiple_subreddits(content['data']['children'])
+    hms=has_multiple('subreddit', content['data']['children'])
+
     if hms==False:
         #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link.
         try: g=content['data']['children'][0]['data']['subreddit']
@@ -93,9 +101,20 @@ def listSubReddit(url, title_bar_name, type_):
             #  extract the &after string from currentUrl -OR- send it with the 'type' argument when calling this function.
             currentUrl=assemble_reddit_filter_string('',g) + '&after=' + type_
 
+    GCXM_hasmultiplesubreddit=hms
+    GCXM_hasmultipledomain=has_multiple('domain', content['data']['children'])
+    GCXM_hasmultipleauthor=has_multiple('author', content['data']['children'])
+    GCXM_actual_url_used_to_generate_these_posts=url
+    GCXM_reddit_query_of_this_gui=currentUrl
+
     for idx, entry in enumerate(content['data']['children']):
         try:
-            if post_is_filtered_out( entry ):
+            #if entry.get('kind')!='t3':
+            #    filtered_out_posts+=1
+            #    continue
+
+            if post_is_filtered_out( entry.get('data') ):
+                filtered_out_posts+=1
                 continue
 
             #have threads process each reddit post
@@ -117,7 +136,7 @@ def listSubReddit(url, title_bar_name, type_):
 
     #compare the number of entries to the returned results
     #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
-    if q_liz.qsize() != len(content['data']['children']):
+    if (q_liz.qsize()+filtered_out_posts) != len(content['data']['children']):
         #some post might be filtered out.
         log('some threads did not return a listitem')
 
@@ -155,8 +174,6 @@ def listSubReddit(url, title_bar_name, type_):
 
     title_bar_name=urllib.unquote_plus(title_bar_name)
     ui=skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)
-    #set properties to the window(to be retrieved by gui methods)
-    ui.setProperty('actual_url_used_to_generate_these_posts',url)    #used by reload function - specially done for r/random and r/randnsfw (could have used currentUrl)
     ui.doModal()
     del ui
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class.
@@ -177,7 +194,10 @@ def skin_launcher(mode,**kwargs ):
     currentUrl=kwargs.get('currentUrl')
     #log('********************* ' + repr(currentUrl))
     try:
-        ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, subreddits_file=subreddits_file, id=55)
+        ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i',
+                              listing=li,
+                              subreddits_file=subreddits_file,
+                              id=55)
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
         ui.reddit_query_of_this_gui=currentUrl
         #ui.include_parent_directory_entry=True
@@ -188,9 +208,9 @@ def skin_launcher(mode,**kwargs ):
         log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
 
-def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, site, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id='', post_index=1,post_total=1,many_subreddit=False ):
+def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, commentsUrl, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id=''):
     from utils import ret_info_type_icon, build_script
-    from reddit import assemble_reddit_filter_string
+    #from reddit import assemble_reddit_filter_string
     from domains import parse_reddit_link, sitesBase
 
     DirectoryItem_url=''
@@ -228,12 +248,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
         liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
 
-    #----- assign actions
-    if num_comments > 0 or description:
-        liz.setProperty('comments_action', build_script('listLinksInComment', site ) )
-    liz.setProperty('goto_subreddit_action', build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit) )
     liz.setProperty('link_url', link_url )
-    liz.setProperty('post_id', post_id )
+    #liz.setProperty('post_id', post_id )
 
     liz.setInfo(type='video', infoLabels=il)
 
@@ -246,9 +262,13 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setProperty('item_type','script')
     liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
 
+    #***build context menu***
+    #    convert a list of tuple into a string then set it as a property
+    #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
+    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by)) )
+
     if previewimage: needs_preview=False
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
-
 
     ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
 
@@ -331,9 +351,12 @@ def reddit_post_worker(idx, entry, q_out):
                 post_selftext=clean_str(data,['selftext'])
 
                 description=post_selftext+'[CR]'+description if post_selftext else description
+                domain=clean_str(data,['domain'])
             else:
                 title=clean_str(data,['link_title'])
                 description=clean_str(data,['body'])
+                domain='Comment post'
+
 
             title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
 
@@ -357,7 +380,6 @@ def reddit_post_worker(idx, entry, q_out):
 
             subreddit=clean_str(data,['subreddit'])
             author=clean_str(data,['author'])
-            domain=clean_str(data,['domain'])
             #log("     DOMAIN%.2d=%s" %(idx,domain))
 
             ups = data.get('score',0)       #downs not used anymore
@@ -366,7 +388,11 @@ def reddit_post_worker(idx, entry, q_out):
             d_url=clean_str(data,['url'])
             link_url=clean_str(data,['link_url'])
             media_oembed_url=clean_str(data,['media','oembed','url'])
-
+#            log('   kind     ='+kind)
+#            log('    url     ='+d_url)
+#            log('    link_url='+link_url)
+#            log('   permalink='+clean_str(data,['permalink']))
+#            log('    media_oembed_url='+media_oembed_url)
             media_url=next((item for item in [d_url,link_url,media_oembed_url] if item ), '')
             #log("     MEDIA%.2d=%s" %(idx,media_url))
 
@@ -413,7 +439,7 @@ def reddit_post_worker(idx, entry, q_out):
                     description=description,
                     credate=credate,
                     reddit_says_is_video=is_a_video,
-                    site=commentsUrl,
+                    commentsUrl=commentsUrl,
                     subreddit=subreddit,
                     link_url=media_url,
                     over_18=over_18,
@@ -424,14 +450,77 @@ def reddit_post_worker(idx, entry, q_out):
                     #post_total=0,
                     #many_subreddit=hms
                     )
+            #context menu actions
+            #liz.setProperty('readHTML_action', build_script("listSubReddit", actual_query_of_this_gui ) )
+
             q_out.put( [idx, liz] )  #we put the idx back for easy sorting
 
     except Exception as e:
         log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) +'--'+ str(e) )
 
 
+def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by):
+    from reddit import assemble_reddit_filter_string, subreddit_in_favorites #, this_is_a_user_saved_list
+    from utils import colored_subreddit, build_script, truncate
 
+    s=truncate(subreddit,15)     #crop long subreddit names in context menu
+    colored_subreddit_short=colored_subreddit( s )
+    colored_subreddit_full=colored_subreddit( subreddit )
+    colored_domain_full=colored_subreddit( domain, 'tan',False )
+    post_title_short=truncate(post_title,15)
+    post_author=truncate(posted_by,15)
 
+    label_view_comments=translation(32050)+' ({})'.format(num_comments)
+    label_goto_subreddit=translation(32051)+' {}'.format(colored_subreddit_full)
+    label_goto_domain=translation(32053)+' {}'.format(colored_domain_full)
+    label_search=translation(32052)
+    label_autoplay_after=translation(32055)+' '+colored_subreddit( post_title_short, 'gray',False )
+    label_more_by_author=translation(32049)+' '+colored_subreddit( post_author, 'gray',False )
+
+    cxm_list=[('html to text'      , build_script('readHTML', link_url)         ),
+              (label_view_comments , build_script('listLinksInComment', commentsUrl )  ),]
+
+    #more by author
+    if GCXM_hasmultipleauthor:
+        cxm_list.append( (label_more_by_author, build_script("listSubReddit", assemble_reddit_filter_string("","/user/"+posted_by+'/submitted'), posted_by)  ) )
+
+    #more from r/subreddit
+    if GCXM_hasmultiplesubreddit:
+        cxm_list.append( (label_goto_subreddit, build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit)  ) )
+
+    #more from domain
+    if GCXM_hasmultipledomain:
+        cxm_list.append( (   label_goto_domain, build_script("listSubReddit", assemble_reddit_filter_string("",'','',domain), domain)  ) )
+
+    #more random
+    if any(x in GCXM_actual_url_used_to_generate_these_posts.lower() for x in ['/random','/randnsfw']): #if '/rand' in GCXM_actual_url_used_to_generate_these_posts:
+        cxm_list.append( (translation(32053) +' random', build_script('listSubReddit', GCXM_actual_url_used_to_generate_these_posts)) , )  #Reload
+
+    #Autoplay all
+    #Autoplay after post_title
+    #slideshow
+    cxm_list.extend( [
+                    (translation(32054)    , build_script('autoPlay', GCXM_reddit_query_of_this_gui)),
+                    (label_autoplay_after  , build_script('autoPlay', GCXM_reddit_query_of_this_gui.split('&after=')[0]+'&after='+post_id)),
+                    (translation(32048)    , build_script('autoSlideshow', GCXM_reddit_query_of_this_gui)),
+                    ])
+
+    #Add %s to shortcuts
+    if not subreddit_in_favorites(subreddit):
+        cxm_list.append( (translation(32056)%colored_subreddit_short, build_script("addSubreddit", subreddit)  ) )
+
+    #Add to subreddit/domain filter
+    cxm_list.append( (translation(32057) %colored_subreddit_short, build_script("addtoFilter", subreddit,'','subreddit')  ) )
+    cxm_list.append( (translation(32057) %colored_domain_full    , build_script("addtoFilter", domain,'','domain')  ) )
+
+    #Search
+    if GCXM_hasmultiplesubreddit:
+        cxm_list.append( (label_search        , build_script("search", '', '')  ) )
+    else:
+        label_search+=' {}'.format(colored_subreddit_full)
+        cxm_list.append( (        label_search, build_script("search", '', subreddit)  ) )
+
+    return cxm_list
 
 def listLinksInComment(url, name, type_):
     from domains import parse_reddit_link, sitesBase

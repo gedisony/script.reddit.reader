@@ -42,7 +42,7 @@ msgctxt "#32009"
 msgid "Cannot retrieve URL"
 msgstr ""
 
-#error message popup when youtube-dl can't get playable url 
+#error message popup when youtube-dl can't get playable url
 msgctxt "#32010"
 msgid "Could not get a playable url"
 msgstr ""
@@ -52,7 +52,7 @@ msgctxt "#32011"
 msgid "Cannot parse ID from link"
 msgstr ""
 
-#YTDL dialogProgressBG message 
+#YTDL dialogProgressBG message
 msgctxt "#32012"
 msgid "Checking link.."
 msgstr ""
@@ -61,60 +61,84 @@ msgctxt "#32013"
 msgid "Playing"
 msgstr ""
 
-#error message notification to the user when link is 404 etc.  
+msgctxt "#32014"
+msgid "Loading.."
+msgstr ""
+
+msgctxt "#32019"
+msgid "Shortcut added"
+msgstr ""
+
+#confirmation message that subreddit/domain has been added to subreddit/domain filter
+#e.g.: r/writingprompt Added to subreddit_filter
+msgctxt "#32020"
+msgid "Added to"
+msgstr ""
+
+#error message notification to the user when link is 404 etc.
 msgctxt "#32021"
 msgid "Parsing error"
 msgstr ""
 
-#: used in gui to zoom+scroll down a very tall image 
-msgctxt "#32050"
-msgid "Zoom"
+
+#: used in context menu.  slideshow
+msgctxt "#32048"
+msgid "Slideshow"
 msgstr ""
 
-#: used in context menu. "Go to r/funny". <-- generate new list from r/funny subreddit 
+#: used in context menu.  show more posts by author
+msgctxt "#32049"
+msgid "More by"
+msgstr ""
+
+#: used in context menu.
+msgctxt "#32050"
+msgid "Show comments"
+msgstr ""
+
+#: used in context menu. "Go to r/funny". <-- generate new list from r/funny subreddit
 msgctxt "#32051"
 msgid "Go to"
 msgstr ""
 
-#show links as the first items in the list of comments
 msgctxt "#32052"
-msgid "Sort links on top"
+msgid "Search"
 msgstr ""
 
-#indicates that the post don't not have comments
-msgctxt "#30053"
-msgid "No comments"
+#: shows up when user picks /r/random or /r/randnsfw
+msgctxt "#32053"
+msgid "More"
 msgstr ""
 
-#used on left sliding panel
 msgctxt "#32054"
-msgid "Play All"
+msgid "Autoplay all"
 msgstr ""
 
 msgctxt "#32055"
-msgid "No playable items"
+msgid "Autoplay after"
 msgstr ""
 
-#used on left sliding panel
+#: used in context menu. add r/funny to shortcuts list
 msgctxt "#32056"
-msgid "Slideshow"
+msgid "Add %s to shortcuts"
 msgstr ""
 
-#Play all - from here
+#: used in context menu. Hide r/writingprompt posts (do not show posts from r/writingprompt) or (do not show posts from fakenews.com)
 msgctxt "#32057"
-msgid "from here"
+msgid "Hide %s posts"
 msgstr ""
 
+#: used in context menu.
 msgctxt "#32058"
-msgid "View using html2text"
+msgid "Reddit: Save this post"
 msgstr ""
 
 msgctxt "#32059"
-msgid "Read Comments"
+msgid "Reddit: Unsave this post"
 msgstr ""
 
 
-#begin strings used in pretty date to indicate how long ago a post is posted (keep these strings short and similar length) 
+#begin strings used in pretty date to indicate how long ago a post is posted (keep these strings short and similar length)
 msgctxt "#32060"
 msgid "just now"
 msgstr ""
@@ -158,14 +182,14 @@ msgstr ""
 msgctxt "#32070"
 msgid " years ago"
 msgstr ""
-# end strings used in pretty date to indicate how long ago a post is posted 
+# end strings used in pretty date to indicate how long ago a post is posted
 
 # 7 hrs ago [on] r/funny 251 [cmts]
 msgctxt "#32071"
 msgid "on"
 msgstr ""
 
-# 7 hrs ago [on] r/funny 251 [cmts]   
+# 7 hrs ago [on] r/funny 251 [cmts]
 msgctxt "#32072"
 msgid "cmts"
 msgstr ""
@@ -256,6 +280,11 @@ msgid "Streamable.com Video Quality"
 msgstr ""
 
 
+#error message popup when youtube-dl can't get playable url 
+msgctxt "#32192"
+msgid "Failed to get playable url"
+msgstr ""
+
 
 
 msgctxt "#32200"
@@ -311,7 +340,7 @@ msgctxt "#32228"
 msgid "Source subreddit for screensaver images"
 msgstr ""
 
-#30192-30299 empty
+
 
 msgctxt "#32300"
 msgid "Filters"

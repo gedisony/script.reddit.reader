@@ -11,12 +11,10 @@ import json
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
 from utils import log
 
-from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent
+from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent, REQUEST_TIMEOUT
 from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
 
 use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
-
-REQUEST_TIMEOUT=5 #requests.get timeout in seconds
 
 from CommonFunctions import parseDOM
 #import pprint
@@ -259,22 +257,23 @@ class ClassYoutube(sitesBase):
         if not media_url:
             media_url=self.media_url
 
-        self.link_action='playYTDLVideo'
         self.get_video_id()
         #log('      youtube video id:' + self.video_id )
+
         #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
-
-        #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
-        #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
-        if 't=' in media_url:
-            return media_url, self.TYPE_VIDEO
-
         if self.video_id:
-            #if use_ytdl_for_yt:
-            return "http://youtube.com/v/{0}".format(self.video_id), self.TYPE_VIDEO
-            #else:
-            #    self.link_action=self.DI_ACTION_PLAYABLE
-            #    return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
+            if use_ytdl_for_yt:
+                self.link_action='playYTDLVideo'
+
+                #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
+                #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
+                if 't=' in media_url:
+                    return media_url, self.TYPE_VIDEO
+                else:
+                    return "http://youtube.com/v/{0}".format(self.video_id), self.TYPE_VIDEO
+            else:
+                self.link_action=self.DI_ACTION_PLAYABLE
+                return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
             self.link_action='playYTDLVideo'

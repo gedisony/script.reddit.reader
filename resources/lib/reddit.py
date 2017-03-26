@@ -4,16 +4,17 @@ import xbmcgui
 import sys
 import urllib2, urllib
 import re
+import os
 
 from default import addon, subredditsFile, urlMain, itemsPerPage
-from utils import log, translation
+from utils import log, translation, xbmc_notify
 from default import reddit_clientID, reddit_userAgent, reddit_redirect_uri
 
 
 reddit_refresh_token =addon.getSetting("reddit_refresh_token")
 reddit_access_token  =addon.getSetting("reddit_access_token") #1hour token
 
-def reddit_request( url ):
+def reddit_request( url, data=None ):
     #this function replaces     content = opener.open(url).read()
     #  for calls to reddit
 
@@ -34,7 +35,7 @@ def reddit_request( url ):
         req.add_header('Authorization','bearer '+ reddit_access_token )
 
     try:
-        page = urllib2.urlopen(req)
+        page = urllib2.urlopen(req,data=data, timeout=20)
         response=page.read();page.close()
         #log( response )
         return response
@@ -66,7 +67,8 @@ def reddit_request( url ):
     except urllib2.URLError, err: # Not an HTTP-specific error (e.g. connection refused)
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( err.reason, url)  )
         log( str(err.reason) )
-
+    except :
+        pass
 
 def reddit_get_refresh_token(url, name, type_):
     #this function gets a refresh_token from reddit and keep it in our addon. this refresh_token is used to get 1-hour access tokens.
@@ -262,6 +264,19 @@ def reddit_revoke_refresh_token(url, name, type_):
         xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( str(e), 'Revoking refresh token' )  )
         log("  Revoking refresh token EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
 
+def reddit_save(api_method, post_id, type_):
+    #api_method either /api/save/  or /api/unsave/
+    url=urlMain+api_method
+    data = urllib.urlencode({'id'  : post_id })
+
+    response=reddit_request( url,data )
+    log(repr(response))
+    if response=='{}':
+        xbmc_notify(api_method, 'Success')
+        if api_method=='/api/unsave/':
+            xbmc.executebuiltin('XBMC.Container.Refresh')
+    else:
+        xbmc_notify(api_method, response)
 
 def create_default_subreddits():
     #create a default file and sites
@@ -295,13 +310,17 @@ def format_multihub(multihub):
     #xbmc.log ("/".join(ls))
     return "/".join(ls)
 
-def this_is_a_multihub(subreddit):
+
+def this_is_a_multireddit(subreddit):
     #subreddits and multihub are stored in the same file
     #i think we can get away with just testing for user/ to determine multihub
-    if subreddit.lower().startswith('user/') or subreddit.lower().startswith('/user/'): #user can enter multihub with or without the / in the beginning
-        return True
-    else:
-        return False
+    subreddit=subreddit.lower()
+    return subreddit.startswith(('user/','/user/')) #user can enter multihub with or without the / in the beginning
+
+def this_is_a_user_saved_list(subreddit):
+    #user saved list looks like this "https://www.reddit.com/user/XXXXXXX/saved"  and saved as "/user/XXXXXXX/saved"  in out subreddits file
+    subreddit=subreddit.lower()
+    return (subreddit.startswith(('user/','/user/')) and subreddit.endswith('/saved') )
 
 def parse_subreddit_entry(subreddit_entry_from_file):
     #returns subreddit, [alias] and description. also populates WINDOW mailbox for custom view id of subreddit
@@ -310,21 +329,26 @@ def parse_subreddit_entry(subreddit_entry_from_file):
 
     subreddit, alias, viewid = subreddit_alias( subreddit_entry_from_file )
 
+    entry_type='subreddit'
+
     description=subreddit
     #check for domain filter
     a=[':','/domain/']
     if any(x in subreddit for x in a):  #search for ':' or '/domain/'
+        entry_type='domain'
         #log("domain "+ subreddit)
         domain=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
         description=translation(32008) % domain            #"Show posts from"
 
     #describe combined subreddits
     if '+' in subreddit:
+        entry_type='combined'
         description=subreddit.replace('+','[CR]')
 
     #describe multireddit or multihub
-    if this_is_a_multihub(subreddit):
-        description=translation(32007)  #"Custom Multireddit"
+    if this_is_a_multireddit(subreddit):
+        entry_type='multireddit'
+        description=translation(30007)  #"Custom Multireddit"
 
     #save that view id in our global mailbox (retrieved by listSubReddit)
     #WINDOW.setProperty('viewid-'+subreddit, viewid)
@@ -386,7 +410,7 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
         #https://www.reddit.com/domain/vimeo.com/?&limit=5
         url+= "/domain/%s/.json?" %(domain)   #/domain doesn't work with /search?q=
     else:
-        if this_is_a_multihub(subreddit):
+        if this_is_a_multireddit(subreddit):
             #e.g: https://www.reddit.com/user/sallyyy19/m/video/search?q=multihub&restrict_sr=on&sort=relevance&t=all
             #https://www.reddit.com/user/sallyyy19/m/video
             #url+='/user/sallyyy19/m/video'
@@ -401,7 +425,6 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
             #else:
                 #default to front page instead of r/all
                 #url+= "/r/all"
-            #   pass
 
         if search_string:
             search_string = urllib.unquote_plus(search_string)
@@ -417,22 +440,19 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
     #log("assemble_reddit_filter_string="+url)
     return url
 
-def has_multiple_subreddits(content_data_children):
-    #check if content['data']['children'] returned by reddit contains a single subreddit or not
+def has_multiple(tag, content_data_children):
+    #combined has_multiple_domains, has_multiple_subreddit, has_multiple_author
+    #used to check if a returned .json from reddit is from a single subreddit, domain or author
     s=""
-    #compare the first subreddit with the rest of the list.
     for entry in content_data_children:
         try:
             if s:
-                if s!=entry['data']['subreddit'].encode('utf-8'):
-                    #log("  multiple subreddit")
+                if s!=entry['data'][tag]:
                     return True
             else:
-                s=entry['data']['subreddit'].encode('utf-8')
+                s=entry['data'][tag]
         except KeyError:
             continue
-
-    #log("  single subreddit")
     return False
 
 def collect_thumbs( entry ):

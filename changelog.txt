@@ -1,3 +1,11 @@
+0.8.3 (03-25-2017)
+ - redo context menu.
+ - remove left side panel
+ - new context menu items:
+    - add domain/subreddit to filter
+    - More posts by user
+    - More posts by domain
+   
 0.8.2 (03-21-2017)
  - can add a users saved posts as a subreddit shortcut
  - transfer over reddit_viewer functions

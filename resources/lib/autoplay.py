@@ -5,6 +5,7 @@ import json
 import threading
 import time
 from Queue import Queue, Empty
+from utils import log
 
 
 q = Queue()
@@ -26,7 +27,6 @@ def autoPlay(url, name, type_):
 
     xbmc_busy()
 
-    #content = opener.open(url).read()
     content = reddit_request(url)
     if not content: return
     #log( str(content) )
@@ -80,7 +80,7 @@ def autoPlay(url, name, type_):
         try:
             log('  possible playable items(%.2d) %s...%s (%s)' %(i, e[0].ljust(15)[:15], e[1],e[2]) )
         except:
-            pass
+            continue
 
     if len(entries)==0:
         log('  Play All: no playable items' )

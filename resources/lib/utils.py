@@ -177,13 +177,12 @@ def add_to_csv_setting(setting_id, string_to_add):
         s=colored_subreddit( string_to_add, 'tan',False )
     elif setting_id=='subreddit_filter':
         s=colored_subreddit( string_to_add )
-
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( s, translation(30020)+' '+setting_id.replace('_',' ') ) ) #translation(30020)=Added to
+    xbmc_notify(s, translation(32020)+' '+setting_id.replace('_',' ')) #translation(30020)=Added to
+    #xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( s, translation(32020)+' '+setting_id.replace('_',' ') ) ) #translation(30020)=Added to
 
 def post_is_filtered_out( data ):
     from default import hide_nsfw, domain_filter, subreddit_filter
 
-    #domain=entry['data']['domain'].encode('utf-8')
     domain=clean_str(data,['domain'])
     if post_excluded_from( domain_filter, domain ):
         log( '  POST is excluded by domain_filter [%s]' %domain )
@@ -536,6 +535,12 @@ def hassamealphabetic(*args):
 def colored_subreddit(subreddit,color='cadetblue', add_r=True):
     #return "[COLOR "+color+"]r/" + subreddit + "[/COLOR]"
     return "[COLOR %s]%s%s[/COLOR]" %(color,('r/' if add_r else ''),subreddit )
+
+def truncate(string, length, ellipse='...'):
+    return (string[:length] + ellipse) if len(string) > length else string
+
+def xbmc_notify(Line1, line2):
+    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( Line1, line2) )
 
 if __name__ == '__main__':
     pass

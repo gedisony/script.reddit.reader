@@ -66,6 +66,8 @@ try:istreamable_quality=int(addon.getSetting("streamable_quality"))  #values 0 o
 except ValueError:istreamable_quality=0
 streamable_quality  =["full", "mobile"][istreamable_quality]       #https://streamable.com/documentation
 
+REQUEST_TIMEOUT=5 #requests.get timeout in seconds
+
 #use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true"
 #use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
 
@@ -123,16 +125,17 @@ if __name__ == '__main__':
 #    log("----------------------")
 #    log("params="+ str(params))
 #    log("mode="+ mode)
-#    log("type="+ typez)
-#    log("name="+ name)
 #    log("url="+  url)
+#    log("name="+ name)
+#    log("type="+ type_)
 #    log("-----------------------")
 
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.autoplay import autoPlay
     from resources.lib.converthtml import readHTML
-    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo, playYTDLVideo
-    from resources.lib.reddit import reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token
+    from resources.lib.utils import addtoFilter
+    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo, playYTDLVideo, search
+    from resources.lib.reddit import reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token, reddit_save
     from resources.lib.main_listing import index, listSubReddit, listLinksInComment
 
     if mode=='':mode='index'  #default mode is to list start page (index)
@@ -143,6 +146,8 @@ if __name__ == '__main__':
                     ,'addSubreddit'         : addSubreddit
                     ,'editSubreddit'        : editSubreddit
                     ,'removeSubreddit'      : removeSubreddit
+                    ,'addtoFilter'          : addtoFilter
+                    ,'search'               : search
                     ,'autoPlay'             : autoPlay
                     ,'autoSlideshow'        : autoSlideshow
                     ,'listAlbum'            : listAlbum        #slideshowAlbum
@@ -159,6 +164,7 @@ if __name__ == '__main__':
                     ,'get_refresh_token'    : reddit_get_refresh_token
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
+                    ,'reddit_save'          : reddit_save
                     }
 
     #'playYTDLVideo','listLinksInComment' takes a long time to complete. when these modes are called from the gui, a long xbmc.executebuiltin("ActivateWindow(busydialog)") is run
