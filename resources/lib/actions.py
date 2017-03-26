@@ -293,6 +293,7 @@ def display_album_from(dictlist, album_name):
         media_url=d.get('DirectoryItem_url')
         media_type=d.get('type')
         media_thumb=d.get('thumb')
+        isPlayable=d.get('isPlayable')
 
         #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
         log('  display_album_from list:'+ media_url + "  " + repr(media_type) )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
@@ -315,14 +316,12 @@ def display_album_from(dictlist, album_name):
                              thumbnailImage=media_thumb)
 
         if media_type==sitesBase.TYPE_VIDEO:
-            liz.setProperty('item_type','script')
-            liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
-
-        #classImgur puts the media_url into  d['DirectoryItem_url']  no modification.
-        #we modify it here...
-        #url_for_DirectoryItem = sys.argv[0]+"?url="+ urllib.quote_plus(d['DirectoryItem_url']) +"&mode=viewImage"
-        #hoster, DirectoryItem_url, videoID, mode_type, thumb_url,poster_url, isFolder,setInfo_type, IsPlayable=make_addon_url_from(d['DirectoryItem_url'],False)
-        #if poster_url=="": poster_url=ti
+            if isPlayable=='true':
+                liz.setProperty('item_type','playable')
+                liz.setProperty('onClick_action', media_url )
+            else:
+                liz.setProperty('item_type','script')
+                liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
 
         liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
         #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })
