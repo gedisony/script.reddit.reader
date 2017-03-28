@@ -126,12 +126,16 @@ def listSubReddit(url, subreddit_key, type_):
     loading_indicator.set_tick_total(expected_listitems)
     last_queue_size=0
     while q_liz.qsize() < expected_listitems:
-        if break_counter>=1000:break
-        else:break_counter+=1
+        if break_counter>=100:
+            break
+
         #each change in the queue size gets a tick on our progress track
         if last_queue_size < q_liz.qsize():
             items_added=q_liz.qsize()-last_queue_size
             loading_indicator.tick(items_added)
+        else:
+            break_counter+=1
+
         last_queue_size=q_liz.qsize()
         xbmc.sleep(100)
 
@@ -599,7 +603,14 @@ def listLinksInComment(url, name, type_):
         c_threads=[]
         q_liz=Queue()
         comments_count=len(harvest)
+        filtered_posts=0
         for idx, h in enumerate(harvest):
+            comment_score=h[0]
+            if comment_score < 1:
+                log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
+                filtered_posts+=1
+                continue
+
             #have threads process each comment post
             t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter), name='#t%.2d'%idx)
             c_threads.append(t)
@@ -607,18 +618,21 @@ def listLinksInComment(url, name, type_):
 
         #check the queue to determine progress
         break_counter=0 #to avoid infinite loop
-        expected_listitems=(comments_count)
+        expected_listitems=(comments_count-filtered_posts)
         loading_indicator.set_tick_total(expected_listitems)
         last_queue_size=0
         while q_liz.qsize() < expected_listitems:
-            if break_counter>=1000:break
-            else:break_counter+=1
+            if break_counter>=100:
+                break
             #each change in the queue size gets a tick on our progress track
             if last_queue_size < q_liz.qsize():
                 items_added=q_liz.qsize()-last_queue_size
                 loading_indicator.tick(items_added)
+            else:
+                break_counter+=1
+
             last_queue_size=q_liz.qsize()
-            xbmc.sleep(100)
+            xbmc.sleep(50)
 
         #wait for all threads to finish before collecting the list items
         for idx, t in enumerate(c_threads):
@@ -692,9 +706,6 @@ def reddit_comment_worker(idx, h, q_out,submitter):
             domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
 
         #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
-        if comment_score < int_CommentTreshold:
-            log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
-            return
 
         if link_url:
             log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
