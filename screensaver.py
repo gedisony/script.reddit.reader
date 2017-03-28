@@ -7,7 +7,7 @@ import urllib
 addon = xbmcaddon.Addon()
 screensaver_subreddit = addon.getSetting("screensaver_subreddit")
 
-from resources.lib.reddit import assemble_reddit_filter_string, this_is_a_multihub
+from resources.lib.reddit import assemble_reddit_filter_string
 
 if __name__ == '__main__':
     xbmc.log('starting reddit_reader screensaver',xbmc.LOGNOTICE)

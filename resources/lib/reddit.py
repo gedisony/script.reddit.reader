@@ -7,7 +7,7 @@ import re
 import os
 
 from default import addon, subredditsFile, urlMain, itemsPerPage
-from utils import log, translation, xbmc_notify
+from utils import log, translation,xbmc_notify
 from default import reddit_clientID, reddit_userAgent, reddit_redirect_uri
 
 

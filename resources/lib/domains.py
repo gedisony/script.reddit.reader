@@ -374,8 +374,15 @@ class ClassImgur(sitesBase):
                 return False
 
         #log("    imgur:check if album- request_url---"+request_url )
-        r = self.requests_get(request_url, headers=ClassImgur.request_header)
-        #log(r.text)
+        try:
+            r = self.requests_get(request_url, headers=ClassImgur.request_header)
+        except requests.exceptions.HTTPError:
+            #http://imgur.com/gallery/Ji0IWhG this link has /gallery/ but returns 404 if asked as gallery
+            request_url="https://api.imgur.com/3/image/"+gallery_name 
+            log('      Trying a different query:'+request_url)
+            r = self.requests_get(request_url, headers=ClassImgur.request_header)
+
+        #if 'Ji0I' in media_url: log(r.text)
         j = r.json()
         #log(" is_album=" + str(j['data']['is_album'])    )
         #log(" in_gallery=" + str(j['data']['in_gallery'])    )
@@ -541,7 +548,7 @@ class ClassImgur(sitesBase):
             imgs=j.get('data').get('images')
         else:
             imgs=j.get('data')
-        log(repr(imgs))
+
         for _, entry in enumerate(imgs):
             link_type=entry.get('type')         #image/jpeg
             if link_type=='image/gif':
@@ -914,8 +921,15 @@ class ClassLiveleak(sitesBase):
     # *** liveleak handled by ytdl
 
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
-        self.link_action=sitesBase.DI_ACTION_YTDL
-        return self.media_url, self.TYPE_VIDEO
+        use_ytdl_for_ll=True
+        if use_ytdl_for_ll:
+            self.link_action=sitesBase.DI_ACTION_YTDL
+            return self.media_url, self.TYPE_VIDEO
+
+        else:
+            self.link_action=self.DI_ACTION_PLAYABLE
+            return "plugin://plugin.video.liveleak/?mode=play&url={0}&src={0}".format(urllib.quote_plus( media_url ),''), self.TYPE_VIDEO
+
 
     def get_thumb_url(self, quality0123=1):
         log('    getting liveleak thumbnail ')

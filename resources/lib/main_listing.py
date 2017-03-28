@@ -52,6 +52,7 @@ GCXM_actual_url_used_to_generate_these_posts=''
 GCXM_reddit_query_of_this_gui=''
 
 def listSubReddit(url, subreddit_key, type_):
+    from guis import progressBG
     from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_busy
     from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
 
@@ -65,26 +66,20 @@ def listSubReddit(url, subreddit_key, type_):
     currentUrl = url
     xbmc_busy()
 
-    dialog_progress = xbmcgui.DialogProgressBG()
-    dialog_progress_heading='Loading'
-    dialog_progress.create(dialog_progress_heading )
-    dialog_progress.update(0,dialog_progress_heading, title_bar_name  )
-
-    content = reddit_request(url)  #content = opener.open(url).read()
+    loading_indicator=progressBG('Loading...')
+    loading_indicator.update(0,'Retrieving '+subreddit_key)
+    content = reddit_request(url)
+    loading_indicator.update(10,subreddit_key  )
 
     if not content:
         xbmc_busy(False)
-        dialog_progress.update( 100,dialog_progress_heading  )
+        loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
         return
 
     threads = []
-    #q_posts = Queue() #input queue for worker(json entry of a single post)
     q_liz = Queue()   #output queue (listitem)
 
-    #7-15-2016  removed the "replace(..." statement below cause it was causing error
-    #content = json.loads(content.replace('\\"', '\''))
     content = json.loads(content)
-
     #log("query returned %d items " % len(content['data']['children']) )
     posts_count=len(content['data']['children'])
     filtered_out_posts=0
@@ -125,12 +120,25 @@ def listSubReddit(url, subreddit_key, type_):
         except Exception as e:
             log(" EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
 
+    #check the queue to determine progress
+    break_counter=0 #to avoid infinite loop
+    expected_listitems=(posts_count-filtered_out_posts)
+    loading_indicator.set_tick_total(expected_listitems)
+    last_queue_size=0
+    while q_liz.qsize() < expected_listitems:
+        if break_counter>=1000:break
+        else:break_counter+=1
+        #each change in the queue size gets a tick on our progress track
+        if last_queue_size < q_liz.qsize():
+            items_added=q_liz.qsize()-last_queue_size
+            loading_indicator.tick(items_added)
+        last_queue_size=q_liz.qsize()
+        xbmc.sleep(100)
+
     #wait for all threads to finish before collecting the list items
     for idx, t in enumerate(threads):
         #log('    joining %s' %t.getName())
         t.join(timeout=20)
-        loading_percentage=int((float(idx)/posts_count)*100)
-        dialog_progress.update( loading_percentage,dialog_progress_heading  )
 
     xbmc_busy(False)
 
@@ -150,8 +158,7 @@ def listSubReddit(url, subreddit_key, type_):
     with q_liz.mutex:
         q_liz.queue.clear()
 
-    dialog_progress.update( 100,dialog_progress_heading  )
-    dialog_progress.close() #it is important to close xbmcgui.DialogProgressBG
+    loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
 
     try:
         #this part makes sure that you load the next page instead of just the first
@@ -526,15 +533,13 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     return cxm_list
 
 def listLinksInComment(url, name, type_):
+    from guis import progressBG
     from reddit import reddit_request
 
     log('listLinksInComment:%s:%s' %(type_,url) )
 
-    directory_items=[]
-    author=""
     post_title=''
     ShowOnlyCommentsWithlink=False
-
     if type_=='linksOnly':
         ShowOnlyCommentsWithlink=True
 
@@ -555,13 +560,13 @@ def listLinksInComment(url, name, type_):
     url+= '.json'
     xbmc_busy()
 
-    dialog_progress = xbmcgui.DialogProgressBG()
-    dialog_progress_heading='Loading'
-    dialog_progress.create(dialog_progress_heading )
-    dialog_progress.update(0,dialog_progress_heading, 'Comments'  )
-
+    loading_indicator=progressBG('Loading...')
+    loading_indicator.update(0,'Retrieving comments')
     content = reddit_request(url)
-    if not content: return
+    loading_indicator.update(10,'Parsing')
+
+    if not content: 
+        return
     #content = r''
 
     #log(content)
@@ -600,12 +605,25 @@ def listLinksInComment(url, name, type_):
             c_threads.append(t)
             t.start()
 
+        #check the queue to determine progress
+        break_counter=0 #to avoid infinite loop
+        expected_listitems=(comments_count)
+        loading_indicator.set_tick_total(expected_listitems)
+        last_queue_size=0
+        while q_liz.qsize() < expected_listitems:
+            if break_counter>=1000:break
+            else:break_counter+=1
+            #each change in the queue size gets a tick on our progress track
+            if last_queue_size < q_liz.qsize():
+                items_added=q_liz.qsize()-last_queue_size
+                loading_indicator.tick(items_added)
+            last_queue_size=q_liz.qsize()
+            xbmc.sleep(100)
+
         #wait for all threads to finish before collecting the list items
         for idx, t in enumerate(c_threads):
             #log('    joining %s' %t.getName())
             t.join(timeout=20)
-            loading_percentage=int((float(idx)/comments_count)*100)
-            dialog_progress.update( loading_percentage,dialog_progress_heading  )
 
         xbmc_busy(False)
 
@@ -624,8 +642,7 @@ def listLinksInComment(url, name, type_):
     except Exception as e:
         log('  ' + str(e) )
 
-    dialog_progress.update( 100,dialog_progress_heading  )
-    dialog_progress.close()
+    loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
 
     from guis import commentsGUI
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
