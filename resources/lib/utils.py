@@ -541,6 +541,113 @@ def truncate(string, length, ellipse='...'):
 
 def xbmc_notify(Line1, line2):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( Line1, line2) )
+    log("XBMC.Notification: %s %s" %(Line1, line2) )
+
+def open_web_browser(url,name,type):
+    #http://forum.kodi.tv/showthread.php?tid=235733
+    osWin = xbmc.getCondVisibility('system.platform.windows')
+    osOsx = xbmc.getCondVisibility('system.platform.osx')
+    osLinux = xbmc.getCondVisibility('system.platform.linux')
+    osAndroid = xbmc.getCondVisibility('System.Platform.Android')
+    #url = 'http://www.google.com/'
+
+    import xbmcaddon
+    addon=xbmcaddon.Addon()
+    custom_link_command=addon.getSetting('custom_link_command')
+    if custom_link_command:
+        custom_link_command=custom_link_command.replace('{url}',url)
+        log('Running custom command for link:\n' + custom_link_command)
+        exec( custom_link_command )
+        #example:
+        #     xbmc.executebuiltin("System.Exec(cmd.exe /c start {url})")
+    else:
+
+        if osOsx:
+            # ___ Open the url with the default web browser
+            xbmc.executebuiltin("System.Exec(open "+url+")")
+        elif osWin:
+            # ___ Open the url with the default web browser
+            xbmc.executebuiltin("System.Exec(cmd.exe /c start "+url+")")
+        elif osLinux and not osAndroid:
+            # ___ Need the xdk-utils package
+            xbmc.executebuiltin("System.Exec(xdg-open "+url+")")
+        elif osAndroid:
+            # ___ Open media with standard android web browser
+            xbmc.executebuiltin("StartAndroidActivity(com.android.browser,android.intent.action.VIEW,,"+url+")")
+            # ___ Open media with Mozilla Firefox
+            #xbmc.executebuiltin("StartAndroidActivity(org.mozilla.firefox,android.intent.action.VIEW,,"+url+")")
+            # ___ Open media with Chrome
+            #xbmc.executebuiltin("StartAndroidActivity(com.android.chrome,,,"+url+")")
+
+#addDir(subreddit, subreddit.lower(), next_mode, "")
+def addDir(name, url, mode, iconimage, type="", listitem_infolabel=None, label2=""):
+    #adds a list entry
+    u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type)
+    #log('addDir='+u)
+    ok = True
+    liz = xbmcgui.ListItem(label=name, label2=label2, iconImage="", thumbnailImage='')
+
+    if listitem_infolabel==None:
+        liz.setInfo(type="Video", infoLabels={"Title": name})
+    else:
+        liz.setInfo(type="Video", infoLabels=listitem_infolabel)
+
+
+    ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=True)
+    return ok
+
+def addDirR(name, url, mode, icon_image='', type="", listitem_infolabel=None, file_entry="", banner_image=''):
+
+    #addDir with a remove subreddit context menu
+    #alias is the text for the listitem that is presented to the user
+    #file_entryis the actual string(containing alias & viewid) that is saved in the "subreddit" file
+
+    u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type)
+    #log('addDirR='+u)
+    ok = True
+    liz = xbmcgui.ListItem(name)
+
+    if icon_image:
+        liz.setArt({ 'thumb': icon_image, 'icon': icon_image, 'clearlogo': icon_image  })  #thumb is used in 'shift' view (estuary)   thunb,icon are interchangeable in list view
+
+    if banner_image:
+        liz.setArt({ 'banner': banner_image  })
+        #liz.setArt({ 'poster': banner_image  })
+        liz.setArt({ 'fanart': banner_image  })
+        #liz.setArt({ 'landscape': banner_image  })
+
+    if listitem_infolabel==None:
+        #liz.setInfo(type="Video", infoLabels={"Title": name})
+        liz.setInfo(type="Video", infoLabels={"Title": name})
+    else:
+        liz.setInfo(type="Video", infoLabels=listitem_infolabel)
+
+    if file_entry:
+        liz.setProperty("file_entry", file_entry)
+
+    #liz.addContextMenuItems([(translation(30002), 'RunPlugin(plugin://'+addonID+'/?mode=removeSubreddit&url='+urllib.quote_plus(url)+')',)])
+    liz.addContextMenuItems([(translation(30003), 'RunPlugin(plugin://'+addonID+'/?mode=editSubreddit&url='+urllib.quote_plus(file_entry)+')',)     ,
+                             (translation(30002), 'RunPlugin(plugin://'+addonID+'/?mode=removeSubreddit&url='+urllib.quote_plus(file_entry)+')',)
+                             ])
+
+    #log("handle="+sys.argv[1]+" url="+u+" ")
+    ok = xbmcplugin.addDirectoryItem(handle=pluginhandle, url=u, listitem=liz, isFolder=True)
+    return ok
+
+def json_query(query, ret):
+    try:
+        xbmc_request = json.dumps(query)
+        result = xbmc.executeJSONRPC(xbmc_request)
+        #print result
+        #result = unicode(result, 'utf-8', errors='ignore')
+        #log('result = ' + str(result))
+        if ret:
+            return json.loads(result)['result']
+        else:
+            return json.loads(result)
+    except:
+        return {}
+
 
 if __name__ == '__main__':
     pass

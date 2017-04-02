@@ -148,7 +148,7 @@ def listSubReddit(url, subreddit_key, type_):
 
     #compare the number of entries to the returned results
     #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
-    if (q_liz.qsize()+filtered_out_posts) != len(content['data']['children']):
+    if q_liz.qsize() != expected_listitems:
         #some post might be filtered out.
         log('some threads did not return a listitem')
 
@@ -460,12 +460,7 @@ def reddit_post_worker(idx, entry, q_out):
                     posted_by=author,
                     num_comments=num_comments,
                     post_id=post_id,
-                    #post_index=idx,
-                    #post_total=0,
-                    #many_subreddit=hms
                     )
-            #context menu actions
-            #liz.setProperty('readHTML_action', build_script("listSubReddit", actual_query_of_this_gui ) )
 
             q_out.put( [idx, liz] )  #we put the idx back for easy sorting
 
@@ -543,9 +538,9 @@ def listLinksInComment(url, name, type_):
     log('listLinksInComment:%s:%s' %(type_,url) )
 
     post_title=''
-    ShowOnlyCommentsWithlink=False
-    if type_=='linksOnly':
-        ShowOnlyCommentsWithlink=True
+#    ShowOnlyCommentsWithlink=False
+#    if type_=='linksOnly':
+#        ShowOnlyCommentsWithlink=True
 
     #sometimes the url has a query string. we discard it coz we add .json at the end
     #url=url.split('?', 1)[0]+'.json'
@@ -569,12 +564,9 @@ def listLinksInComment(url, name, type_):
     content = reddit_request(url)
     loading_indicator.update(10,'Parsing')
 
-    if not content: 
+    if not content:
         return
-    #content = r''
 
-    #log(content)
-    #content = json.loads(content.replace('\\"', '\''))  #some error here ?      TypeError: 'NoneType' object is not callable
     try:
         xbmc_busy()
         content = json.loads(content)
@@ -596,7 +588,6 @@ def listLinksInComment(url, name, type_):
 
         #harvest links in the post itself
         r_linkHunter(content[1]['data']['children'])
-
         #for i, h in enumerate(harvest):
         #    log( '  %d %s %d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
 

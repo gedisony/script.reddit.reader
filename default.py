@@ -1,13 +1,9 @@
 #!/usr/bin/python
 # encoding: utf-8
 
-#import urllib
-#import urllib2
-#import socket
 import sys
 import os
 import xbmc
-#import xbmcgui
 import xbmcaddon
 import urlparse
 
@@ -35,10 +31,6 @@ profile_path  = addon.getAddonInfo('profile')   #where user settings are stored
 #technique borrowed from LazyTV.
 #  WINDOW is like a mailbox for passing data from caller to callee.
 #    e.g.: addLink() needs to pass "image description" to viewImage()
-
-#socket.setdefaulttimeout(30)
-#opener = urllib2.build_opener()
-#opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=1))
 
 #https://github.com/reddit/reddit/wiki/API
 reddit_userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
@@ -166,11 +158,4 @@ if __name__ == '__main__':
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
                     ,'reddit_save'          : reddit_save
                     }
-
-    #'playYTDLVideo','listLinksInComment' takes a long time to complete. when these modes are called from the gui, a long xbmc.executebuiltin("ActivateWindow(busydialog)") is run
-    #   we close the busy dialog if running other modes
-    #if not mode in ['playYTDLVideo','listLinksInComment']:
-    #    xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-
-    #whenever a list item is clicked, this part handles it.
     plugin_modes[mode](url,name,type_)

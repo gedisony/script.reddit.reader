@@ -1,4 +1,7 @@
-0.8.4 (03-27-2017)
+0.8.5 (04-02-2017)
+ - imgur parsing update
+ - cleanup
+ 0.8.4 (03-27-2017)
  - prettify loading indicator
  - imgur parsing update
  - screensaver bugfix
