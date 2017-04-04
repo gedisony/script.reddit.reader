@@ -14,7 +14,10 @@ from utils import log
 from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent, REQUEST_TIMEOUT
 from utils import parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast
 
-use_ytdl_for_yt  = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
+#use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
+use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
+use_addon_for_Liveleak    = addon.getSetting("use_addon_for_Liveleak") == "true"
+#resolve_undetermined = addon.getSetting("resolve_undetermined") == "true" #let youtube_dl addon get playable links if unknown url(slow)
 
 from CommonFunctions import parseDOM
 
@@ -259,20 +262,19 @@ class ClassYoutube(sitesBase):
         self.get_video_id()
         #log('      youtube video id:' + self.video_id )
 
-        #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
         if self.video_id:
-            if use_ytdl_for_yt:
-                self.link_action='playYTDLVideo'
-
+            if use_addon_for_youtube:
+                self.link_action=self.DI_ACTION_PLAYABLE
+                return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
+            else:
+                self.link_action=self.DI_ACTION_YTDL
+                #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
                 #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
                 #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
                 if 't=' in media_url:
                     return media_url, self.TYPE_VIDEO
                 else:
                     return "http://youtube.com/v/{0}".format(self.video_id), self.TYPE_VIDEO
-            else:
-                self.link_action=self.DI_ACTION_PLAYABLE
-                return "plugin://plugin.video.youtube/play/?video_id=" + self.video_id, self.TYPE_VIDEO
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
             self.link_action='playYTDLVideo'
@@ -778,7 +780,7 @@ class ClassVimeo(sitesBase):
     def get_thumb_url(self):
         #http://stackoverflow.com/questions/1361149/get-img-thumbnails-from-vimeo
         if not self.video_id:
-            self.get_video_id(self)
+            self.get_video_id()
 
         request_url='http://vimeo.com/api/v2/video/%s.json' % self.video_id
         #log(request_url)
@@ -930,25 +932,22 @@ class ClassLiveleak(sitesBase):
     # *** liveleak handled by ytdl
 
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
-        use_ytdl_for_ll=True
-        if use_ytdl_for_ll:
+        if use_addon_for_Liveleak:
+            self.link_action=self.DI_ACTION_PLAYABLE
+            return "plugin://plugin.video.liveleak/?mode=view&url={0}".format(urllib.quote_plus( media_url )), self.TYPE_VIDEO
+        else:
             self.link_action=sitesBase.DI_ACTION_YTDL
             return self.media_url, self.TYPE_VIDEO
 
-        else:
-            self.link_action=self.DI_ACTION_PLAYABLE
-            return "plugin://plugin.video.liveleak/?mode=play&url={0}&src={1}".format(urllib.quote_plus( media_url ),''), self.TYPE_VIDEO
-
-
     def get_thumb_url(self):
-        log('    getting liveleak thumbnail ')
+        #log('    getting liveleak thumbnail ')
         if not self.thumb_url:
             img=self.request_meta_ogimage_content()
-            self.thumb_url=img
-            self.poster_url=self.thumb_url
-
-        log('      ll thumb:' + self.thumb_url )
-        return self.thumb_url
+            if img:
+                self.thumb_url=img
+                self.poster_url=self.thumb_url
+                #log('      ll thumb:' + self.thumb_url )
+                return self.thumb_url
 
 class ClassStreamable(sitesBase):
     regex='(streamable.com)'
@@ -1819,6 +1818,7 @@ class ClassGifsCom(sitesBase):
             return media_url,self.TYPE_IMAGE
 
         return self.get_playable_url(self.media_url, is_probably_a_video=False )
+
 
     def get_thumb_url(self):
         #call this after calling get_playable_url

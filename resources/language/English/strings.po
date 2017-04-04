@@ -431,3 +431,35 @@ msgstr ""
 msgctxt "#32452"
 msgid "[Update youtube-dl core]"
 msgstr ""
+
+msgctxt "#32453"
+msgid "Use Youtube add-on"
+msgstr ""
+
+msgctxt "#32454"
+msgid "Use Liveleak add-on"
+msgstr ""
+
+msgctxt "#32455"
+msgid "Preferred quality"
+msgstr ""
+
+msgctxt "#32456"
+msgid "480p or less"
+msgstr ""
+
+msgctxt "#32457"
+msgid "720p"
+msgstr ""
+
+msgctxt "#32458"
+msgid "1080p"
+msgstr ""
+
+msgctxt "#32459"
+msgid "Highest Available"
+msgstr ""
+
+msgctxt "#32460"
+msgid "Allow for DASH video if available"
+msgstr ""

@@ -8,6 +8,11 @@ import shutil
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path
 from utils import xbmc_busy, log, translation, xbmc_notify
 
+ytdl_quality=addon.getSetting("ytdl_quality")
+try: ytdl_quality    = [0, 1, 2, 3][ int(ytdl_quality) ]
+except ValueError: ytdl_quality=1
+ytdl_DASH=addon.getSetting("ytdl_DASH")=='true'
+
 def manage_subreddits(subreddit, name, type_):
     from main_listing import index
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type_) )
@@ -461,7 +466,9 @@ def playYTDLVideo(url, name, type_):
         #   this already fixed by ruuk magic. in YoutubeDLWrapper
 
         #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
-        video_infos=_selectVideoQuality(ydl_info, quality=0, disable_dash=True)
+        #log('quality============='+repr(ytdl_quality))
+        #log('ytdl_DASH==========='+repr(ytdl_DASH))
+        video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
         #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=5) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
