@@ -1,3 +1,7 @@
+0.8.6 (04-03-2017)
+ - add option to use liveleak addon
+ - add youtube_dl quality settings
+ - reorganize settings
 0.8.5 (04-02-2017)
  - imgur parsing update
  - cleanup
