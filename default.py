@@ -58,7 +58,7 @@ try:istreamable_quality=int(addon.getSetting("streamable_quality"))  #values 0 o
 except ValueError:istreamable_quality=0
 streamable_quality  =["full", "mobile"][istreamable_quality]       #https://streamable.com/documentation
 
-REQUEST_TIMEOUT=5 #requests.get timeout in seconds
+REQUEST_TIMEOUT=(5,10) #requests.get timeout in seconds (connect timeout, read timeout) tuple.
 
 #use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true"
 #use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"

@@ -597,7 +597,7 @@ def listLinksInComment(url, name, type_):
         filtered_posts=0
         for idx, h in enumerate(harvest):
             comment_score=h[0]
-            if comment_score < 1:
+            if comment_score < int_CommentTreshold:
                 log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
                 filtered_posts+=1
                 continue
@@ -634,8 +634,8 @@ def listLinksInComment(url, name, type_):
 
         #compare the number of entries to the returned results
         #log( "queue:%d entries:%d" %( q_liz.qsize() , len(content['data']['children'] ) ) )
-        if q_liz.qsize() != comments_count:
-            log('some threads did not return a listitem')
+        if q_liz.qsize() != expected_listitems:
+            log('some threads did not return a listitem. total comments:%d expecting(%d) but only got(%d)' %(comments_count, expected_listitems, q_liz.qsize()))
 
         #for t in threads: log('isAlive %s %s' %(t.getName(), repr(t.isAlive()) )  )
         li=[ liz for idx,liz in sorted(q_liz.queue) ]
