@@ -131,7 +131,7 @@ class sitesBase(object):
             return link_url #will a video link resolve to a preview image?
         else:
             #headers = {"Range": "bytes=0-1000"} content = self.requests_get(link_url, headers)
-            #timeout not working right if redirect. 
+            #timeout not working right if redirect.
             content = self.requests_get(link_url,headers=None, timeout=(2,2), allow_redirects=False)
             if content:
                 i=parseDOM(content.text, "meta", attrs = { "property": "og:image" }, ret="content" )

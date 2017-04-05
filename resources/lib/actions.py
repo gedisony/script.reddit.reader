@@ -414,7 +414,7 @@ def loopedPlayback(url, name, type_):
 
 def error_message(message, name, type_):
     if name:
-        sub_msg=name  #name is usually the title of the post 
+        sub_msg=name  #name is usually the title of the post
     else:
         sub_msg=translation(32021) #Parsing error
     xbmc_notify(message, sub_msg)
