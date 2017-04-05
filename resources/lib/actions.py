@@ -9,7 +9,7 @@ from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_p
 from utils import xbmc_busy, log, translation, xbmc_notify
 
 ytdl_quality=addon.getSetting("ytdl_quality")
-try: ytdl_quality    = [0, 1, 2, 3][ int(ytdl_quality) ]
+try: ytdl_quality=[0, 1, 2, 3][ int(ytdl_quality) ]
 except ValueError: ytdl_quality=1
 ytdl_DASH=addon.getSetting("ytdl_DASH")=='true'
 
@@ -414,7 +414,7 @@ def loopedPlayback(url, name, type_):
 
 def error_message(message, name, type_):
     if name:
-        sub_msg=name
+        sub_msg=name  #name is usually the title of the post 
     else:
         sub_msg=translation(32021) #Parsing error
     xbmc_notify(message, sub_msg)
