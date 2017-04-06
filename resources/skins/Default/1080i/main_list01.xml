@@ -51,7 +51,6 @@
 					</control>
 				</control>
 				    
-				    
 				<control type="image" id="200">
 					<!-- centerright>520</centerright   did not work on android -->
 					<!-- centertop>540</centertop       did not work on android -->
@@ -64,7 +63,6 @@
 					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
-				
 
 				<control type="image" id="201">
 					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top

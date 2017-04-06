@@ -85,6 +85,11 @@ msgctxt "#32021"
 msgid "Parsing error"
 msgstr ""
 
+#error message notification to the user when list subreddit returns nothing
+msgctxt "#32022"
+msgid "There doesn't seem to be anything here"
+msgstr ""
+
 
 #: used in context menu.  slideshow
 msgctxt "#32048"

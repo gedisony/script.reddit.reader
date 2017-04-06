@@ -53,7 +53,7 @@ GCXM_reddit_query_of_this_gui=''
 
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
-    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_busy
+    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify
     from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
 
     global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
@@ -90,6 +90,11 @@ def listSubReddit(url, subreddit_key, type_):
         #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link.
         try: g=content['data']['children'][0]['data']['subreddit']
         except ValueError: g=""
+        except IndexError:
+            xbmc_busy(False)
+            loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
+            xbmc_notify("List Subreddit",translation(32022))
+            return
         if g:
             title_bar_name=g
             #preserve the &after string so that functions like play slideshow and play all videos can 'play' the correct page
@@ -107,11 +112,9 @@ def listSubReddit(url, subreddit_key, type_):
             #if entry.get('kind')!='t3':
             #    filtered_out_posts+=1
             #    continue
-
             if post_is_filtered_out( entry.get('data') ):
                 filtered_out_posts+=1
                 continue
-
             #have threads process each reddit post
             t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz), name='#t%.2d'%idx)
             threads.append(t)
@@ -123,21 +126,22 @@ def listSubReddit(url, subreddit_key, type_):
     #check the queue to determine progress
     break_counter=0 #to avoid infinite loop
     expected_listitems=(posts_count-filtered_out_posts)
-    loading_indicator.set_tick_total(expected_listitems)
-    last_queue_size=0
-    while q_liz.qsize() < expected_listitems:
-        if break_counter>=100:
-            break
+    if expected_listitems>0:
+        loading_indicator.set_tick_total(expected_listitems)
+        last_queue_size=0
+        while q_liz.qsize() < expected_listitems:
+            if break_counter>=100:
+                break
 
-        #each change in the queue size gets a tick on our progress track
-        if last_queue_size < q_liz.qsize():
-            items_added=q_liz.qsize()-last_queue_size
-            loading_indicator.tick(items_added)
-        else:
-            break_counter+=1
+            #each change in the queue size gets a tick on our progress track
+            if last_queue_size < q_liz.qsize():
+                items_added=q_liz.qsize()-last_queue_size
+                loading_indicator.tick(items_added)
+            else:
+                break_counter+=1
 
-        last_queue_size=q_liz.qsize()
-        xbmc.sleep(100)
+            last_queue_size=q_liz.qsize()
+            xbmc.sleep(100)
 
     #wait for all threads to finish before collecting the list items
     for idx, t in enumerate(threads):
@@ -346,8 +350,7 @@ def reddit_post_worker(idx, entry, q_out):
         is_a_video=False
         title_line2=""
 
-        thumb_w=0
-        thumb_h=0
+        thumb_w=0; thumb_h=0
 
         t_on = translation(32071)  #"on"
         #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
@@ -371,18 +374,15 @@ def reddit_post_worker(idx, entry, q_out):
                 description=clean_str(data,['body'])
                 domain='Comment post'
 
-
             title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
-
+            #log("description%.2d=%s" %(idx,description))
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
-
             commentsUrl = urlMain+clean_str(data,['permalink'])
             #log("commentsUrl"+str(idx)+"="+commentsUrl)
-
             try:
                 aaa = data.get('created_utc')
                 credate = datetime.datetime.utcfromtimestamp( aaa )
@@ -610,20 +610,21 @@ def listLinksInComment(url, name, type_):
         #check the queue to determine progress
         break_counter=0 #to avoid infinite loop
         expected_listitems=(comments_count-filtered_posts)
-        loading_indicator.set_tick_total(expected_listitems)
-        last_queue_size=0
-        while q_liz.qsize() < expected_listitems:
-            if break_counter>=100:
-                break
-            #each change in the queue size gets a tick on our progress track
-            if last_queue_size < q_liz.qsize():
-                items_added=q_liz.qsize()-last_queue_size
-                loading_indicator.tick(items_added)
-            else:
-                break_counter+=1
+        if expected_listitems>0:
+            loading_indicator.set_tick_total(expected_listitems)
+            last_queue_size=0
+            while q_liz.qsize() < expected_listitems:
+                if break_counter>=100:
+                    break
+                #each change in the queue size gets a tick on our progress track
+                if last_queue_size < q_liz.qsize():
+                    items_added=q_liz.qsize()-last_queue_size
+                    loading_indicator.tick(items_added)
+                else:
+                    break_counter+=1
 
-            last_queue_size=q_liz.qsize()
-            xbmc.sleep(50)
+                last_queue_size=q_liz.qsize()
+                xbmc.sleep(50)
 
         #wait for all threads to finish before collecting the list items
         for idx, t in enumerate(c_threads):

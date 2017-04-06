@@ -58,7 +58,7 @@ $ git commit -m "[script.reddit.reader] 0.7.1"  <------- this will now work
 
 #Push your topic branch up to your fork:
 
-git push origin script.reddit.reader
+git push origin script.reddit.reader      <------- script.reddit.reader is the branch name you've made
 
 #Open a pull request with a clear title and description.
 

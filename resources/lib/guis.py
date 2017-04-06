@@ -707,10 +707,13 @@ class progressBG( xbmcgui.DialogProgressBG ):
             super(progressBG, self).update( int(self.progress), self.heading )
 
     def set_tick_total(self,tick_total):
-        self.tick_total=tick_total
-        remaining=100-self.progress
-        self.tick_increment=float(remaining)/tick_total
-        #log('xxxxremaining['+repr(remaining) +']xxxxtick_total['+repr(tick_total)+']xxxxincrement['+repr(self.tick_increment))+']'
+        if tick_total==0:
+            self.tick_increment=1
+        else:
+            self.tick_total=tick_total
+            remaining=100-self.progress
+            self.tick_increment=float(remaining)/tick_total
+            #log('xxxxremaining['+repr(remaining) +']xxxxtick_total['+repr(tick_total)+']xxxxincrement['+repr(self.tick_increment))+']'
 
     def tick(self,how_many, message=None):
         #increment remaining loading percentage by 1 (sort of)
