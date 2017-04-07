@@ -11,9 +11,15 @@ cd repo-scripts
 # Assign the original repo to a remote called "upstream"
 git remote add upstream https://github.com/xbmc/repo-plugins.git
 
-#
-git checkout jarvis
+$ git remote -v
+origin  git@github.com:gedisony/repo-plugins.git (fetch)
+origin  git@github.com:gedisony/repo-plugins.git (push)
+upstream        https://github.com/xbmc/repo-plugins.git (fetch)
+upstream        https://github.com/xbmc/repo-plugins.git (push)
 
+
+
+git checkout jarvis
 
 If you cloned a while ago, get the latest changes from upstream:
 
@@ -21,11 +27,13 @@ If you cloned a while ago, get the latest changes from upstream:
 git fetch upstream
 # Make sure you are on your 'master' branch
 git checkout master
-# Merge upstream changes
-git merge upstream/master
+# Merge upstream changes   ### use this to get your fork in github UP TO DATE with the actual thing on kodi
+git merge upstream/jarvis
 
-'master' is only used as example here. Please replace it with the correct branch you want to submit your add-on towards.
-*** i think you need to use 'origin/jarvis' instead of 'master'
+#then make our fork up to date with kodis
+git push origin jarvis
+
+
 
 
 
@@ -62,6 +70,11 @@ git push origin script.reddit.reader      <------- script.reddit.reader is the b
 
 #Open a pull request with a clear title and description.
 
+
+*** go to browser, github, on your fork. make sure it does not say "This branch is X commit behind of xbmc:jarvis."
+*** if so:  git merge upstream/jarvis   +  git push origin jarvis
+
+ 
 *** on browser: click on pull request
 upper left : base fork: xbmc/repo-plugins         base:    jarvis
 upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name

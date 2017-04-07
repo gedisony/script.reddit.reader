@@ -291,7 +291,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
 
     if previewimage=="":
-        liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
+        if domain.startswith('self.'):
+            liz.setArt({"thumb": ld.poster if ld else '', "banner": '' , })
+        else:
+            liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
 
