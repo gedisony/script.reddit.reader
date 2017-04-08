@@ -459,7 +459,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             format_desc=info['format']
             #log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
             log( 'Selected format:\n' + pprint.pformat(info, indent=1, depth=1) )
-            #log('********************************************************************************************')            
+            #log('********************************************************************************************')
             if url.find("rtmp") == -1:
                 url += '|' + urllib.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
             else:
