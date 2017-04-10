@@ -224,13 +224,11 @@ def skin_launcher(mode,**kwargs ):
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
 
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, commentsUrl, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id=''):
-    from utils import ret_info_type_icon, build_script
+    from utils import ret_info_type_icon, build_script,colored_subreddit
     #from reddit import assemble_reddit_filter_string
     from domains import parse_reddit_link, sitesBase
 
     DirectoryItem_url=''
-    il_description=""
-
     preview_ar=0.0
     if preview_w==0 or preview_h==0:
         preview_ar=0.0
@@ -244,10 +242,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         mpaa=""
 
     post_title=title
-    if len(post_title) > 40:
-        il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
-    else:
-        il_description='%s' %( description )
+    #if len(post_title) > 40:
+    il_description='[B]%s[/B][CR]%s' %( post_title, description )
+    #else:
+    #    il_description='%s' %( description )
 
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
@@ -257,11 +255,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                          ,thumbnailImage=''
                          ,path='')   #path not used by gui.
 
-    if preview_ar>1.25:   #this measurement is related to control id 203's height
+    if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
         #log('    ar and description criteria met')
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
         liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
-        liz.setInfo(type='video', infoLabels={"plotoutline": il_description, }  )
+        text_below_image=il_description+title_line2 + colored_subreddit( '  by '+posted_by, 'dimgrey',False )
+        liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
 
     if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
@@ -292,7 +291,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     if previewimage=="":
         if domain.startswith('self.'):
-            liz.setArt({"thumb": ld.poster if ld else '', "banner": '' , })
+            liz.setArt({"thumb": ld.thumb if ld else '', "banner": '' , })
         else:
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
@@ -346,7 +345,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
 def reddit_post_worker(idx, entry, q_out):
     import datetime
-    from utils import strip_emoji, pretty_datediff, clean_str
+    from utils import strip_emoji, pretty_datediff, clean_str, get_int
     from reddit import determine_if_video_media_from_reddit_json
     try:
         credate = ""
@@ -415,24 +414,28 @@ def reddit_post_worker(idx, entry, q_out):
 
             thumb=clean_str(data,['thumbnail'])
 
+            #media_w=get_int(data,['media','oembed','width'])
+            #media_h=get_int(data,['media','oembed','height'])
+            #log('  media_w='+repr(media_w)+' h='+repr(media_h) )
+
+            #try:log('  media_w='+repr(data.get('media')['oembed']['width']  ) )
+            #except:pass
+
             if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""
 
             if thumb=="":
                 thumb=clean_str(data,['media','oembed','thumbnail_url']).replace('&amp;','&')
 
-            try:
-                preview=data.get('preview')['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
-                try:
-                    thumb_h = float( data.get('preview')['images'][0]['source']['height'] )
-                    thumb_w = float( data.get('preview')['images'][0]['source']['width'] )
-                except (AttributeError,TypeError,ValueError):
-                    #log("   thumb_w _h EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-                    thumb_w=0; thumb_h=0
-
-            except (AttributeError,TypeError,ValueError):
-                #log("   getting preview image EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
-                thumb_w=0; thumb_h=0; preview="" #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
+            #a blank preview image will be replaced with poster_url from parse_reddit_link() for domains that support it
+            preview=clean_str(data,['preview','images',0,'source','url']).replace('&amp;','&') #data.get('preview')['images'][0]['source']['url'].encode('utf-8').replace('&amp;','&')
+            #log('  preview='+repr(preview))
+            #try:
+            thumb_h=get_int(data,['preview','images',0,'source','height'])#float( data.get('preview')['images'][0]['source']['height'] )
+            thumb_w=get_int(data,['preview','images',0,'source','width']) #float( data.get('preview')['images'][0]['source']['width'] )
+            #except (AttributeError,TypeError,ValueError):
+                #log("   thumb_w _h EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
+            #   thumb_w=0; thumb_h=0
 
             #preview images are 'keep' stretched to fit inside 1080x1080.
             #  if preview image is smaller than the box we have for thumbnail, we'll use that as thumbnail and not have a bigger stretched image

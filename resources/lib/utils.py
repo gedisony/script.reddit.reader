@@ -453,6 +453,7 @@ def markdown_to_bbcode(s):
         #s = re.sub(r"\[/list]\n\[list(=1)?]\n", "", s)
         #s = re.sub(r"(?m)\[code=(\d+)]", replace_code, s)
 
+        s = re.sub(r"<strong>(.*?)<\/strong>$", translate("[B]%s[/B]"), s)                                #<strong></strong>  becomes bold
         return s
     except:
         return s
@@ -504,7 +505,11 @@ def clean_str(dict_obj, keys_list, default=''):
     dd=dict_obj
     try:
         for k in keys_list:
-            dd=dict_obj.get(k)
+            if isinstance(dd, dict):
+                dd=dd.get(k)
+            elif isinstance(dd, list):
+                dd=dd[k]
+
             if dd is None:
                 return default
             else:
@@ -514,6 +519,28 @@ def clean_str(dict_obj, keys_list, default=''):
         log( 'clean_str:' + str(e) )
         return default
 
+def get_int(dict_obj, keys_list, default=0):
+    dd=dict_obj
+    try:
+        for k in keys_list:
+            if isinstance(dd, dict):
+                #log(' is dict '+repr(k))
+                dd=dd.get(k)
+            elif isinstance(dd, list):
+                #log(' is list '+repr(k))
+                dd=dd[k]
+
+            if dd is None:
+                return default
+            else:
+                continue
+        return int(dd)
+    except AttributeError as e:
+        log( 'get_int AttributeError:' + str(e) )
+    except ValueError as e:
+        log( 'get_int ValueError:' + str(e) )
+
+    return default
 
 def xstr(s):
     #http://stackoverflow.com/questions/1034573/python-most-idiomatic-way-to-convert-none-to-empty-string
@@ -581,7 +608,9 @@ def addDir(name, url, mode, iconimage, type_="", listitem_infolabel=None, label2
     u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type_)
     #log('addDir='+u)
     ok = True
-    liz = xbmcgui.ListItem(label=name, label2=label2, iconImage="", thumbnailImage='')
+    liz = xbmcgui.ListItem(label=name, label2=label2)
+    if iconimage:
+        liz.setArt({ 'thumb': iconimage, 'icon': iconimage, 'clearlogo': iconimage  })
 
     if listitem_infolabel==None:
         liz.setInfo(type="Video", infoLabels={"Title": name})

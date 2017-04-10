@@ -132,14 +132,26 @@ class sitesBase(object):
         else:
             #headers = {"Range": "bytes=0-1000"} content = self.requests_get(link_url, headers)
             #timeout not working right if redirect.
-            content = self.requests_get(link_url,headers=None, timeout=(2,2), allow_redirects=False)
-            if content:
-                i=parseDOM(content.text, "meta", attrs = { "property": "og:image" }, ret="content" )
-                if i:
-                    try: return i[0]
-                    except IndexError: pass
-                    else:
-                        log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
+
+            #first, do a head request. sometimes the link is an mp3 and we don't want to download the entire file just to check the 'content-type'
+            head=requests.head(link_url, timeout=(2,2),allow_redirects=True)
+            #log('head request returned:'+repr(head.status_code)+' '+repr(head.headers))
+            if head.status_code==requests.codes.ok:
+                if 'html' in head.headers.get('content-type') :
+                    r = self.requests_get(link_url,headers=None, timeout=(2,2), allow_redirects=True)
+                    #log( "getting OG:image:" + repr(r.headers))
+                    if r:
+                        #log( "if content:" + repr(r.headers))
+                        i=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )
+                        #log( "if parseDOM:" + link_url)
+                        if i:
+                            #log( "if i:" + link_url)
+                            try:
+                                import urlparse
+                                return urlparse.urljoin(link_url, i[0]) #handle relative or absolute
+                            except IndexError: pass
+                            else:
+                                log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
 
     #def combine_title_and_description(self, title, description):
     #    return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )
@@ -2282,8 +2294,8 @@ class ClassReddit(sitesBase):
             banner_img=j.get('banner_img')
             header_img=j.get('header_img')
 
-            icon=next((item for item in [icon_img,banner_img,header_img] if item ), '')
-
+            icon=next((item for item in [header_img,icon_img,banner_img,] if item ), '')
+            #log( repr(self.video_id) + ' icon=' + repr(icon) )
             self.thumb_url=icon
             self.poster_url=banner_img
 
@@ -3018,20 +3030,25 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
             return ld
 
         else:
+            link_action=sitesBase.DI_ACTION_YTDL  #default action for unknown links is to have youtube_dl parse it
+            preview_img=""
+
+            #try to get a preview image by asking for meta og image for the link. (this slows down the show comments feature)
+            if needs_preview:
+                sb=sitesBase(link_url)
+                preview_img=sb.request_meta_ogimage_content()
+
             if url_resolver_support(link_url):
-                ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
+                link_action=sitesBase.DI_ACTION_URLR
+                #ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
+
+            ld=LinkDetails(sitesBase.TYPE_VIDEO, link_action, link_url, preview_img, preview_img)
 
             if False: #resolve_undetermined:  (abandoned, too slow)
                 log('sending undetermined link to ytdl...')
                 media_url=ydtl_get_playable_url(link_url)
                 if media_url:
                     ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_PLAYABLE, media_url[0], '', '')
-
-            #try to get a preview image by asking for meta og image for the link. (this slows down the show comments feature)
-            if needs_preview:
-                sb=sitesBase(link_url)
-                img=sb.request_meta_ogimage_content()
-                ld=LinkDetails(sitesBase.TYPE_VIDEO, 'playYTDLVideo', link_url, img, img)
 
             if 'ld' in vars(): #avoid UnboundLocalError - local variable 'ld' referenced before assignment
                 return ld

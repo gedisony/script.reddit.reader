@@ -32,7 +32,7 @@
 					<visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<control type="image">
 						<left>1150</left>
-						<top>118</top>
+						<top>68</top>
 						<width>500</width>
 						<height>500</height>
 						<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
@@ -42,7 +42,7 @@
 					</control>
 					<control type="textbox">
 						<left>992</left>
-						<top>618</top>
+						<top>568</top>
 						<width>910</width>
 						<height>432</height>
 						<font>font14</font>
@@ -51,7 +51,7 @@
 					</control>
 				</control>
 				    
-				<control type="image" id="200">
+				<control type="image" id="200"><description>small thumbnail</description>
 					<!-- centerright>520</centerright   did not work on android -->
 					<!-- centertop>540</centertop       did not work on android -->
 					<left>1210</left>
@@ -64,7 +64,7 @@
 					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
 
-				<control type="image" id="201">
+				<control type="image" id="201"><description>big square image</description>
 					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
 					<centertop>540</centertop-->
 					<left>860</left>
@@ -79,32 +79,22 @@
 
 				<control type="image" id="203"><description>partner with id 65592</description>
 					<top>0</top>
-					<left>860</left>
-					<width>1080</width>
-      				<height>750</height>
-					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
-					<centertop>540</centertop-->
-					<aspectratio scalediffuse="true" aligny="bottom">keep</aspectratio>
+					<left>0</left>
+					<width>1920</width>
+      				<height>850</height>
+					<aspectratio scalediffuse="true" align="right" aligny="bottom">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
 					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
-
-				<control type="image" id="202">	<description>left fade bkground</description>
-					<left>-30</left>
-					<top>0</top>
-					<width>1000</width>
-					<height>1080</height>
-					<texture>focus_f3.png</texture>
-				</control>
-
 				<control type="textbox" id="65592"><description>partner with id 203</description>
-					<left>942</left>
-					<top>758</top>
-					<width>950</width>
-					<height>320</height>
+					<left>0</left><!--942-->
+					<top>858</top>
+					<width>1920</width>
+					<height>220</height>
 					<font>font13</font>
+					<align>center</align>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
 					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<!-- visible>!Control.IsVisible(65591)</visible-->
@@ -120,16 +110,41 @@
 		<control type="group">
 		
 			<!-- OpenClose_Left - OpenClose_FadeSlide_Left --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
-			<!-- Visible_Left - Vis_FadeSlide_Left --><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Left - Vis_FadeSlide_Left <animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation-->
 			
-			<left>13</left>
-			<top>582</top>
-			<visible>true</visible>
+			
+			<!-- animation effect="slide" start="0,0" end="-300,0" time="200"  condition="Container(55).OnNext">Conditional</animation-->
+			
+			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious | IsEmpty(Container(55).ListItem.Property(preview_ar)) </visible-->
+			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious </visible>
+			<animation type="Visible" reversible="false" >
+				<effect type="slide" start="0,0" end="-200,0" time="1000" delay="1000"/>
+				<effect type="fade"  start="100" end="100" time="0" />
+			</animation-->
+			
+			<animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))"><description>this animation slides the listbox to the left</description>
+				<effect type="slide" start="0,0" end="-900,0" time="800" tween="cubic" easing="in" delay="2000"/>
+				<effect type="fade"  start="100" end="100" time="0" />
+			</animation>
+			
+			<left>0</left>
+			<top>0</top>
+
+			<control type="image" id="202">	<description>left-side text background</description>
+				<left>0</left>
+				<top>0</top>
+				<width>1000</width>
+				<height>1920</height>
+				<colordiffuse>AAAAAAAA</colordiffuse>
+				<texture>focus_f4.png</texture>
+				<visible>true</visible>
+			</control>
+			
 			<control type="list" id="55">
-				<left>2</left>
-				<top>3</top>
+				<left>6</left>
+				<top>85</top>
 				<width>1080</width>
-				<height>420</height>
+				<height>920</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<pagecontrol>55600</pagecontrol>
@@ -268,7 +283,7 @@
 		</control>
 		<control type="button" id="55589">
 			<left>30</left>
-			<top>574</top>
+			<top>104</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturefocus>
