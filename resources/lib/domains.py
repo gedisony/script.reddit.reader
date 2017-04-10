@@ -2160,6 +2160,36 @@ class ClassVidble(sitesBase):
 
         return self.thumb_url
 
+#class ClassPhotobucket(sitesBase):
+#    SITE='photobucket'
+#    regex='(photobucket.com)'
+#    include_gif_in_get_playable=True
+#
+#    def get_playable_url(self, media_url, is_probably_a_video=False ):
+#        #api_request='http://api.photobucket.com/ping?format=xml&media_url'
+#        #api_request='http://api123.photobucket.com/media/'+urllib.quote_plus( media_url )+'?format=xml'
+#
+#        #http://pic.pbsrc.com/dev_help/WebHelpPublic/PhotobucketPublicHelp_Left.htm
+#        ### there doesn't seem to be a way to get a developer account (api needs consumer key & secret).
+#
+#
+#        #log(repr(api_request))
+#        #content = self.requests_get( api_request )
+#        #log(repr(content.text))
+#
+#        #use these notes for figuring out if url is album, etc.
+#        #http://pic.pbsrc.com/dev_help/WebHelpPublic/Content/Getting%20Started/Conventions.htm
+#
+#
+#
+#        #parse libraryAlbumsPageCollectionData  -- collectionData json on page if album
+#
+#        pass
+#
+#    def get_thumb_url(self):
+#        if self.thumb_url:
+#            return self.thumb_url
+
 class ClassImgbox(sitesBase):
     SITE='imgbox'
     regex='(imgbox.com)'
@@ -2995,7 +3025,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
     album_dict_list=None
     hoster = sitesManager( link_url )
-    #log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
+    log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
 
     try:
         if hoster:

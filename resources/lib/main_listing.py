@@ -223,126 +223,6 @@ def skin_launcher(mode,**kwargs ):
         log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
 
-def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, commentsUrl, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id=''):
-    from utils import ret_info_type_icon, build_script,colored_subreddit
-    #from reddit import assemble_reddit_filter_string
-    from domains import parse_reddit_link, sitesBase
-
-    DirectoryItem_url=''
-    preview_ar=0.0
-    if preview_w==0 or preview_h==0:
-        preview_ar=0.0
-    else:
-        preview_ar=float(preview_w) / preview_h
-
-    if over_18:
-        mpaa="R"
-        title_line2 = "[COLOR red][NSFW][/COLOR] "+title_line2
-    else:
-        mpaa=""
-
-    post_title=title
-    #if len(post_title) > 40:
-    il_description='[B]%s[/B][CR]%s' %( post_title, description )
-    #else:
-    #    il_description='%s' %( description )
-
-    il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-
-    liz=xbmcgui.ListItem(label=post_title
-                         ,label2=title_line2
-                         ,iconImage=""
-                         ,thumbnailImage=''
-                         ,path='')   #path not used by gui.
-
-    if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
-        #log('    ar and description criteria met')
-        #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
-        liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
-        text_below_image=il_description+title_line2 + colored_subreddit( '  by '+posted_by, 'dimgrey',False )
-        liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
-
-    if num_comments > 0 or description:
-        liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
-
-    liz.setProperty('link_url', link_url )
-    #liz.setProperty('post_id', post_id )
-
-    liz.setInfo(type='video', infoLabels=il)
-
-    #use clearart to indicate if link is video, album or image. here, we default to unsupported.
-    clearart=ret_info_type_icon('', '')
-    liz.setArt({ "clearart": clearart  })
-
-    #force all links to ytdl to see if they are playable
-    #if use_ytdl_for_unknown:
-    liz.setProperty('item_type','script')
-    liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
-
-    #***build context menu***
-    #    convert a list of tuple into a string then set it as a property
-    #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
-    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by)) )
-
-    if previewimage: needs_preview=False
-    else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
-
-    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
-
-    if previewimage=="":
-        if domain.startswith('self.'):
-            liz.setArt({"thumb": ld.thumb if ld else '', "banner": '' , })
-        else:
-            liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
-    else:
-        liz.setArt({"thumb": iconimage, "banner":previewimage,  })
-
-    #log( '          reddit thumb[%s] ' %(iconimage ))
-    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-    #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
-
-    if ld:
-        #log('###' + repr(ld.playable_url) )
-        #url_for_DirectoryItem = build_script(ld.link_action, ld.playable_url, post_title , previewimage )
-        #log('  ##is supported')
-
-        #use clearart to indicate the type of link(video, album, image etc.)
-        clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
-        liz.setArt({ "clearart": clearart  })
-
-        if iconimage in ["","nsfw", "default"]:
-            iconimage=ld.thumb
-
-        #link_action set in domains.py - parse_reddit_link
-        if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
-            property_link_type=ld.link_action
-            DirectoryItem_url =ld.playable_url
-        else:
-            property_link_type='script'
-            if ld.link_action=='viewTallImage' : #viewTallImage take different args
-                DirectoryItem_url = build_script(mode=ld.link_action,
-                                                 url=ld.playable_url,
-                                                 name=str(preview_w),
-                                                 type_=str(preview_h) )
-            else:
-                #log( '****' + repr( ld.dictlist ))
-                DirectoryItem_url = build_script(mode=ld.link_action,
-                                                 url=ld.playable_url,
-                                                 name=post_title ,
-                                                 type_=previewimage )
-
-        #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
-
-        liz.setProperty('item_type',property_link_type)
-        liz.setProperty('onClick_action',DirectoryItem_url)
-        liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
-        #log( liz.getProperty('album_images'))
-    else:
-        #unsupported type here:
-        pass
-
-    return liz
-
 def reddit_post_worker(idx, entry, q_out):
     import datetime
     from utils import strip_emoji, pretty_datediff, clean_str, get_int
@@ -473,6 +353,126 @@ def reddit_post_worker(idx, entry, q_out):
     except Exception as e:
         log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) +'--'+ str(e) )
 
+def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, commentsUrl, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id=''):
+    from utils import ret_info_type_icon, build_script,colored_subreddit
+    #from reddit import assemble_reddit_filter_string
+    from domains import parse_reddit_link, sitesBase
+
+    DirectoryItem_url=''
+    preview_ar=0.0
+    if preview_w==0 or preview_h==0:
+        preview_ar=0.0
+    else:
+        preview_ar=float(preview_w) / preview_h
+
+    if over_18:
+        mpaa="R"
+        title_line2 = "[COLOR red][NSFW][/COLOR] "+title_line2
+    else:
+        mpaa=""
+
+    post_title=title
+    #if len(post_title) > 40:
+    il_description='[B]%s[/B][CR]%s' %( post_title, description )
+    #else:
+    #    il_description='%s' %( description )
+
+    il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
+
+    liz=xbmcgui.ListItem(label=post_title
+                         ,label2=title_line2
+                         ,iconImage=""
+                         ,thumbnailImage=''
+                         ,path='')   #path not used by gui.
+
+    if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
+        #log('    ar and description criteria met')
+        #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
+        liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
+        #text_below_image=il_description+title_line2 + colored_subreddit( posted_by, 'dimgrey',False )
+        text_below_image='[B]%s[/B][CR]%s %s[CR]%s' %( post_title, title_line2, colored_subreddit( ' by '+posted_by, 'dimgrey',False ), description )
+        liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
+
+    if num_comments > 0 or description:
+        liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
+
+    liz.setProperty('link_url', link_url )
+    #liz.setProperty('post_id', post_id )
+
+    liz.setInfo(type='video', infoLabels=il)
+
+    #use clearart to indicate if link is video, album or image. here, we default to unsupported.
+    clearart=ret_info_type_icon('', '')
+    liz.setArt({ "clearart": clearart  })
+
+    #force all links to ytdl to see if they are playable
+    #if use_ytdl_for_unknown:
+    liz.setProperty('item_type','script')
+    liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
+
+    #***build context menu***
+    #    convert a list of tuple into a string then set it as a property
+    #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
+    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by)) )
+
+    if previewimage: needs_preview=False
+    else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
+
+    ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
+
+    if previewimage=="":
+        if domain.startswith('self.'):
+            liz.setArt({"thumb": ld.thumb if ld else '', "banner": '' , })
+        else:
+            liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
+    else:
+        liz.setArt({"thumb": iconimage, "banner":previewimage,  })
+
+    #log( '          reddit thumb[%s] ' %(iconimage ))
+    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+
+    if ld:
+        #log('###' + repr(ld.playable_url) )
+        #url_for_DirectoryItem = build_script(ld.link_action, ld.playable_url, post_title , previewimage )
+        #log('  ##is supported')
+
+        #use clearart to indicate the type of link(video, album, image etc.)
+        clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
+        liz.setArt({ "clearart": clearart  })
+
+        if iconimage in ["","nsfw", "default"]:
+            iconimage=ld.thumb
+
+        #link_action set in domains.py - parse_reddit_link
+        if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
+            property_link_type=ld.link_action
+            DirectoryItem_url =ld.playable_url
+        else:
+            property_link_type='script'
+            if ld.link_action=='viewTallImage' : #viewTallImage take different args
+                DirectoryItem_url = build_script(mode=ld.link_action,
+                                                 url=ld.playable_url,
+                                                 name=str(preview_w),
+                                                 type_=str(preview_h) )
+            else:
+                #log( '****' + repr( ld.dictlist ))
+                DirectoryItem_url = build_script(mode=ld.link_action,
+                                                 url=ld.playable_url,
+                                                 name=post_title ,
+                                                 type_=previewimage )
+
+        #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
+
+        liz.setProperty('item_type',property_link_type)
+        liz.setProperty('onClick_action',DirectoryItem_url)
+        liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
+        #log( liz.getProperty('album_images'))
+    else:
+        #unsupported type here:
+        pass
+
+    return liz
 
 def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by):
     from reddit import assemble_reddit_filter_string, subreddit_in_favorites #, this_is_a_user_saved_list

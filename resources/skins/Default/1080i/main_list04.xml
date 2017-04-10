@@ -44,7 +44,7 @@
 						<left>992</left>
 						<top>568</top>
 						<width>910</width>
-						<height>432</height>
+						<height>492</height>
 						<font>font14</font>
 						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
 						<label>$INFO[Container(55).ListItem.Plot]</label>					
@@ -82,16 +82,16 @@
 					<left>0</left>
 					<width>1920</width>
       				<height>850</height>
-					<aspectratio scalediffuse="true" align="right" aligny="bottom">keep</aspectratio>
+					<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
 					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
 					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 				<control type="textbox" id="65592"><description>partner with id 203</description>
-					<left>0</left><!--942-->
+					<left>100</left><!--942-->
 					<top>858</top>
-					<width>1920</width>
+					<width>1770</width>
 					<height>220</height>
 					<font>font13</font>
 					<align>center</align>
@@ -99,7 +99,12 @@
 					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<!-- visible>!Control.IsVisible(65591)</visible-->
 					<label>$INFO[Container(55).ListItem.PlotOutline]</label>
-					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>					
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+
+					<animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))"><description>this animation slides the text</description>
+						<effect type="slide" start="+1920,0" end="0,0" time="800" tween="cubic" easing="in" delay="2100"/>
+						<effect type="fade"  start="0" end="100" time="0" />
+					</animation>
 				</control>
 
 			</control>
@@ -135,7 +140,7 @@
 				<top>0</top>
 				<width>1000</width>
 				<height>1920</height>
-				<colordiffuse>AAAAAAAA</colordiffuse>
+				<colordiffuse>CCCCCCCC</colordiffuse>
 				<texture>focus_f4.png</texture>
 				<visible>true</visible>
 			</control>
