@@ -39,11 +39,14 @@
 				<visible>false</visible>
 			</control>
 			
-			<control type="list" id="55">
+			<control type="fixedlist" id="55">
 				<left>6</left>
 				<top>85</top>
 				<width>980</width>
 				<height>920</height>
+				<focusposition>2</focusposition>
+				<movement>5</movement>
+				<preloaditems>true</preloaditems>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<pagecontrol>55600</pagecontrol>
@@ -86,8 +89,8 @@
 							<aligny>center</aligny>
 							<font>font14</font>
 							<scrolltime>200</scrolltime>
-	   						<autoscroll delay="2000" time="2000" repeat="4000">!Control.HasFocus(13)</autoscroll>
-	   						<label>$INFO[ListItem.Label]</label>
+							<autoscroll delay="3000" time="2000" repeat="4000">Control.HasFocus(55)</autoscroll>
+							<label>$INFO[ListItem.Label]</label>
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
@@ -101,10 +104,8 @@
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 					</control>
-
-
-					
 				</focusedlayout>
+
 				<itemlayout height="102" >
 					<control type="image">
 						<width>880</width>
@@ -146,8 +147,6 @@
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 					</control>
-					
-					
 				</itemlayout>
 			</control>
 			<!-- control type="scrollbar" id="55600">
@@ -178,12 +177,11 @@
 						<width>1020</width>
 						<height>952</height>
 						<font>font14</font>
-						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-						
+						<autoscroll delay="10000" time="2500" repeat="10000">Control.IsVisible(65591)</autoscroll>
 						<label>$INFO[Container(55).ListItem.Plot]</label>					
 					</control>
 				</control>
-				    
+				
 				<control type="group" id="204"><description>when no banner art</description>
 					<visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<control type="image">
@@ -202,11 +200,11 @@
 						<width>1020</width>
 						<height>592</height>
 						<font>font14</font>
-						<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
+						<autoscroll delay="10000" time="2500" repeat="10000">true</autoscroll>
 						<label>$INFO[Container(55).ListItem.Plot]</label>					
 					</control>
 				</control>
-				    
+				
 				<control type="image" id="200"><description>small thumbnail</description>
 					<!-- centerright>520</centerright   did not work on android -->
 					<!-- centertop>540</centertop       did not work on android -->
@@ -236,13 +234,11 @@
 
 
 				<control type="group"><description>big wide image</description>
-					
-					
 					<control type="image" id="203"><description>partner with id 65592</description>
 						<top>0</top>
 						<left>0</left>
 						<width>1920</width>
-	      				<height>850</height>
+						<height>850</height>
 						<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
 						<colordiffuse>FFFFFFFF</colordiffuse>
 						<texture diffuse="diffuse_left.png" >$INFO[Container(55).ListItem.Art(banner)]</texture>
@@ -257,16 +253,21 @@
 						<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
 						<colordiffuse>FFFFFFFF</colordiffuse>
 						<texture diffuse="diffuse_left2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
-						<animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))"><description>clear image fades in after delay</description>
+						<!-- visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible-->
+						<visible>!Container(55).OnNext+!Container(55).OnPrevious + !IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+						<animation type="Visible"><description>clear image fades in after delay</description>
 							<effect type="fade"  start="0" end="100" time="1000" tween="cubic" easing="in" delay="1800"/>
 						</animation>
 					</control>
 
 					<control type="group"><description>wide textbox and background bottom of wide picture</description>
-						<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+						<!-- visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 						<animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))">
 							<effect type="fade"  start="0" end="100" time="800" tween="cubic" easing="in" delay="1800"/>
+						</animation-->
+						<visible>!Container(55).OnNext+!Container(55).OnPrevious + !IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+						<animation type="Visible"><description>clear image fades in after delay</description>
+							<effect type="fade"  start="0" end="100" time="1000" tween="cubic" easing="in" delay="1800"/>
 						</animation>
 						
 						<control type="image" id="65593"><description>text background</description>
@@ -281,9 +282,9 @@
 							<top>848</top>
 							<width>1720</width>
 							<height>220</height>
-							<font>font14</font>
+							<font>font16</font>
 							<align>center</align>
-							<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
+							<autoscroll delay="8000" time="2000" repeat="10000">Control.IsVisible(205)</autoscroll>
 							<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
 							<!-- visible>!Control.IsVisible(65591)</visible-->
 							<label>$INFO[Container(55).ListItem.PlotOutline]</label>
