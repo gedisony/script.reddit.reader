@@ -61,7 +61,7 @@ def listSubReddit(url, subreddit_key, type_):
     title_bar_name=subreddit_key.replace(' ','+')
     #log("  title_bar_name %s " %(title_bar_name) )
 
-    log("listSubReddit r/%s url=%s" %(title_bar_name,url) )
+    log("listSubReddit r/%s\n %s" %(title_bar_name,url) )
 
     currentUrl = url
     xbmc_busy()
@@ -433,16 +433,16 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
-        #log('###' + repr(ld.playable_url) )
-        #url_for_DirectoryItem = build_script(ld.link_action, ld.playable_url, post_title , previewimage )
-        #log('  ##is supported')
-
         #use clearart to indicate the type of link(video, album, image etc.)
         clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
         liz.setArt({ "clearart": clearart  })
 
         if iconimage in ["","nsfw", "default"]:
             iconimage=ld.thumb
+
+        #we gathered a description from the link
+        if ld.desctiption:
+            liz.setInfo(type='video', infoLabels={'plot': il_description + '[CR]' + ld.desctiption, })
 
         #link_action set in domains.py - parse_reddit_link
         if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
@@ -548,8 +548,12 @@ def listLinksInComment(url, name, type_):
 #    if type_=='linksOnly':
 #        ShowOnlyCommentsWithlink=True
 
-    #sometimes the url has a query string. we discard it coz we add .json at the end
-    #url=url.split('?', 1)[0]+'.json'
+    #url='https://np.reddit.com/r/videos/comments/64j9x7/doctor_violently_dragged_from_overbooked_cia/dg2pbtj/?st=j1cbxsst&sh=2d5daf4b'
+    #url=url.split('?', 1)[0]+'.json'+url.split('?', 1)[1]
+
+    #log(repr(url.split('?', 1)[0]))
+    #log(repr(url.split('?', 1)[1]))
+    #log(repr(url.split('?', 1)[0]+'.json?'+url.split('?', 1)[1]))
 
     #url='https://www.reddit.com/r/Music/comments/4k02t1/bonnie_tyler_total_eclipse_of_the_heart_80s_pop/' + '.json'
     #only get up to "https://www.reddit.com/r/Music/comments/4k02t1".
@@ -560,9 +564,13 @@ def listLinksInComment(url, name, type_):
     #                        to this: https://www.reddit.com/r/redditviewertesting/comments/4x8v1k/test_test_what_is_d%C3%A9j%C3%A0_vu/
     #
     #use safe='' argument in quoteplus to encode only the weird chars part
+    url=urllib.quote_plus(url,safe=':/?&')
 
-    url=  urllib.quote_plus(url,safe=':/')
-    url+= '.json'
+    if '?' in url:
+        url=url.split('?', 1)[0]+'.json?'+url.split('?', 1)[1]
+    else:
+        url+= '.json'
+
     xbmc_busy()
 
     loading_indicator=progressBG('Loading...')
@@ -571,6 +579,7 @@ def listLinksInComment(url, name, type_):
     loading_indicator.update(10,'Parsing')
 
     if not content:
+        loading_indicator.end()
         return
 
     try:

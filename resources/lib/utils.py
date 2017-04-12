@@ -50,9 +50,8 @@ def compose_list_item(label,label2,iconImage,property_item_type, onClick_action,
 
     liz=xbmcgui.ListItem(label=label,
                          label2=label2,
-                         iconImage=iconImage,
-                         thumbnailImage=iconImage,
                          path="") #<-- DirectoryItem_url is not used here by the xml gui
+    liz.setArt({"icon":iconImage, "thumb":iconImage,})
     liz.setProperty('item_type', property_item_type)  #item type "script" -> ('RunAddon(%s):' % di_url )
 
     #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } )

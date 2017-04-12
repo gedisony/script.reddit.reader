@@ -20,8 +20,7 @@ def reddit_request( url, data=None ):
         url=url.replace('www.reddit.com','oauth.reddit.com' )
         url=url.replace( 'np.reddit.com','oauth.reddit.com' )
         url=url.replace(       'http://',        'https://' )
-        log( "  replaced reqst." + url + " + access token=" + reddit_access_token)
-
+        #log( "  replaced reqst." + url + " + access token=" + reddit_access_token)
     req = urllib2.Request(url)
 
     #req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
