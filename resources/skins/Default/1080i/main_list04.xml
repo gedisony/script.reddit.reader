@@ -140,19 +140,19 @@
 				<ondown>55</ondown>
 				
 				<visible>true</visible>
-				<focusedlayout height="172" >
+				<focusedlayout height="192" >
 					
 				
 					<control type="image">
 						<width>880</width>
-						<height>173</height>
+						<height>193</height>
 						<aspectratio aligny="bottom" >keep</aspectratio>
 						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
 						<visible>!Control.HasFocus(55)</visible>
 					</control>
 					<control type="image">
 						<width>880</width>
-						<height>173</height>
+						<height>198</height>
 						<texture colordiffuse="5512A8DA">focus_f2.png</texture>
 						<!-- visible>Control.HasFocus(55)</visible-->
 						<animation effect="fade" start="0" end="100" time="100">Focus</animation>
@@ -180,11 +180,11 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
 							<top>0</top>
-							<height>71</height>
+							<height>100</height>
 							<width>560</width>
 							<aligny>center</aligny>
 							<scrolltime>200</scrolltime>
-							<autoscroll delay="3000" time="2000" repeat="4000">Control.HasFocus(55)</autoscroll>
+							<autoscroll delay="3000" time="2000" repeat="4000">!Container(55).OnNext+!Container(55).OnPrevious</autoscroll>
 							<font>font12</font>
 							<label>$INFO[ListItem.Label]</label>
 							<textcolor>FFFFFFFF</textcolor>
@@ -192,7 +192,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>20</left>
-							<top>70</top>
+							<top>90</top>
 							<height>43</height>
 							<width>560</width>
 							<aligny>center</aligny>
@@ -204,10 +204,10 @@
 					</control>
 				</focusedlayout>
 
-				<itemlayout height="102" >
+				<itemlayout height="122" >
 					<control type="image">
 						<width>880</width>
-						<height>103</height>
+						<height>123</height>
 						<aspectratio aligny="bottom" >stretch</aspectratio>
 						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
 					</control>
@@ -224,7 +224,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
 							<top>0</top>
-							<height>71</height>
+							<height>100</height>
 							<width>660</width>
 							<aligny>center</aligny>
 							<scrolltime>0</scrolltime>
@@ -236,7 +236,7 @@
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
 							<left>20</left>
-							<top>70</top>
+							<top>90</top>
 							<height>43</height>
 							<width>660</width>
 							<aligny>center</aligny>
