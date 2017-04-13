@@ -7,162 +7,6 @@
     	
 	<controls>
 
-	<!--BEGIN include>View_55_WideList</include -->
-		<control type="group">
-			<!-- OpenClose_Left - OpenClose_FadeSlide_Left --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
-			<!-- Visible_Left - Vis_FadeSlide_Left <animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation-->
-			
-			<!-- animation effect="slide" start="0,0" end="-300,0" time="200"  condition="Container(55).OnNext">Conditional</animation-->
-			
-			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious | IsEmpty(Container(55).ListItem.Property(preview_ar)) </visible-->
-			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious </visible>
-			<animation type="Visible" reversible="false" >
-				<effect type="slide" start="0,0" end="-200,0" time="1000" delay="1000"/>
-				<effect type="fade"  start="100" end="100" time="0" />
-			</animation-->
-			
-			<!-- animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))"><description>this animation slides the listbox to the left</description>
-				<effect type="slide" start="0,0" end="-900,0" time="800" tween="cubic" easing="in" delay="2000"/>
-				<effect type="fade"  start="100" end="100" time="0" />
-			</animation-->
-			
-			<left>0</left>
-			<top>0</top>
-
-			<control type="image" id="202">	<description>left-side text background</description>
-				<left>0</left>
-				<top>0</top>
-				<width>800</width>
-				<height>1920</height>
-				<colordiffuse>CCCCCCCC</colordiffuse>
-				<texture>focus_f4.png</texture>
-				<visible>false</visible>
-			</control>
-			
-			<control type="fixedlist" id="55">
-				<left>6</left>
-				<top>85</top>
-				<width>980</width>
-				<height>920</height>
-				<focusposition>2</focusposition>
-				<movement>5</movement>
-				<preloaditems>true</preloaditems>
-				<scrolltime tween="cubic" easing="out">500</scrolltime>
-				<orientation>vertical</orientation>
-				<pagecontrol>55600</pagecontrol>
-				<!-- onleft>RunAddon(script.reddit.reader,?mode=comments_gui&url=[$INFO[ListItem.Label]])</onleft         $INFO[ListItem.Label] does not work              -->
-				<!-- onleft>(show side menu panel-done in code) 9000</onleft-->
-				<!-- onright>(show comments-done in code)</onright-->
-				<onup>55</onup>
-				<ondown>55</ondown>
-				
-				<visible>true</visible>
-				<focusedlayout height="172" >
-					<control type="image">
-						<width>880</width>
-						<height>173</height>
-						<aspectratio aligny="bottom" >keep</aspectratio>
-						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
-						<visible>!Control.HasFocus(55)</visible>
-					</control>
-					<control type="image">
-						<width>880</width>
-						<height>173</height>
-						<texture colordiffuse="FF12A8DA">focus_f2.png</texture>
-						<visible>Control.HasFocus(55)</visible>
-					</control>
-					<control type="image">
-						<visible>false</visible>
-						<width>160</width>
-						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
-						<bordersize>2</bordersize>
-						<texture bordersize="2">$INFO[ListItem.Art(thumb)]</texture>
-					</control>
-					
-					<control type="group">
-						<!-- visible>String.IsEmpty(ListItem.Art(thumb))</visible-->
-						<control type="textbox"><!-- ListItem.Label -->
-							<left>20</left>
-							<top>0</top>
-							<height>140</height>
-							<width>880</width>
-							<aligny>center</aligny>
-							<font>font14</font>
-							<scrolltime>200</scrolltime>
-							<autoscroll delay="3000" time="2000" repeat="4000">Control.HasFocus(55)</autoscroll>
-							<label>$INFO[ListItem.Label]</label>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-						<control type="label"><!-- ListItem.Label2 -->
-							<left>20</left>
-							<top>142</top>
-							<height>43</height>
-							<width>860</width>
-							<aligny>center</aligny>
-							<font>font12</font>
-							<label>$INFO[ListItem.Label2]</label>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-					</control>
-				</focusedlayout>
-
-				<itemlayout height="102" >
-					<control type="image">
-						<width>880</width>
-						<height>103</height>
-						<aspectratio aligny="bottom" >stretch</aspectratio>
-						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
-					</control>
-					<control type="image">
-						<visible>false</visible>
-						<width>140</width>
-						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
-						<bordersize>2</bordersize>
-						<texture>$INFO[ListItem.Art(thumb)]</texture>
-					</control>
-
-					<control type="group">
-						<!-- visible>String.IsEmpty(ListItem.Art(thumb))</visible-->
-						<control type="textbox"><!-- ListItem.Label -->
-							<left>20</left>
-							<top>0</top>
-							<height>71</height>
-							<width>860</width>
-							<aligny>center</aligny>
-							<scrolltime>0</scrolltime>
-							<autoscroll>false</autoscroll>
-							<font>font12</font>
-							<label>$INFO[ListItem.Label]</label>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-						<control type="label"><!-- ListItem.Label2 -->
-							<left>20</left>
-							<top>70</top>
-							<height>43</height>
-							<width>860</width>
-							<aligny>center</aligny>
-							<font>font10</font>
-							<label>$INFO[ListItem.Label2]</label>
-							<textcolor>grey</textcolor>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-					</control>
-				</itemlayout>
-			</control>
-			<!-- control type="scrollbar" id="55600">
-				<left>457</left>
-				<top>0</top>
-				<width>12</width>
-				<height>830</height>
-				<onleft>55</onleft>
-				<onright>55</onright>
-				<orientation>vertical</orientation>
-			</control-->
-			
-		</control>
-	<!--END include>View_55_WideList</include -->
-
-	
 		<!--BEGIN include name="DefaultBackground"-->
 			<control type="group"><description>Right side panel</description>
 
@@ -227,74 +71,235 @@
 					<height>1080</height>
 					<aspectratio scalediffuse="true">keep</aspectratio>
 					<colordiffuse>FFFFFFFF</colordiffuse>
-					<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
+					<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
 					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+				</control>
+
+				<control type="image" id="203"><description>partner with id 65592</description>
+					<top>0</top>
+					<left>0</left>
+					<width>1920</width>
+					<height>850</height>
+					<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
+					<texture diffuse="diffuse_left.png" >$INFO[Container(55).ListItem.Art(banner)]</texture>
+					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
 
 
 
-				<control type="group"><description>big wide image</description>
-					<control type="image" id="203"><description>partner with id 65592</description>
-						<top>0</top>
-						<left>0</left>
-						<width>1920</width>
-						<height>850</height>
-						<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
-						<colordiffuse>FFFFFFFF</colordiffuse>
-						<texture diffuse="diffuse_left.png" >$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+			</control>
+		<!--END include name="DefaultBackground"-->
+
+	<!--BEGIN include>View_55_WideList</include -->
+		<control type="group">
+			<!-- OpenClose_Left - OpenClose_FadeSlide_Left --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation>
+			<!-- Visible_Left - Vis_FadeSlide_Left <animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="-320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="-320" time="300" tween="cubic" easing="out" /></animation-->
+			
+			<!-- animation effect="slide" start="0,0" end="-300,0" time="200"  condition="Container(55).OnNext">Conditional</animation-->
+			
+			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious | IsEmpty(Container(55).ListItem.Property(preview_ar)) </visible-->
+			<!-- visible>!Container(55).OnNext+!Container(55).OnPrevious </visible>
+			<animation type="Visible" reversible="false" >
+				<effect type="slide" start="0,0" end="-200,0" time="1000" delay="1000"/>
+				<effect type="fade"  start="100" end="100" time="0" />
+			</animation-->
+			
+			<!-- animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))"><description>this animation slides the listbox to the left</description>
+				<effect type="slide" start="0,0" end="-900,0" time="800" tween="cubic" easing="in" delay="2000"/>
+				<effect type="fade"  start="100" end="100" time="0" />
+			</animation-->
+			
+			<left>0</left>
+			<top>0</top>
+
+			<control type="image" id="202">	<description>left-side text background</description>
+				<left>0</left>
+				<top>0</top>
+				<width>800</width>
+				<height>1920</height>
+				<colordiffuse>CCCCCCCC</colordiffuse>
+				<texture>focus_f4.png</texture>
+				<visible>false</visible>
+			</control>
+			
+			<control type="fixedlist" id="55">
+				<left>6</left>
+				<top>85</top>
+				<width>980</width>
+				<height>920</height>
+				<focusposition>2</focusposition>
+				<movement>5</movement>
+				<preloaditems>true</preloaditems>
+				<scrolltime tween="cubic" easing="out">500</scrolltime>
+				<orientation>vertical</orientation>
+				<pagecontrol>55600</pagecontrol>
+				<!-- onleft>RunAddon(script.reddit.reader,?mode=comments_gui&url=[$INFO[ListItem.Label]])</onleft         $INFO[ListItem.Label] does not work              -->
+				<!-- onleft>(show side menu panel-done in code) 9000</onleft-->
+				<!-- onright>(show comments-done in code)</onright-->
+				<onup>55</onup>
+				<ondown>55</ondown>
+				
+				<visible>true</visible>
+				<focusedlayout height="172" >
+					
+				
+					<control type="image">
+						<width>880</width>
+						<height>173</height>
+						<aspectratio aligny="bottom" >keep</aspectratio>
+						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
+						<visible>!Control.HasFocus(55)</visible>
 					</control>
-	
-					<control type="image" id="205"><description>partner with id 65592</description>
-						<top>0</top>
-						<left>0</left>
-						<width>1920</width>
-	      				<height>850</height>
-						<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
-						<colordiffuse>FFFFFFFF</colordiffuse>
-						<texture diffuse="diffuse_left2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<!-- visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible-->
-						<visible>!Container(55).OnNext+!Container(55).OnPrevious + !IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
-						<animation type="Visible"><description>clear image fades in after delay</description>
-							<effect type="fade"  start="0" end="100" time="1000" tween="cubic" easing="in" delay="1800"/>
-						</animation>
+					<control type="image">
+						<width>880</width>
+						<height>173</height>
+						<texture colordiffuse="5512A8DA">focus_f2.png</texture>
+						<!-- visible>Control.HasFocus(55)</visible-->
+						<animation effect="fade" start="0" end="100" time="100">Focus</animation>
+						<animation effect="fade" start="100" end="0" time="100">Unfocus</animation>
+					</control>
+					<control type="image">
+						<visible>false</visible>
+						<width>160</width>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture bordersize="2">$INFO[ListItem.Art(thumb)]</texture>
+					</control>
+					
+					<control type="group">
+						<animation type="Focus">
+							<effect type="zoom" start="100" end="170" time="200" tween="sine" easing="inout" center="40,10"/>
+							<effect type="fade" start="20" end="100" time="100" />
+						</animation>					
+						<animation type="UnFocus">
+							<effect type="zoom" start="170" end="100" time="200" tween="sine" easing="inout" center="40,10"/>
+							<effect type="fade" start="100" end="20" time="100" />
+						</animation>					
+						
+						
+						<control type="textbox"><!-- ListItem.Label -->
+							<left>20</left>
+							<top>0</top>
+							<height>71</height>
+							<width>560</width>
+							<aligny>center</aligny>
+							<scrolltime>200</scrolltime>
+							<autoscroll delay="3000" time="2000" repeat="4000">Control.HasFocus(55)</autoscroll>
+							<font>font12</font>
+							<label>$INFO[ListItem.Label]</label>
+							<textcolor>FFFFFFFF</textcolor>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+						<control type="label"><!-- ListItem.Label2 -->
+							<left>20</left>
+							<top>70</top>
+							<height>43</height>
+							<width>560</width>
+							<aligny>center</aligny>
+							<font>font10</font>
+							<label>$INFO[ListItem.Label2]</label>
+							<textcolor>grey</textcolor>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+					</control>
+				</focusedlayout>
+
+				<itemlayout height="102" >
+					<control type="image">
+						<width>880</width>
+						<height>103</height>
+						<aspectratio aligny="bottom" >stretch</aspectratio>
+						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
+					</control>
+					<control type="image">
+						<visible>false</visible>
+						<width>140</width>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture>$INFO[ListItem.Art(thumb)]</texture>
 					</control>
 
-					<control type="group"><description>wide textbox and background bottom of wide picture</description>
-						<!-- visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
-						<animation type="Conditional" condition="!IsEmpty(Container(55).ListItem.Property(preview_ar))">
-							<effect type="fade"  start="0" end="100" time="800" tween="cubic" easing="in" delay="1800"/>
-						</animation-->
+					<control type="group">
+						<!-- visible>String.IsEmpty(ListItem.Art(thumb))</visible-->
+						<control type="textbox"><!-- ListItem.Label -->
+							<left>20</left>
+							<top>0</top>
+							<height>71</height>
+							<width>660</width>
+							<aligny>center</aligny>
+							<scrolltime>0</scrolltime>
+							<autoscroll>false</autoscroll>
+							<font>font12</font>
+							<label>$INFO[ListItem.Label]</label>
+							<textcolor>99FFFFFF</textcolor>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+						<control type="label"><!-- ListItem.Label2 -->
+							<left>20</left>
+							<top>70</top>
+							<height>43</height>
+							<width>660</width>
+							<aligny>center</aligny>
+							<font>font10</font>
+							<label>$INFO[ListItem.Label2]</label>
+							<textcolor>grey</textcolor>
+							<shadowcolor>text_shadow</shadowcolor>
+						</control>
+					</control>
+				</itemlayout>
+			</control>
+			<!-- control type="scrollbar" id="55600">
+				<left>457</left>
+				<top>0</top>
+				<width>12</width>
+				<height>830</height>
+				<onleft>55</onleft>
+				<onright>55</onright>
+				<orientation>vertical</orientation>
+			</control-->
+			
+		</control>
+	<!--END include>View_55_WideList</include -->
+
+
+				<control type="group"><description>big wide image that fades in</description>
+					<control type="group">
 						<visible>!Container(55).OnNext+!Container(55).OnPrevious + !IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 						<animation type="Visible"><description>clear image fades in after delay</description>
 							<effect type="fade"  start="0" end="100" time="1000" tween="cubic" easing="in" delay="1800"/>
 						</animation>
-						
-						<control type="image" id="65593"><description>text background</description>
+						<control type="image"><description>black background</description>
+							<top>0</top>
 							<left>0</left>
-							<top>848</top>
 							<width>1920</width>
-							<height>220</height>
-							<texture>srr_dlg-bg.png</texture>
+							<height>1050</height>
+							<colordiffuse>CCCCCCCC</colordiffuse>
+							<aspectratio>stretch</aspectratio>
+							<texture>srr_black.png</texture>
 						</control>
+						<control type="image" id="205"><description>partner with id 65592</description>
+							<top>0</top>
+							<left>0</left>
+							<width>1920</width>
+		      				<height>850</height>
+							<aspectratio scalediffuse="true" align="right" aligny="center">keep</aspectratio>
+							<colordiffuse>FFFFFFFF</colordiffuse>
+							<texture diffuse="diffuse_left2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
+							<!-- visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible-->
+						</control>
+
 						<control type="textbox" id="65592"><description>partner with id 203</description>
 							<left>150</left><!--942-->
 							<top>848</top>
 							<width>1720</width>
 							<height>220</height>
-							<font>font16</font>
+							<font>font14</font>
 							<align>center</align>
 							<autoscroll delay="8000" time="2000" repeat="10000">Control.IsVisible(205)</autoscroll>
-							<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
-							<!-- visible>!Control.IsVisible(65591)</visible-->
 							<label>$INFO[Container(55).ListItem.PlotOutline]</label>
 						</control>
 					</control>
 				</control>
-
-			</control>
-		<!--END include name="DefaultBackground"-->
-
 
 
 	<!--BEGIN include name="UpDownArrows"-->

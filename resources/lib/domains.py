@@ -2313,6 +2313,7 @@ class ClassReddit(sitesBase):
         headers = {'User-Agent': reddit_userAgent}
         body_text=None
         from utils import clean_str
+        import random
 
         #log('get thumb url from '+self.original_url)
         if '/comments/' in self.original_url:
@@ -2361,8 +2362,9 @@ class ClassReddit(sitesBase):
             icon_img=j.get('icon_img')
             banner_img=j.get('banner_img')
             header_img=j.get('header_img')
-
-            icon=next((item for item in [header_img,icon_img,banner_img,] if item ), '')
+            possible_thumbs=[header_img,icon_img,banner_img,]
+            random.shuffle(possible_thumbs)
+            icon=next((item for item in possible_thumbs if item ), '')
             #log( repr(self.video_id) + ' icon=' + repr(icon) )
             self.thumb_url=icon
             self.poster_url=banner_img
@@ -3074,8 +3076,6 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             if needs_preview:
                 hoster.get_thumb_url()
-                #poster=hoster.poster_url
-                #log('      poster_url:'+poster)
 
             #override gif link_action from DI_ACTION_PLAYABLE to loopedPlayback()
             if media_type==sitesBase.TYPE_GIF:

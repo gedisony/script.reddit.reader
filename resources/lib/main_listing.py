@@ -178,7 +178,7 @@ def listSubReddit(url, subreddit_key, type_):
             else:
                 nextUrl = currentUrl+"&after="+after
 
-            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': translation(32004)} )
+            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': '[B]' + translation(32004)+'[/B]'} )
 
             li.append(liz)
 
