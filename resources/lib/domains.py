@@ -6,6 +6,7 @@ import sys
 import re
 import requests
 import json
+import urlparse
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
@@ -136,19 +137,18 @@ class sitesBase(object):
 
             #first, do a head request. sometimes the link is an mp3 and we don't want to download the entire file just to check the 'content-type'
             head=requests.head(link_url, timeout=(2,2),allow_redirects=True)
-            #log('head request returned:'+repr(head.status_code)+' '+repr(head.headers))
+            #if 'boardgamegeek' in link_url: log('head request returned:'+repr(head.status_code)+' '+repr(head.headers))
             if head.status_code==requests.codes.ok:
                 if 'html' in head.headers.get('content-type') :
                     r = self.requests_get(link_url,headers=None, timeout=(2,2), allow_redirects=True)
                     #log( "getting OG:image:" + repr(r.headers))
                     if r:
-                        #log( "if content:" + repr(r.headers))
-                        i=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )
+                        a=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )   #most sites use <meta property="
+                        b=parseDOM(r.text, "meta", attrs = {     "name": "og:image" }, ret="content" )   #boardgamegeek uses <meta name="
+                        i=next((item for item in [a,b] if item ), '')
                         #log( "if parseDOM:" + link_url)
                         if i:
-                            #log( "if i:" + link_url)
                             try:
-                                import urlparse
                                 return urlparse.urljoin(link_url, i[0]) #handle relative or absolute
                             except IndexError: pass
                             else:
@@ -510,8 +510,7 @@ class ClassImgur(sitesBase):
             self.thumb_url, self.poster_url= self.get_album_thumb(link_url)
             return self.thumb_url
 
-        from urlparse import urlparse
-        o=urlparse(link_url)    #from urlparse import urlparse
+        o=urlparse.urlparse(link_url)
         filename,ext=parse_filename_and_ext_from_url(link_url)
         #log("file&ext------"+filename+"--"+ext+"--"+o.netloc )
 
@@ -1269,9 +1268,7 @@ class ClassBlogspot(sitesBase):
         return '',''
 
     def ret_blog_post_request(self):
-
-        from urlparse import urlparse
-        o=urlparse(self.media_url)   #scheme, netloc, path, params, query, fragment
+        o=urlparse.urlparse(self.media_url)   #scheme, netloc, path, params, query, fragment
         #log( '  blogpath=' + o.path )
         blog_path= o.path
 

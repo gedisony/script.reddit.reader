@@ -300,7 +300,6 @@ class indexGui(cGUI):
 class listSubRedditGUI(cGUI):
     reddit_query_of_this_gui=''
     SUBREDDITS_LIST=550
-    CONTEXT_MENU_LIST=550
     SIDE_SLIDE_PANEL=9000
     #all controls in the side panel needs to be included in focused_control ACTION_MOVE_RIGHT check
     BTN_GOTO_SUBREDDIT=6052
@@ -317,18 +316,12 @@ class listSubRedditGUI(cGUI):
 
     def onInit(self):
         cGUI.onInit(self)
-        xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+
+        self.setProperty("bg_image", "srr_blackbg.jpg")  #this is retrieved in the xml file by $INFO[Window.Property(bg_image)]
 
         #self.subreddits_listbox = self.getControl(self.SUBREDDITS_LIST)
         #self.subreddits_listbox.reset()
         #self.subreddits_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
-
-#        if self.context_menu:
-#            #log('building context menu')
-#            self.context_menu_listbox=self.getControl(self.CONTEXT_MENU_LIST)
-#            self.context_menu_listbox.reset()
-#            self.context_menu_listbox.addItems( self.context_menu )
-#        pass
 
     def onAction(self, action):
 
@@ -424,7 +417,6 @@ class listSubRedditGUI(cGUI):
 
         listbox_selected_item=self.gui_listbox.getSelectedItem()
         #subreddits_selected_item=self.subreddits_listbox.getSelectedItem()
-        #context_menu_selected_item=self.context_menu_listbox.getSelectedItem()
 
         if controlID == self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()

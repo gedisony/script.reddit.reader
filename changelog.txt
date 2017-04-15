@@ -1,3 +1,7 @@
+0.8.9 (04-14-2017)
+ - more gui tweaks
+ - update og:image parsing
+ - new default list reddits gui
 0.8.8 (04-11-2017)
  - fix some comment links error
  - get comment body for r/bestof posts

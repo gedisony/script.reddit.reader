@@ -225,7 +225,7 @@ def skin_launcher(mode,**kwargs ):
 
 def reddit_post_worker(idx, entry, q_out):
     import datetime
-    from utils import strip_emoji, pretty_datediff, clean_str, get_int
+    from utils import strip_emoji, pretty_datediff, clean_str, get_int, format_description
     from reddit import determine_if_video_media_from_reddit_json
     try:
         credate = ""
@@ -256,7 +256,9 @@ def reddit_post_worker(idx, entry, q_out):
                 description=clean_str(data,['body'])
                 domain='Comment post'
 
-            title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
+            description=format_description(description)
+            #title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
+            title=format_description(title)
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
             log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
@@ -373,7 +375,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     post_title=title
     #if len(post_title) > 40:
-    il_description='[B]%s[/B][CR]%s' %( post_title, description )
+    il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
     #else:
     #    il_description='%s' %( description )
 
@@ -406,7 +408,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setArt({ "clearart": clearart  })
 
     #force all links to ytdl to see if they are playable
-    #if use_ytdl_for_unknown:
     liz.setProperty('item_type','script')
     liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
 
@@ -679,7 +680,7 @@ def listLinksInComment(url, name, type_):
 
 def reddit_comment_worker(idx, h, q_out,submitter):
     from domains import parse_reddit_link, sitesBase
-    from utils import markdown_to_bbcode, unescape, ret_info_type_icon, build_script
+    from utils import format_description, ret_info_type_icon, build_script
 
 #         h[0]=score,
 #         h[1]=link_desc,
@@ -729,10 +730,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         elif kind=='t3':
             t_prepend=r"[B]Post text:[/B]"
 
-        #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines
-        plot=h[3].replace('](', '] (')
-        plot= markdown_to_bbcode(plot)
-        plot=unescape(plot)  #convert html entities e.g.:(&#39;)
+        plot=format_description(h[3])
 
         liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 ,
                              label2="",

@@ -457,6 +457,20 @@ def markdown_to_bbcode(s):
     except:
         return s
 
+def format_description(s, hide_text_in_parens=True):
+
+    formatted=unescape(s)  #convert html entities e.g.:(&#39;)
+
+    if hide_text_in_parens:
+        formatted=re.sub(r']\([^)]*\)', ']', formatted)
+    else:
+        #put a space between [link_description](http://link.descript.ion) so that they can be split into 2 lines in the textbox
+        #helps the the textbox control treat [url description] and (url) as separate words. so that they can be separated into 2 lines
+        formatted=s.replace('](', '] (')
+
+    formatted=markdown_to_bbcode(formatted)
+    formatted=strip_emoji(formatted)
+    return formatted
 
 def convert_date(stamp):
     #http://forum.kodi.tv/showthread.php?tid=221119
