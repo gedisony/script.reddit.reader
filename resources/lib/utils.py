@@ -2,7 +2,7 @@
 import urllib
 import xbmc, xbmcgui, xbmcaddon
 import re, htmlentitydefs
-
+import pickle
 addon         = xbmcaddon.Addon()
 addonID       = addon.getAddonInfo('id')  #script.reddit.reader
 

@@ -1,4 +1,8 @@
-0.8.9 (04-14-2017)
+0.9.0
+ - more gui tweaks
+ - have subreddit icon/banner show up on gui
+ - update og:image parsing
+ 0.8.9 (04-14-2017)
  - more gui tweaks
  - update og:image parsing
  - new default list reddits gui

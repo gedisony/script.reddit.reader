@@ -51,6 +51,22 @@ GCXM_hasmultipleauthor=False
 GCXM_actual_url_used_to_generate_these_posts=''
 GCXM_reddit_query_of_this_gui=''
 
+def subreddit_icoheader_banner(subreddit):
+    from reddit import get_subreddit_entry_info, ret_sub_info
+    addtl_subr_info=ret_sub_info(subreddit)
+    #log('addtl_subr_info'+repr(addtl_subr_info))
+    try: #if addtl_subr_info:
+        icon=addtl_subr_info.get('icon_img')
+        banner=addtl_subr_info.get('banner_img')
+        header=addtl_subr_info.get('header_img',None)  #usually the small icon on upper left side on subreddit screen
+        #log('\nicon:'+repr(icon)+'\nheader:'+repr(header)+'\nbanner:'+repr(banner))
+        #icoheader=(icon if icon else header)
+    except AttributeError:
+        icon=banner=header=None
+        #get subreddit info and store it in out subreddits pickle for next time
+        get_subreddit_entry_info(subreddit)
+    return icon,banner,header
+
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
     from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify
@@ -64,6 +80,7 @@ def listSubReddit(url, subreddit_key, type_):
     log("listSubReddit r/%s\n %s" %(title_bar_name,url) )
 
     currentUrl = url
+    icon=banner=header=None
     xbmc_busy()
 
     loading_indicator=progressBG('Loading...')
@@ -86,8 +103,7 @@ def listSubReddit(url, subreddit_key, type_):
 
     hms=has_multiple('subreddit', content['data']['children'])
 
-    if hms==False:
-        #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link.
+    if hms==False:  #r/random and r/randnsfw returns a random subreddit. we need to use the name of this subreddit for the "next page" link.
         try: g=content['data']['children'][0]['data']['subreddit']
         except ValueError: g=""
         except IndexError:
@@ -100,6 +116,9 @@ def listSubReddit(url, subreddit_key, type_):
             #preserve the &after string so that functions like play slideshow and play all videos can 'play' the correct page
             #  extract the &after string from currentUrl -OR- send it with the 'type' argument when calling this function.
             currentUrl=assemble_reddit_filter_string('',g) + '&after=' + type_
+
+        #put subreddit icon/header in the GUI
+        icon,banner,header=subreddit_icoheader_banner(g)
 
     GCXM_hasmultiplesubreddit=hms
     GCXM_hasmultipledomain=has_multiple('domain', content['data']['children'])
@@ -160,7 +179,6 @@ def listSubReddit(url, subreddit_key, type_):
 
     #liu=[ qi for qi in sorted(q_liz.queue) ]
     li=[ liz for idx,liz in sorted(q_liz.queue) ]
-    #log(repr(li))
 
     #empty the queue.
     with q_liz.mutex:
@@ -180,6 +198,10 @@ def listSubReddit(url, subreddit_key, type_):
 
             liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': '[B]' + translation(32004)+'[/B]'} )
 
+            #for items at the bottom left corner
+            liz.setArt({ "clearart": "DefaultFolderNextSquare.png"  })
+            liz.setInfo(type='video', infoLabels={"Studio":translation(32004)})
+            liz.setProperty('link_url', nextUrl )
             li.append(liz)
 
     except Exception as e:
@@ -188,7 +210,14 @@ def listSubReddit(url, subreddit_key, type_):
     xbmc_busy(False)
 
     title_bar_name=urllib.unquote_plus(title_bar_name)
-    ui=skin_launcher('listSubReddit', title_bar_name=title_bar_name, li=li,subreddits_file=subredditsFile, currentUrl=currentUrl)
+    ui=skin_launcher('listSubReddit',
+                     title_bar_name=title_bar_name,
+                     listing=li,
+                     subreddits_file=subredditsFile,
+                     currentUrl=currentUrl,
+                     icon=icon,
+                     banner=banner,
+                     header=header)
     ui.doModal()
     del ui
     #ui.show()  #<-- interesting possibilities. you have to handle the actions outside of the gui class.
@@ -204,15 +233,15 @@ def skin_launcher(mode,**kwargs ):
     #    pass
 
     title_bar_text=kwargs.get('title_bar_name')
-    li=kwargs.get('li')
-    subreddits_file=kwargs.get('subreddits_file')
+    #listing=kwargs.get('listing')
+    #subreddits_file=kwargs.get('subreddits_file')
     currentUrl=kwargs.get('currentUrl')
     #log('********************* ' + repr(currentUrl))
     try:
         ui = listSubRedditGUI(main_gui_skin , addon_path, defaultSkin='Default', defaultRes='1080i',
-                              listing=li,
-                              subreddits_file=subreddits_file,
-                              id=55)
+                              id=55,
+                              **kwargs   #just pass along the **kwargs, the class will sort them out
+                              )
         ui.title_bar_text='[B]'+ title_bar_text + '[/B]'
         ui.reddit_query_of_this_gui=currentUrl
         #ui.include_parent_directory_entry=True
@@ -225,13 +254,12 @@ def skin_launcher(mode,**kwargs ):
 
 def reddit_post_worker(idx, entry, q_out):
     import datetime
-    from utils import strip_emoji, pretty_datediff, clean_str, get_int, format_description
+    from utils import pretty_datediff, clean_str, get_int, format_description
     from reddit import determine_if_video_media_from_reddit_json
     try:
         credate = ""
         is_a_video=False
         title_line2=""
-
         thumb_w=0; thumb_h=0
 
         t_on = translation(32071)  #"on"
@@ -378,7 +406,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
     #else:
     #    il_description='%s' %( description )
-
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
     liz=xbmcgui.ListItem(label=post_title
@@ -399,7 +426,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
 
     liz.setProperty('link_url', link_url )
-    #liz.setProperty('post_id', post_id )
 
     liz.setInfo(type='video', infoLabels=il)
 

@@ -6,7 +6,7 @@ import urllib2, urllib
 import re
 import os
 
-from default import addon, subredditsFile, urlMain, itemsPerPage
+from default import addon, subredditsFile, urlMain, itemsPerPage,subredditsPickle,REQUEST_TIMEOUT
 from utils import log, translation,xbmc_notify
 from default import reddit_clientID, reddit_userAgent, reddit_redirect_uri
 
@@ -267,13 +267,15 @@ def create_default_subreddits():
         fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
         fh.write('random\n')
         #fh.write('randnsfw\n')
-        fh.write('[Frontpage]\n')
+        fh.write('animemusic+amv+animetrailers\n')
         fh.write('popular\n')
-        fh.write('gametrailers+tvtrailers+trailers\n')
+        fh.write('mealtimevideos/new\n')
         fh.write('music+listentothis+musicvideos\n')
+        fh.write('moviemusic+soundtracks+gamemusic\n')
+        fh.write('fantrailers+fanedits+gametrailers+trailers\n')
+        fh.write('gamereviews+moviecritic\n')
         fh.write('site:youtube.com\n')
         fh.write('videos\n')
-        #fh.write('videos/new\n')
         fh.write('woahdude+interestingasfuck+shittyrobots\n')
 
 def format_multihub(multihub):
@@ -504,6 +506,7 @@ def determine_if_video_media_from_reddit_json( data ):
 
 def get_subreddit_info( subreddit ):
     import requests
+    #import pprint
     subs_dict={}
 
     headers = {'User-Agent': reddit_userAgent}
@@ -512,26 +515,26 @@ def get_subreddit_info( subreddit ):
     r = requests.get( req, headers=headers, timeout=REQUEST_TIMEOUT )
     if r.status_code == requests.codes.ok:
         j=r.json()
-        j=j.get('data')
         #log( pprint.pformat(j, indent=1) )
-
-        subs_dict.update( {'entry_name':subreddit.lower(),
-                           'display_name':j.get('display_name'),
-                           'banner_img': j.get('banner_img'),
-                           'icon_img': j.get('icon_img'),
-                           'header_img': j.get('header_img'), #not used? usually similar to with icon_img
-                           'title':j.get('title'),
-                           'header_title':j.get('header_title'),
-                           'public_description':j.get('public_description'),
-                           'subreddit_type':j.get('subreddit_type'),
-                           'subscribers':j.get('subscribers'),
-                           'created':j.get('created'),        #public, private
-                           'over18':j.get('over18'),
-                           } )
-
-        #log( pprint.pformat(subs_dict, indent=1) )
-        return subs_dict
-        #log( repr(self.thumb_url) )
+        j=j.get('data')
+        if 'display_name' in j:
+            subs_dict.update( {'entry_name':subreddit.lower(),
+                               'display_name':j.get('display_name'),
+                               'banner_img': j.get('banner_img'),
+                               'icon_img': j.get('icon_img'),
+                               'header_img': j.get('header_img'), #not used? usually similar to with icon_img
+                               'title':j.get('title'),
+                               'header_title':j.get('header_title'),
+                               'public_description':j.get('public_description'),
+                               'subreddit_type':j.get('subreddit_type'),
+                               'subscribers':j.get('subscribers'),
+                               'created':j.get('created'),        #public, private
+                               'over18':j.get('over18'),
+                               } )
+            #log( pprint.pformat(subs_dict, indent=1) )
+            return subs_dict
+        else:
+            log('    No data for (%s)'%subreddit)
     else:
         log( '    getting subreddit (%s) info:%s' %(subreddit, r.status_code) )
 
@@ -598,6 +601,48 @@ def subreddit_in_favorites( subreddit ):
                 if subreddit.lower() == s.lower():
                     return True
 
+def get_subreddit_entry_info(subreddit):
+    import threading
+    #from resources.lib.utils import get_subreddit_info, parse_subreddit_entry, create_default_subreddits, load_dict
+    if subreddit.lower() in ['all','random','randnsfw','popular']:
+        return
+    s=[]
+    if '/' in subreddit:  #we want to get diy from diy/top or diy/new
+        subreddit=subreddit.split('/')[0]
+
+    if '+' in subreddit:
+        s.extend(subreddit.split('+'))
+    else:
+        s.append(subreddit)
+
+    t = threading.Thread(target=get_subreddit_entry_info_thread, args=(s,) )
+    #threads.append(t)
+    #log('****starting... '+repr(t))
+    t.start()
+
+def get_subreddit_entry_info_thread(sub_list):
+    import os
+    from utils import load_dict, save_dict
+
+    subreddits_dlist=[]
+    #log('**** thread running:'+repr(sub_list))
+    if os.path.exists(subredditsPickle):
+        #log('****file exists ' + repr( subredditsPickle ))
+        subreddits_dlist=load_dict(subredditsPickle)
+        #for e in subreddits_dlist: log(e.get('entry_name'))
+        #log( pprint.pformat(subreddits_dlist, indent=1) )
+    #log('****------before for -------- ' + repr(sub_list ))
+    for subreddit in sub_list:
+        #remove old instance of subreddit
+        #log('****processing ' + repr( subreddit ))
+        subreddits_dlist=[x for x in subreddits_dlist if x.get('entry_name') != subreddit.lower() ]
+        #log('getting sub info')
+        sub_info=get_subreddit_info(subreddit)
+        log('    retrieved subreddit info ' + repr( sub_info ))
+        if sub_info:
+            subreddits_dlist.append(sub_info)
+            save_dict(subreddits_dlist, subredditsPickle)
+            #log('****saved ')
 
 if __name__ == '__main__':
     pass

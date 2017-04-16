@@ -5,8 +5,10 @@ import xbmcgui
 import sys
 import shutil
 
-from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path
+from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle
 from utils import xbmc_busy, log, translation, xbmc_notify
+from reddit import get_subreddit_entry_info
+import threading
 
 ytdl_quality=addon.getSetting("ytdl_quality")
 try: ytdl_quality=[0, 1, 2, 3][ int(ytdl_quality) ]
@@ -47,24 +49,19 @@ def manage_subreddits(subreddit, name, type_):
 def addSubreddit(subreddit, name, type_):
     from utils import colored_subreddit
     from reddit import this_is_a_multireddit, format_multihub
-    log( 'addSubreddit ' + subreddit)
     alreadyIn = False
-
     with open(subredditsFile, 'r') as fh:
         content = fh.readlines()
-        #fh.close()
-
     if subreddit:
         for line in content:
-            #log('line=['+line+']toadd=['+subreddit+']')
             if line.strip()==subreddit.strip():
-                #log('  MATCH '+line+'='+subreddit)
                 alreadyIn = True
         if not alreadyIn:
             with open(subredditsFile, 'a') as fh:
                 fh.write(subreddit+'\n')
-            #get_subreddit_entry_info(subreddit)
-        xbmc_notify( colored_subreddit(subreddit), translation(32019) )
+
+            get_subreddit_entry_info(subreddit)
+        xbmc_notify(colored_subreddit(subreddit), translation(32019) )
     else:
         #dialog = xbmcgui.Dialog()
         #ok = dialog.ok('Add subreddit', 'Add a subreddit (videos)','or  Multiple subreddits (music+listentothis)','or  Multireddit (/user/.../m/video)')
@@ -78,14 +75,16 @@ def addSubreddit(subreddit, name, type_):
             #cleanup user input. make sure /user/ and /m/ is lowercase
             if this_is_a_multireddit(subreddit):
                 subreddit = format_multihub(subreddit)
+            else:
+                get_subreddit_entry_info(subreddit)
 
             for line in content:
                 if line.lower()==subreddit.lower()+"\n":
                     alreadyIn = True
+
             if not alreadyIn:
                 with open(subredditsFile, 'a') as fh:
                     fh.write(subreddit+'\n')
-                    #fh.close()
 
         xbmc.executebuiltin("Container.Refresh")
 
@@ -121,6 +120,8 @@ def editSubreddit(subreddit, name, type_):
         #cleanup user input. make sure /user/ and /m/ is lowercase
         if this_is_a_multireddit(newsubreddit):
             newsubreddit = format_multihub(newsubreddit)
+        else:
+            get_subreddit_entry_info(newsubreddit)
 
         for line in content:
             if line.strip()==subreddit.strip() :      #if matches the old subreddit,
@@ -133,6 +134,35 @@ def editSubreddit(subreddit, name, type_):
             fh.write(contentNew)
 
         xbmc.executebuiltin("Container.Refresh")
+
+def searchReddits(url, subreddit, type_):
+    from default import urlMain
+    from main_listing import listSubReddit
+    from utils import translation
+    import urllib
+
+    #reddit search only works with a single subreddit
+    if subreddit:
+        initial_search_string='restrict_sr=on&sort=relevance&t=all&q='
+        initial_url=urlMain+'/r/'+subreddit
+    else:
+        initial_search_string='sort=relevance&t=year&q='
+        initial_url=urlMain
+
+    keyboard = xbmc.Keyboard(initial_search_string, translation(32073))
+    keyboard.doModal()
+    if keyboard.isConfirmed() and keyboard.getText():
+
+        search_string=keyboard.getText()
+
+        if search_string:
+            search_string=urllib.unquote_plus(search_string)
+
+    #    #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
+    #    #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
+        url = initial_url +"/search.json?" +search_string    #+ '+' + nsfw  # + sites_filter skip the sites filter
+
+        listSubReddit(url, 'Search', "")
 
 def setting_gif_repeat_count():
     srepeat_gif_video= addon.getSetting("repeat_gif_video")
@@ -522,34 +552,6 @@ def playYTDLVideo(url, name, type_):
         dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
         dialog_progress_YTDL.close()
 
-def search(url, subreddit, type_):
-    from default import urlMain
-    from main_listing import listSubReddit
-    from utils import translation
-    import urllib
-
-    #reddit search only works with a single subreddit
-    if subreddit:
-        initial_search_string='restrict_sr=on&sort=relevance&t=all&q='
-        initial_url=urlMain+'/r/'+subreddit
-    else:
-        initial_search_string='sort=relevance&t=year&q='
-        initial_url=urlMain
-
-    keyboard = xbmc.Keyboard(initial_search_string, translation(32073))
-    keyboard.doModal()
-    if keyboard.isConfirmed() and keyboard.getText():
-
-        search_string=keyboard.getText()
-
-        if search_string:
-            search_string=urllib.unquote_plus(search_string)
-
-    #    #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
-    #    #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
-        url = initial_url +"/search.json?" +search_string    #+ '+' + nsfw  # + sites_filter skip the sites filter
-
-        listSubReddit(url, 'Search', "")
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
 YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{}.tar.gz'

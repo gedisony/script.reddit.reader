@@ -132,27 +132,30 @@ class sitesBase(object):
             #if m_type=='image': return link_url
             return link_url #will a video link resolve to a preview image?
         else:
-            #headers = {"Range": "bytes=0-1000"} content = self.requests_get(link_url, headers)
-            #timeout not working right if redirect.
+            try:
+                #headers = {"Range": "bytes=0-1000"} content = self.requests_get(link_url, headers)
+                #timeout not working right if redirect.
 
-            #first, do a head request. sometimes the link is an mp3 and we don't want to download the entire file just to check the 'content-type'
-            head=requests.head(link_url, timeout=(2,2),allow_redirects=True)
-            #if 'boardgamegeek' in link_url: log('head request returned:'+repr(head.status_code)+' '+repr(head.headers))
-            if head.status_code==requests.codes.ok:
-                if 'html' in head.headers.get('content-type') :
-                    r = self.requests_get(link_url,headers=None, timeout=(2,2), allow_redirects=True)
-                    #log( "getting OG:image:" + repr(r.headers))
-                    if r:
-                        a=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )   #most sites use <meta property="
-                        b=parseDOM(r.text, "meta", attrs = {     "name": "og:image" }, ret="content" )   #boardgamegeek uses <meta name="
-                        i=next((item for item in [a,b] if item ), '')
-                        #log( "if parseDOM:" + link_url)
-                        if i:
-                            try:
-                                return urlparse.urljoin(link_url, i[0]) #handle relative or absolute
-                            except IndexError: pass
-                            else:
-                                log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
+                #first, do a head request. sometimes the link is an mp3 and we don't want to download the entire file just to check the 'content-type'
+                head=requests.head(link_url, timeout=(4,4),allow_redirects=True)
+                #log('head request returned:'+repr(head.status_code)+' '+repr(head.headers))
+                if head.status_code==requests.codes.ok:
+                    if 'html' in head.headers.get('content-type') :
+                        r = self.requests_get(link_url,headers=None, timeout=(4,4), allow_redirects=True)
+                        #log( "getting OG:image:" + repr(r.headers))
+                        if r:
+                            a=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )   #most sites use <meta property="
+                            b=parseDOM(r.text, "meta", attrs = {     "name": "og:image" }, ret="content" )   #boardgamegeek uses <meta name="
+                            i=next((item for item in [a,b] if item ), '')
+                            #log( "if parseDOM:" + link_url)
+                            if i:
+                                try:
+                                    return urlparse.urljoin(link_url, i[0]) #handle relative or absolute
+                                except IndexError: pass
+                                else:
+                                    log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
+            except Exception as e:
+                log('request_meta_ogimage_content:'+str(e))
 
     #def combine_title_and_description(self, title, description):
     #    return ( '[B]'+title+'[/B]\n' if title else '' ) + ( description if description else '' )

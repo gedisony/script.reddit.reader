@@ -117,10 +117,15 @@ class cGUI(xbmcgui.WindowXML):
         #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
         #url="http://i.imgur.com/ARdeL4F.mp4"
         if self.include_parent_directory_entry:
+            self.gui_listbox_SelectedPosition=1 #skip the ".." as the first selected item
             back_image='DefaultFolderBackSquare.png'
             listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
             #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
-            listitem.setArt({"thumb": back_image }) #, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
+            listitem.setArt({"thumb": back_image, "clearart": "DefaultFolderBackSquare.png"}) #, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
+
+            listitem.setInfo(type='video', infoLabels={"Studio":".."})
+            #liz.setProperty('link_url', nextUrl )
+
             #listitem.setPath(url)
             self.gui_listbox.addItem(listitem)
 
@@ -313,6 +318,15 @@ class listSubRedditGUI(cGUI):
     BTN_RELOAD=6060
     IMG_POST_PREVIEW=201
     IMG_POST_PREVIEW2=203
+
+    def __init__(self, *args, **kwargs):
+        cGUI.__init__(self, *args, **kwargs)
+        #log(repr(kwargs))
+        #ichdr=kwargs.get('ichdr')
+        #banner=kwargs.get('banner')
+        self.setProperty("subreddit_icon", kwargs.get('icon'))  #$INFO[Window.Property(subreddit_icon)]
+        self.setProperty("subreddit_banner", kwargs.get('banner'))  #$INFO[Window.Property(subreddit_banner)]
+        self.setProperty("subreddit_header", kwargs.get('header'))  #$INFO[Window.Property(subreddit_header)]
 
     def onInit(self):
         cGUI.onInit(self)
