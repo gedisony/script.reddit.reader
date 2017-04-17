@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">55</defaultcontrol>
+	<defaultcontrol>55</defaultcontrol>
 	<backgroundcolor>background</backgroundcolor>
 
 	<menucontrol>9000</menucontrol>
@@ -271,16 +271,31 @@
 						<font>font14</font>
 						<align>justify</align>
 						<autoscroll delay="10000" time="3000" repeat="10000">Control.IsVisible(65591)</autoscroll>
-						<label>$INFO[Container(55).ListItem.Plot]</label>					
+						<label>$INFO[Container(55).ListItem.Plot]</label>
+						<pagecontrol>17</pagecontrol>					
 					</control>
 				</control>
-				
-				<control type="group" id="204"><description>when no banner art</description>
+
+				<control type="scrollbar" id="17"><description>scroll control for grouplist(204) and textbox(65591)</description>
+				      <left>1910</left>
+				      <top>100</top>
+				      <width>10</width>
+				      <height>900</height>
+				      <visible allowhiddenfocus="false">true</visible>
+				      <orientation>vertical</orientation>
+				      <showonepage>false</showonepage>
+				</control>
+
+				<control type="grouplist" id="204"><description>thumb and textbox(when no banner art)</description>
+					<left>892</left>
+					<top>68</top>
+					<width>1000</width>
+					<height>905</height>
+					<orientation>vertical</orientation>
 					<visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<scrolltime tween="sine" easing="inout">500</scrolltime>
+					<pagecontrol>17</pagecontrol>
 					<control type="image">
-						<left>1182</left>
-						<top>68</top>
-						<width>400</width>
 						<height>400</height>
 						<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
 						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
@@ -288,10 +303,8 @@
 						<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 					</control>
 					<control type="textbox">
-						<left>892</left>
-						<top>468</top>
-						<width>1000</width>
-						<height>592</height>
+						<!-- height>592</height-->
+						<height min="500" max="5000">auto</height>
 						<font>font14</font>
 						<align>justify</align>
 						<autoscroll delay="10000" time="3000" repeat="10000">true</autoscroll>
@@ -312,17 +325,20 @@
 					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 				</control>
 
-				<control type="image" id="201"><description>big square image</description>
-					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
-					<centertop>540</centertop-->
+				<control type="grouplist" id="207">
 					<left>860</left>
 					<top>0</top>
 					<width>1080</width>
-					<height>1080</height>
-					<aspectratio scalediffuse="true">keep</aspectratio>
-					<colordiffuse>FFFFFFFF</colordiffuse>
-					<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<pagecontrol>17</pagecontrol>
+					<control type="image" id="201"><description>big square image</description>
+						<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
+						<centertop>540</centertop-->
+						<height>1080</height>
+						<aspectratio scalediffuse="true">keep</aspectratio>
+						<colordiffuse>FFFFFFFF</colordiffuse>
+						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
+						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					</control>
 				</control>
 
 				<control type="image" id="203"><description>background big wide image with fade. partner with big wide image that fades in</description>
@@ -382,7 +398,7 @@
 				<preloaditems>true</preloaditems>
 				<!-- onleft>RunAddon(script.reddit.reader,?mode=comments_gui&url=[$INFO[ListItem.Label]])</onleft         $INFO[ListItem.Label] does not work              -->
 				<!-- onleft>(show side menu panel-done in code) 9000</onleft-->
-				<!-- onright>(show comments-done in code)</onright-->
+				<!-- onright>17</onright-->
 				<onup>55</onup>
 				<ondown>55</ondown>
 				
@@ -401,6 +417,7 @@
 						<height>198</height>
 						<texture colordiffuse="5512A8DA">focus_f2.png</texture>
 						<!-- visible>Control.HasFocus(55)</visible-->
+						<visible>true</visible>
 						<animation effect="fade" start="0" end="100" time="100">Focus</animation>
 						<animation effect="fade" start="100" end="0" time="100">Unfocus</animation>
 					</control>

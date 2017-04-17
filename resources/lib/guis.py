@@ -117,7 +117,8 @@ class cGUI(xbmcgui.WindowXML):
         #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
         #url="http://i.imgur.com/ARdeL4F.mp4"
         if self.include_parent_directory_entry:
-            self.gui_listbox_SelectedPosition=1 #skip the ".." as the first selected item
+            if self.gui_listbox_SelectedPosition==0:
+                self.gui_listbox_SelectedPosition=1 #skip the ".." as the first selected item
             back_image='DefaultFolderBackSquare.png'
             listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
             #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
@@ -333,6 +334,9 @@ class listSubRedditGUI(cGUI):
 
         self.setProperty("bg_image", "srr_blackbg.jpg")  #this is retrieved in the xml file by $INFO[Window.Property(bg_image)]
 
+        #scb=self.getControl(17)#trying to hide the scrollbar. not working...
+        #scb.setVisible(False)
+
         #self.subreddits_listbox = self.getControl(self.SUBREDDITS_LIST)
         #self.subreddits_listbox.reset()
         #self.subreddits_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
@@ -353,19 +357,17 @@ class listSubRedditGUI(cGUI):
 
             item_type   =item.getProperty('item_type').lower()
 
-            if action in [ xbmcgui.ACTION_MOVE_LEFT ] :
-                pass
-                #show side menu panel
-            #    self.setFocusId(self.SIDE_SLIDE_PANEL)
+#            if action in [ xbmcgui.ACTION_MOVE_LEFT ] :
+#                #show side menu panel
+#            #    self.setFocusId(self.SIDE_SLIDE_PANEL)
+#                #right_button_action=item.getProperty('right_button_action')
+#                #log( "   LEFT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
+#                #xbmc.executebuiltin( right_button_action  )
+#
+#                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
+#                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
 
-                #right_button_action=item.getProperty('right_button_action')
-                #log( "   LEFT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
-                #xbmc.executebuiltin( right_button_action  )
-
-                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
-                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
-
-            elif action in [xbmcgui.ACTION_CONTEXT_MENU]:
+            if action in [xbmcgui.ACTION_CONTEXT_MENU]:
                 import ast
                 cxm_string=item.getProperty('context_menu')
                 #log(repr(cxm_string))
@@ -383,7 +385,8 @@ class listSubRedditGUI(cGUI):
                 cxm.doModal()
                 del cxm
 
-            elif action == xbmcgui.ACTION_MOVE_RIGHT:
+            elif action == xbmcgui.ACTION_MOVE_LEFT: #xbmcgui.ACTION_MOVE_RIGHT:
+                log('move left')
                 #liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
                 #this is set in addlink() default.py
                 #dictlist defined in lib/domains.py
@@ -409,6 +412,12 @@ class listSubRedditGUI(cGUI):
                     #if there are no comments, the comments_action property is not created for this listitem
                     self.busy_execute_sleep(comments_action,3000,False )
 
+            elif action == xbmcgui.ACTION_MOVE_RIGHT:
+                self.setFocusId(17)
+
+        elif focused_control==17:
+            if action in [xbmcgui.ACTION_MOVE_LEFT]:
+                self.setFocusId(55)
 
         if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW, self.BTN_READ_HTML, self.BTN_COMMENTS, self.BTN_SEARCH, self.BTN_RELOAD]:
             if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:

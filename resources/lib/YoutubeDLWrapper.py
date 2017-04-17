@@ -423,7 +423,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             for fmt in keys:
                 fdata = formats[index[fmt]]
-                #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
+                log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
                 if 'height' not in fdata:
                     continue
                 if disable_dash and 'dash' in fdata.get('format_note', '').lower():

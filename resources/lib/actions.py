@@ -8,7 +8,6 @@ import shutil
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle
 from utils import xbmc_busy, log, translation, xbmc_notify
 from reddit import get_subreddit_entry_info
-import threading
 
 ytdl_quality=addon.getSetting("ytdl_quality")
 try: ytdl_quality=[0, 1, 2, 3][ int(ytdl_quality) ]
@@ -54,7 +53,7 @@ def addSubreddit(subreddit, name, type_):
         content = fh.readlines()
     if subreddit:
         for line in content:
-            if line.strip()==subreddit.strip():
+            if line.lower()==subreddit.lower():
                 alreadyIn = True
         if not alreadyIn:
             with open(subredditsFile, 'a') as fh:
@@ -138,8 +137,6 @@ def editSubreddit(subreddit, name, type_):
 def searchReddits(url, subreddit, type_):
     from default import urlMain
     from main_listing import listSubReddit
-    from utils import translation
-    import urllib
 
     #reddit search only works with a single subreddit
     if subreddit:
@@ -181,7 +178,7 @@ def viewImage(image_url, name, preview_url):
     #log( '   msg=' + msg )
     msg=""
     li=[]
-    liz=xbmcgui.ListItem(label=msg, label2="", iconImage="", thumbnailImage=image_url)
+    liz=xbmcgui.ListItem(label=msg, label2="")
     liz.setInfo( type='video', infoLabels={"plot": msg, } )
     liz.setArt({"thumb": preview_url, "banner":image_url })
 
@@ -513,6 +510,7 @@ def playYTDLVideo(url, name, type_):
 
         for video_info in video_infos:
             url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
+            #url="d://mp4-live-mpd-AV-BS.mpd.xml"
             title=video_info.get('title') or name
             ytdl_format=video_info.get('ytdl_format')
             if ytdl_format:
