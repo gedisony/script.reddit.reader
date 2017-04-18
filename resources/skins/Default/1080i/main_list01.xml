@@ -371,7 +371,7 @@
 				<preloaditems>true</preloaditems>
 				<!-- onleft>RunAddon(script.reddit.reader,?mode=comments_gui&url=[$INFO[ListItem.Label]])</onleft         $INFO[ListItem.Label] does not work              -->
 				<!-- onleft>(show side menu panel-done in code) 9000</onleft-->
-				<!-- onright>17</onright-->
+				<onright>17</onright>
 				<onup>55</onup>
 				<ondown>55</ondown>
 				

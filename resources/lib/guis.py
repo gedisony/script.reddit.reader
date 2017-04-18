@@ -412,8 +412,9 @@ class listSubRedditGUI(cGUI):
                     #if there are no comments, the comments_action property is not created for this listitem
                     self.busy_execute_sleep(comments_action,3000,False )
 
-            elif action == xbmcgui.ACTION_MOVE_RIGHT:
-                self.setFocusId(17)
+            #elif action == xbmcgui.ACTION_MOVE_RIGHT:
+            #this is done in the xml. prevents the scrollbar from getting focus when hidden.
+            #    self.setFocusId(17)
 
         elif focused_control==17:
             if action in [xbmcgui.ACTION_MOVE_LEFT]:
