@@ -402,10 +402,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         mpaa=""
 
     post_title=title
-    #if len(post_title) > 40:
-    il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
-    #else:
-    #    il_description='%s' %( description )
+
+    if len(post_title) > 100 or description:
+        il_description='[B]%s[/B][CR][CR]%s' %( post_title, description )
+    else:
+        il_description=''
+
     il={ "title": post_title, "plot": il_description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": domain, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
 
     liz=xbmcgui.ListItem(label=post_title
@@ -454,6 +456,12 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
+
+    #could not get the grouplist xml to work right if there is a banner art and no thumb art 
+    #thumb_art=liz.getArt("thumb")
+    #banner_art=liz.getArt("banner")
+    #if not thumb_art:
+    #    liz.setArt({"thumb": banner_art })
 
     #log( '          reddit thumb[%s] ' %(iconimage ))
     #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))

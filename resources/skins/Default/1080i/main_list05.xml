@@ -261,59 +261,83 @@
 			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 		
+				<control type="group"><description>this big textbox is for text posts. visible when no banner and thumb art</description>
+					<visible>isEmpty(Container(55).ListItem.Art(thumb)) + isEmpty(Container(55).ListItem.Art(banner)) </visible>
+					<control type="textbox" id="65591">
+						<left>892</left>
+						<top>102</top>
+						<width>1000</width>
+						<height>952</height>
+						<font>font14</font>
+						<align>justify</align>
+						<autoscroll delay="10000" time="3000" repeat="10000">Control.IsVisible(65591)</autoscroll>
+						<label>$INFO[Container(55).ListItem.Plot]</label>
+						<pagecontrol>17</pagecontrol>					
+					</control>
+				</control>
+
 				<control type="scrollbar" id="17"><description>scroll control for grouplist(204) and textbox(65591)</description>
-				      <left>1912</left>
+				      <left>1910</left>
 				      <top>100</top>
-				      <width>5</width>
+				      <width>10</width>
 				      <height>900</height>
 				      <visible allowhiddenfocus="false">true</visible>
 				      <orientation>vertical</orientation>
 				      <showonepage>false</showonepage>
 				</control>
 
-				<control type="grouplist" id="204"><description>thumb, preview and posttext</description>
-					<left>835</left>
-					<top>0</top>
-					<width>1080</width>
-					<height>1080</height>
+				<control type="grouplist" id="204"><description>thumb and textbox(when no banner art)</description>
+					<left>892</left>
+					<top>68</top>
+					<width>1000</width>
+					<height>905</height>
 					<orientation>vertical</orientation>
-					<!-- visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible-->
-					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<scrolltime tween="sine" easing="inout">500</scrolltime>
-					<usecontrolcoords>true</usecontrolcoords>
 					<pagecontrol>17</pagecontrol>
-					<align>center</align><!-- this is aligny -->
-					
-					<control type="image"><description>thumb visible only when there is no banner(preview) art</description>
-						<height>300</height>
-						<visible>!isEmpty(Container(55).ListItem.Art(thumb)) + isEmpty(Container(55).ListItem.Art(banner))</visible>
+					<control type="image">
+						<height>400</height>
+						<visible>!Container(55).OnNext + !Container(55).OnPrevious</visible>
 						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
 						<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
+						<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
 					</control>
-					
-					<control type="image" id="201"><description>big square image</description>
-						<!-- top>-470</top><!-- 230+400=630 to cover the ListItem.Art(thumb)image control above -->
-						<top>0</top>
-						<width>1080</width>
-						<height>1080</height>
-						<aspectratio scalediffuse="true">keep</aspectratio>
-						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner))</visible>
-					</control>
-					
-					<control type="textbox"><description>post text / description</description>
-						<top>80</top>
-						<left>40</left>
-						<width>1000</width>
-						<height min="200" max="5000">auto</height>
-						<font>font16</font>
+					<control type="textbox">
+						<!-- height>592</height-->
+						<height min="500" max="5000">auto</height>
+						<font>font14</font>
 						<align>justify</align>
-						<visible>!IsEmpty(Container(55).ListItem.Plot)</visible>
 						<autoscroll delay="10000" time="3000" repeat="10000">true</autoscroll>
-						<label>$INFO[Container(55).ListItem.Plot]</label>
+						<label>$INFO[Container(55).ListItem.Plot]</label>					
 					</control>
 				</control>
 				
+				<control type="image" id="200"><description>small thumbnail</description>
+					<!-- centerright>520</centerright   did not work on android -->
+					<!-- centertop>540</centertop       did not work on android -->
+					<left>1210</left>
+					<top>350</top>
+					<width>380</width>
+					<height>380</height>
+					<visible>!Control.IsVisible(204) + IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+					<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
+					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
+					<!-- animation effect="fade" start="100" end="0" time="1000" delay="0" tween="back" easing="in">visible</animation-->
+				</control>
+
+				<control type="image" id="201"><description>big square image</description>
+					<!-- centerright>520</centerright>    center right and center top did not work on android. replaced it with left and top
+					<centertop>540</centertop-->
+					<left>860</left>
+					<top>0</top>
+					<width>1080</width>
+					<height>1080</height>
+					<aspectratio scalediffuse="true">keep</aspectratio>
+					<colordiffuse>FFFFFFFF</colordiffuse>
+					<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
+					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+				</control>
+
 				<control type="image" id="203"><description>background big wide image with fade. partner with big wide image that fades in</description>
 					<top>0</top>
 					<left>0</left>
@@ -394,31 +418,29 @@
 						<animation effect="fade" start="0" end="100" time="100">Focus</animation>
 						<animation effect="fade" start="100" end="0" time="100">Unfocus</animation>
 					</control>
+					<control type="image">
+						<visible>false</visible>
+						<width>160</width>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture bordersize="2">$INFO[ListItem.Art(thumb)]</texture>
+					</control>
 					
 					<control type="group">
 						<animation type="Focus">
 							<effect type="zoom" start="100" end="170" time="200" tween="sine" easing="inout" center="20,10"/>
 							<effect type="fade" start="20" end="100" time="100" />
-						</animation>
+						</animation>					
 						<animation type="UnFocus">
 							<effect type="zoom" start="170" end="100" time="200" tween="sine" easing="inout" center="20,10"/>
 							<effect type="fade" start="100" end="20" time="100" />
 						</animation>
-
-						<control type="image">
-							<left>8</left>
-							<width>300</width>
-							<height>122</height>
-							<aspectratio aligny="center" align="left">keep</aspectratio>
-							<bordersize>4</bordersize>
-							<texture diffuse="gdx_diffuse2.png" colordiffuse="2EFFFFFF">$INFO[ListItem.Art(thumb)]</texture>
-						</control>
-							
+						
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
 							<top>0</top>
 							<height>108</height>
-							<width>510</width>
+							<width>560</width>
 							<aligny>center</aligny>
 							<scrolltime>200</scrolltime>
 							<autoscroll delay="3000" time="2000" repeat="4000">!Container(55).OnNext+!Container(55).OnPrevious</autoscroll>
@@ -431,7 +453,7 @@
 							<left>20</left>
 							<top>90</top>
 							<height>43</height>
-							<width>510</width>
+							<width>560</width>
 							<aligny>center</aligny>
 							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
@@ -449,43 +471,17 @@
 						<texture colordiffuse="FFFFFF">srr_separator.png</texture>
 					</control>
 					<control type="image">
+						<visible>false</visible>
 						<width>140</width>
-						<aspectratio aligny="center">keep</aspectratio>
-						<bordersize>4</bordersize>
-						<texture diffuse="gdx_diffuse2.png" >$INFO[ListItem.Art(thumb)]</texture>
+						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
+						<bordersize>2</bordersize>
+						<texture>$INFO[ListItem.Art(thumb)]</texture>
 					</control>
 
 					<control type="group">
-						<visible>String.IsEmpty(ListItem.Art(thumb))</visible>
+						<!-- visible>String.IsEmpty(ListItem.Art(thumb))</visible-->
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>20</left>
-							<top>0</top>
-							<height>108</height>
-							<width>610</width>
-							<aligny>center</aligny>
-							<scrolltime>0</scrolltime>
-							<autoscroll>false</autoscroll>
-							<font>font12</font>
-							<label>$INFO[ListItem.Label]</label>
-							<textcolor>99FFFFFF</textcolor>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-						<control type="label"><!-- ListItem.Label2 -->
-							<left>20</left>
-							<top>90</top>
-							<height>43</height>
-							<width>610</width>
-							<aligny>center</aligny>
-							<font>font10</font>
-							<label>$INFO[ListItem.Label2]</label>
-							<textcolor>grey</textcolor>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-					</control>
-					<control type="group">
-						<visible>!String.IsEmpty(ListItem.Art(thumb))</visible>
-						<control type="textbox"><!-- ListItem.Label -->
-							<left>150</left>
 							<top>0</top>
 							<height>108</height>
 							<width>660</width>
@@ -498,7 +494,7 @@
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
-							<left>150</left>
+							<left>20</left>
 							<top>90</top>
 							<height>43</height>
 							<width>660</width>
