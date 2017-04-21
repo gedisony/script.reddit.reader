@@ -196,7 +196,7 @@ def listSubReddit(url, subreddit_key, type_):
             else:
                 nextUrl = currentUrl+"&after="+after
 
-            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after), {'plot': '[B]' + translation(32004)+'[/B]'} )
+            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after) )
 
             #for items at the bottom left corner
             liz.setArt({ "clearart": "DefaultFolderNextSquare.png"  })
@@ -456,17 +456,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
-
-    #could not get the grouplist xml to work right if there is a banner art and no thumb art 
-    #thumb_art=liz.getArt("thumb")
-    #banner_art=liz.getArt("banner")
-    #if not thumb_art:
-    #    liz.setArt({"thumb": banner_art })
-
     #log( '          reddit thumb[%s] ' %(iconimage ))
     #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
-
     if ld:
         #use clearart to indicate the type of link(video, album, image etc.)
         clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
@@ -699,13 +691,18 @@ def listLinksInComment(url, name, type_):
         log('  ' + str(e) )
 
     loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
-
+# this portion is abandoned for now. initial plan was to textbox with auto-height in a grouplist to mimic the comment tree but cannot figure out how links can be followed.
+#    from guis import comments_GUI2
+#    ui = comments_GUI2('view_464_comments_grouplist.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
+#    ui.doModal()
+#    del ui
+#    return
     from guis import commentsGUI
+    #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     #NOTE: the subreddit selection screen and comments screen use the same gui. there is a button that is only for the comments screen
-    ui.setProperty('comments', 'yes')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
+    ui.setProperty('comments', 'yes')   #the links button is visible/hidden in xml by checking for this property
 
-    #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text=post_title
     ui.include_parent_directory_entry=False
 

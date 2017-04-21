@@ -623,7 +623,6 @@ class listSubRedditGUI(cGUI):
         self.busy_execute_sleep(action, 10000,False)
 
 class commentsGUI(cGUI):
-
     BTN_LINKS=6771
     links_on_top=False
     links_top_selected_position=0
@@ -741,6 +740,23 @@ class progressBG( xbmcgui.DialogProgressBG ):
 
     def getProgress(self):
         return self.progress
+
+#class comments_GUI2(xbmcgui.WindowXML):
+#    def __init__(self, *args, **kwargs):
+#        xbmcgui.WindowXML.__init__(self, *args, **kwargs)
+#        self.listing = kwargs.get("listing")
+#        self.context_menu=kwargs.get("context_menu")
+#
+#    def onInit(self):
+#        t1=self.getControl(100)
+#        #grouplist=self.getControl(204)
+#
+#        #ctb1=xbmcgui.ControlTextBox(200,800,200,200)
+#        #ctb1.setText('control text box number one')
+#        #ctb1.setVisible(True)
+#        #ctb1.setPosition(200,200)
+#        #t1.setText('Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.')
+#        pass
 
 if __name__ == '__main__':
     pass

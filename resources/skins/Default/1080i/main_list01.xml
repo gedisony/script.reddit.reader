@@ -43,35 +43,44 @@
 					<aspectratio align="center" aligny="center">scale</aspectratio>
 				</control>
 				
-				<control type="grouplist"><description>icon and subreddit name on the top left</description>
+				<control type="grouplist"><description>horizontal group</description>
 					<orientation>horizontal</orientation>
 					<align>left</align>
-					<top>4</top>
-					<left>8</left>
-					<width>1500</width>
+					<aligny>center</aligny>
+					<top>0</top>
+					<left>0</left>
+					<width>1700</width>
+					<height>150</height>
 					<itemgap>4</itemgap>
+					<usecontrolcoords>true</usecontrolcoords>
 
-					<control type="image"><description>default icon on Left of top bar </description>
-						<width>108</width>
+					<control type="image"><description>icon on Left of top bar </description>
+						<top>4</top>
+						<left>8</left>
+						<width>118</width>
 						<height>92</height>
-						<visible> !Control.IsVisible(2)</visible>
+						<visible>!Control.IsVisible(2)</visible>
 						<texture fallback="Reddit-icon.png" diffuse="gdx_diffuse2.png">$INFO[Window.Property(subreddit_icon)]</texture>
-						<aspectratio align="center" aligny="center">keep</aspectratio>
+						<aspectratio align="center" aligny="bottom">keep</aspectratio>
 					</control>
 					
 					<control type="image" id="2"><description>little header on Left of top bar. visible if icon is missing and header is not</description>
-						<width>200</width>
+						<top>0</top>
+						<left>0</left>
+						<width>auto</width>
 						<height>100</height>
 						<visible>String.IsEmpty(Window.Property(subreddit_icon)) + !String.IsEmpty(Window.Property(subreddit_header))</visible>
 						<texture>$INFO[Window.Property(subreddit_header)]</texture>
-						<aspectratio align="center" aligny="center">keep</aspectratio>
+						<aspectratio align="center" aligny="center">stretch</aspectratio>
 					</control>
 						
 					<control type="label" id="1"><description>subreddit name</description>
-						<height>150</height>
+						<top>0</top>
+						<left>10</left>
+						<height>160</height>
 						<width>1500</width>
 						<scroll>true</scroll>
-						<font>font16</font>
+						<font>font14</font>
 						<aligny>center</aligny><!-- there is no "bottom" aligny -->
 						<shadowcolor>text_shadow</shadowcolor>
 						<scrollspeed>50</scrollspeed>
@@ -256,7 +265,7 @@
 		<!--END include name="BottomBar"-->
 
 
-			<control type="group"><description>Right side panel(images and post-text)</description>
+	<control type="group"><description>Right side panel(images and post-text)</description>
 
 			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
@@ -306,7 +315,7 @@
 						<left>40</left>
 						<width>1000</width>
 						<height min="200" max="5000">auto</height>
-						<font>font16</font>
+						<font>font14</font>
 						<align>justify</align>
 						<visible>!IsEmpty(Container(55).ListItem.Plot)</visible>
 						<autoscroll delay="10000" time="3000" repeat="10000">true</autoscroll>
@@ -323,7 +332,7 @@
 					<texture diffuse="diffuse_left.png" >$INFO[Container(55).ListItem.Art(banner)]</texture>
 					<visible>!IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 				</control>
-			</control>
+	</control>
 
 	<!--BEGIN include>View_55_WideList</include -->
 		<control type="group">
@@ -594,7 +603,7 @@
 							<label>$INFO[Container(55).ListItem.PlotOutline]</label>
 						</control>
 					</control>
-				</control>
+		</control>
 
 		<control type="textbox">
 			<left>80</left>
