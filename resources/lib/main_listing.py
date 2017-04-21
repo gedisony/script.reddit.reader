@@ -456,8 +456,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
-    log( '          reddit thumb[%s] ' %(iconimage ))
-    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    #log( '          reddit thumb[%s] ' %(iconimage ))
+    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
     if ld:
         #use clearart to indicate the type of link(video, album, image etc.)
@@ -567,6 +567,7 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
 def listLinksInComment(url, name, type_):
     from guis import progressBG
     from reddit import reddit_request
+    from utils import clean_str
 
     log('listLinksInComment:%s:%s' %(type_,url) )
 
@@ -617,16 +618,12 @@ def listLinksInComment(url, name, type_):
         #harvest links in the post text (just 1)
         r_linkHunter(content[0]['data']['children'])
 
-        try:
-            submitter=content[0]['data']['children'][0]['data']['author']
-        except (AttributeError,TypeError,ValueError):
-            submitter=''
+        #submitter=content[0]['data']['children'][0]['data']['author']
+        submitter=clean_str(content,[0,'data','children',0,'data','author'])
 
         #the post title is provided in json, we'll just use that instead of messages from addLink()
-        try:
-            post_title=content[0]['data']['children'][0]['data']['title']
-        except (AttributeError,TypeError,ValueError):
-            post_title=''
+        #post_title=content[0]['data']['children'][0]['data']['title']
+        post_title=clean_str(content,[0,'data','children',0,'data','title'])
 
         #harvest links in the post itself
         r_linkHunter(content[1]['data']['children'])
@@ -750,7 +747,6 @@ def reddit_comment_worker(idx, h, q_out,submitter):
             log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
 
         ld=parse_reddit_link(link_url=link_url, assume_is_video=False, needs_preview=True, get_playable_url=True )
-
         if author==submitter:#add a submitter tag
             author="[COLOR cadetblue][B]%s[/B][/COLOR][S]" %author
         else:
@@ -764,10 +760,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         plot=format_description(h[3])
 
         liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 ,
-                             label2="",
-                             iconImage="",
-                             thumbnailImage="")
-
+                             label2="")
         liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
 
         #force all links to ytdl to see if it can be played

@@ -1355,6 +1355,7 @@ class ClassInstagram(sitesBase):
     def get_playable_url(self, media_url, is_probably_a_video=True):
         #the instagram api has limits and that would not work for this purpose
         #  scrape the instagram post instead.
+        from utils import nested_lookup
 
         r = self.requests_get(media_url)
         #log(r.text)
@@ -1369,18 +1370,23 @@ class ClassInstagram(sitesBase):
                 if j.get('entry_data'):
                     post_pages=j.get('entry_data').get('PostPage')
                     #log('    post_pages %d' %len(post_pages) )
-
+                    #log('    post_page ' +repr(post_pages[0]) )
                     post_page=post_pages[0]
                     media=post_page.get('media')
-                    #log(str(j['entry_data']['PostPage'][0]['media']['display_src']))
-                    display_src=media.get('display_src')
+                    if media:
+                        #log(str(j['entry_data']['PostPage'][0]['media']['display_src']))
+                        display_src=media.get('display_src')
+                    else:
+                        #this part added to parse: https://www.instagram.com/p/BBqU7WPtudX/?taken-by=insecuregod
+                        media=nested_lookup('shortcode_media',post_page)[0]
+                        display_src=media.get('display_url')
+
                     is_video=media.get('is_video')
                     self.media_w=media.get('dimensions').get('width')
                     self.media_h=media.get('dimensions').get('height')
 
                     self.thumb_url=display_src
                     self.poster_url=self.thumb_url
-
                     #log('      vid=%s %dx%d %s' %(is_video,self.media_w,self.media_h,display_src)  )
                     if is_video:
                         self.media_url=media.get('video_url')
@@ -1391,9 +1397,8 @@ class ClassInstagram(sitesBase):
                 else:
                     log("  Could not get 'entry_data' from scraping instagram [window._sharedData = ]")
 
-            except:
-                log('    exception while parsing json')
-                return '',''
+            except Exception as e:
+                log('    exception while parsing json:'+str(e))
 
         return '', ''
 
@@ -3073,6 +3078,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             prepped_media_url, media_type = hoster.get_playable(link_url, assume_is_video)
             #log( '    parsed: [%s] type=%s url=%s ' % ( hoster.link_action, media_type,  prepped_media_url ) )
+            if not prepped_media_url:
+                log("  Failed to parse %s" %(link_url) )
 
             if needs_preview:
                 hoster.get_thumb_url()
@@ -3215,49 +3222,3 @@ def ydtl_get_playable_url( url_to_check ):
 if __name__ == '__main__':
     pass
 
-'''
-#special credit to https://www.reddit.com/r/learnpython/comments/4pl11h/dynamically_instantiate_class_from_class_method/
-# 6/24/2016 - this portion abandoned because it takes a long time to process.
-# dynamically instantiate a classes based on url. similar to how youtube_dl parses media content
-class hosterBase(object):
-
-    def __init__(self, url):
-        self.url = url
-
-    @classmethod
-    def from_url(cls, url):
-        for subclass in cls.__subclasses__():
-            if subclass.recc.match(url):
-                return subclass(url)
-            #if re.match(subclass.regex, url):   #            if sub.regex in url:
-            #    return subclass(url)
-        #raise ValueError('wtf is {}'.format(url))
-
-#     @staticmethod
-#     def from_url(url):
-#         for cls in hosterBase.__subclasses__():
-#             if re.match(cls.regex, url):
-#                 return cls(url)
-#         raise ValueError("URL %r does not match any image hosts" % url)
-
-
-class cVidme(hosterBase):
-    regex = 'https?://vid\.me/(?:e/)?(?P<id>[\da-zA-Z]*)'
-    recc=re.compile(regex)
-
-class b(hosterBase):
-    regex = 'bbb'
-    recc=re.compile(regex)
-
-
-#you call this class like:
-
-    m = hosterBase.from_url(media_url)
-    log("  "+str(m))
-    if m:
-        a = m.get_playable_url(media_url, assume_is_video)
-        log("  " + a)
-        #return
-
-
-'''

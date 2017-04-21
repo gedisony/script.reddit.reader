@@ -685,6 +685,31 @@ def json_query(query, ret):
     except:
         return {}
 
+#https://github.com/russellballestrini/nested-lookup/blob/master/nested_lookup/nested_lookup.py
+def nested_lookup(key, document):
+    """Lookup a key in a nested document, return a list of values"""
+    return list(_nested_lookup(key, document))
+
+def _nested_lookup(key, document):
+    #from six import iteritems
+    """Lookup a key in a nested document, yield a value"""
+    if isinstance(document, list):
+        for d in document:
+            for result in _nested_lookup(key, d):
+                yield result
+
+    if isinstance(document, dict):
+        for k, v in dict.items(document): #iteritems(document):
+            if k == key:
+                yield v
+            elif isinstance(v, dict):
+                for result in _nested_lookup(key, v):
+                    yield result
+            elif isinstance(v, list):
+                for d in v:
+                    for result in _nested_lookup(key, d):
+                        yield result
+
 
 if __name__ == '__main__':
     pass
