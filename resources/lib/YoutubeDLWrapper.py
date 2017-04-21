@@ -408,6 +408,8 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             #kodi can't play this protocol   from:https://www.zdf.de/familienfieber-100.html
             banned_protocols=['f4m']
+            #no sound if this codec
+            banned_acodec=['none']
 
             if fallback_protocol in banned_protocols:
                 alternate_formats=difflib.get_close_matches(fallback_format_id, keys)
@@ -423,12 +425,15 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             for fmt in keys:
                 fdata = formats[index[fmt]]
-                log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
+                #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
                 if 'height' not in fdata:
                     continue
                 if disable_dash and 'dash' in fdata.get('format_note', '').lower():
                     continue
                 if 'protocol' in fdata and fdata.get('protocol') in banned_protocols:
+                    #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
+                    continue
+                if 'acodec' in fdata and fdata.get('acodec') in banned_acodec:
                     #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
                     continue
 

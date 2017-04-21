@@ -319,6 +319,7 @@ class listSubRedditGUI(cGUI):
     BTN_RELOAD=6060
     IMG_POST_PREVIEW=201
     IMG_POST_PREVIEW2=203
+    SLIDER_CTL=17
 
     def __init__(self, *args, **kwargs):
         cGUI.__init__(self, *args, **kwargs)
@@ -416,9 +417,9 @@ class listSubRedditGUI(cGUI):
             #this is done in the xml. prevents the scrollbar from getting focus when hidden.
             #    self.setFocusId(17)
 
-        elif focused_control==17:
+        elif focused_control==self.SLIDER_CTL:
             if action in [xbmcgui.ACTION_MOVE_LEFT]:
-                self.setFocusId(55)
+                self.setFocusId(self.main_control_id)
 
         if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW, self.BTN_READ_HTML, self.BTN_COMMENTS, self.BTN_SEARCH, self.BTN_RELOAD]:
             if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
@@ -472,6 +473,8 @@ class listSubRedditGUI(cGUI):
                 else:
                     self.busy_execute_sleep(di_url,5000,False )
 
+        #elif controlID==self.SLIDER_CTL:
+        #    log('slider control clicked')
                 #modes=['listImgurAlbum','viewImage','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
                 #if any(x in di_url for x in modes):
                     #viewImage uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing
