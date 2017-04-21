@@ -331,7 +331,7 @@ def reddit_post_worker(idx, entry, q_out):
             #try:log('  media_w='+repr(data.get('media')['oembed']['width']  ) )
             #except:pass
 
-            if thumb in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
+            if not thumb.startswith('http'): #in ['nsfw','default','self']:  #reddit has a "default" thumbnail (alien holding camera with "?")
                 thumb=""
 
             if thumb=="":
@@ -456,8 +456,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
-    #log( '          reddit thumb[%s] ' %(iconimage ))
-    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    log( '          reddit thumb[%s] ' %(iconimage ))
+    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
     if ld:
         #use clearart to indicate the type of link(video, album, image etc.)
