@@ -3090,7 +3090,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             if not hoster.link_action:
                 if media_type==sitesBase.TYPE_IMAGE:
-                    if image_ar>0 and image_ar < 0.7: #special action for tall images
+                    if image_ar>0 and image_ar < 0.6: #special action for tall images
                         hoster.link_action='viewTallImage'
                     else:
                         hoster.link_action='viewImage'

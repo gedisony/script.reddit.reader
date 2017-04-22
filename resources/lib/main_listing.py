@@ -416,6 +416,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                          ,thumbnailImage=''
                          ,path='')   #path not used by gui.
 
+    #log('    preview_ar:'+repr(preview_ar))
     if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
         #log('    ar and description criteria met')
         #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
@@ -423,6 +424,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #text_below_image=il_description+title_line2 + colored_subreddit( posted_by, 'dimgrey',False )
         text_below_image='[B]%s[/B][CR]%s %s[CR]%s' %( post_title, title_line2, colored_subreddit( ' by '+posted_by, 'dimgrey',False ), description )
         liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
+
+    #makes the gui use a control that allows the user scroll tall image
+    if preview_ar<0.5:   #tall image
+        liz.setProperty('tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(tall_image))
 
     if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )

@@ -307,7 +307,16 @@
 						<height>1080</height>
 						<aspectratio scalediffuse="true">keep</aspectratio>
 						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner))</visible>
+						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + IsEmpty(Container(55).ListItem.Property(tall_image))</visible>
+					</control>
+
+					<control type="image" id="207"><description>for tall image</description>
+						<top>0</top>
+						<width>1080</width>
+						<height>3000</height>
+						<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
+						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
+						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + !IsEmpty(Container(55).ListItem.Property(tall_image))</visible>
 					</control>
 					
 					<control type="textbox"><description>post text / description</description>
