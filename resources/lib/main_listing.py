@@ -388,12 +388,8 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #from reddit import assemble_reddit_filter_string
     from domains import parse_reddit_link, sitesBase
 
-    DirectoryItem_url=''
     preview_ar=0.0
-    if preview_w==0 or preview_h==0:
-        preview_ar=0.0
-    else:
-        preview_ar=float(preview_w) / preview_h
+    DirectoryItem_url=''
 
     if over_18:
         mpaa="R"
@@ -412,22 +408,28 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     liz=xbmcgui.ListItem(label=post_title
                          ,label2=title_line2
-                         ,iconImage=""
-                         ,thumbnailImage=''
                          ,path='')   #path not used by gui.
 
-    #log('    preview_ar:'+repr(preview_ar))
-    if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
-        #log('    ar and description criteria met')
-        #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
-        liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
-        #text_below_image=il_description+title_line2 + colored_subreddit( posted_by, 'dimgrey',False )
-        text_below_image='[B]%s[/B][CR]%s %s[CR]%s' %( post_title, title_line2, colored_subreddit( ' by '+posted_by, 'dimgrey',False ), description )
-        liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
+    if preview_w==0 or preview_h==0:
+        preview_ar=0.0
+    else:
+        preview_ar=float(preview_w) / preview_h
 
-    #makes the gui use a control that allows the user scroll tall image
-    if preview_ar<0.5:   #tall image
-        liz.setProperty('tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(tall_image))
+        log('    preview_ar:'+repr(preview_ar))
+        if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
+            #log('    ar and description criteria met')
+            #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
+            liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
+            #text_below_image=il_description+title_line2 + colored_subreddit( posted_by, 'dimgrey',False )
+            text_below_image='[B]%s[/B][CR]%s %s[CR]%s' %( post_title, title_line2, colored_subreddit( ' by '+posted_by, 'dimgrey',False ), description )
+            liz.setInfo(type='video', infoLabels={"plotoutline": text_below_image, }  )
+
+        #makes the gui use a control that allows the user scroll tall image
+        if preview_ar<0.3:
+            liz.setProperty('very_tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(very_tall_image))
+        elif preview_ar<0.5:
+            liz.setProperty('tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(tall_image))
+
 
     if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )

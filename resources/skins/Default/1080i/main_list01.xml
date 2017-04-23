@@ -286,6 +286,7 @@
 					<width>1080</width>
 					<height>1080</height>
 					<orientation>vertical</orientation>
+					<!-- defaultcontrol>207</defaultcontrol-->
 					<!-- visible>isEmpty(Container(55).ListItem.Art(banner)) + !isEmpty(Container(55).ListItem.Art(thumb))</visible-->
 					<visible>IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
 					<scrolltime tween="sine" easing="inout">500</scrolltime>
@@ -293,7 +294,7 @@
 					<pagecontrol>17</pagecontrol>
 					<align>center</align><!-- this is aligny -->
 					
-					<control type="image"><description>thumb visible only when there is no banner(preview) art</description>
+					<control type="image" id="210"><description>thumb visible only when there is no banner(preview) art</description>
 						<height>300</height>
 						<visible>!isEmpty(Container(55).ListItem.Art(thumb)) + isEmpty(Container(55).ListItem.Art(banner))</visible>
 						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
@@ -307,19 +308,26 @@
 						<height>1080</height>
 						<aspectratio scalediffuse="true">keep</aspectratio>
 						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
-						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + IsEmpty(Container(55).ListItem.Property(tall_image))</visible>
+						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + IsEmpty(Container(55).ListItem.Property(tall_image)) + IsEmpty(Container(55).ListItem.Property(very_tall_image))</visible>
 					</control>
 
 					<control type="image" id="207"><description>for tall image</description>
-						<top>0</top>
 						<width>1080</width>
 						<height>3000</height>
-						<aspectratio scalediffuse="true" aligny="top">keep</aspectratio>
-						<texture diffuse="gdx_diffuse2.png">$INFO[Container(55).ListItem.Art(banner)]</texture>
+						<aspectratio aligny="top">keep</aspectratio>
+						<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
 						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + !IsEmpty(Container(55).ListItem.Property(tall_image))</visible>
 					</control>
+
+					<control type="image" id="208"><description>for very tall image</description>
+						<width>1080</width>
+						<height>5000</height><!-- can't auto here -->
+						<aspectratio aligny="top">keep</aspectratio>
+						<texture>$INFO[Container(55).ListItem.Art(banner)]</texture>
+						<visible>IsEmpty(Container(55).ListItem.Property(preview_ar)) + !isEmpty(Container(55).ListItem.Art(banner)) + !IsEmpty(Container(55).ListItem.Property(very_tall_image))</visible>
+					</control>
 					
-					<control type="textbox"><description>post text / description</description>
+					<control type="textbox" id="209"><description>post text / description</description>
 						<top>80</top>
 						<left>40</left>
 						<width>1000</width>

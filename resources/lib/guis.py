@@ -349,6 +349,9 @@ class listSubRedditGUI(cGUI):
         #log( "  onAction focused control=" +  str(focused_control) + " " + str( self.a ))
 
         if focused_control==self.main_control_id:  #main_control_id is the listbox
+            #I want the grouplist to always scroll back on top 
+            #slider_ctl=self.getControl(self.SLIDER_CTL) #unknown control type in python
+            #slider_ctl.setPercent(0)
 
             if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
                 self.close()
@@ -387,7 +390,6 @@ class listSubRedditGUI(cGUI):
                 del cxm
 
             elif action == xbmcgui.ACTION_MOVE_LEFT: #xbmcgui.ACTION_MOVE_RIGHT:
-                log('move left')
                 #liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
                 #this is set in addlink() default.py
                 #dictlist defined in lib/domains.py
