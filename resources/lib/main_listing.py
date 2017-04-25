@@ -479,7 +479,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setInfo(type='video', infoLabels={'plot': il_description + '[CR]' + ld.desctiption, })
 
         if ld.dictlist:
-            #log('****has album images')
+            log('****has album images')
             #listItem is not json serializable so dictlist_to_listItems() is done in the gui
             #image_listItems=dictlist_to_listItems(ld.dictlist)
             liz.setProperty('album_images', json.dumps( ld.dictlist ) ) # dictlist=json.loads(string)
