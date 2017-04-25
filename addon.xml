@@ -2,14 +2,12 @@
 <addon
     id="script.reddit.reader"
     name="Reddit Reader"
-    version="0.9.1"
+    version="0.9.2"
     provider-name="gedisony">
     <requires>
         <import addon="xbmc.python"                     version="2.14.0"/>
-        <import addon="script.module.simple.downloader" version="1.0.0"/>
 	    <import addon="script.module.requests"          version="1.1.0"/>
 	    <import addon="script.module.youtube.dl"        version="16.521.0"/>
-	    <import addon="script.module.beautifulsoup4"    version="4.3.1"/>
 	    <import addon="script.module.urlresolver"                      />
     </requires>
 

@@ -3,7 +3,6 @@
 import re
 import xbmcgui
 import requests
-import bs4
 import pprint
 
 from default import log, addon_path

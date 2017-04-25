@@ -315,51 +315,9 @@ def viewTallImage(image_url, width, height):
         useWindow.removeControls( [img_control,img_loading] )
 
 def display_album_from(dictlist, album_name):
-    from domains import sitesBase
-    from utils import build_script
-    directory_items=[]
-    label=""
+    from utils import dictlist_to_listItems
 
-    for idx, d in enumerate(dictlist):
-        ti=d['li_thumbnailImage']
-        media_url=d.get('DirectoryItem_url')
-        media_type=d.get('type')
-        media_thumb=d.get('thumb')
-        isPlayable=d.get('isPlayable')
-
-        #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
-        log('  display_album_from list:'+ media_url + "  " + repr(media_type) )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
-
-        #There is only 1 textbox for Title and description in our custom gui.
-        #  I don't know how to achieve this in the xml file so it is done here:
-        #  combine title and description without [CR] if label is empty. [B]$INFO[Container(53).ListItem.Label][/B][CR]$INFO[Container(53).ListItem.Plot]
-        #  new note: this is how it is done:
-        #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
-        combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
-        combined += d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
-        d['infoLabels']['plot'] = combined
-        #d['infoLabels']['genre'] = "0,-2000"
-        #d['infoLabels']['year'] = 1998
-        #log( d['infoLabels'].get('plot') )
-
-        liz=xbmcgui.ListItem(label=label,
-                             label2=d['li_label2'],
-                             iconImage=media_thumb,
-                             thumbnailImage=media_thumb)
-
-        if media_type==sitesBase.TYPE_VIDEO:
-            if isPlayable=='true':
-                liz.setProperty('item_type','playable')
-                liz.setProperty('onClick_action', media_url )
-            else:
-                liz.setProperty('item_type','script')
-                liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
-
-        liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
-        #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })
-        liz.setArt({"thumb": ti, "banner":media_url })
-
-        directory_items.append( (media_url, liz, False,) )
+    directory_items=dictlist_to_listItems(dictlist)
 
     from guis import cGUI
 
@@ -367,16 +325,7 @@ def display_album_from(dictlist, album_name):
     #WINDOW.clearProperty( url )
     #log( '   msg=' + msg )
 
-    #<label>$INFO[Window(10000).Property(foox)]</label>
-    #WINDOW.setProperty('view_450_slideshow_title',WINDOW.getProperty(url))
-
-    li=[]
-    for di in directory_items:
-        #log( str(di[1] ) )
-        li.append( di[1] )
-
-    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=53)
-
+    ui = cGUI('view_450_slideshow.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=53)
     ui.include_parent_directory_entry=False
     #ui.title_bar_text=WINDOW.getProperty(url)
 

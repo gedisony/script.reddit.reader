@@ -415,10 +415,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:
         preview_ar=float(preview_w) / preview_h
 
-        log('    preview_ar:'+repr(preview_ar))
+        #log('    preview_ar:'+repr(preview_ar))
         if preview_ar>1.4:   #this triggers whether the (control id 203) will show up
-            #log('    ar and description criteria met')
-            #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide preview and description
+            #the gui checks for this: String.IsEmpty(Container(55).ListItem.Property(preview_ar))  to show/hide a wider preview
+            #   this is overridden if the post is an album.
             liz.setProperty('preview_ar', str(preview_ar) ) # -- $INFO[ListItem.property(preview_ar)]
             #text_below_image=il_description+title_line2 + colored_subreddit( posted_by, 'dimgrey',False )
             text_below_image='[B]%s[/B][CR]%s %s[CR]%s' %( post_title, title_line2, colored_subreddit( ' by '+posted_by, 'dimgrey',False ), description )
@@ -429,7 +429,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setProperty('very_tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(very_tall_image))
         elif preview_ar<0.5:
             liz.setProperty('tall_image', str(preview_ar) ) # -- IsEmpty(Container(55).ListItem.Property(tall_image))
-
 
     if num_comments > 0 or description:
         liz.setProperty('comments_action', build_script('listLinksInComment', commentsUrl ) )
@@ -466,6 +465,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #log( '          reddit thumb[%s] ' %(iconimage ))
     #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+
     if ld:
         #use clearart to indicate the type of link(video, album, image etc.)
         clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
@@ -477,6 +477,15 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #we gathered a description from the link
         if ld.desctiption:
             liz.setInfo(type='video', infoLabels={'plot': il_description + '[CR]' + ld.desctiption, })
+
+        if ld.dictlist:
+            #log('****has album images')
+            #listItem is not json serializable so dictlist_to_listItems() is done in the gui
+            #image_listItems=dictlist_to_listItems(ld.dictlist)
+            liz.setProperty('album_images', json.dumps( ld.dictlist ) ) # dictlist=json.loads(string)
+            #overrride the preview_ar flag. (easier to do this here than have the xml figure it out in <visible>
+            liz.setProperty('preview_ar', None )
+            #log( liz.getProperty('album_images'))
 
         #link_action set in domains.py - parse_reddit_link
         if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
@@ -500,8 +509,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
         liz.setProperty('item_type',property_link_type)
         liz.setProperty('onClick_action',DirectoryItem_url)
-        liz.setProperty('album_images', json.dumps(ld.dictlist) ) # dictlist=json.loads(string)
-        #log( liz.getProperty('album_images'))
     else:
         #unsupported type here:
         pass

@@ -419,6 +419,9 @@ class ClassImgur(sitesBase):
                     #log( '  *** album with 1 image ' + self.image_url_of_a_single_image_album)
                     return False
                 else:
+                    #data is already there, just parse it
+                    images=self.ret_images_dict_from_album_json(j)
+                    self.assemble_images_dictList(images)
                     return True
             else:
                 #sometimes we receive a single image data (no images_count)  is_album=false
