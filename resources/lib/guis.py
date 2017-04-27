@@ -603,15 +603,16 @@ class progressBG( xbmcgui.DialogProgressBG ):
         return self.progress
 
 class comments_GUI2(cGUI):
-    BTN_LINKS=6771
     links_on_top=False
     links_top_selected_position=0
     listbox_selected_position=0
     child_lists=[]
     items_for_listbox=[]
+    flag_grouplist_is_scrolled_top=True
+    grouplist_scrollbar_id=17
+    grouplist_top_button_id=999   #hidden button at the very top of grouplist. will scroll grouplist to top if focused
 
     def __init__(self, *args, **kwargs):
-        import pprint
         xbmcgui.WindowXML.__init__(self, *args, **kwargs)
         #xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)   #<--- what's the difference?
         self.subreddits_file = kwargs.get("subreddits_file")
@@ -664,16 +665,9 @@ class comments_GUI2(cGUI):
         #can't dynamically create an auto-height textbox inside a grouplist
         #  so we make x of them in the xml and hope they're enough
         #  these are their id's
-        self.x_controls=[x for x in range(1000, 1041)]
-
-    def get_post_text_tuple(self,list_item):
-        try:
-            return (list_item.getProperty('plot'),int(list_item.getProperty('comment_depth')) )
-        except AttributeError:
-            return (None,None)
+        self.x_controls=[x for x in range(1000, 1051)]
 
     def onInit(self):
-        log('onInit()')
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
         self.gui_listbox = self.getControl(self.main_control_id)
         #important to reset the listbox. when control comes back to this GUI(after calling another gui).
@@ -694,6 +688,16 @@ class comments_GUI2(cGUI):
         if self.gui_listbox_SelectedPosition > 0:
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
         self.onAction(0)
+
+    def onFocus(self,controlId):
+        if controlId==self.grouplist_scrollbar_id:
+            self.flag_grouplist_is_scrolled_top=False
+
+        if controlId==self.main_control_id: #55
+            if self.flag_grouplist_is_scrolled_top==False:
+                self.setFocusId(self.grouplist_top_button_id) #scroll the grouplist to top
+                self.flag_grouplist_is_scrolled_top=True
+                self.setFocusId(self.main_control_id)
 
     def onAction(self, action):
         focused_control=self.getFocusId()
@@ -732,15 +736,23 @@ class comments_GUI2(cGUI):
         return
 
     def clear_x_controls(self):
-        for control_id in self.x_controls:
-            control=self.getControl(control_id)
-            control.setText( None )
+#        for control_id in self.x_controls:
+#            control=self.getControl(control_id)
+#            control.setText( None )
+        pass
+
+    def get_post_text_tuple(self,list_item):
+        try:
+            return (list_item.getProperty('plot'),int(list_item.getProperty('comment_depth')) )
+        except AttributeError:
+            return (None,None)
+
 
     def onClick(self, controlID):
         cGUI.onClick(self, controlID)
 
     def close_gui(self):
-        log('  close gui ')
+        #log('  close gui ')
         del self.items_for_listbox[:]
         self.close()
 
