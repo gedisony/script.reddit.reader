@@ -758,5 +758,18 @@ def dictlist_to_listItems(dictlist):
 
     return directory_items
 
+def generator(iterable):
+    for element in iterable:
+        yield element
+
+#def cycle(iterable):
+#    saved = []
+#    for element in iterable:
+#        yield element
+#        saved.append(element)
+#    while saved:
+#        for element in saved:
+#            yield element
+
 if __name__ == '__main__':
     pass

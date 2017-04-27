@@ -479,7 +479,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setInfo(type='video', infoLabels={'plot': il_description + '[CR]' + ld.desctiption, })
 
         if ld.dictlist:
-            log('****has album images')
+            #log('****has album images')
             #listItem is not json serializable so dictlist_to_listItems() is done in the gui
             #image_listItems=dictlist_to_listItems(ld.dictlist)
             liz.setProperty('album_images', json.dumps( ld.dictlist ) ) # dictlist=json.loads(string)
@@ -703,11 +703,13 @@ def listLinksInComment(url, name, type_):
 
     loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
 # this portion is abandoned for now. initial plan was to textbox with auto-height in a grouplist to mimic the comment tree but cannot figure out how links can be followed.
-#    from guis import comments_GUI2
-#    ui = comments_GUI2('view_464_comments_grouplist.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li)
-#    ui.doModal()
-#    del ui
-#    return
+    from guis import comments_GUI2
+    ui = comments_GUI2('view_464_comments_grouplist.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    ui.title_bar_text=post_title
+    ui.doModal()
+    del ui
+    return
+
     from guis import commentsGUI
     #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
@@ -776,6 +778,8 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         liz=xbmcgui.ListItem(label=t_prepend + author + ': '+ desc100 ,
                              label2="")
         liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
+        liz.setProperty('comment_depth',str(d))
+        liz.setProperty('plot',plot) #cannot retrieve infolabels in the gui. we put 'plot' here too.
 
         #force all links to ytdl to see if it can be played
         if link_url:

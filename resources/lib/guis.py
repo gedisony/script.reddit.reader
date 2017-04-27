@@ -28,7 +28,7 @@ import xbmcaddon
 import xbmcgui
 from xbmcgui import ControlButton
 
-from utils import build_script
+from utils import build_script, generator
 #import xbmcplugin
 
 addon = xbmcaddon.Addon()
@@ -367,7 +367,7 @@ class listSubRedditGUI(cGUI):
                 self.album_listbox.addItems(listItems)
 
             #I want the grouplist to always scroll back on top
-           #slider_ctl=self.getControl(self.SLIDER_CTL) #unknown control type in python
+            #slider_ctl=self.getControl(self.SLIDER_CTL) #unknown control type in python
             #slider_ctl.setPercent(0)
 
             if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
@@ -602,22 +602,162 @@ class progressBG( xbmcgui.DialogProgressBG ):
     def getProgress(self):
         return self.progress
 
-#class comments_GUI2(xbmcgui.WindowXML):
-#    def __init__(self, *args, **kwargs):
-#        xbmcgui.WindowXML.__init__(self, *args, **kwargs)
-#        self.listing = kwargs.get("listing")
-#        self.context_menu=kwargs.get("context_menu")
-#
-#    def onInit(self):
-#        t1=self.getControl(100)
-#        #grouplist=self.getControl(204)
-#
-#        #ctb1=xbmcgui.ControlTextBox(200,800,200,200)
-#        #ctb1.setText('control text box number one')
-#        #ctb1.setVisible(True)
-#        #ctb1.setPosition(200,200)
-#        #t1.setText('Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industrys standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.')
-#        pass
+class comments_GUI2(cGUI):
+    BTN_LINKS=6771
+    links_on_top=False
+    links_top_selected_position=0
+    listbox_selected_position=0
+    child_lists=[]
+    items_for_listbox=[]
+
+    def __init__(self, *args, **kwargs):
+        import pprint
+        xbmcgui.WindowXML.__init__(self, *args, **kwargs)
+        #xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)   #<--- what's the difference?
+        self.subreddits_file = kwargs.get("subreddits_file")
+        self.listing = kwargs.get("listing")
+        self.main_control_id = kwargs.get("id")
+        self.context_menu=kwargs.get("context_menu")
+
+        #self.gui_listbox.addItems(self.listing)
+
+        listing_generator=generator(self.listing)
+
+        tlc_id=0 #create id's for top-level-comments
+        self.child_lists[:] = []  #a collection of child comments (non-tlc) tlc_children
+        tlc_children=[]
+        #for listing in self.listing:
+        for listing in listing_generator:
+            depth=int(listing.getProperty('comment_depth'))
+            #add root comments and links on the listbox
+            if not listing.getProperty('link_url'):
+                if depth==0:
+                    tlc_id+=1
+                    listing.setProperty('tlc_id',str(tlc_id)) #assign an id to this top-level-comment
+                    self.items_for_listbox.append(listing)    #this post will be on the listbox
+                    #log('tlc: '+listing.getProperty('plot'))
+
+                    #save the set of comments from previous top level comment
+                    self.child_lists.append(tlc_children)
+
+                    #begin a new list of child comments(this does not clear the old refernces)
+                    tlc_children=[]
+                    tlc_children.append( self.get_post_text_tuple(listing) ) #save the post_text of the top level comment
+                else:
+                    #collect the child comments. when depth=0 again, this list is reset.
+                    child_comment=listing
+                    #log('   : '+child_comment.getProperty('plot'))
+                    tlc_children.append( self.get_post_text_tuple(child_comment) )
+            else: #link in tlc
+                if depth>0:
+                    listing.setProperty('tlc_id',str(tlc_id))
+                    listing.setProperty('non_tlc_link','true')
+
+                listing.setProperty('tlc_id',str(tlc_id))
+                self.items_for_listbox.append(listing)
+
+        #don't forget to add the children of the last tlc
+        self.child_lists.append(tlc_children)
+        #log(pprint.pformat(self.child_lists))
+        self.exit_monitor = ExitMonitor(self.close_gui)#monitors for abortRequested and calls close on the gui
+
+        #can't dynamically create an auto-height textbox inside a grouplist
+        #  so we make x of them in the xml and hope they're enough
+        #  these are their id's
+        self.x_controls=[x for x in range(1000, 1041)]
+
+    def get_post_text_tuple(self,list_item):
+        try:
+            return (list_item.getProperty('plot'),int(list_item.getProperty('comment_depth')) )
+        except AttributeError:
+            return (None,None)
+
+    def onInit(self):
+        log('onInit()')
+        xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+        self.gui_listbox = self.getControl(self.main_control_id)
+        #important to reset the listbox. when control comes back to this GUI(after calling another gui).
+        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
+        self.gui_listbox.reset()
+        self.exit_monitor = ExitMonitor(self.close_gui)#monitors for abortRequested and calls close on the gui
+
+        if self.title_bar_text:
+            self.ctl_title_bar = self.getControl(1)
+            self.ctl_title_bar.setLabel(self.title_bar_text)
+
+        #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
+        #url="http://i.imgur.com/ARdeL4F.mp4"
+
+        self.gui_listbox.addItems(self.items_for_listbox)
+        self.setFocus(self.gui_listbox)
+
+        if self.gui_listbox_SelectedPosition > 0:
+            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
+        self.onAction(0)
+
+    def onAction(self, action):
+        focused_control=self.getFocusId()
+
+        if focused_control==self.main_control_id:
+            item = self.gui_listbox.getSelectedItem()
+            if item.getProperty('link_url'):
+                self.clear_x_controls()
+            else:
+                tlc_id=int(item.getProperty('tlc_id'))
+                #log('    tlc_id:'+repr(tlc_id) +'\n      '+ repr(self.child_lists[tlc_id]) )
+                self.populate_tlc_children(tlc_id)
+
+        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+            self.close_gui()
+
+    def populate_tlc_children(self,tlc_id):
+
+        #controls_generator=generator(controls)
+        child_comments_tuple_generator=generator(self.child_lists[tlc_id])
+
+        for control_id in self.x_controls:
+            control=self.getControl(control_id)
+
+            try:
+                post_text,depth=child_comments_tuple_generator.next()
+            except StopIteration:
+                post_text,depth=None,0
+
+            control.setText( post_text )
+            #log(('.'*depth)+repr(post_text))
+            #use animation to stagger the comments according to how deep they are
+            control.setAnimations( [ animation_format(0,100,'slide', 0, (20*depth), 'sine', 'in' ) ] )
+
+        #either there's no more child comments or we run out of controls
+        return
+
+    def clear_x_controls(self):
+        for control_id in self.x_controls:
+            control=self.getControl(control_id)
+            control.setText( None )
+
+    def onClick(self, controlID):
+        cGUI.onClick(self, controlID)
+
+    def close_gui(self):
+        log('  close gui ')
+        del self.items_for_listbox[:]
+        self.close()
+
+def animation_format(delay, time, effect, start, end, tween='', easing='', center='', extras=''  ):
+    a='condition=true delay={0} time={1} '.format(delay, time)
+
+    a+= 'effect={} '.format(effect)
+    if start!=None: a+= 'start={} '.format(start)
+    if end!=None:   a+= 'end={} '.format(end)
+
+    if center: a+= 'center={} '.format(center)
+    if tween:  a+= 'tween={} '.format(tween)
+    if easing: a+= 'easing={} '.format(easing)  #'in' 'out' 'inout'
+    if extras: a+= extras
+
+    #log( '  ' + a )
+    return ('conditional', a )
 
 if __name__ == '__main__':
     pass
