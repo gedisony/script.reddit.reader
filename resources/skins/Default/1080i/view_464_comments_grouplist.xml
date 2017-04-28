@@ -300,6 +300,16 @@
 					<control type="textbox" id="1048"><height>auto</height><font>font14</font></control>
 					<control type="textbox" id="1049"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
 					<control type="textbox" id="1050"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1051"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
+					<control type="textbox" id="1052"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1053"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
+					<control type="textbox" id="1054"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1055"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
+					<control type="textbox" id="1056"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1057"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
+					<control type="textbox" id="1058"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1059"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
+					<control type="textbox" id="1060"><height>auto</height><font>font14</font></control>
 				</control>
 
 				<control type="textbox" id="65592">

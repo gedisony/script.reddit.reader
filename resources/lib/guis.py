@@ -665,7 +665,7 @@ class comments_GUI2(cGUI):
         #can't dynamically create an auto-height textbox inside a grouplist
         #  so we make x of them in the xml and hope they're enough
         #  these are their id's
-        self.x_controls=[x for x in range(1000, 1051)]
+        self.x_controls=[x for x in range(1000, 1061)]
 
     def onInit(self):
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
