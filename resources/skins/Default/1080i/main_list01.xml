@@ -287,7 +287,7 @@
 					<onup>55</onup>
 					<ondown>55</ondown>
 
-					<focusedlayout width="1080" >
+					<focusedlayout width="980" ><!-- kodi won't load the image if it is not shown. this is intentionally set to be smaller than the image wxh so that the next image will partially show on screen...forcing kodi to pre-load it. -->
 						<control type="group">
 							<animation effect="fade" start="30" end="100" time="100">Focus</animation>
 							<animation effect="fade" start="100" end="30" time="500">Unfocus</animation>
@@ -315,7 +315,7 @@
 							<width>1080</width>
 							<height>1080</height>
 							<aspectratio aligny="center">keep</aspectratio>
-							<texture diffuse="gdx_diffuse2.png" colordiffuse="4EFFFFFF">$INFO[ListItem.Art(banner)]</texture>
+							<texture diffuse="gdx_diffuse2.png" colordiffuse="33FFFFFF">$INFO[ListItem.Art(banner)]</texture>
 						</control>
 					</itemlayout>
 				</control>

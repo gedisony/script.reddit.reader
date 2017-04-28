@@ -736,9 +736,6 @@ def dictlist_to_listItems(dictlist):
         combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
         combined += d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
         d['infoLabels']['plot'] = combined
-        #d['infoLabels']['genre'] = "0,-2000"
-        #d['infoLabels']['year'] = 1998
-        #log( d['infoLabels'].get('plot') )
 
         liz=xbmcgui.ListItem(label=label, label2=label2)
 
@@ -749,6 +746,9 @@ def dictlist_to_listItems(dictlist):
             else:
                 liz.setProperty('item_type','script')
                 liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
+        elif media_type==sitesBase.TYPE_IMAGE:
+            liz.setProperty('item_type','script')
+            liz.setProperty('onClick_action', build_script('viewImage', media_url,'',media_thumb) )
 
         liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
         #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })

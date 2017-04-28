@@ -753,6 +753,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
             domain='redditor'
         elif link_url.startswith('#'):  #don't know what these are. they are to be replaced with image on reddit
             domain=link_url
+            link_url=None      #ignore this kind of links
         else:
             from urlparse import urlparse
             domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )

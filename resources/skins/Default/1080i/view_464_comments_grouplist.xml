@@ -36,7 +36,7 @@
 	<!--BEGIN include name="UpDownArrows"-->
 		<control type="button" id="55588">
 			<left>30</left>
-			<top>910</top>
+			<top>950</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturefocus>
@@ -51,7 +51,7 @@
 		</control>
 		<control type="button" id="55589">
 			<left>30</left>
-			<top>134</top>
+			<top>114</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="FF12A8DA" flipy="true">srr_arrowdown.png</texturefocus>
@@ -84,7 +84,7 @@
 				<left>2</left>
 				<top>3</top>
 				<width>430</width>
-				<height>880</height>
+				<height>874</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<pagecontrol>55600</pagecontrol>
@@ -212,7 +212,7 @@
 				<control type="image">
 					<left>480</left>
 					<top>80</top>
-					<width>1420</width>
+					<width>1430</width>
 					<height>920</height>
 					<texture border="22">srr_dialog-bg.png</texture>
 				</control>
@@ -316,7 +316,7 @@
 				<control type="image">
 					<left>518</left>
 					<top>194</top>
-					<width>1226</width>
+					<width>1366</width>
 					<height>756</height>
 					<aspectratio>keep</aspectratio>
 					<fadetime>300</fadetime>
