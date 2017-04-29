@@ -665,7 +665,7 @@ class comments_GUI2(cGUI):
         #can't dynamically create an auto-height textbox inside a grouplist
         #  so we make x of them in the xml and hope they're enough
         #  these are their id's
-        self.x_controls=[x for x in range(1000, 1061)]
+        self.x_controls=[x for x in range(1000, 1071)]
 
     def onInit(self):
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
@@ -723,12 +723,17 @@ class comments_GUI2(cGUI):
             control=self.getControl(control_id)
 
             try:
-                post_text,depth=child_comments_tuple_generator.next()
+                post_text,author,depth=child_comments_tuple_generator.next()
             except StopIteration:
-                post_text,depth=None,0
+                post_text,author,depth=None,None,0
 
-            control.setText( post_text )
-            #log(('.'*depth)+repr(post_text))
+            if post_text:
+                #control.setText( ("[B]"+repr(control_id-1000)+"[/B] " + post_text) if post_text else None)
+                #control.setText(post_text+' '+author)
+                #log(('.'*depth)+repr(post_text))
+                control.setText(post_text)
+            else:
+                control.setText(None)
             #use animation to stagger the comments according to how deep they are
             control.setAnimations( [ animation_format(0,100,'slide', 0, (20*depth), 'sine', 'in' ) ] )
 
@@ -743,9 +748,9 @@ class comments_GUI2(cGUI):
 
     def get_post_text_tuple(self,list_item):
         try:
-            return (list_item.getProperty('plot'),int(list_item.getProperty('comment_depth')) )
+            return (list_item.getProperty('plot'),list_item.getProperty('author'),int(list_item.getProperty('comment_depth')) )
         except AttributeError:
-            return (None,None)
+            return (None,None,None)
 
 
     def onClick(self, controlID):

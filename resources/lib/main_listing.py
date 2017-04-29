@@ -10,13 +10,19 @@ from Queue import Queue
 
 import os,sys
 
-from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, int_CommentTreshold
+from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, int_CommentTreshold,addonUserDataFolder
 from utils import xbmc_busy, log, translation
 
+
+use_requests_cache   = addon.getSetting("no_index_page") == "true"
 default_frontpage    = addon.getSetting("default_frontpage")
 no_index_page        = addon.getSetting("no_index_page") == "true"
 main_gui_skin        = addon.getSetting("main_gui_skin")
 
+if use_requests_cache:
+    import requests_cache
+    CACHE_FILE=xbmc.translatePath(addonUserDataFolder+"/requests_cache")
+    requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=86400 )  #cache expires after: 86400=1day   604800=7 days
 
 def index(url,name,type_):
     ## this is where the __main screen is created
@@ -780,7 +786,8 @@ def reddit_comment_worker(idx, h, q_out,submitter):
                              label2="")
         liz.setInfo( type="Video", infoLabels={ "Title": h[1], "plot": plot, "studio": domain, "votes": str(comment_score), "director": author } )
         liz.setProperty('comment_depth',str(d))
-        liz.setProperty('plot',plot) #cannot retrieve infolabels in the gui. we put 'plot' here too.
+        liz.setProperty('plot',plot)    #cannot retrieve infolabels in the gui. we put 'plot' here too.
+        liz.setProperty('author',author)#                     and 'author' too.
 
         #force all links to ytdl to see if it can be played
         if link_url:

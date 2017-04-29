@@ -83,6 +83,8 @@ class sitesBase(object):
     def requests_get(self, link_url, headers=None, timeout=REQUEST_TIMEOUT, allow_redirects=True):
         content = requests.get( link_url, headers=headers, timeout=timeout, allow_redirects=allow_redirects )
         if content.status_code==requests.codes.ok:
+            #try:   log( '  #cached:{0} {1}'.format( repr(content.from_cache),link_url) )
+            #except:log( '  #cached: X {1}'.format( link_url) )  #if requests_cache is not installed, page will not have from_cache attribute
             return content
         else:
             log('    error: %s requests_get: %s %s' %(self.__class__.__name__, repr( content.status_code ), link_url ) )
