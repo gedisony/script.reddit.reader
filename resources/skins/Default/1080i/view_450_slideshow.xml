@@ -11,19 +11,6 @@
 					<effect type="slide" start="0,-1000" time="300" tween="sine" easing="inout" />
 					<effect type="fade"  start="0" end="100" time="300"  />
 				</animation>
-			
-				<animation effect="slide" start="0,-1000" time="300" tween="sine" easing="inout" >WindowOpen</animation>
-				<control type="label"><description>number/total album images label</description>
-					<top>0</top>
-					<left>1500</left>
-					<width>410</width>
-					<height>48</height>
-					<aligny>center</aligny>
-					<align>right</align>
-					<shadowcolor>text_shadow</shadowcolor>
-					<label>$INFO[Container(53).CurrentItem,, / ]$INFO[Container(53).NumItems]</label>
-					<visible>Control.IsVisible(53)</visible>
-				</control>
 
 				<!-- Show thumbnail image while original image still loading. but some thumbnail image stick out to the sides. 
 				could not figure out how to detect when original image still loading. 
@@ -87,6 +74,18 @@
 					<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
 					<texture>$INFO[Container(53).ListItem.Art(banner)]</texture>
 					<!-- fadetime>200</fadetime-->
+				</control>
+
+				<control type="label"><description>number/total album images label</description>
+					<top>0</top>
+					<left>1500</left>
+					<width>410</width>
+					<height>48</height>
+					<aligny>center</aligny>
+					<align>right</align>
+					<shadowcolor>text_shadow</shadowcolor>
+					<label>$INFO[Container(53).CurrentItem,, / ]$INFO[Container(53).NumItems]</label>
+					<visible>Integer.IsGreater(Container(53).NumItems,1)</visible>
 				</control>
 			</control>
 		<!--END include name="DefaultBackground"-->
@@ -231,10 +230,9 @@
 				<visible>true</visible>
 				<onleft>53</onleft>
 				<onup>101</onup>
-				<!-- ondown>5199</ondown-->
 				<onright>53</onright>
 				<preloaditems>true</preloaditems>
-				
+
 				<itemlayout width="200">
 					<control type="group">
 						<control type="image">
@@ -293,7 +291,7 @@
 				<width>810</width>
 				<height>5</height>
 				<onup>53</onup>
-     			<ondown>53</ondown>
+				<ondown>53</ondown>
 				<orientation>horizontal</orientation>
 			</control>
 

@@ -2,6 +2,7 @@
   - update album mode on main screen
     - can call viewImage on individual images
     - trick kodi to pre-load next album image
+  - update the viewAlbum gui to also pre-load next image
 0.9.3
  - comments gui update test
 

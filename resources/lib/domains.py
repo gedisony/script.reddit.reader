@@ -219,7 +219,6 @@ class sitesBase(object):
                     image_url=item[1]
                     thumbnail=item[2]
             elif isinstance(item, dict):  #type(item) is dict:
-                #log('--transforming dict')
                 title    =item.get('title') if item.get('title') else ''
                 desc     =item.get('description') if item.get('description') else ''
                 image_url=item.get('url')
