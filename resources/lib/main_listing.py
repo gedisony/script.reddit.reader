@@ -753,18 +753,18 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         tab=" "*d if d>0 else "-"
         author=h[7]
 
+        domain=''
         if link_url.startswith('/r/'):
             domain='subreddit'
         elif link_url.startswith('/u/'):
             domain='redditor'
         elif link_url.startswith('#'):  #don't know what these are. they are to be replaced with image on reddit
-            domain=link_url
-            link_url=None      #ignore this kind of links
+            link_url=None      #ignore these kind of links
+        elif link_url.startswith('/message/compose'):  
+            link_url=None      #ignore these kind of links
         else:
             from urlparse import urlparse
             domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
-
-        #log( '  %s TITLE:%s... link[%s]' % ( str(comment_score).zfill(4), desc100.ljust(20)[:20],link_url ) )
 
         if link_url:
             log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
@@ -834,7 +834,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
                 liz.setLabel(tab+plot)
 
                 #liz.setArt({"thumb": thumb_url, "poster":thumb_url, "banner":thumb_url, "fanart":thumb_url, "landscape":thumb_url   })
-                liz.setArt({"thumb": ld.poster })
+                liz.setArt({"thumb": ld.thumb,"banner":ld.poster })
 
                 liz.setProperty('item_type',property_link_type)   #script or playable
                 liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
@@ -852,7 +852,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         q_out.put( [idx, liz] )
 
     except Exception as e:
-        log('EXCEPTION comments_worker'+ str(e))
+        log('EXCEPTION comments_worker '+ str(e))
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
