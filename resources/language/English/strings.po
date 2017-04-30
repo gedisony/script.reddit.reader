@@ -233,11 +233,11 @@ msgid "Skip subreddit selection screen"
 msgstr ""
 
 msgctxt "#32104"
-msgid "Hide posts by domain (separate by comma)"
+msgid "Hide posts by domain (csv)"
 msgstr ""
 
 msgctxt "#32105"
-msgid "Hide posts by subreddit (separate by comma)"
+msgid "Hide posts by subreddit (csv)"
 msgstr ""
 
 msgctxt "#32106"
@@ -248,8 +248,16 @@ msgctxt "#32107"
 msgid "Hide NSFW content"
 msgstr ""
 
+msgctxt "#32107"
+msgid "Hide NSFW content"
+msgstr ""
+
 msgctxt "#32108"
 msgid "Main GUI skin"
+msgstr ""
+
+msgctxt "#32109"
+msgid "Hide comment links with these words(csv)"
 msgstr ""
 
 #32109-32111 empty

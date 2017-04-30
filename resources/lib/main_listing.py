@@ -730,8 +730,8 @@ def listLinksInComment(url, name, type_):
 
 def reddit_comment_worker(idx, h, q_out,submitter):
     from domains import parse_reddit_link, sitesBase
-    from utils import format_description, ret_info_type_icon, build_script
-
+    from utils import format_description, ret_info_type_icon, build_script, is_filtered
+    from default import comments_link_filter
 #         h[0]=score,
 #         h[1]=link_desc,
 #         h[2]=link_http,
@@ -754,14 +754,13 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         author=h[7]
 
         domain=''
-        if link_url.startswith('/r/'):
+        if is_filtered(comments_link_filter,link_url):
+            log('  [{}] is hidden by comments_link_filter'.format(link_url))
+            link_url=None
+        elif link_url.startswith('/r/'):
             domain='subreddit'
         elif link_url.startswith('/u/'):
             domain='redditor'
-        elif link_url.startswith('#'):  #don't know what these are. they are to be replaced with image on reddit
-            link_url=None      #ignore these kind of links
-        elif link_url.startswith('/message/compose'):  
-            link_url=None      #ignore these kind of links
         else:
             from urlparse import urlparse
             domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )

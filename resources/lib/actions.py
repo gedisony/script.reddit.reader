@@ -479,6 +479,9 @@ def playYTDLVideo(url, name, type_):
             li.setProperty('StartOffset', str(start_time))
             pl.add(url, li)
 
+        if len(pl)>1:
+            xbmc_notify("Multiple video", "{} videos in playlist".format(len(pl)))
+            
         xbmc.Player().play(pl, windowed=False)
 
         #only use the time skip code if there is only one item in the playlist

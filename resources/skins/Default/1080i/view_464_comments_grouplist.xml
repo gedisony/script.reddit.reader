@@ -339,7 +339,7 @@
 					<width>683</width>
 					<height>378</height>
 					<aspectratio>keep</aspectratio>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<visible>!isEmpty(Container(55).ListItem.Art(thumb))+isEmpty(Container(55).ListItem.Art(banner))</visible>
 					<visible>!Player.HasMedia</visible>
 					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
@@ -355,10 +355,10 @@
 				</control>
 
 				<control type="videowindow">
-					<left>602</left>
-					<top>184</top>
-					<width>1226</width>
-					<height>766</height>
+					<left>518</left>
+					<top>194</top>
+					<width>1366</width>
+					<height>756</height>
 					<!-- doesnt work aligny>bottom</aligny-->
 				</control>
 				

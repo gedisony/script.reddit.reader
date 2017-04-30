@@ -145,13 +145,19 @@ def pretty_datediff(dt1, dt2):
     except:
         pass
 
-def post_excluded_from( filter, str_to_check):
+def is_filtered(filter_csv, str_to_check):
+    #import csv; for row in csv.reader(['one,two,three']):
+    filter_list=filter_csv.split(',')
+    if any(word in str_to_check for word in filter_list if word):
+        return True
+
+def post_excluded_from( filter_, str_to_check):
     #hide posts by domain/subreddit.
     #filter can be subreddit_filter or domain_filter. comma separated string. configured in settings
     #log( '    exclude filter:' +str(filter))
     #log( '    exclude check:' +str_to_check)
-    if filter:
-        filter_list=filter.split(',')
+    if filter_:
+        filter_list=filter_.split(',')
         filter_list=[x.lower().strip() for x in filter_list]  #  list comprehensions
         #log( '    exclude filter:' +str(filter_list))
         if str_to_check.lower() in filter_list:
@@ -579,7 +585,7 @@ def truncate(string, length, ellipse='...'):
 
 def xbmc_notify(Line1, line2):
     xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( Line1, line2) )
-    log("XBMC.Notification: %s %s" %(Line1, line2) )
+    log("XBMC.Notification: %s: %s" %(Line1, line2) )
 
 def open_web_browser(url,name,type_):
     #http://forum.kodi.tv/showthread.php?tid=235733

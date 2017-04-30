@@ -394,7 +394,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             formats = entry.get('formats') or [entry]
 
             for i in range(len(formats)):
-                index[formats[i]['format_id']] = i
+                index[formats[i].get('format_id','')] = i
 
             keys = sorted(index.keys())
 

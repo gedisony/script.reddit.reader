@@ -25,6 +25,7 @@
 
     <category label="32300">
         <setting id="CommentTreshold"          type="select"  label="32106" values="All|0|5|10|50|100"/>
+        <setting id="comments_link_filter"     type="text"    label="32109" default="message/compose,#,np.reddit.com,"/>
         <setting                               type="sep" />
         <setting id="hide_nsfw"                type="bool"    label="32107" default="false"/>
         <setting id="domain_filter"            type="text"    label="32104" default=""/>

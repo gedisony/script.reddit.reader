@@ -44,6 +44,7 @@ urlMain = "https://www.reddit.com"
 hide_nsfw            = addon.getSetting("hide_nsfw") == "true"
 domain_filter        = addon.getSetting("domain_filter")
 subreddit_filter     = addon.getSetting("subreddit_filter")
+comments_link_filter = addon.getSetting("comments_link_filter")
 
 sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage    = ["10", "25", "50", "75", "100"][ int(sitemsPerPage) ]
