@@ -14,7 +14,7 @@ from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, in
 from utils import xbmc_busy, log, translation
 
 
-use_requests_cache   = addon.getSetting("no_index_page") == "true"
+use_requests_cache   = addon.getSetting("use_requests_cache") == "true"
 default_frontpage    = addon.getSetting("default_frontpage")
 no_index_page        = addon.getSetting("no_index_page") == "true"
 main_gui_skin        = addon.getSetting("main_gui_skin")
@@ -22,7 +22,7 @@ main_gui_skin        = addon.getSetting("main_gui_skin")
 if use_requests_cache:
     import requests_cache
     CACHE_FILE=xbmc.translatePath(addonUserDataFolder+"/requests_cache")
-    requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=86400 )  #cache expires after: 86400=1day   604800=7 days
+    requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=604800 )  #cache expires after: 86400=1day   604800=7 days
 
 def index(url,name,type_):
     ## this is where the __main screen is created
