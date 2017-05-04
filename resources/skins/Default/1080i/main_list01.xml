@@ -297,11 +297,31 @@
 								<height>1080</height>
 								<aspectratio>center</aspectratio>
 								<texture diffuse="gdx_diffuse2.png" >$INFO[ListItem.Art(thumb)]</texture>
+								<visible>isEmpty(Container(5501).ListItem.Property(is_video))</visible>
 								<animation type="Focus">
 									<effect type="rotate" start="0" end="-360" center="auto" loop="true" time="10000"/>
 									<effect type="fade" start="10" end="100" time="5000" />
 								</animation>
 							</control>
+							<control type="image">
+								<width>1080</width>
+								<height>1080</height>
+								<aspectratio>center</aspectratio>
+								<texture diffuse="gdx_diffuse2.png" >$INFO[ListItem.Art(thumb)]</texture>
+								<visible>!isEmpty(Container(5501).ListItem.Property(is_video))</visible>
+								<animation type="Focus">
+									<effect type="zoom" start="100" end="300" center="auto"/>
+								</animation>
+							</control>
+							<control type="image">
+								<width>1080</width>
+								<height>1080</height>
+								<description>Play overlay for video</description>
+								<aspectratio align="center" aligny="center" >center</aspectratio>
+								<texture>play_overlay.png</texture>
+								<visible>!isEmpty(Container(5501).ListItem.Property(is_video))</visible>
+							</control>
+							
 							<control type="image">
 								<width>1080</width>
 								<height>1080</height>

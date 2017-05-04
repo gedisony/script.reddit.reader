@@ -749,6 +749,7 @@ def dictlist_to_listItems(dictlist):
             if isPlayable=='true':
                 liz.setProperty('item_type','playable')
                 liz.setProperty('onClick_action', media_url )
+                liz.setProperty('is_video','true')
             else:
                 liz.setProperty('item_type','script')
                 liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
