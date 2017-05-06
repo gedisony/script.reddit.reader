@@ -3,9 +3,9 @@ import xbmc
 import xbmcgui
 #import xbmcvfs
 import sys
-import shutil
+import shutil, os
 
-from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle
+from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
 from utils import xbmc_busy, log, translation, xbmc_notify
 from reddit import get_subreddit_entry_info
 
@@ -432,12 +432,27 @@ def playYTDLVideo(url, name, type_):
     dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
 
     from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    from urlparse import urlparse, parse_qs
     import pprint
+
+    o = urlparse(url)
+    query = parse_qs(o.query)
+    video_index=0
+    #note that in domains.py youtube class will send a simplified url to avoid sending
+    #   https://www.youtube.com/watch?v=R6_dZhE-4bk&index=22&list=PLGJ6ezwqAB2a4RP8hWEWAGB9eT2bmaBsy  (ytdl will parse around 90+ videos, takes a very long time)
+    #   http://youtube.com/v/R6_dZhE-4bk   (will be faster)
+    if 'index' in query:
+        try:video_index=int(query['index'][0])
+        except (TypeError, ValueError): video_index=0
+        #log( repr(video_index) )
+        dialog_progress_YTDL.update(20,dialog_progress_title,translation(32017)  )
+    else:
+        #if there is index, link is likely a playlist, parsing will take a looooong time.
+        #  we move progress dialog here to differentiate
+        dialog_progress_YTDL.update(20,dialog_progress_title,translation(32012)  )
 
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
-
-    dialog_progress_YTDL.update(20,dialog_progress_title,translation(32012)  )
 
     #use YoutubeDLWrapper by ruuk to avoid  bad file error
     ytdl=YoutubeDLWrapper()
@@ -450,40 +465,26 @@ def playYTDLVideo(url, name, type_):
         #     to          except (ValueError,TypeError):
         #   this already fixed by ruuk magic. in YoutubeDLWrapper
 
-        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1) )
+        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1, depth=3) )
         #log('quality============='+repr(ytdl_quality))
         #log('ytdl_DASH==========='+repr(ytdl_DASH))
+        #link_type=ydl_info.get("_type")
+        #entries=ydl_info.get('entries')
+
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
-        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=5) )
+        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=2) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
-        for video_info in video_infos:
-            url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
-            #url="d://mp4-live-mpd-AV-BS.mpd.xml"
-            title=video_info.get('title') or name
-            ytdl_format=video_info.get('ytdl_format')
-            if ytdl_format:
-                description=ytdl_format.get('description')
-                #check if there is a time skip code
-                try:
-                    start_time=ytdl_format.get('start_time',0)   #int(float(ytdl_format.get('start_time')))
-                except (ValueError, TypeError):
-                    start_time=0
-
-            li=xbmcgui.ListItem(label=title,
-                                label2='',
-                                iconImage=video_info.get('thumbnail'),
-                                thumbnailImage=video_info.get('thumbnail'),
-                                path=url)
-            li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
-            li.setProperty('StartOffset', str(start_time))
-            pl.add(url, li)
+        if video_index > 0:
+            add_ytdl_video_info_to_playlist(video_infos[video_index-1], pl, name)
+        else:
+            for video_info in video_infos:
+                add_ytdl_video_info_to_playlist(video_info, pl, name)
 
         if len(pl)>1:
             xbmc_notify("Multiple video", "{} videos in playlist".format(len(pl)))
-            
-        xbmc.Player().play(pl, windowed=False)
 
+        xbmc.Player().play(pl, windowed=False)
         #only use the time skip code if there is only one item in the playlist
         #if start_time and pl.size()==1:
         #    xbmc.Player().seekTime(start_time)
@@ -502,6 +503,27 @@ def playYTDLVideo(url, name, type_):
         dialog_progress_YTDL.update(100,dialog_progress_title ) #not sure if necessary to set to 100 before closing dialogprogressbg
         dialog_progress_YTDL.close()
 
+def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
+    url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
+    #url="d://mp4-live-mpd-AV-BS.mpd.xml"
+    title=video_info.get('title') or title
+    ytdl_format=video_info.get('ytdl_format')
+    if ytdl_format:
+        description=ytdl_format.get('description')
+        #check if there is a time skip code
+        try:
+            start_time=ytdl_format.get('start_time',0)   #int(float(ytdl_format.get('start_time')))
+        except (ValueError, TypeError):
+            start_time=0
+
+        video_thumbnail=video_info.get('thumbnail')
+    li=xbmcgui.ListItem(label=title,
+                        label2='',
+                        path=url)
+    li.setArt({"thumb": video_thumbnail, "icon":video_thumbnail })
+    li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
+    li.setProperty('StartOffset', str(start_time))
+    pl.add(url, li)
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
 YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{}.tar.gz'
@@ -525,7 +547,7 @@ def ytdl_get_version_info(which_one='latest'):
 
 def update_youtube_dl_core(url,name,action_type):
 #credit to ruuk for most of the download code
-    import os, urllib
+    import urllib
     import tarfile
 
     if action_type=='download':
@@ -605,6 +627,20 @@ def update_dl_status(message):
 def setSetting(setting_id, value):
     addon.setSetting(setting_id, value)
 
+def delete_setting_file(url,name,action_type):
+    #log( "delete setting file:" + action_type)
+    if action_type=='requests_cache':
+        file_to_delete=CACHE_FILE+'.sqlite'
+    elif action_type=='icons_cache':
+        file_to_delete=subredditsPickle
+    elif action_type=='subreddits_setting':
+        file_to_delete=subredditsFile
+
+    try:
+        os.remove(file_to_delete)
+        xbmc_notify("Deleting", file_to_delete)
+    except OSError as e:
+        xbmc_notify("Error:", str(e))
 
 if __name__ == '__main__':
     pass

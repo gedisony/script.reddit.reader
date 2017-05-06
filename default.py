@@ -65,8 +65,9 @@ REQUEST_TIMEOUT=(5,10) #requests.get timeout in seconds (connect timeout, read t
 #use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
 
 addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
-subredditsFile      = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits")
-subredditsPickle    = xbmc.translatePath("special://profile/addon_data/"+addonID+"/subreddits.pickle")
+subredditsFile      = xbmc.translatePath(addonUserDataFolder+"/subreddits")
+subredditsPickle    = xbmc.translatePath(addonUserDataFolder+"/subreddits.pickle")
+CACHE_FILE          = xbmc.translatePath(addonUserDataFolder+"/requests_cache")
 
 #ytdl_psites_file         = xbmc.translatePath(profile_path+"/ytdl_sites_porn")
 default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
@@ -128,7 +129,7 @@ if __name__ == '__main__':
     from resources.lib.autoplay import autoPlay
     from resources.lib.converthtml import readHTML
     from resources.lib.utils import addtoFilter
-    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo, playYTDLVideo, searchReddits
+    from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,loopedPlayback,error_message, viewImage, listAlbum, playURLRVideo,viewTallImage,update_youtube_dl_core,playVideo, playYTDLVideo, searchReddits, delete_setting_file
     from resources.lib.reddit import reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token, reddit_save
     from resources.lib.main_listing import index, listSubReddit, listLinksInComment
 
@@ -159,5 +160,6 @@ if __name__ == '__main__':
                     ,'get_access_token'     : reddit_get_access_token
                     ,'revoke_refresh_token' : reddit_revoke_refresh_token
                     ,'reddit_save'          : reddit_save
+                    ,'delete_setting_file'  : delete_setting_file
                     }
     plugin_modes[mode](url,name,type_)

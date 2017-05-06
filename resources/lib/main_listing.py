@@ -10,7 +10,7 @@ from Queue import Queue
 
 import os,sys
 
-from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, int_CommentTreshold,addonUserDataFolder
+from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, subredditsPickle, int_CommentTreshold,addonUserDataFolder,CACHE_FILE
 from utils import xbmc_busy, log, translation
 
 
@@ -21,17 +21,19 @@ main_gui_skin        = addon.getSetting("main_gui_skin")
 
 if use_requests_cache:
     import requests_cache
-    CACHE_FILE=xbmc.translatePath(addonUserDataFolder+"/requests_cache")
     requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=604800 )  #cache expires after: 86400=1day   604800=7 days
 
 def index(url,name,type_):
     ## this is where the __main screen is created
 
     from guis import indexGui
-    from reddit import assemble_reddit_filter_string, create_default_subreddits
+    from reddit import assemble_reddit_filter_string, create_default_subreddits, populate_subreddits_pickle
 
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
+
+    if not os.path.exists(subredditsPickle):
+        populate_subreddits_pickle()
 
     if no_index_page:
         log( "   default_frontpage " +default_frontpage )
@@ -41,7 +43,7 @@ def index(url,name,type_):
             listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
     else:
         #subredditsFile loaded in gui
-        ui = indexGui('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
+        ui = indexGui('index.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
         ui.title_bar_text="Reddit Reader"
         ui.include_parent_directory_entry=False
 
@@ -75,12 +77,14 @@ def subreddit_icoheader_banner(subreddit):
 
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
-    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify
+    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query
     from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
 
     global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
     #the +'s got removed by url conversion
     title_bar_name=subreddit_key.replace(' ','+')
+    if title_bar_name.startswith('?'):
+        title_bar_name=prettify_reddit_query(title_bar_name)
     #log("  title_bar_name %s " %(title_bar_name) )
 
     log("listSubReddit r/%s\n %s" %(title_bar_name,url) )

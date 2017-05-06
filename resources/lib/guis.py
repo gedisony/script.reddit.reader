@@ -141,14 +141,19 @@ class cGUI(xbmcgui.WindowXML):
         if controlID == self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
+            if not item: #panel listbox control allows user to pick non-existing item by mouse/touchscreen. bypass it here.
+                return
 
             if self.include_parent_directory_entry and self.gui_listbox_SelectedPosition == 0:
                 self.close()  #include_parent_directory_entry means that we've added a ".." as the first item on the list onInit
 
             #name = item.getLabel()
-            try:di_url=item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
-            except:di_url=""
-            item_type=item.getProperty('item_type').lower()
+            try: di_url=item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
+            except AttributeError:
+                di_url=""
+            try: item_type=item.getProperty('item_type').lower()
+            except AttributeError:
+                item_type=""
 
             log( "  clicked on %d IsPlayable=%s  url=%s " %( self.gui_listbox_SelectedPosition, item_type, di_url )   )
             if item_type=='playable':
@@ -189,8 +194,8 @@ class cGUI(xbmcgui.WindowXML):
             pass
 
     def load_subreddits_file_into_a_listitem(self):
-        from utils import compose_list_item, prettify_reddit_query
-        from reddit import parse_subreddit_entry, assemble_reddit_filter_string
+        from utils import compose_list_item, prettify_reddit_query, xstr, samealphabetic, hassamealphabetic
+        from reddit import parse_subreddit_entry, assemble_reddit_filter_string, ret_sub_info, ret_settings_type_default_icon
         entries=[]
         listing=[]
 
@@ -207,16 +212,62 @@ class cGUI(xbmcgui.WindowXML):
         entries.sort()
         #log( '  entries count ' + str( len( entries) ) )
 
+        addtl_subr_info={}
         for subreddit_entry in entries:
-            #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
-            subreddit, alias, shortcut_description=parse_subreddit_entry(subreddit_entry)
-            #log( subreddit + "   " + shortcut_description )
+            nsfw=False
+            addtl_subr_info=ret_sub_info(subreddit_entry)
 
+            #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
+            entry_type, subreddit, alias, shortcut_description=parse_subreddit_entry(subreddit_entry)
+            #log( subreddit + "   " + shortcut_description )
+            icon=default_icon=ret_settings_type_default_icon(entry_type)
             reddit_url= assemble_reddit_filter_string("",subreddit, "yes")
 
-            liz = compose_list_item( alias, "", "", "script", build_script("listSubReddit",reddit_url,prettify_reddit_query(alias)) )
-            liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )
+            pretty_label=prettify_reddit_query(alias)
+            pretty_label=pretty_label.replace('+',' + ')
+            if entry_type=='domain':
+                #remove the identifier that this setting is a domain
+                pretty_label=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
 
+            if subreddit.lower() in ["all","popular"]:
+                liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
+            else:
+                if addtl_subr_info: #if we have additional info about this subreddit
+                    #log(repr(addtl_subr_info))
+                    title=addtl_subr_info.get('title','')+'\n'
+                    display_name=xstr(addtl_subr_info.get('display_name',''))
+                    if samealphabetic( title, display_name): title=''
+                    #if re.sub('\W+','', display_name.lower() )==re.sub('\W+','', title.lower()): title=''
+                    #display_name=re.sub('\W+','', display_name.lower() )
+                    #title=re.sub('\W+','', title.lower())
+
+                    header_title=xstr(addtl_subr_info.get('header_title',''))
+                    public_description=xstr( addtl_subr_info.get('public_description',''))
+                    nsfw=addtl_subr_info.get('over18')
+
+                    if samealphabetic( header_title, public_description): public_description=''
+                    if samealphabetic(title,public_description): public_description=''
+                    #if hassamealphabetic(header_title,title,public_description): public_description=''
+
+                    shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
+
+                    icon=addtl_subr_info.get('icon_img')
+                    banner=addtl_subr_info.get('banner_img')
+                    header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen
+
+                    #log( subreddit + ' icon=' + repr(icon) +' header=' + repr(header))
+                    #picks the first item that is not None
+                    icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
+                    #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
+                    liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
+
+                else:
+                    liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
+
+            liz.setArt({ "thumb": icon })
+            liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )
+            if nsfw:
+                liz.setProperty('nsfw', 'true' )
             listing.append(liz)
 
         return listing
@@ -248,27 +299,25 @@ class indexGui(cGUI):
     #this is the gui that handles the initial screen.
 
     def onInit(self):
-        #cGui.onInit()
-        self.gui_listbox = self.getControl(self.main_control_id)
-        #important to reset the listbox. when control comes back to this GUI(after calling another gui).
-        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
-        self.gui_listbox.reset()
-
         if self.title_bar_text:
             self.ctl_title_bar = self.getControl(1)
             self.ctl_title_bar.setLabel(self.title_bar_text)
+
+        self.gui_listbox = self.getControl(self.main_control_id)
+
+        #important to reset the listbox. when control comes back to this GUI(after calling another gui).
+        #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
+        self.gui_listbox.reset()
 
         #load subreddit file directly here instead of the function that calls the gui.
         #   that way, this gui can refresh the list after the subreddit file modified
         self.gui_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
 
-        #self.setFocus(self.gui_listbox)
+        #need this set focus or you have a quirk where the first key-press is ignored
+        self.setFocus(self.gui_listbox)
 
         if self.gui_listbox_SelectedPosition > 0:
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
-
-        pass
-
 
     def onAction(self, action):
 
@@ -278,29 +327,32 @@ class indexGui(cGUI):
         try:focused_control=self.getFocusId()
         except:focused_control=0
 
+        #log('focused control='+repr(focused_control)+' action='+repr(action))
+
+
         if focused_control==self.main_control_id:  #main_control_id is the listbox
 
             self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
 
-            item_type   =item.getProperty('item_type').lower()
+            try:
+                item_type=item.getProperty('item_type').lower()
 
-            if action in [ xbmcgui.ACTION_MOVE_LEFT, xbmcgui.ACTION_CONTEXT_MENU ]:
-                ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
-                log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
-                #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                if action in [ xbmcgui.ACTION_CONTEXT_MENU ]:
+                    ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
+                    log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
+                    #xbmc.executebuiltin("ActivateWindow(busydialog)")
+                    xbmc.executebuiltin( ACTION_manage_subreddits  )
+                    self.close()
+                    #xbmc.sleep(2000)
+                    #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
+            except:
+                #panel control lets you pick a blank listitem at the end. this causes an error
+                pass
 
-
-                xbmc.executebuiltin( ACTION_manage_subreddits  )
-
-                self.close()
-                #xbmc.sleep(2000)
-                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-
-            if action == xbmcgui.ACTION_MOVE_RIGHT:
-                right_button_action=item.getProperty('right_button_action')
-
-                log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
+            #if action == xbmcgui.ACTION_MOVE_RIGHT:
+            #    right_button_action=item.getProperty('right_button_action')
+            #    log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
 
 
 class listSubRedditGUI(cGUI):

@@ -70,6 +70,20 @@ msgctxt "#32015"
 msgid "Sort links on top"
 msgstr ""
 
+#description for custom search shortcut on index page
+msgctxt "#32016"
+msgid "Custom Search"
+msgstr ""
+
+#YTDL dialogProgressBG message
+msgctxt "#32017"
+msgid "Parsing multiple videos.."
+msgstr ""
+
+
+
+
+
 msgctxt "#32019"
 msgid "Shortcut added"
 msgstr ""
@@ -90,6 +104,14 @@ msgctxt "#32022"
 msgid "There doesn't seem to be anything here"
 msgstr ""
 
+#notification that we're checking websites gathering icons
+msgctxt "#32023"
+msgid "Gathering icons"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Gathering icons.. %s"
+msgstr ""
 
 #: used in context menu.  slideshow
 msgctxt "#32048"
@@ -289,8 +311,16 @@ msgctxt "#32150"
 msgid "Sites"
 msgstr ""
 
-msgctxt "#32154"
-msgid "Liveleak: Quality"
+msgctxt "#32151"
+msgid "[Clear requests cache]"
+msgstr ""
+
+msgctxt "#32152"
+msgid "[Re-load icons on next start]"
+msgstr ""
+
+msgctxt "#32153"
+msgid "[Revert to default subreddits on next start]"
 msgstr ""
 
 msgctxt "#32157"
@@ -300,6 +330,8 @@ msgstr ""
 msgctxt "#32158"
 msgid "Cache links parsing (requests-cache)"
 msgstr ""
+
+
 
 #error message popup when youtube-dl can't get playable url 
 msgctxt "#32192"

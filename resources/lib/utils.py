@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import urllib
+import urllib, urlparse
 import xbmc, xbmcgui, xbmcaddon
 import re, htmlentitydefs
 import pickle
@@ -583,8 +583,10 @@ def colored_subreddit(subreddit,color='cadetblue', add_r=True):
 def truncate(string, length, ellipse='...'):
     return (string[:length] + ellipse) if len(string) > length else string
 
-def xbmc_notify(Line1, line2):
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s" )' %( Line1, line2) )
+def xbmc_notify(Line1, line2, time=1000):
+    time=1000
+    icon=''
+    xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) )
     log("XBMC.Notification: %s: %s" %(Line1, line2) )
 
 def open_web_browser(url,name,type_):
@@ -777,6 +779,59 @@ def generator(iterable):
 #    while saved:
 #        for element in saved:
 #            yield element
+def setting_entry_is_domain(setting_entry):
+    try:
+        domain=re.findall(r'(?::|\/domain\/)(.+)',setting_entry)[0]
+    except IndexError:
+        domain=''
+    return domain
+
+def get_domain_icon( entry_name, domain ):
+    import requests
+    from CommonFunctions import parseDOM
+    subs_dict={}
+    #import pprint
+    #headers = {'User-Agent': reddit_userAgent}
+    req='http://%s' %domain
+    #log('get_domain_icon request='+req)
+    #log('headers:' + repr(headers))
+    r = requests.get( req )
+    #log(repr(r.text))
+    if r.status_code == requests.codes.ok:
+        try:og_url=parseDOM(r.text, "meta", attrs = { "property": "og:url" }, ret="content" )[0]  #<meta content="https://www.blogger.com" property="og:url">
+        except:og_url=req
+        #a=parseDOM(r.text, "link", attrs = { "rel": "shortcut icon" }, ret="href" ) #returns an ico file. we skip this
+        a=parseDOM(r.text, "meta", attrs = { "property": "og:image" }, ret="content" )
+        b=parseDOM(r.text, "link", attrs = { "rel": "apple-touch-icon" }, ret="href" )
+        c=parseDOM(r.text, "link", attrs = { "rel": "apple-touch-icon-precomposed" }, ret="href" )
+        d=parseDOM(r.text, "link", attrs = { "rel": "icon" }, ret="href" )
+
+        i=next((item for item in [a,b,c,d] if item ), '')
+        if i:
+            #log( "    icon candidates:" + repr(i))
+            try:
+                icon=urlparse.urljoin(og_url, i[-1]) #handle relative or absolute
+                #make structure same as that returned by get_subreddit_info()
+                subs_dict.update( {'entry_name':entry_name,
+                                   'display_name':domain,
+                                   'icon_img': icon,
+#                                   'header_img': j.get('header_img'), #not used? usually similar to with icon_img
+#                                   'title':j.get('title'),
+#                                   'header_title':j.get('header_title'),
+#                                   'public_description':j.get('public_description'),
+#                                   'subreddit_type':j.get('subreddit_type'),
+#                                   'subscribers':j.get('subscribers'),
+#                                   'created':j.get('created'),        #public, private
+#                                   'over18':j.get('over18'),
+                                   } )
+                #log( pprint.pformat(subs_dict, indent=1) )
+                return subs_dict
+
+            except IndexError: pass
+        else:
+            log( "    can't parse icon: get_domain_icon (%s)" %(domain) )
+    else:
+        log( '    getting get_domain_icon (%s) info:%s' %(domain, r.status_code) )
 
 if __name__ == '__main__':
     pass
