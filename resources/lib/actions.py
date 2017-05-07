@@ -470,7 +470,6 @@ def playYTDLVideo(url, name, type_):
         #log('ytdl_DASH==========='+repr(ytdl_DASH))
         #link_type=ydl_info.get("_type")
         #entries=ydl_info.get('entries')
-
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
         #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=2) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
@@ -638,7 +637,7 @@ def delete_setting_file(url,name,action_type):
 
     try:
         os.remove(file_to_delete)
-        xbmc_notify("Deleting", file_to_delete)
+        xbmc_notify("Deleting", '..'+file_to_delete[-30:])
     except OSError as e:
         xbmc_notify("Error:", str(e))
 

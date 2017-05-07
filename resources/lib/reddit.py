@@ -553,7 +553,6 @@ def get_subreddit_info( subreddit ):
     req='https://www.reddit.com/r/%s/about.json' %subreddit
     #log('headers:' + repr(headers))
     r = requests.get( req, headers=headers, timeout=REQUEST_TIMEOUT )
-
     if r.status_code == requests.codes.ok:
         try:
             j=r.json()

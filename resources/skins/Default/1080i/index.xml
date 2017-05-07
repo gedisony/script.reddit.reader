@@ -66,14 +66,14 @@
 				<left>-20</left>
 				<top>-20</top>
 				<width>1806</width>
-				<height>908</height>
+				<height>912</height>
 				<texture border="22">srr_dialog-bg.png</texture>
 			</control>
 			<control type="panel" id="55">
 				<left>2</left>
 				<top>3</top>
 				<width>1760</width>
-				<height>858</height>
+				<height>868</height>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<pagecontrol>55600</pagecontrol>
@@ -100,7 +100,7 @@
 					<control type="textbox"><!-- ListItem.Label -->
 						<left>148</left>
 						<height>138</height>
-						<width>290</width>
+						<width>280</width>
 						<aligny>center</aligny>
 						<font>fontContextMenu</font>
 						<autoscroll>false</autoscroll>
@@ -133,7 +133,7 @@
 					<control type="textbox">
 						<left>148</left>
 						<height>138</height>
-						<width>290</width>
+						<width>280</width>
 						<aligny>center</aligny>
 						<font>fontContextMenu</font>
 						<autoscroll>false</autoscroll>
