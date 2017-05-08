@@ -280,7 +280,7 @@
 					<preloaditems>true</preloaditems>
 					<scrolltime tween="sine" easing="inout">500</scrolltime>
 					<orientation>horizontal</orientation>
-					<visible>!isEmpty(Container(55).ListItem.Property(album_images))</visible>
+					<visible>!String.isEmpty(Container(55).ListItem.Property(album_images))</visible>
 					<!-- pagecontrol>55600</pagecontrol-->
 					<!-- onleft>55</onleft--><!-- not go back to 55 or we end up activating the <onleft> of control(55) as well comment -->
 					<!-- onright>15</onright-->

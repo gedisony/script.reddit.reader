@@ -591,11 +591,12 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
 def listLinksInComment(url, name, type_):
     from guis import progressBG
     from reddit import reddit_request
-    from utils import clean_str
+    from utils import clean_str,remove_duplicates
 
     log('listLinksInComment:%s:%s' %(type_,url) )
 
     post_title=''
+    global harvest
 #    ShowOnlyCommentsWithlink=False
 #    if type_=='linksOnly':
 #        ShowOnlyCommentsWithlink=True
@@ -652,7 +653,14 @@ def listLinksInComment(url, name, type_):
         #harvest links in the post itself
         r_linkHunter(content[1]['data']['children'])
         #for i, h in enumerate(harvest):
-        #    log( '  %d %s %d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
+        #    log( '  %d %s %.4d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
+
+
+        #log(' len harvest1 '+repr(len(harvest)))
+        #remove duplicate links
+        def k2(x): return (x[2],x[3])
+        harvest=remove_duplicates(harvest,k2)
+        #log(' len harvest2 '+repr(len(harvest)))
 
         c_threads=[]
         q_liz=Queue()

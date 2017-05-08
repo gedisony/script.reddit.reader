@@ -63,6 +63,7 @@ class sitesBase(object):
     TYPE_VIDS ='vids'
     TYPE_MIXED='mixed'
     TYPE_REDDIT='reddit'
+    TYPE_UNKNOWN='unknown'
     DI_ACTION_PLAYABLE='playable'
     DI_ACTION_YTDL='playYTDLVideo'
     DI_ACTION_URLR='playURLRVideo'
@@ -3143,7 +3144,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                 link_action=sitesBase.DI_ACTION_URLR
                 #ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_URLR, link_url, '', '')
 
-            ld=LinkDetails(sitesBase.TYPE_VIDEO, link_action, link_url, preview_img, preview_img)
+            ld=LinkDetails(sitesBase.TYPE_UNKNOWN, link_action, link_url, preview_img, preview_img)
 
             if False: #resolve_undetermined:  (abandoned, too slow)
                 log('sending undetermined link to ytdl...')
@@ -3156,7 +3157,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
     except Exception as e:
         log("  EXCEPTION parse_reddit_link "+ str( sys.exc_info()[0]) + " - " + str(e) )
-        ld=LinkDetails('', sitesBase.DI_ACTION_ERROR, str(e) )
+        ld=LinkDetails(sitesBase.TYPE_UNKNOWN, sitesBase.DI_ACTION_ERROR, str(e) )
         return ld
 
     if ytdl_sites:  pass

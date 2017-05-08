@@ -380,9 +380,9 @@ def playURLRVideo(url, name, type_):
             xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
         else:
             log( "  Can't URL Resolve:" + repr(url))
-            xbmc_notify('URLresolver', translation(32192) )  #Failed to get playable url
+            xbmc_notify('URLresolver', translation(32192),icon="type_urlr.png" )  #Failed to get playable url
     except Exception as e:
-        xbmc_notify('URLresolver:'+domain, str(e) )
+        xbmc_notify('URLresolver:'+domain, str(e),icon="type_urlr.png" )
     dialog_progress_YTDL.close()
 
 def loopedPlayback(url, name, type_):
@@ -493,7 +493,7 @@ def playYTDLVideo(url, name, type_):
         err_msg=str(e)+';'  #ERROR: No video formats found; please report this issue on https://yt-dl.org/bug . Make sure you are using the latest vers....
         short_err=err_msg.split(';')[0]
         log( "playYTDLVideo Exception:" + str( sys.exc_info()[0]) + "  " + str(e) )
-        xbmc_notify(ytdl_ver, short_err)
+        xbmc_notify(ytdl_ver, short_err,icon='type_ytdl.png')
 
         #try urlresolver
         log('   trying urlresolver...')
