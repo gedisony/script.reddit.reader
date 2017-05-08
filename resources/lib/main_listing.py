@@ -656,11 +656,15 @@ def listLinksInComment(url, name, type_):
         #    log( '  %d %s %.4d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
 
 
+        comments_count_orig=len(harvest)
         #log(' len harvest1 '+repr(len(harvest)))
         #remove duplicate links
         def k2(x): return (x[2],x[3])
         harvest=remove_duplicates(harvest,k2)
+        comments_count_rd=len(harvest)
         #log(' len harvest2 '+repr(len(harvest)))
+
+        loading_indicator.update(15,'Removed %d duplicates' %(comments_count_orig-comments_count_rd) )
 
         c_threads=[]
         q_liz=Queue()
@@ -690,7 +694,7 @@ def listLinksInComment(url, name, type_):
                 #each change in the queue size gets a tick on our progress track
                 if last_queue_size < q_liz.qsize():
                     items_added=q_liz.qsize()-last_queue_size
-                    loading_indicator.tick(items_added)
+                    loading_indicator.tick(items_added,'Parsing')
                 else:
                     break_counter+=1
 
