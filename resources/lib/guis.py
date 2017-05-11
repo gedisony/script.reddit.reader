@@ -22,6 +22,7 @@ import re
 import sys
 import urllib
 import json
+import ast   #used for processing out context menu
 
 import xbmc
 import xbmcaddon
@@ -193,6 +194,22 @@ class cGUI(xbmcgui.WindowXML):
         elif controlID == 7:
             pass
 
+    def onAction(self, action):
+        try:focused_control=self.getFocusId()
+        except:focused_control=0
+        #log( "  onAction focused control=" +  str(focused_control) + " " + str( self.a ))
+
+        if focused_control==self.main_control_id:  #main_control_id is the listbox
+            self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
+            item = self.gui_listbox.getSelectedItem()
+            item_type=item.getProperty('item_type').lower()
+
+            if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+                self.close()
+
+            if action in [xbmcgui.ACTION_CONTEXT_MENU]:
+                self.pop_context_menu(item)
+
     def load_subreddits_file_into_a_listitem(self):
         from utils import compose_list_item, prettify_reddit_query, xstr, samealphabetic, hassamealphabetic
         from reddit import parse_subreddit_entry, assemble_reddit_filter_string, ret_sub_info, ret_settings_type_default_icon
@@ -272,8 +289,24 @@ class cGUI(xbmcgui.WindowXML):
 
         return listing
 
-    def build_context_menu(self):
-        pass
+    def pop_context_menu(self, selected_item):
+        cxm_string=selected_item.getProperty('context_menu')
+        if cxm_string:
+            #links=self.get_more_link_info(item) #you can add code here to get more query and build a dynamic context menu
+
+            #log(repr(cxm_string))
+            #cxm=ast.literal_eval(cxm_string)
+            li=[]
+            for label, action in ast.literal_eval(cxm_string):
+                liz=xbmcgui.ListItem(label=label,
+                     label2='',
+                     path=action)
+                li.append(liz)
+                #log(repr(cxm))
+            cxm=contextMenu('srr_DialogContextMenu.xml',addon_path,listing=li)
+            cxm.doModal()
+            del cxm
+            del li[:]
 
     def busy_execute_sleep(self,executebuiltin, sleep=500, close=True):
         #
@@ -350,11 +383,6 @@ class indexGui(cGUI):
                 #panel control lets you pick a blank listitem at the end. this causes an error
                 pass
 
-            #if action == xbmcgui.ACTION_MOVE_RIGHT:
-            #    right_button_action=item.getProperty('right_button_action')
-            #    log( "   RIGHT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
-
-
 class listSubRedditGUI(cGUI):
     reddit_query_of_this_gui=''
     SUBREDDITS_LIST=550
@@ -425,32 +453,8 @@ class listSubRedditGUI(cGUI):
             if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
                 self.close()
 
-
-#            if action in [ xbmcgui.ACTION_MOVE_LEFT ] :
-#                #show side menu panel
-#            #    self.setFocusId(self.SIDE_SLIDE_PANEL)
-#                #right_button_action=item.getProperty('right_button_action')
-#                #log( "   LEFT pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, right_button_action )   )
-#                #xbmc.executebuiltin( right_button_action  )
-#
-#                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=zoom_n_slide&url=d:\\test4.jpg&name=2988&type=5312)"  )
-#                #xbmc.executebuiltin( "RunAddon(script.reddit.reader, ?mode=molest_xml)"  )
-
             if action in [xbmcgui.ACTION_CONTEXT_MENU]:
-                import ast
-                cxm_string=item.getProperty('context_menu')
-                #log(repr(cxm_string))
-                #cxm=ast.literal_eval(cxm_string)
-                li=[]
-                for label, action in ast.literal_eval(cxm_string):
-                    liz=xbmcgui.ListItem(label=label,
-                         label2='',
-                         path=action)
-                    li.append(liz)
-                    #log(repr(cxm))
-                cxm=contextMenu('srr_DialogContextMenu.xml',addon_path,listing=li)
-                cxm.doModal()
-                del cxm
+                self.pop_context_menu(item)
 
             elif action == xbmcgui.ACTION_MOVE_LEFT:
                 comments_action=item.getProperty('comments_action')
@@ -518,6 +522,20 @@ class listSubRedditGUI(cGUI):
                 self.busy_execute_sleep(di_url,500,True )
             else:
                 self.busy_execute_sleep(di_url,5000,False )
+
+    def get_more_link_info(self,selected_item):
+        #preserved for example
+#        #only youtube is supported for now
+#        from domains import ClassYoutube
+#        link_url=selected_item.getProperty('link_url')
+#        match=re.compile( ClassYoutube.regex, re.I).findall( link_url )
+#        #log('***** ' + repr(link_url))
+#        if match:
+#            #log('***** isYouTubeable' + repr(link_url))
+#            yt=ClassYoutube(link_url)
+#            links_dictList=yt.get_more_info()  #returns a list of dict same as one used for albums
+        pass
+
 
 #    def play_from_here(self):
 #        i=self.gui_listbox.getSelectedPosition()
@@ -729,7 +747,9 @@ class comments_GUI2(cGUI):
 
         if self.title_bar_text:
             self.ctl_title_bar = self.getControl(1)
-            self.ctl_title_bar.setLabel(self.title_bar_text)
+            #self.ctl_title_bar.setLabel(self.title_bar_text)
+            self.ctl_title_bar.setText(self.title_bar_text)
+
 
         #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
         #url="http://i.imgur.com/ARdeL4F.mp4"

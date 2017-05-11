@@ -113,6 +113,16 @@ msgctxt "#32024"
 msgid "Gathering icons.. %s"
 msgstr ""
 
+#: used in context menu.
+msgctxt "#32046"
+msgid "More from this channel"
+msgstr ""
+
+#: used in context menu.
+msgctxt "#32047"
+msgid "Show related videos"
+msgstr ""
+
 #: used in context menu.  slideshow
 msgctxt "#32048"
 msgid "Slideshow"
@@ -170,6 +180,7 @@ msgid "Reddit: Unsave this post"
 msgstr ""
 
 
+
 #begin strings used in pretty date to indicate how long ago a post is posted (keep these strings short and similar length)
 msgctxt "#32060"
 msgid "just now"
@@ -203,14 +214,17 @@ msgctxt "#32067"
 msgid " days ago"
 msgstr ""
 
+#see also #32075
 msgctxt "#32068"
-msgid " wks ago"
+msgid " weeks ago"
 msgstr ""
 
+#see also #32076
 msgctxt "#32069"
 msgid " months ago"
 msgstr ""
 
+#see also #32077
 msgctxt "#32070"
 msgid " years ago"
 msgstr ""
@@ -232,6 +246,18 @@ msgstr ""
 
 msgctxt "#32074"
 msgid "Reload"
+msgstr ""
+
+msgctxt "#32075"
+msgid "A week ago"
+msgstr ""
+
+msgctxt "#32076"
+msgid "A month ago"
+msgstr ""
+
+msgctxt "#32077"
+msgid "A year ago"
 msgstr ""
 
 

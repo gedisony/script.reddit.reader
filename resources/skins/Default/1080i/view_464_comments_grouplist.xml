@@ -398,14 +398,13 @@
 					<texturenofocus>-</texturenofocus>
 				</control-->
 
-				<control type="label" id="1">
-					<top>10</top>
+				<control type="textbox" id="1">
+					<top>0</top>
 					<left>85</left>
-					<height>66</height>
+					<height>76</height>
 					<width>1500</width>
-					<scroll>true</scroll>
-					<scrollspeed>50</scrollspeed>
-       				<scrollsuffix>           - </scrollsuffix>						
+					<autoscroll delay="3000" time="2000" repeat="4000">!Container(55).OnNext+!Container(55).OnPrevious</autoscroll>
+					<aligny>center</aligny>
        				<label></label>
 				</control>
 

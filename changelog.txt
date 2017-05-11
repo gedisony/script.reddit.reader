@@ -1,5 +1,13 @@
+0.9.4 (05-11-2017)
+  - youtube posts: context menu; more videos from this channel, more related videos
+  - updated youtube parsing
+  - new initial screen(index) ui
+  - ability to delete cache, subreddit image cache and subreddit shortcuts in setting
+
+  - add requests-cache
+  - add ability to filter out comment links
   - comment grouplist in view comments gui now scrolls back to top
-  - update album mode on main screen
+  - album mode on main screen:
     - can call viewImage on individual images
     - trick kodi to pre-load next album image
   - update the viewAlbum gui to also pre-load next image

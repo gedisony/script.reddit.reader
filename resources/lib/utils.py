@@ -141,10 +141,20 @@ def pretty_datediff(dt1, dt2):
         if day_diff < 7:
             return str(day_diff) + translation(32067)      #" days ago"
         if day_diff < 31:
-            return str(day_diff / 7) + translation(32068)  #" wks ago"
+            if day_diff / 7 < 2:
+                return translation(32075)  #"a wk ago"
+            else:
+                return str(day_diff / 7) + translation(32068)  #" wks ago"
         if day_diff < 365:
-            return str(day_diff / 30) + translation(32069) #" months ago"
-        return str(day_diff / 365) + translation(32070)    #" years ago"
+            if day_diff / 30 < 2:
+                return translation(32076) #"a month ago"
+            else:
+                return str(day_diff / 30) + translation(32069) #" months ago"
+        else:
+            if (day_diff / 365) < 2:
+                return translation(32077)    #"a year ago"
+            else:
+                return str(day_diff / 365) + translation(32070)    #" years ago"
     except:
         pass
 
@@ -729,12 +739,13 @@ def dictlist_to_listItems(dictlist):
     for idx, d in enumerate(dictlist):
         label=d.get('li_label')
         label2=d.get('li_label2')
-        dictlist_to_listItems
+        #li_iconImage=d.get('li_iconImage')
         ti=d.get('li_thumbnailImage')
         media_url=d.get('DirectoryItem_url')
         media_type=d.get('type')
         media_thumb=d.get('thumb')
         isPlayable=d.get('isPlayable')
+        link_action=d.get('link_action')
 
         #Error Type: <type 'exceptions.TypeError'> cannot concatenate 'str' and 'list' objects
         #log('  dictlist_to_listItems list:'+ media_url + "  " + repr(media_type) )  # ****** don't forget to add "[0]" when using parseDOM    parseDOM(div,"img", ret="src")[0]
@@ -744,23 +755,30 @@ def dictlist_to_listItems(dictlist):
         #  combine title and description without [CR] if label is empty. [B]$INFO[Container(53).ListItem.Label][/B][CR]$INFO[Container(53).ListItem.Plot]
         #  new note: this is how it is done:
         #     $INFO[Container(53).ListItem.Label,[B],[/B][CR]] $INFO[Container(53).ListItem.Plot]  #if the infolabel is empty, nothing is printed for that block
-        combined = '[B]'+ d['li_label2'] + "[/B][CR]" if d['li_label2'] else ""
-        combined += d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
-        d['infoLabels']['plot'] = combined
+        #combined = "[B]{}[/B][CR]".format(label2) if label2 else ""
+        #combined = d['infoLabels'].get('plot') if d['infoLabels'].get('plot') else ""
+        #d['infoLabels']['plot'] = combined
 
         liz=xbmcgui.ListItem(label=label, label2=label2)
 
         if media_type==sitesBase.TYPE_VIDEO:
+            if link_action:
+                isPlayable='false'          #if there's a link_action then media_url is not straight up playable
+            else:
+                link_action='playYTDLVideo' #default action is to send link to ytdl
+
             if isPlayable=='true':
                 liz.setProperty('item_type','playable')
                 liz.setProperty('onClick_action', media_url )
                 liz.setProperty('is_video','true')
             else:
                 liz.setProperty('item_type','script')
-                liz.setProperty('onClick_action', build_script('playYTDLVideo', media_url,'',media_thumb) )
+                liz.setProperty('onClick_action', build_script(link_action, media_url,'',media_thumb) )
         elif media_type==sitesBase.TYPE_IMAGE:
             liz.setProperty('item_type','script')
             liz.setProperty('onClick_action', build_script('viewImage', media_url,'',media_thumb) )
+
+        liz.setProperty('link_url', media_url )   #added so we have a way to retrieve the link
 
         liz.setInfo( type='video', infoLabels= d['infoLabels'] ) #this tricks the skin to show the plot. where we stored the picture descriptions
         #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })

@@ -586,12 +586,20 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
         label_search+=' {}'.format(colored_subreddit_full)
         cxm_list.append( (        label_search, build_script("search", '', subreddit)  ) )
 
+    from domains import ClassYoutube
+    match=re.compile( ClassYoutube.regex, re.I).findall( link_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
+    if match:
+        #Explore more from this video
+        cxm_list.append( (translation(32046)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
+        cxm_list.append( (translation(32047)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
+
     return cxm_list
 
 def listLinksInComment(url, name, type_):
     from guis import progressBG
     from reddit import reddit_request
-    from utils import clean_str,remove_duplicates
+    from utils import clean_str,remove_duplicates, is_filtered
+    from default import comments_link_filter
 
     log('listLinksInComment:%s:%s' %(type_,url) )
 
@@ -672,8 +680,14 @@ def listLinksInComment(url, name, type_):
         filtered_posts=0
         for idx, h in enumerate(harvest):
             comment_score=h[0]
+            link_url=h[2]
             if comment_score < int_CommentTreshold:
                 log('    comment score %d < %d, skipped' %(comment_score,int_CommentTreshold) )
+                filtered_posts+=1
+                continue
+
+            if is_filtered(comments_link_filter,link_url):
+                log('    [{}] is hidden by comments_link_filter'.format(link_url))
                 filtered_posts+=1
                 continue
 
@@ -681,6 +695,8 @@ def listLinksInComment(url, name, type_):
             t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter), name='#t%.2d'%idx)
             c_threads.append(t)
             t.start()
+
+        #loading_indicator.update(20,'Filtered %d comments' %(filtered_posts) )
 
         #check the queue to determine progress
         break_counter=0 #to avoid infinite loop
@@ -727,6 +743,7 @@ def listLinksInComment(url, name, type_):
 # this portion is abandoned for now. initial plan was to textbox with auto-height in a grouplist to mimic the comment tree but cannot figure out how links can be followed.
     from guis import comments_GUI2
     ui = comments_GUI2('view_464_comments_grouplist.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
+    #ui = comments_GUI2('aaa.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text=post_title
     ui.doModal()
     del ui
@@ -747,7 +764,6 @@ def listLinksInComment(url, name, type_):
 def reddit_comment_worker(idx, h, q_out,submitter):
     from domains import parse_reddit_link, sitesBase
     from utils import format_description, ret_info_type_icon, build_script, is_filtered
-    from default import comments_link_filter
 #         h[0]=score,
 #         h[1]=link_desc,
 #         h[2]=link_http,
@@ -770,10 +786,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         author=h[7]
 
         domain=''
-        if is_filtered(comments_link_filter,link_url):
-            log('  [{}] is hidden by comments_link_filter'.format(link_url))
-            link_url=None
-        elif link_url.startswith('/r/'):
+        if link_url.startswith('/r/'):
             domain='subreddit'
         elif link_url.startswith('/u/'):
             domain='redditor'

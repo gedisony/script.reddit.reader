@@ -512,11 +512,11 @@
 					<control type="group">
 						<animation type="Focus">
 							<effect type="zoom" start="100" end="170" time="200" tween="sine" easing="inout" center="20,10"/>
-							<effect type="fade" start="20" end="100" time="100" />
+							<effect type="fade" start="20" end="100" time="100" tween="cubic" easing="out"/>
 						</animation>
 						<animation type="UnFocus">
 							<effect type="zoom" start="170" end="100" time="200" tween="sine" easing="inout" center="20,10"/>
-							<effect type="fade" start="100" end="20" time="100" />
+							<effect type="fade" start="100" end="20" time="100" tween="cubic" easing="in"/>
 						</animation>
 
 						<control type="image">

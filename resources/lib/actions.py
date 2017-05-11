@@ -4,6 +4,8 @@ import xbmcgui
 #import xbmcvfs
 import sys
 import shutil, os
+import re
+import pprint
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
 from utils import xbmc_busy, log, translation, xbmc_notify
@@ -433,7 +435,6 @@ def playYTDLVideo(url, name, type_):
 
     from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
     from urlparse import urlparse, parse_qs
-    import pprint
 
     o = urlparse(url)
     query = parse_qs(o.query)
@@ -471,7 +472,7 @@ def playYTDLVideo(url, name, type_):
         #link_type=ydl_info.get("_type")
         #entries=ydl_info.get('entries')
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
-        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=2) )
+        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         if video_index > 0:
@@ -640,6 +641,39 @@ def delete_setting_file(url,name,action_type):
         xbmc_notify("Deleting", '..'+file_to_delete[-30:])
     except OSError as e:
         xbmc_notify("Error:", str(e))
+
+def listRelatedVideo(url,name,type_):
+    #type_: 'channel' -other videos in the channel
+    #       'related' -related videos
+    #only youtube is supported for now
+    from domains import ClassYoutube
+    from utils import dictlist_to_listItems, build_script
+
+    match=re.compile( ClassYoutube.regex, re.I).findall( url )
+    if match:
+        #log('***** isYouTubeable' + repr(link_url))
+        yt=ClassYoutube(url)
+        links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+
+        #log(pprint.pformat(links_dictList))
+        directory_items=dictlist_to_listItems(links_dictList)
+        for li in directory_items:
+            link_url=li.getProperty('link_url')
+
+            cxm_list=[]
+            if type_=='channel':
+                cxm_list.append( (translation(32047)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
+            else:
+                cxm_list.append( (translation(32046)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
+                cxm_list.append( (translation(32047)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
+            li.setProperty('context_menu', str(cxm_list) )
+
+        from guis import cGUI
+        ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+        ui.include_parent_directory_entry=False
+
+        ui.doModal()
+        del ui
 
 if __name__ == '__main__':
     pass
