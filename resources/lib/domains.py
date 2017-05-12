@@ -283,7 +283,7 @@ def url_resolver_support(link_url):
     return False
 
 class ClassYoutube(sitesBase):
-    regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
+    regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
     video_id=''
 
     api_key='AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI'
@@ -337,7 +337,9 @@ class ClassYoutube(sitesBase):
         if not yt_url:
             yt_url=self.media_url
 
-        video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
+        #video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
+        #added parsing for video_id in kodi_youtube_plugin url
+        video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/|plugin:\/\/plugin\.video\.youtube\/play\/\?video_id=)([a-zA-Z0-9_-]{11})', re.DOTALL)
 
         match = video_id_regex.findall(yt_url)
         if match:
@@ -353,6 +355,8 @@ class ClassYoutube(sitesBase):
                 match = video_id_regex.findall('youtube.com'+u)
                 if match:
                     self.video_id=match[0]
+                else:
+                    log("    Can't get youtube video id:"+yt_url)
 
     def get_thumb_url(self):
         """
@@ -387,11 +391,12 @@ class ClassYoutube(sitesBase):
     def get_links_in_description(self, return_channelID_only=False):
         links=[]
         self.get_video_id()
+        youtube_api_key=self.ret_api_key()
 
         if self.video_id:
             # Get info for this YouTube video, need the channel id for later
             query_params = {
-                'key': self.api_key,
+                'key': youtube_api_key,
                 'id': self.video_id,
                 'fields':'items(snippet(channelId,title,description))',  #use '*' to get all fields
                 'part': 'id,snippet',
@@ -429,8 +434,14 @@ class ClassYoutube(sitesBase):
                                         }  )
                 return links
 
-    def get_more_info(self, type_='channel'):
+    def ret_api_key(self):
+        youtube_api_key = addon.getSetting("youtube_api_key")
+        if not youtube_api_key:
+            youtube_api_key=self.api_key
+        return youtube_api_key
 
+    def get_more_info(self, type_='channel'):
+        youtube_api_key=self.ret_api_key()
         links=[]
         self.get_video_id()
 
@@ -438,7 +449,7 @@ class ClassYoutube(sitesBase):
             if type_=='channel':
                 channel_id=self.get_links_in_description(return_channelID_only=True)
                 query_params = {
-                    'key': self.api_key,
+                    'key': youtube_api_key,
                     'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
                     'type': 'video',         #video,channel,playlist.
         #            'kind': 'youtube#video',
@@ -450,7 +461,7 @@ class ClassYoutube(sitesBase):
                 }
             else:  #if type_=='related':
                 query_params = {    #https://developers.google.com/youtube/v3/docs/search/list#relatedToVideoId
-                    'key': self.api_key,
+                    'key': youtube_api_key,
                     'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
                     'type': 'video',
                     'maxResults': '50',
@@ -462,8 +473,8 @@ class ClassYoutube(sitesBase):
             links.extend( self.search(query_params) )
 
             #log(repr(links))
-        self.assemble_images_dictList(links)
-        return self.dictList
+            self.assemble_images_dictList(links)
+            return self.dictList
 
     def search(self, query_params):
         links=[]

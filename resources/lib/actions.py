@@ -654,26 +654,30 @@ def listRelatedVideo(url,name,type_):
         #log('***** isYouTubeable' + repr(link_url))
         yt=ClassYoutube(url)
         links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+        if links_dictList:
+            #log(pprint.pformat(links_dictList))
+            directory_items=dictlist_to_listItems(links_dictList)
+            for li in directory_items:
+                link_url=li.getProperty('link_url')
 
-        #log(pprint.pformat(links_dictList))
-        directory_items=dictlist_to_listItems(links_dictList)
-        for li in directory_items:
-            link_url=li.getProperty('link_url')
+                cxm_list=[]
+                if type_=='channel':
+                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
+                else:
+                    cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
+                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
+                li.setProperty('context_menu', str(cxm_list) )
 
-            cxm_list=[]
-            if type_=='channel':
-                cxm_list.append( (translation(32047)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
-            else:
-                cxm_list.append( (translation(32046)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
-                cxm_list.append( (translation(32047)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
-            li.setProperty('context_menu', str(cxm_list) )
+            from guis import cGUI
+            ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+            ui.include_parent_directory_entry=False
 
-        from guis import cGUI
-        ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
-        ui.include_parent_directory_entry=False
-
-        ui.doModal()
-        del ui
+            ui.doModal()
+            del ui
+        else:
+            xbmc_notify('Nothing to list', url)
+    else:
+        xbmc_notify('cannot identify youtube url', url)
 
 if __name__ == '__main__':
     pass

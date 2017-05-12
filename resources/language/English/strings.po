@@ -113,71 +113,7 @@ msgctxt "#32024"
 msgid "Gathering icons.. %s"
 msgstr ""
 
-#: used in context menu.
-msgctxt "#32046"
-msgid "More from this channel"
-msgstr ""
-
-#: used in context menu.
-msgctxt "#32047"
-msgid "Show related videos"
-msgstr ""
-
-#: used in context menu.  slideshow
-msgctxt "#32048"
-msgid "Slideshow"
-msgstr ""
-
-#: used in context menu.  show more posts by author
-msgctxt "#32049"
-msgid "More by"
-msgstr ""
-
-#: used in context menu.
-msgctxt "#32050"
-msgid "Show comments"
-msgstr ""
-
-#: used in context menu. "Go to r/funny". <-- generate new list from r/funny subreddit
-msgctxt "#32051"
-msgid "Go to"
-msgstr ""
-
-msgctxt "#32052"
-msgid "Search"
-msgstr ""
-
-#: shows up when user picks /r/random or /r/randnsfw
-msgctxt "#32053"
-msgid "More"
-msgstr ""
-
-msgctxt "#32054"
-msgid "Autoplay all"
-msgstr ""
-
-msgctxt "#32055"
-msgid "Autoplay after"
-msgstr ""
-
-#: used in context menu. add r/funny to shortcuts list
-msgctxt "#32056"
-msgid "Add %s to shortcuts"
-msgstr ""
-
-#: used in context menu. Hide r/writingprompt posts (do not show posts from r/writingprompt) or (do not show posts from fakenews.com)
-msgctxt "#32057"
-msgid "Hide %s posts"
-msgstr ""
-
-#: used in context menu.
-msgctxt "#32058"
-msgid "Reddit: Save this post"
-msgstr ""
-
-msgctxt "#32059"
-msgid "Reddit: Unsave this post"
-msgstr ""
+#32025-32059 unused
 
 
 
@@ -281,11 +217,11 @@ msgid "Skip subreddit selection screen"
 msgstr ""
 
 msgctxt "#32104"
-msgid "Hide posts by domain (csv)"
+msgid "Posts with links to websites in this list will be hidden (csv)"
 msgstr ""
 
 msgctxt "#32105"
-msgid "Hide posts by subreddit (csv)"
+msgid "Posts from subreddit(s) in this list will be hidden (csv)"
 msgstr ""
 
 msgctxt "#32106"
@@ -305,7 +241,7 @@ msgid "Main GUI skin"
 msgstr ""
 
 msgctxt "#32109"
-msgid "Hide comment links with these words(csv)"
+msgid "Hide links in comment with these words (csv)"
 msgstr ""
 
 #32109-32111 empty
@@ -357,9 +293,12 @@ msgctxt "#32158"
 msgid "Cache links parsing (requests-cache)"
 msgstr ""
 
+msgctxt "#32159"
+msgid "Youtube API key"
+msgstr ""
 
 
-#error message popup when youtube-dl can't get playable url 
+#error message popup when youtube-dl can't get playable url
 msgctxt "#32192"
 msgid "Failed to get playable url"
 msgstr ""
@@ -536,4 +475,123 @@ msgstr ""
 
 msgctxt "#32460"
 msgid "Allow for DASH video if available"
+msgstr ""
+
+
+
+#settings category. - customize context menu entries.
+msgctxt "#32500"
+msgid "Context menu"
+msgstr ""
+
+msgctxt "#32501"
+msgid "Customize what shows up on the context menu"
+msgstr ""
+
+msgctxt "#32502"
+msgid "html to text"
+msgstr ""
+
+msgctxt "#32503"
+msgid "Open link in browser"
+msgstr ""
+
+msgctxt "#32504"
+msgid "Show comments"
+msgstr ""
+
+msgctxt "#32505"
+msgid "More posts by redditor"
+msgstr ""
+
+#: used in actual context menu.  show more posts by {author}
+msgctxt "#32506"
+msgid "More by [COLOR gray]{author}[/COLOR]"
+msgstr ""
+
+msgctxt "#32507"
+msgid "Go to [COLOR cadetblue]r/subreddit[/COLOR]"
+msgstr ""
+
+#: used in actual context menu.  "Go to r/funny". <-- generate new list from r/funny subreddit
+msgctxt "#32508"
+msgid "Go to [COLOR cadetblue]r/{subreddit}[/COLOR]"
+msgstr ""
+
+msgctxt "#32509"
+msgid "More from [COLOR tan]domain[/COLOR]"
+msgstr ""
+
+#: used in actual context menu.   show more posts from this domain
+msgctxt "#32510"
+msgid "Go to [COLOR tan]{domain}[/COLOR]"
+msgstr ""
+
+#: shows up when user picks /r/random or /r/randnsfw
+msgctxt "#32511"
+msgid "More"
+msgstr ""
+
+msgctxt "#32512"
+msgid "Autoplay"
+msgstr ""
+
+msgctxt "#32513"
+msgid "Autoplay after"
+msgstr ""
+
+msgctxt "#32514"
+msgid "Slideshow"
+msgstr ""
+
+#: e.g: add r/funny to index page
+msgctxt "#32515"
+msgid "Add subreddit to shortcuts"
+msgstr ""
+
+msgctxt "#32516"
+msgid "Add [COLOR cadetblue]r/{subreddit}[/COLOR] to shortcuts"
+msgstr ""
+
+msgctxt "#32517"
+msgid "/new"
+msgstr ""
+
+#: used in context menu. Hide r/writingprompt posts (do not show posts from r/writingprompt) or (do not show posts from fakenews.com)
+msgctxt "#32518"
+msgid "Add this subreddit/domain to filters"
+msgstr ""
+
+msgctxt "#32519"
+msgid "Filter {} posts"
+msgstr ""
+
+msgctxt "#32520"
+msgid "Search"
+msgstr ""
+
+msgctxt "#32521"
+msgid "Youtube channel/related videos"
+msgstr ""
+
+msgctxt "#32522"
+msgid "More from this channel (YouTube)"
+msgstr ""
+
+msgctxt "#32523"
+msgid "Show related videos (YouTube)"
+msgstr ""
+
+
+#: used in context menu. (not implemented in reddit.reader)
+msgctxt "#30058"
+msgid "Reddit: Save this post"
+msgstr ""
+
+msgctxt "#30059"
+msgid "Reddit: Unsave this post"
+msgstr ""
+
+msgctxt "#30510"
+msgid "Save/Unsave post on Reddit (needs OAuth)"
 msgstr ""

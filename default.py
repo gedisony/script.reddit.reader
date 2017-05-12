@@ -128,7 +128,7 @@ if __name__ == '__main__':
     from resources.lib.slideshow import autoSlideshow
     from resources.lib.autoplay import autoPlay
     from resources.lib.converthtml import readHTML
-    from resources.lib.utils import addtoFilter
+    from resources.lib.utils import addtoFilter,open_web_browser
     from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,\
     loopedPlayback,error_message,viewImage, listAlbum, viewTallImage,update_youtube_dl_core,\
     playVideo, playYTDLVideo, playURLRVideo,searchReddits, delete_setting_file, listRelatedVideo
@@ -164,5 +164,6 @@ if __name__ == '__main__':
                     ,'reddit_save'          : reddit_save
                     ,'delete_setting_file'  : delete_setting_file
                     ,'listRelatedVideo'     : listRelatedVideo
+                    ,'openBrowser'          : open_web_browser
                     }
     plugin_modes[mode](url,name,type_)
