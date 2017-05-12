@@ -168,26 +168,7 @@ class cGUI(xbmcgui.WindowXML):
                 #"script.web.viewer, http://m.reddit.com/login"
                 #log(  di_url )
 
-                #xbmc.executebuiltin("ActivateWindow(busydialog)")
-                #xbmc.executebuiltin( di_url  )
-                #xbmc.sleep(5000)
-                #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-
                 self.busy_execute_sleep(di_url, 3000, close=False)   #note: setting close to false seems to cause kodi not to close properly (will wait on this thread)
-
-                #modes=['listImgurAlbum','viewImage','listLinksInComment','playTumblr','playInstagram','playFlickr' ]
-                #if any(x in di_url for x in modes):
-                    #viewImage uses xml gui, xbmc.Player() sometimes report an error after 'play'-ing
-                    #   use RunPlugin to avoid this issue
-
-
-
-                #xbmcplugin.setResolvedUrl(self.pluginhandle, True, item)
-                #xbmc.executebuiltin('RunPlugin(%s)' %di_url )  #works for showing image(with gui) but doesn't work for videos(Attempt to use invalid handle -1)
-                #xbmc.executebuiltin('RunScript(%s)' %di_url )   #nothing works
-
-                #xbmc.executebuiltin('RunAddon(plugin.video.reddit_viewer)'  ) #does nothing. adding the parameter produces error(unknown plugin)
-                #xbmc.executebuiltin('ActivateWindow(video,%s)' %di_url )       #Can't find window video   ...#Activate/ReplaceWindow called with invalid destination window: video
 
         elif controlID == 5:
             pass

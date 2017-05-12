@@ -762,9 +762,9 @@ def dictlist_to_listItems(dictlist):
         liz=xbmcgui.ListItem(label=label, label2=label2)
 
         if media_type==sitesBase.TYPE_VIDEO:
-            if link_action:
-                isPlayable='false'          #if there's a link_action then media_url is not straight up playable
-            else:
+#            if link_action or link_action!='playable':
+#                isPlayable='false'          #if there's a link_action then media_url is not straight up playable
+            if not link_action:
                 link_action='playYTDLVideo' #default action is to send link to ytdl
 
             if isPlayable=='true':
