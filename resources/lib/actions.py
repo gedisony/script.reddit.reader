@@ -4,7 +4,7 @@ import xbmcgui
 #import xbmcvfs
 import sys
 import shutil, os
-import re
+import re, urllib
 import pprint
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
@@ -647,7 +647,8 @@ def listRelatedVideo(url,name,type_):
     #       'related' -related videos
     #only youtube is supported for now
     from domains import ClassYoutube
-    from utils import dictlist_to_listItems, build_script
+    from utils import dictlist_to_listItems
+    from ContextMenus import build_youtube_context_menu_entries
 
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
     if match:
@@ -659,14 +660,9 @@ def listRelatedVideo(url,name,type_):
             directory_items=dictlist_to_listItems(links_dictList)
             for li in directory_items:
                 link_url=li.getProperty('link_url')
+                video_id=li.getProperty('video_id')
 
-                cxm_list=[]
-                if type_=='channel':
-                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
-                else:
-                    cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
-                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
-                li.setProperty('context_menu', str(cxm_list) )
+                li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id)) )
 
             from guis import cGUI
             ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)

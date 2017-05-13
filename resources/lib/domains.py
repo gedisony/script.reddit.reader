@@ -35,7 +35,8 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'height'
       ,'description'
       ,'link_action'
-      ,'channel_id'
+      ,'channel_id'         #used in youtube videos
+      ,'video_id'           #used in youtube videos
       ]
 
 ytdl_sites=[]
@@ -238,6 +239,7 @@ class sitesBase(object):
                 isPlayable=item.get('isPlayable')
                 link_action=item.get('link_action','')
                 channel_id=item.get('channel_id','')
+                video_id=item.get('video_id','')
 
             infoLabels={ "Title": title, "plot": desc, "PictureDesc": desc }
             e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
@@ -255,6 +257,7 @@ class sitesBase(object):
                ,desc                    #'description'
                ,link_action             #'link_action'
                ,channel_id              #'channel_id'
+               ,video_id                #'video_id'
                 ]
             self.dictList.append(dict(zip(keys, e)))
 
@@ -295,7 +298,7 @@ class ClassYoutube(sitesBase):
         o = urlparse.urlparse(media_url)
         query = urlparse.parse_qs(o.query)
 
-        self.get_video_id()
+        self.video_id=self.get_video_id( self.media_url )
         #log('      youtube video id:' + self.video_id )
 
         if self.video_id:
@@ -332,10 +335,8 @@ class ClassYoutube(sitesBase):
             #log('    returning:{} {}'.format(link_actn, link_))
             return link_actn, link_
 
-
-    def get_video_id(self, yt_url=None):
-        if not yt_url:
-            yt_url=self.media_url
+    @classmethod
+    def get_video_id(self, yt_url):
 
         #video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
         #added parsing for video_id in kodi_youtube_plugin url
@@ -343,7 +344,7 @@ class ClassYoutube(sitesBase):
 
         match = video_id_regex.findall(yt_url)
         if match:
-            self.video_id=match[0]
+            video_id=match[0]
         else:
             #log('    second parsing for video id:'+yt_url)
             #for parsing this: https://www.youtube.com/attribution_link?a=y08k0cdNBKw&u=%2Fwatch%3Fv%3DQOVrrL5KtsM%26feature%3Dshare%26list%3DPLVonsjaXkSpfuIv02l6IM1pN1Z3IfXWUW%26index%3D4
@@ -354,9 +355,10 @@ class ClassYoutube(sitesBase):
                 #log('   u  '+ repr(u)) #  <--  /watch?v=QOVrrL5KtsM&feature=share&list=PLVonsjaXkSpfuIv02l6IM1pN1Z3IfXWUW&index=4
                 match = video_id_regex.findall('youtube.com'+u)
                 if match:
-                    self.video_id=match[0]
+                    video_id=match[0]
                 else:
                     log("    Can't get youtube video id:"+yt_url)
+        return video_id
 
     def get_thumb_url(self):
         """
@@ -390,7 +392,7 @@ class ClassYoutube(sitesBase):
 
     def get_links_in_description(self, return_channelID_only=False):
         links=[]
-        self.get_video_id()
+        self.video_id=self.get_video_id( self.media_url )
         youtube_api_key=self.ret_api_key()
 
         if self.video_id:
@@ -443,7 +445,7 @@ class ClassYoutube(sitesBase):
     def get_more_info(self, type_='channel'):
         youtube_api_key=self.ret_api_key()
         links=[]
-        self.get_video_id()
+        self.video_id=self.get_video_id( self.media_url )
 
         if self.video_id:
             if type_=='channel':
@@ -513,6 +515,7 @@ class ClassYoutube(sitesBase):
                             'isPlayable': 'true' if link_action==self.DI_ACTION_PLAYABLE else 'false',
                             'link_action':link_action,
                             'channel_id':channel_id,
+                            'video_id':videoId,
                             }  )
         return links
 
@@ -2097,11 +2100,23 @@ class ClassGfycat(sitesBase):
         if self.video_id:
             #log('    video id:' + repr(self.video_id) )
             request_url="https://gfycat.com/cajax/get/" + self.video_id
+            #request_url="https://api.gfycat.com/v1test/gfycats/{gfyid}".format(gfyid=self.video_id)  #this method requires auth token etc.
 
-            content = self.requests_get(request_url)
-            #content = opener.open("http://gfycat.com/cajax/get/"+id).read()
-            #log('gfycat response:'+ content.text)
-            content = content.json()
+            try:
+                content = self.requests_get(request_url)
+                #log('gfycat response:'+ content.text)
+                content = content.json()
+            except requests.exceptions.HTTPError:
+                log('    Error requesting info via api endpoint. Trying actual link: '+media_url)
+                #encountered a link that returns 404 with the api request but exists using browser. https://gfycat.com/gifs/detail/DeliciousBowedAlpinegoat
+                # we will parse it manually
+                r = self.requests_get(media_url)
+                jo=re.compile('___INITIAL_STATE__=({.*});').findall(r.text)
+                if jo:
+                    #import pprint
+                    #log( pprint.pformat(jo[0], indent=1) )
+                    j=json.loads(jo[0])
+                    content=j.get('detail')
 
             gfyItem=content.get('gfyItem')
             if gfyItem:

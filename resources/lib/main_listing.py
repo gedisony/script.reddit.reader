@@ -397,6 +397,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     from utils import ret_info_type_icon, build_script,colored_subreddit
     #from reddit import assemble_reddit_filter_string
     from domains import parse_reddit_link, sitesBase
+    from ContextMenus import build_context_menu_entries
 
     preview_ar=0.0
     DirectoryItem_url=''
@@ -473,7 +474,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
     #log( '          reddit thumb[%s] ' %(iconimage ))
-    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    #og( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
@@ -525,115 +526,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
 
     return liz
 
-def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by):
-    from reddit import assemble_reddit_filter_string, subreddit_in_favorites #, this_is_a_user_saved_list
-    from utils import colored_subreddit, build_script, truncate
-
-    cxm_show_html_to_text     = addon.getSetting("cxm_show_html_to_text") == "true"
-    cxm_show_open_browser     = addon.getSetting("cxm_show_open_browser") == "true"
-    cxm_show_comments         = addon.getSetting("cxm_show_comments") == "true"
-
-    cxm_show_by_author        = addon.getSetting("cxm_show_by_author") == "true"
-    cxm_show_by_subreddit     = addon.getSetting("cxm_show_by_subreddit") == "true"
-    cxm_show_by_domain        = addon.getSetting("cxm_show_by_domain") == "true"
-
-    cxm_show_autoplay         = addon.getSetting("cxm_show_autoplay") == "true"
-    cxm_show_slideshow        = addon.getSetting("cxm_show_slideshow") == "true"
-
-    cxm_show_add_shortcuts    = addon.getSetting("cxm_show_add_shortcuts") == "true"
-
-    #cxm_show_new_from         = addon.getSetting("cxm_show_new_from") == "true"
-
-    cxm_show_filter           = addon.getSetting("cxm_show_filter") == "true"
-    cxm_show_search           = addon.getSetting("cxm_show_search") == "true"
-
-    #cxm_show_reddit_save      = addon.getSetting("cxm_show_reddit_save") == "true"
-    cxm_show_youtube_items    = addon.getSetting("cxm_show_youtube_items") == "true"
-
-
-    s=truncate(subreddit,15)     #crop long subreddit names in context menu
-    colored_subreddit_short=colored_subreddit( s )
-    colored_subreddit_full=colored_subreddit( subreddit )
-    colored_domain_full=colored_subreddit( domain, 'tan',False )
-    post_title_short=truncate(post_title,15)
-    post_author=truncate(posted_by,15)
-
-    label_html_to_text=translation(32502)
-    label_open_browser=translation(32503)
-    label_view_comments=translation(32504)+' ({})'.format(num_comments)
-    label_more_by_author=translation(32506).format(author=post_author)
-    label_goto_subreddit=translation(32508).format(subreddit=subreddit)
-    label_goto_domain=translation(32510).format(domain=domain)
-    label_autoplay_after=translation(32513)+' '+colored_subreddit( post_title_short, 'gray',False )
-
-    label_add_to_shortcuts=translation(32516).format(subreddit=subreddit)
-
-
-    label_search=translation(32052)
-
-    cxm_list=[]
-    if cxm_show_html_to_text:
-        cxm_list.append((label_html_to_text , build_script('readHTML', link_url)         ))
-
-    if cxm_show_open_browser:
-        cxm_list.append((label_open_browser , build_script('openBrowser', link_url)         ))
-
-    if cxm_show_comments:
-        cxm_list.append((label_view_comments , build_script('listLinksInComment', commentsUrl )  ))
-
-    #more by author
-    if GCXM_hasmultipleauthor and cxm_show_by_author:
-        cxm_list.append( (label_more_by_author, build_script("listSubReddit", assemble_reddit_filter_string("","/user/"+posted_by+'/submitted'), posted_by)  ) )
-
-    #more from r/subreddit
-    if GCXM_hasmultiplesubreddit and cxm_show_by_subreddit:
-        cxm_list.append( (label_goto_subreddit, build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit)  ) )
-
-    #more from domain
-    if GCXM_hasmultipledomain and cxm_show_by_domain:
-        cxm_list.append( (   label_goto_domain, build_script("listSubReddit", assemble_reddit_filter_string("",'','',domain), domain)  ) )
-
-    #more random (no setting to disable this)
-    if any(x in GCXM_actual_url_used_to_generate_these_posts.lower() for x in ['/random','/randnsfw']): #if '/rand' in GCXM_actual_url_used_to_generate_these_posts:
-        cxm_list.append( (translation(32511) +' random', build_script('listSubReddit', GCXM_actual_url_used_to_generate_these_posts)) , )  #Reload
-
-    #Autoplay all
-    #Autoplay after post_title
-    #slideshow
-    if cxm_show_autoplay:
-        cxm_list.extend( [
-                        (translation(32512)    , build_script('autoPlay', GCXM_reddit_query_of_this_gui)),
-                        (label_autoplay_after  , build_script('autoPlay', GCXM_reddit_query_of_this_gui.split('&after=')[0]+'&after='+post_id)),
-                        ])
-
-    if cxm_show_slideshow:
-        cxm_list.append( (translation(32514)    , build_script('autoSlideshow', GCXM_reddit_query_of_this_gui)) )
-
-    #Add %s to shortcuts
-    if not subreddit_in_favorites(subreddit) and cxm_show_add_shortcuts:
-        cxm_list.append( (label_add_to_shortcuts, build_script("addSubreddit", subreddit)  ) )
-
-    #Add to subreddit/domain filter
-    if cxm_show_filter:
-        cxm_list.append( (translation(32519).format(colored_subreddit_short), build_script("addtoFilter", subreddit,'','subreddit')  ) )
-        cxm_list.append( (translation(32519).format(colored_domain_full)    , build_script("addtoFilter", domain,'','domain')  ) )
-
-    #Search
-    if cxm_show_search:
-        if GCXM_hasmultiplesubreddit:
-            cxm_list.append( (label_search        , build_script("search", '', '')  ) )
-        else:
-            label_search+=' {}'.format(colored_subreddit_full)
-            cxm_list.append( (        label_search, build_script("search", '', subreddit)  ) )
-
-    if cxm_show_youtube_items:
-        from domains import ClassYoutube
-        match=re.compile( ClassYoutube.regex, re.I).findall( link_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)'
-        if match:
-            cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", link_url, '', 'channel')  ) )
-            cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", link_url, '', 'related')  ) )
-
-    return cxm_list
 
 def listLinksInComment(url, name, type_):
     from guis import progressBG

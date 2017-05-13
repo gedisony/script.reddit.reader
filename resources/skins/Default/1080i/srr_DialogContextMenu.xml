@@ -52,19 +52,19 @@
 				<orientation>vertical</orientation>
 				<focusedlayout height="63">
 					<control type="image">
-						<width>500</width>
+						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="dialog_tint">colors/white.png</texture>
 					</control>
 					<control type="image">
-						<width>500</width>
+						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="FF12A8DA">srr_focus.png</texture>
 						<visible>Control.HasFocus(996)</visible>
 					</control>
 					<control type="label"><!-- ListItem.Label -->
 						<height>63</height>
-						<width>500</width>
+						<width>550</width>
 						<aligny>center</aligny>
 						<align>center</align>
 						<font>font13</font>
@@ -77,13 +77,13 @@
 				</focusedlayout>
 				<itemlayout height="63">
 					<control type="image">
-						<width>500</width>
+						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="dialog_tint">colors/white.png</texture>
 					</control>
 					<control type="label"><!-- ListItem.Label -->
 						<height>63</height>
-						<width>500</width>
+						<width>550</width>
 						<aligny>center</aligny>
 						<align>center</align>
 						<font>font13</font>

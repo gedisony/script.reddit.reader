@@ -563,7 +563,7 @@ msgid "Add this subreddit/domain to filters"
 msgstr ""
 
 msgctxt "#32519"
-msgid "Filter {} posts"
+msgid "Hide {} posts (filter)"
 msgstr ""
 
 msgctxt "#32520"
@@ -582,6 +582,9 @@ msgctxt "#32523"
 msgid "Show related videos (YouTube)"
 msgstr ""
 
+msgctxt "#32524"
+msgid "Search reddit for this video ID"
+msgstr ""
 
 #: used in context menu. (not implemented in reddit.reader)
 msgctxt "#30058"

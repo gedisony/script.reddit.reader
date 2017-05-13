@@ -1,3 +1,10 @@
+0.9.5
+  - ability to customize context menu entries
+  - specify youtube api key
+  - update youtube videoid parsing to include plugin.video.youtube urls
+  - open links in web browser
+  - search reddit for youtube videoid
+  - move context menu functions to a separate file
 0.9.4 (05-11-2017)
   - youtube posts: context menu; more videos from this channel, more related videos
   - updated youtube parsing

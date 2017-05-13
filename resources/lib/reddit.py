@@ -15,6 +15,7 @@ reddit_refresh_token =addon.getSetting("reddit_refresh_token")
 reddit_access_token  =addon.getSetting("reddit_access_token") #1hour token
 
 def reddit_request( url, data=None ):
+    #reddit_refresh_token=''
     #if there is a refresh_token, we use oauth.reddit.com instead of www.reddit.com
     if reddit_refresh_token:
         url=url.replace('www.reddit.com','oauth.reddit.com' )
@@ -447,8 +448,12 @@ def assemble_reddit_filter_string(search_string, subreddit, skip_site_filters=""
                 #url+= "/r/all"
 
         if search_string:
-            search_string = urllib.unquote_plus(search_string)
-            url+= "/search.json?q=" + urllib.quote_plus(search_string)
+            if 'http' in search_string:
+                url+="/submit.json?url="+ urllib.quote_plus(search_string)
+            else:
+                #search_string = urllib.unquote_plus(search_string)
+                url+= "/search.json?q=" + urllib.quote_plus(search_string)
+
         elif skip_site_filters:
             url+= "/.json?"
         else:
