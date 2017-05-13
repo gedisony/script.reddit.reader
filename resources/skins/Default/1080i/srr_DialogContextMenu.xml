@@ -44,12 +44,18 @@
 				<width>500</width>
 				<height>800</height>
 				<texture colordiffuse="dialog_tint">colors/white.png</texture>
+				<visible>false</visible>
 			</control>
 			
 			<control type="list" id="996"><description>This is the main context menu listbox</description>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
 				<focusedlayout height="63">
+					<control type="image">
+						<width>500</width>
+						<height>63</height>
+						<texture colordiffuse="dialog_tint">colors/white.png</texture>
+					</control>
 					<control type="image">
 						<width>500</width>
 						<height>63</height>
@@ -70,6 +76,11 @@
 					</control>
 				</focusedlayout>
 				<itemlayout height="63">
+					<control type="image">
+						<width>500</width>
+						<height>63</height>
+						<texture colordiffuse="dialog_tint">colors/white.png</texture>
+					</control>
 					<control type="label"><!-- ListItem.Label -->
 						<height>63</height>
 						<width>500</width>

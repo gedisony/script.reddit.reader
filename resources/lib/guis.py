@@ -33,6 +33,7 @@ from utils import build_script, generator
 #import xbmcplugin
 
 addon = xbmcaddon.Addon()
+addonID    = addon.getAddonInfo('id')  #script.reddit.reader
 addon_path = addon.getAddonInfo('path')
 addon_name = addon.getAddonInfo('name')
 
@@ -267,6 +268,9 @@ class cGUI(xbmcgui.WindowXML):
             if nsfw:
                 liz.setProperty('nsfw', 'true' )
             listing.append(liz)
+
+        li_setting=compose_list_item( "Settings", "Program", "icon_settings.png", "script", "Addon.OpenSettings(%s)"%addonID )
+        listing.append(li_setting)
 
         return listing
 
