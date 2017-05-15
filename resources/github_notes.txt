@@ -1,3 +1,23 @@
+delete:
+ .pyo files
+ icon.pdn
+ psd files in addons\script.reddit.reader\resources\skins\Default\media
+ .git
+ .settings
+ .gitignore
+ .pydevproject
+ .project
+ 
+open notepad ++
+ search in files :..\kodi stuff\script.reddit.reader
+ 
+ search for comments (regex)-->    ^\s*\#.*?(?=\r?$)
+ replace with nothing (put the first few lines in file back)
+ 
+addon.xml
+ change python version to 2.25  (for krypton)
+ 
+change LOGNOTICE to LOGDEBUG in utils.py and guis.py
 
 
 github notes:  (6-27-2016)
@@ -9,7 +29,8 @@ git clone git@github.com:gedisony/repo-scripts.git repo-scripts
 cd repo-scripts
 
 # Assign the original repo to a remote called "upstream"
-git remote add upstream https://github.com/xbmc/repo-plugins.git
+git remote add upstream https://github.com/xbmc/repo-scripts.git                                   not(https://github.com/xbmc/repo-plugins.git)
+
 
 $ git remote -v
 origin  git@github.com:gedisony/repo-plugins.git (fetch)
@@ -19,7 +40,7 @@ upstream        https://github.com/xbmc/repo-plugins.git (push)
 
 
 
-git checkout jarvis
+git checkout krypton
 
 If you cloned a while ago, get the latest changes from upstream:
 
@@ -28,10 +49,12 @@ git fetch upstream
 # Make sure you are on your 'master' branch
 git checkout master
 # Merge upstream changes   ### use this to get your fork in github UP TO DATE with the actual thing on kodi
-git merge upstream/jarvis
+git merge upstream/krypton   <-- errors -->   git reset --hard upstream/krypton  -- <-- force my fork to be same as upstream(kodi)
+
+
 
 #then make our fork up to date with kodis
-git push origin jarvis
+git push origin krypton
 
 
 
