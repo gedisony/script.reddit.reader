@@ -547,7 +547,7 @@ def clean_str(dict_obj, keys_list, default=''):
             else:
                 continue
         return unescape(dd.encode('utf-8'))
-    except AttributeError as e:
+    except (AttributeError,IndexError) as e:
         log( 'clean_str:' + str(e) )
         return default
 
@@ -596,7 +596,7 @@ def colored_subreddit(subreddit,color='cadetblue', add_r=True):
 def truncate(string, length, ellipse='...'):
     return (string[:length] + ellipse) if len(string) > length else string
 
-def xbmc_notify(Line1, line2, time=1000, icon=''):
+def xbmc_notify(Line1, line2, time=2000, icon=''):
     if icon and os.path.sep not in icon:
         icon=os.path.join(addon.getAddonInfo('path'), 'resources','skins','Default','media', icon)
     xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) )
@@ -857,6 +857,31 @@ def get_domain_icon( entry_name, domain ):
             log( "    can't parse icon: get_domain_icon (%s)" %(domain) )
     else:
         log( '    getting get_domain_icon (%s) info:%s' %(domain, r.status_code) )
+
+#https://alexwlchan.net/2016/08/dealing-with-query-strings/
+def set_query_field(url, field, value, replace=False):
+    # Parse out the different parts of the URL.
+
+    components = urlparse.urlparse(url)
+
+    query_pairs = urlparse.parse_qsl(components.query)
+
+    if replace:
+        query_pairs = [(f, v) for (f, v) in query_pairs if f != field]
+    query_pairs.append((field, value))
+
+    new_query_str = urllib.urlencode(query_pairs)
+
+    # Finally, construct the new URL
+    new_components = (
+        components.scheme,
+        components.netloc,
+        components.path,
+        components.params,
+        new_query_str,
+        components.fragment
+    )
+    return urlparse.urlunparse(new_components)
 
 if __name__ == '__main__':
     pass

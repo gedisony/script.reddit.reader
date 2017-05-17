@@ -10,7 +10,6 @@ import urlparse
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
-
 from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent, REQUEST_TIMEOUT
 from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff
 
@@ -307,7 +306,7 @@ class ClassYoutube(sitesBase):
             #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
             #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
             #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
-            if 't' in query:
+            if 't' in query or '#t=' in media_url:
                 return media_url, self.TYPE_VIDEO
             else:
                 return playable_url, self.TYPE_VIDEO
@@ -450,6 +449,8 @@ class ClassYoutube(sitesBase):
         if self.video_id:
             if type_=='channel':
                 channel_id=self.get_links_in_description(return_channelID_only=True)
+                if not channel_id:
+                    raise ValueError('Could not get channel_id')
                 query_params = {
                     'key': youtube_api_key,
                     'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',

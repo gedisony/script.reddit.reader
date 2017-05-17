@@ -61,7 +61,7 @@ git push origin krypton
 
 
 #Create a new branch to contain your new add-on or subsequent update:
-$ git checkout -b script.reddit.reader
+$ git checkout -b script.reddit.readerZZZ
 
 #The branch name isn't really relevant however a good suggestion is to name it like the addon ID.
 
@@ -89,7 +89,7 @@ $ git commit -m "[script.reddit.reader] 0.7.1"  <------- this will now work
 
 #Push your topic branch up to your fork:
 
-git push origin script.reddit.reader      <------- script.reddit.reader is the branch name you've made
+git push origin script.reddit.readerZZZ      <------- script.reddit.readerZZZ is the branch name you've made
 
 #Open a pull request with a clear title and description.
 

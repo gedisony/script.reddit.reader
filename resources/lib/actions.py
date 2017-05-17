@@ -654,24 +654,27 @@ def listRelatedVideo(url,name,type_):
     if match:
         #log('***** isYouTubeable' + repr(link_url))
         yt=ClassYoutube(url)
-        links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
-        if links_dictList:
-            #log(pprint.pformat(links_dictList))
-            directory_items=dictlist_to_listItems(links_dictList)
-            for li in directory_items:
-                link_url=li.getProperty('link_url')
-                video_id=li.getProperty('video_id')
-
-                li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id)) )
-
-            from guis import cGUI
-            ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
-            ui.include_parent_directory_entry=False
-
-            ui.doModal()
-            del ui
-        else:
-            xbmc_notify('Nothing to list', url)
+        try:
+            links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+            if links_dictList:
+                #log(pprint.pformat(links_dictList))
+                directory_items=dictlist_to_listItems(links_dictList)
+                for li in directory_items:
+                    link_url=li.getProperty('link_url')
+                    video_id=li.getProperty('video_id')
+    
+                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id)) )
+    
+                from guis import cGUI
+                ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+                ui.include_parent_directory_entry=False
+    
+                ui.doModal()
+                del ui
+            else:
+                xbmc_notify('Nothing to list', url)
+        except ValueError as e:
+            xbmc_notify('Error', str(e))
     else:
         xbmc_notify('cannot identify youtube url', url)
 

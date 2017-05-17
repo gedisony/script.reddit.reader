@@ -2,7 +2,7 @@
 import xbmc
 import xbmcgui
 import xbmcaddon
-import urllib
+import urllib, urlparse
 import json
 import threading
 import re
@@ -77,7 +77,7 @@ def subreddit_icoheader_banner(subreddit):
 
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
-    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query
+    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query, set_query_field
     from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
 
     global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
@@ -198,21 +198,33 @@ def listSubReddit(url, subreddit_key, type_):
 
     try:
         #this part makes sure that you load the next page instead of just the first
-        after=""
-        after = content['data']['after']
-        if after:
-            if "&after=" in currentUrl:
-                nextUrl = currentUrl[:currentUrl.find("&after=")]+"&after="+after
-            else:
-                nextUrl = currentUrl+"&after="+after
+        after=content['data']['after']
+        o = urlparse.urlparse(currentUrl)
+        current_url_query = urlparse.parse_qs(o.query)
 
-            liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after) )
+        count=current_url_query.get('count')
+        if current_url_query.get('count')==None:
+            #firsttime it is none
+            count=itemsPerPage
+        else:
+            #nexttimes it will be kept incremented with itemsPerPage
+            try: count=int(current_url_query.get('count')[0]) + int(itemsPerPage)
+            except ValueError: count=itemsPerPage
 
-            #for items at the bottom left corner
-            liz.setArt({ "clearart": "DefaultFolderNextSquare.png"  })
-            liz.setInfo(type='video', infoLabels={"Studio":translation(32004)})
-            liz.setProperty('link_url', nextUrl )
-            li.append(liz)
+        nextUrl=set_query_field(currentUrl,'count', count, True)
+        #log('$$$   nextUrl: ' +nextUrl)
+
+        nextUrl=set_query_field(nextUrl, field='after', value=after, replace=True)  #(url, field, value, replace=False):
+        #log('$$$currenturl: ' +currentUrl)
+        #log('$$$   nextUrl: ' +nextUrl)
+
+        liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after) )
+
+        #for items at the bottom left corner
+        liz.setArt({ "clearart": "DefaultFolderNextSquare.png"  })
+        liz.setInfo(type='video', infoLabels={"Studio":translation(32004)})
+        liz.setProperty('link_url', nextUrl )
+        li.append(liz)
 
     except Exception as e:
         log(" EXCEPTzION:="+ str( sys.exc_info()[0]) + "  " + str(e) )

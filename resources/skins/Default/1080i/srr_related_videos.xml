@@ -24,20 +24,8 @@
 			<height>3240</height>
 			<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
 			<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-			<texture colordiffuse="B0FFFFFF">colors/black.png</texture>
+			<texture colordiffuse="B0FFFFFF">srr_SKINDEFAULT.jpg</texture>
 		</control>
-	
-	<control type="image"><description>background image, needs to be same with id=206 for fade effect consistency</description>
-		<top>0</top>
-		<left>0</left>
-		<width>1920</width>
-		<height>1080</height>
-		<aspectratio>stretch</aspectratio>
-		<animation effect="fade" start="100" end="bg_alpha" time="0" condition="Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))">Conditional</animation>
-		<animation effect="fade" start="0" end="100" time="300" condition="Window.Previous(fullscreenvideo) | Window.Previous(startup)">WindowOpen</animation>
-		<texture>$INFO[Window.Property(bg_image)]</texture>
-	</control>
-
 
 	<!--BEGIN include>View_55_WideList</include -->
 		<control type="group">
@@ -59,9 +47,9 @@
 			</control>
 
 			<control type="panel" id="55">
-				<left>20</left>
+				<left>0</left>
 				<top>0</top>
-				<width>1880</width>
+				<width>1902</width>
 				<height>770</height>
 				<preloaditems>true</preloaditems>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
@@ -70,7 +58,10 @@
 				<preloaditems>true</preloaditems>
 
 				<visible>true</visible>
-				<focusedlayout width="620" height="192" >
+				<focusedlayout width="634" height="192" >
+					<control type="image">
+						<texture>srr_dialog-bg.png</texture>
+					</control>
 					<control type="image">
 						<width>620</width>
 						<height>198</height>
@@ -82,7 +73,7 @@
 
 					<control type="group">
 						<control type="image">
-							<left>0</left>
+							<left>24</left>
 							<height>198</height>
 							<width>280</width>
 							<aspectratio aligny="center" align="left">keep</aspectratio>
@@ -90,10 +81,10 @@
 						</control>
 							
 						<control type="textbox"><!-- ListItem.Label -->
-							<left>290</left>
+							<left>310</left>
 							<top>0</top>
 							<height>188</height>
-							<width>330</width>
+							<width>310</width>
 							<aligny>center</aligny>
 							<scrolltime>200</scrolltime>
 							<autoscroll delay="3000" time="2000" repeat="4000">!Container(55).OnNext+!Container(55).OnPrevious</autoscroll>
@@ -103,10 +94,10 @@
 							<shadowcolor>text_shadow</shadowcolor>
 						</control>
 						<control type="label"><!-- ListItem.Label2 -->
-							<left>290</left>
-							<top>162</top>
+							<left>310</left>
+							<top>154</top>
 							<height>43</height>
-							<width>330</width>
+							<width>310</width>
 							<aligny>center</aligny>
 							<font>font10</font>
 							<label>$INFO[ListItem.Label2]</label>
@@ -116,9 +107,13 @@
 					</control>
 				</focusedlayout>
 
-				<itemlayout width="620" height="192" >
+				<itemlayout width="634" height="192" >
 					<control type="image">
-						<left>0</left>
+						<texture>srr_dialog-bg.png</texture>
+					</control>
+				
+					<control type="image">
+						<left>24</left>
 						<height>198</height>
 						<width>280</width>
 						<aspectratio aligny="center" align="left">keep</aspectratio>
@@ -126,10 +121,10 @@
 					</control>
 
 					<control type="textbox"><!-- ListItem.Label -->
-						<left>290</left>
+						<left>310</left>
 						<top>0</top>
 						<height>188</height>
-						<width>330</width>
+						<width>310</width>
 						<aligny>center</aligny>
 						<scrolltime>0</scrolltime>
 						<autoscroll>false</autoscroll>
@@ -139,10 +134,10 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
-						<left>290</left>
-						<top>162</top>
+						<left>310</left>
+						<top>154</top>
 						<height>43</height>
-						<width>330</width>
+						<width>310</width>
 						<aligny>center</aligny>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
@@ -209,11 +204,23 @@
 		<visible>Control.IsVisible(55)</visible>
 	</control>
 
+
+	<control type="group">
+		<left>0</left>
+		<top>760</top>
+		<width>1928</width>
+		<height>320</height>
+		<control type="image">
+			<left>-26</left>
+			<texture>srr_dialog-bg.png</texture>
+		</control>
+
 		<control type="textbox">
-			<left>40</left>
-			<top>760</top>
-			<width>1860</width>
-			<height>320</height>
+			<left>24</left>
+			<top>8</top>
+			<width>1874</width>
+			<height>300</height>
+		
 			<visible>true</visible>
 			<colordiffuse>FFFFFFFF</colordiffuse>
 			<font>font13</font>
@@ -225,7 +232,8 @@
 			<aligny>center</aligny>
 			<animation type="WindowOpen"><effect type="slide" start="0,400" end="0" time="400" tween="cubic" easing="out" /></animation>
 			<animation type="WindowClose"><effect type="slide" start="0" end="0,400" time="400" tween="cubic" easing="out" /></animation>
-		</control>	
+		</control>
+	</control>
 
 
 	</controls>

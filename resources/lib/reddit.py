@@ -610,11 +610,10 @@ def ret_sub_info( subreddit_entry ):
             #we have an entry in our pickle file about the subreddit entry
             if sd.get('entry_name')==subreddit_search:
                 return sd
-    except:
+    except Exception as e:
         #sometimes we get a race condition when the save thread is saving and the index function is listing
         #hopefully the 'global' line up above minimizes this
-        log('**error parsing subredditsPickle (ret_sub_info)')
-        pass
+        log('**error parsing subredditsPickle (ret_sub_info):'+str(e))
 
 def ret_sub_icon(subreddit):
     sub_info=ret_sub_info(subreddit)
