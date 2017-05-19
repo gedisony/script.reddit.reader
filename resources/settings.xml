@@ -85,15 +85,15 @@
         <setting                              type="lsep"        label="32401"               enable="true"   />
         <setting                              type="sep" />
         <setting id="reddit_code"             type="text"        label="32402"  default=""                   />
+        <setting                              type="lsep"        label="32415"               enable="true"   />
+        <setting                              type="sep" />
         <setting                              type="action"      label="32403"  action="RunAddon(script.reddit.reader,mode=get_refresh_token)"/>
         <setting id="reddit_refresh_token"    type="text"        label="32404"  default=""   enable="false"  />
-        <setting                              type="lsep"        label="32405"               enable="true"   />
-        <setting                              type="sep" />
-        <setting                              type="action"      label="32406"  action="RunAddon(script.reddit.reader,mode=get_access_token)"/>
         <setting id="reddit_access_token"     type="text"        label="32407"  default=""   enable="false"  />
         <setting id="reddit_access_token_scope"   type="text"    label="32408"  default=""   enable="false"  />
         <setting id="reddit_access_token_expires" type="text"    label="32409"  default=""   enable="false"  />
         <setting                              type="sep" />
+        <setting                              type="action"      label="32406"  action="RunAddon(script.reddit.reader,mode=get_access_token)"/>
         <setting                              type="action"      label="32410"  action="RunAddon(script.reddit.reader,mode=revoke_refresh_token)"/>
     </category>
 </settings>

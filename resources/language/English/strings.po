@@ -377,15 +377,15 @@ msgid "Reddit Oauth"
 msgstr ""
 
 msgctxt "#32401"
-msgid "[B]Instructions:[/B] https://github.com/gedisony/plugin.video.reddit_viewer/wiki"
+msgid "[B]Instructions:[/B] https://github.com/gedisony/script.reddit.reader/wiki"
 msgstr ""
 
 msgctxt "#32402"
-msgid "code"
+msgid "code*"
 msgstr ""
 
 msgctxt "#32403"
-msgid "[Click here to get Refresh Token with valid code]"
+msgid "[Get refresh token]"
 msgstr ""
 
 msgctxt "#32404"
@@ -393,15 +393,15 @@ msgid "    Refresh token"
 msgstr ""
 
 msgctxt "#32405"
-msgid "Refresh Token is used to get an Access Token. Access Tokens expires in 1 hour."
+msgid ""
 msgstr ""
 
 msgctxt "#32406"
-msgid "[Reddit viewer will automatically get Access Token. Click here to test.]"
+msgid "[Test refresh token]"
 msgstr ""
 
 msgctxt "#32407"
-msgid "Access token (1-hour)"
+msgid "    Access token (1-hour)"
 msgstr ""
 
 msgctxt "#32408"
@@ -413,7 +413,7 @@ msgid "    Valid until"
 msgstr ""
 
 msgctxt "#32410"
-msgid "[Click here to revoke the Refresh Token]"
+msgid "[Revoke refresh token]"
 msgstr ""
 
 msgctxt "#32411"
@@ -430,6 +430,10 @@ msgstr ""
 
 msgctxt "#32414"
 msgid "Are you sure you want to replace it?"
+msgstr ""
+
+msgctxt "#32415"
+msgid "* Make sure to hit [OK] after entering code"
 msgstr ""
 
 # settings category
