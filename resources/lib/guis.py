@@ -288,10 +288,11 @@ class cGUI(xbmcgui.WindowXML):
                      path=action)
                 li.append(liz)
                 #log(repr(cxm))
-            cxm=contextMenu('srr_DialogContextMenu.xml',addon_path,listing=li)
-            cxm.doModal()
-            del cxm
-            del li[:]
+            if len(li)>0:
+                cxm=contextMenu('srr_DialogContextMenu.xml',addon_path,listing=li)
+                cxm.doModal()
+                del cxm
+                del li[:]
 
     def busy_execute_sleep(self,executebuiltin, sleep=500, close=True):
         #
@@ -760,6 +761,7 @@ class comments_GUI2(cGUI):
         focused_control=self.getFocusId()
 
         if focused_control==self.main_control_id:
+            self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
             if item.getProperty('link_url'):
                 self.clear_x_controls()
@@ -770,6 +772,9 @@ class comments_GUI2(cGUI):
 
         if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
             self.close_gui()
+
+        if action in [xbmcgui.ACTION_CONTEXT_MENU]:
+            self.pop_context_menu(item)
 
     def populate_tlc_children(self,tlc_id):
 

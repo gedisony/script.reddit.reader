@@ -1,3 +1,7 @@
+0.9.6
+  - context menu for youtube links in comments gui
+  - recognize youtube channel url, parse channelID and use appropriate context menu
+  - default action for clicking on a youtube channel link is to show the videos on that channel
 0.9.5
   - ability to customize context menu entries
   - specify youtube api key

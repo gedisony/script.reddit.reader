@@ -652,7 +652,7 @@ def listRelatedVideo(url,name,type_):
 
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
     if match:
-        #log('***** isYouTubeable' + repr(link_url))
+        #log('***** isYouTubeable' + repr(url))
         yt=ClassYoutube(url)
         try:
             links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
@@ -662,13 +662,13 @@ def listRelatedVideo(url,name,type_):
                 for li in directory_items:
                     link_url=li.getProperty('link_url')
                     video_id=li.getProperty('video_id')
-    
+
                     li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id)) )
-    
+
                 from guis import cGUI
                 ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
                 ui.include_parent_directory_entry=False
-    
+
                 ui.doModal()
                 del ui
             else:

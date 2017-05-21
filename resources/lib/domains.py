@@ -312,8 +312,14 @@ class ClassYoutube(sitesBase):
                 return playable_url, self.TYPE_VIDEO
         else:
             log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
-            self.link_action='playYTDLVideo'
-            return media_url, self.TYPE_VIDEO
+            channel_id=self.get_channel_id_from_url( self.media_url )
+            if channel_id:
+                log("      got channelID %s" %(channel_id) )
+                self.link_action='listRelatedVideo'
+                return media_url, self.TYPE_VIDEO
+            else:
+                self.link_action='playYTDLVideo'
+                return media_url, self.TYPE_VIDEO
 
     def return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self, video_id=None):
         if not video_id:
@@ -340,7 +346,7 @@ class ClassYoutube(sitesBase):
         #video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
         #added parsing for video_id in kodi_youtube_plugin url
         video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/|plugin:\/\/plugin\.video\.youtube\/play\/\?video_id=)([a-zA-Z0-9_-]{11})', re.DOTALL)
-
+        video_id=''
         match = video_id_regex.findall(yt_url)
         if match:
             video_id=match[0]
@@ -357,7 +363,18 @@ class ClassYoutube(sitesBase):
                     video_id=match[0]
                 else:
                     log("    Can't get youtube video id:"+yt_url)
+
         return video_id
+
+    @classmethod
+    def get_channel_id_from_url(self, yt_url):
+        channel_id=''
+        channel_id_regex=re.compile('(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:channel\/)([a-zA-Z0-9\-]{1,})', re.DOTALL)
+        match = channel_id_regex.findall(yt_url)
+        if match:
+            channel_id=match[0]
+        #log('yt channelID='+repr(channel_id))
+        return channel_id
 
     def get_thumb_url(self):
         """
@@ -381,7 +398,7 @@ class ClassYoutube(sitesBase):
         """
         quality0123=1
         if not self.video_id:
-            self.get_video_id()
+            self.get_video_id(self.media_url)
 
         if self.video_id:
             self.thumb_url='http://img.youtube.com/vi/%s/%d.jpg' %(self.video_id,quality0123)
@@ -393,7 +410,7 @@ class ClassYoutube(sitesBase):
         links=[]
         self.video_id=self.get_video_id( self.media_url )
         youtube_api_key=self.ret_api_key()
-
+        log('get_links_in_description')
         if self.video_id:
             # Get info for this YouTube video, need the channel id for later
             query_params = {
@@ -434,6 +451,12 @@ class ClassYoutube(sitesBase):
                                         'url': l,
                                         }  )
                 return links
+        else:
+            log("  can't get video id")
+            if return_channelID_only:
+                channel_id=self.get_channel_id_from_url( self.media_url )
+                log("    got channel id:"+channel_id)
+                return channel_id
 
     def ret_api_key(self):
         youtube_api_key = addon.getSetting("youtube_api_key")
@@ -441,28 +464,19 @@ class ClassYoutube(sitesBase):
             youtube_api_key=self.api_key
         return youtube_api_key
 
-    def get_more_info(self, type_='channel'):
+    def get_more_info(self, type_='related'):
         youtube_api_key=self.ret_api_key()
         links=[]
+        query_params={}
         self.video_id=self.get_video_id( self.media_url )
-
-        if self.video_id:
-            if type_=='channel':
-                channel_id=self.get_links_in_description(return_channelID_only=True)
-                if not channel_id:
-                    raise ValueError('Could not get channel_id')
-                query_params = {
-                    'key': youtube_api_key,
-                    'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
-                    'type': 'video',         #video,channel,playlist.
-        #            'kind': 'youtube#video',
-                    'maxResults': '50',      # Acceptable values are 0 to 50
-                    'part': 'snippet',
-                    'order': 'date',
-                    'channelId': channel_id,
-        #            'playlistId': 'YOUR-PLAYLIST-ID-HERE',
-                }
-            else:  #if type_=='related':
+        channel_id_from_url=self.get_channel_id_from_url( self.media_url)
+        if type_=='channel':  #here, user specifically asked to show videos in channel via context menu
+            channel_id=self.get_links_in_description(return_channelID_only=True)
+            if not channel_id:
+                raise ValueError('Could not get channel_id')
+            query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id)
+        else:  #if type_=='related':
+            if self.video_id:
                 query_params = {    #https://developers.google.com/youtube/v3/docs/search/list#relatedToVideoId
                     'key': youtube_api_key,
                     'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
@@ -472,12 +486,29 @@ class ClassYoutube(sitesBase):
                     'order': 'date',
                     'relatedToVideoId': self.video_id,
                 }
+            elif channel_id_from_url: #try to see if we were able to parse channel_id from url if no video_id was parsed
+                query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id_from_url)
 
+        if query_params:
             links.extend( self.search(query_params) )
 
             #log(repr(links))
             self.assemble_images_dictList(links)
             return self.dictList
+
+    def build_query_params_for_channel_videos(self,youtube_api_key, channel_id):
+        return  {
+                'key': youtube_api_key,
+                'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
+                'type': 'video',         #video,channel,playlist.
+    #            'kind': 'youtube#video',
+                'maxResults': '50',      # Acceptable values are 0 to 50
+                'part': 'snippet',
+                'order': 'date',
+                'channelId': channel_id,
+    #            'playlistId': 'YOUR-PLAYLIST-ID-HERE',
+            }
+
 
     def search(self, query_params):
         links=[]
