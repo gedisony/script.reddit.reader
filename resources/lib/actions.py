@@ -596,7 +596,7 @@ def update_youtube_dl_core(url,name,action_type):
                 update_dl_status('    New core copied')
                 xbmc.sleep(1000)
                 update_dl_status('Update complete')
-                xbmc.sleep(2000)
+                xbmc.Monitor().waitForAbort(2.0)
                 #ourVersion=ytdl_get_version_info('local')
                 setSetting('ytdl_btn_check_version', "")
                 setSetting('ytdl_btn_download', "")

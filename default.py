@@ -27,11 +27,6 @@ addonID       = addon.getAddonInfo('id')  #script.reddit.reader
 addon_path    = addon.getAddonInfo('path')      #where the addon resides
 profile_path  = addon.getAddonInfo('profile')   #where user settings are stored
 
-#WINDOW        = xbmcgui.Window(10000)
-#technique borrowed from LazyTV.
-#  WINDOW is like a mailbox for passing data from caller to callee.
-#    e.g.: addLink() needs to pass "image description" to viewImage()
-
 #https://github.com/reddit/reddit/wiki/API
 reddit_userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
 reddit_clientID      ="ZEbDJ5DUrguDMA"
@@ -61,21 +56,13 @@ streamable_quality  =["full", "mobile"][istreamable_quality]       #https://stre
 
 REQUEST_TIMEOUT=(5,10) #requests.get timeout in seconds (connect timeout, read timeout) tuple.
 
-#use_ytdl_for_unknown = addon.getSetting("use_ytdl_for_unknown") == "true"
-#use_ytdl_for_unknown_in_comments= addon.getSetting("use_ytdl_for_unknown_in_comments") == "true"
-
-addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
-subredditsFile      = xbmc.translatePath(addonUserDataFolder+"/subreddits")
-subredditsPickle    = xbmc.translatePath(addonUserDataFolder+"/subreddits.pickle")
-CACHE_FILE          = xbmc.translatePath(addonUserDataFolder+"/requests_cache")
-
-#ytdl_psites_file         = xbmc.translatePath(profile_path+"/ytdl_sites_porn")
-default_ytdl_psites_file = xbmc.translatePath(  addon_path+"/resources/ytdl_sites_porn" )
-#ytdl_sites_file          = xbmc.translatePath(profile_path+"/ytdl_sites")
-default_ytdl_sites_file  = xbmc.translatePath(  addon_path+"/resources/ytdl_sites" )
+addonUserDataFolder = xbmc.translatePath(profile_path)
+subredditsFile      = xbmc.translatePath(os.path.join(addonUserDataFolder, 'subreddits'))
+subredditsPickle    = xbmc.translatePath(os.path.join(addonUserDataFolder, 'subreddits.pickle'))
+CACHE_FILE          = xbmc.translatePath(os.path.join(addonUserDataFolder, 'requests_cache'))
 
 #last slash at the end is important
-ytdl_core_path=xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
+ytdl_core_path=xbmc.translatePath(os.path.join(addon_path,'resources','lib','youtube_dl' ))
 
 #if xbmcvfs.exists(ytdl_core_path):
 #    xbmc.log('using ytdl core', level=xbmc.LOGNOTICE)
@@ -86,15 +73,9 @@ ytdl_core_path=xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
 if not os.path.isdir(addonUserDataFolder):
     os.mkdir(addonUserDataFolder)
 
-#def parse_and_play(url, name, type_):
-    #this mode is intended to receive links from a modified kore remote
-    #i don't think this is allowed per http://forum.kodi.tv/showthread.php?tid=178881
-#    pass
-
 def parameters_string_to_dict(parameters):
     #log('   ######' + str( urlparse.parse_qsl(parameters) )  )
     return dict( urlparse.parse_qsl(parameters) )
-
 
 if __name__ == '__main__':
 

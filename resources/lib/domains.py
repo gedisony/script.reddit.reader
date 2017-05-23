@@ -10,7 +10,7 @@ import urlparse
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
-from default import default_ytdl_psites_file, default_ytdl_sites_file, reddit_userAgent, REQUEST_TIMEOUT
+from default import reddit_userAgent, REQUEST_TIMEOUT
 from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
@@ -410,7 +410,6 @@ class ClassYoutube(sitesBase):
         links=[]
         self.video_id=self.get_video_id( self.media_url )
         youtube_api_key=self.ret_api_key()
-        log('get_links_in_description')
         if self.video_id:
             # Get info for this YouTube video, need the channel id for later
             query_params = {
@@ -3378,11 +3377,11 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
             ld=LinkDetails(sitesBase.TYPE_UNKNOWN, link_action, link_url, preview_img, preview_img)
 
-            if False: #resolve_undetermined:  (abandoned, too slow)
-                log('sending undetermined link to ytdl...')
-                media_url=ydtl_get_playable_url(link_url)
-                if media_url:
-                    ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_PLAYABLE, media_url[0], '', '')
+            #if False: #resolve_undetermined:  (abandoned, too slow)
+            #    log('sending undetermined link to ytdl...')
+            #    media_url=ydtl_get_playable_url(link_url)
+            #    if media_url:
+            #        ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_PLAYABLE, media_url[0], '', '')
 
             if 'ld' in vars(): #avoid UnboundLocalError - local variable 'ld' referenced before assignment
                 return ld
@@ -3392,75 +3391,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
         ld=LinkDetails(sitesBase.TYPE_UNKNOWN, sitesBase.DI_ACTION_ERROR, str(e) )
         return ld
 
-    if ytdl_sites:  pass
-    else: load_ytdl_sites()
-
-    ytdl_match=False
-    for rex in ytdl_sites:
-        #if rex.startswith('f'):log( ' rex=='+ rex )
-        if rex in link_url:
-            #log( "    ydtl-" + rex +" matched IN>"+ media_url)
-            hoster=rex
-            ytdl_match=True
-            break
-        #regex is much slower than the method above.. left here in case needed in the future
-        # match = re.compile( "(%s)" %rex  , re.DOTALL).findall( media_url )
-        # if match : log( "matched ytdl:"+ rex);  break
-    if ytdl_match:
-        ld=LinkDetails(sitesBase.TYPE_VIDEO, 'playYTDLVideo', link_url, '', '')
-        return ld
-
-def xurl_is_supported(url_to_check):
-    #search our supported_sites[] to see if media_url can be handled by plugin
-    #log('    ?url_is_supported:'+ url_to_check)
-    if ytdl_sites:  pass
-    else: load_ytdl_sites()
-
-    hoster = sitesManager( url_to_check )
-    if hoster:
-        log( '  url_is_supported by: %s %s ' %(hoster.__class__.__name__, url_to_check ) )
-        return True
-
-    #if this setting is set to true, all links are supported. it is up to ytdl to see if it actually plays
-    #if use_ytdl_for_unknown_in_comments:
-    #    return True
-
-    #originally ytdl sites were matched in supported sites[] but it is getting so big that it is moved to a separate configurable file.
-    #check if it matches ytdl sites
-    for rex in ytdl_sites:
-        if rex in url_to_check:
-            #log( "    ydtl-" + rex +" matched IN>"+ media_url)
-            #hoster=rex
-            return True
-
-        #regex is much slower than the method above.. left here in case needed in the future
-        # match = re.compile( "(%s)" %rex  , re.DOTALL).findall( media_url )
-        # if match : log( "matched ytdl:"+ rex);  break
-
-    if url_to_check.startswith('/r/'):
-        return True
-
-    return False
-
-def load_ytdl_sites():
-    #log( '***************load_ytdl_sites '  )
-    #reads the ytdl supported sites file
-    #http://stackoverflow.com/questions/1706198/python-how-to-ignore-comment-lines-when-reading-in-a-file
-    global ytdl_sites
-    with open(default_ytdl_psites_file) as f:   #ytdl_psites_file=special://profile/addon_data/script.reddit.reader/ytdl_psites_file
-        for line in f:
-            line = line.split('#', 1)[0]
-            line = line.rstrip()
-            ytdl_sites.append(line)
-
-    with open(default_ytdl_sites_file) as f:   #ytdl_psites_file=special://profile/addon_data/script.reddit.reader/ytdl_psites_file
-        for line in f:
-            line = line.split('#', 1)[0]
-            line = line.rstrip()
-            ytdl_sites.append(line)
-
 def ydtl_get_playable_url( url_to_check ):
-    from resources.lib.YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
 
     #log('ydtl_get_playable_url:' +url_to_check )
     if link_url_is_playable(url_to_check)=='video':

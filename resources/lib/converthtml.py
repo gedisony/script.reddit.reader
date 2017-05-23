@@ -49,7 +49,7 @@ def readHTML(link_url, a, b):
     h2t=h2t.split('\n\n')
     #log( pprint.pformat( h2t ) )
 
-    for idx, line in enumerate(h2t):
+    for _, line in enumerate(h2t):
         #log(line)
 
         if len(line)<25:
@@ -160,10 +160,7 @@ def get_alt_and_link(source_url, text):
 def listitem(label, plot, link='', art_thumb='', domain='', votes=0 ):
     #builds the listitem object used in the gui
     #from resources.lib.utils import unescape
-    liz=xbmcgui.ListItem(label=label,
-                         label2="",
-                         iconImage="",
-                         thumbnailImage="")
+    liz=xbmcgui.ListItem(label=label)
 
     liz.setInfo( type="Video", infoLabels={ "plot": unicodetoascii(plot), "studio": domain, "votes": votes, "director": '' } )
 

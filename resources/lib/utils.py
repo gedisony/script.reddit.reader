@@ -596,11 +596,12 @@ def colored_subreddit(subreddit,color='cadetblue', add_r=True):
 def truncate(string, length, ellipse='...'):
     return (string[:length] + ellipse) if len(string) > length else string
 
-def xbmc_notify(Line1, line2, time=2000, icon=''):
+def xbmc_notify(line1, line2, time=2000, icon=''):
     if icon and os.path.sep not in icon:
         icon=os.path.join(addon.getAddonInfo('path'), 'resources','skins','Default','media', icon)
-    xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) )
-    log("XBMC.Notification: %s: %s" %(Line1, line2) )
+
+    xbmcgui.Dialog().notification( line1, line2, icon, time)  #<-- use this instead of  xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) ) 
+    log("User notification: %s: %s" %(line1, line2) )
 
 def open_web_browser(url,name,type_):
     #http://forum.kodi.tv/showthread.php?tid=235733

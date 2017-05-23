@@ -11,7 +11,7 @@ from utils import log
 q = Queue()
 def autoPlay(url, name, type_):
     from domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
-    from utils import unescape, post_is_filtered_out, strip_emoji,xbmc_busy, log, translation
+    from utils import unescape, post_is_filtered_out, strip_emoji,xbmc_busy, translation, xbmc_notify
     from reddit import reddit_request, determine_if_video_media_from_reddit_json
     from actions import setting_gif_repeat_count
 
@@ -83,8 +83,8 @@ def autoPlay(url, name, type_):
             continue
 
     if len(entries)==0:
-        log('  Play All: no playable items' )
-        xbmc.executebuiltin('XBMC.Notification("%s","%s")' %(translation(32054), translation(32055)  ) )  #Play All     No playable items
+        xbmc_notify(translation(32025), translation(32026))  #Play All     No playable items
+        xbmc_busy(False)
         return
 
     entries_to_buffer=4
@@ -136,7 +136,7 @@ def autoPlay(url, name, type_):
 
     log('  c-buffering done')
 
-    #xbmc_busy(False)
+    xbmc_busy(False)
 
     xbmc.Player().play(playlist)
 

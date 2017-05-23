@@ -113,6 +113,14 @@ msgctxt "#32024"
 msgid "Gathering icons.. %s"
 msgstr ""
 
+msgctxt "#32025"
+msgid "Auto play"
+msgstr ""
+
+msgctxt "#32026"
+msgid "No playable items"
+msgstr ""
+
 #32025-32059 unused
 
 

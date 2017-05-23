@@ -18,9 +18,9 @@
     
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
-        <summary lang="en">Browse Reddit on Kodi</summary>
+        <summary lang="en_GB">Browse Reddit on Kodi</summary>
         <language></language>
-        <description lang="en">Reddit is a social news and entertainment website where users share and vote on content they find funny and interesting.[CR]View Reddit video and images on Kodi[CR][CR]Original by: AddonscriptorDE and rasjani [CR]Forked from https://github.com/rasjani/plugin.video.reddit_tv[CR]</description>
+        <description lang="en_GB">Reddit is a social news and entertainment website where users share and vote on content they find funny and interesting.[CR]View Reddit video and images on Kodi[CR][CR]Original by: AddonscriptorDE and rasjani [CR]Forked from https://github.com/rasjani/plugin.video.reddit_tv[CR]</description>
         <website>http://www.reddit.com</website>
         <source>https://github.com/gedisony/script.reddit.reader</source>
         <forum>http://forum.kodi.tv/showthread.php?tid=287355</forum>
