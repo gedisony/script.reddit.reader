@@ -118,8 +118,7 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None):
     #log('build_youtube_context_menu_entries '+youtube_url)
     match=re.compile( ClassYoutube.regex, re.I).findall( youtube_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
     if match:
-
-        if not video_id:
+        if not video_id: #no video id was supplied when this fn was called
             video_id=ClassYoutube.get_video_id(youtube_url)
         #see if we can parse channel id from url
         channel_id_from_url=ClassYoutube.get_channel_id_from_url(youtube_url)
@@ -136,6 +135,21 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None):
             cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
 
     return cxm_list
+
+#called from reddit_comment_worker()
+def build_reddit_context_menu_entries(url):
+    from domains import ClassReddit
+    cxm_list=[]
+    #log('build_youtube_context_menu_entries '+youtube_url)
+    match=re.compile( ClassReddit.regex, re.I).findall( url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
+    if match:
+        subreddit=ClassReddit.get_video_id(url)
+        if subreddit:
+            cxm_list.append( (translation(32508).format(subreddit=subreddit),
+                              build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit)  ) )
+
+    return cxm_list
+
 
 if __name__ == '__main__':
     pass

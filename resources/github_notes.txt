@@ -1,13 +1,16 @@
 delete:
- .pyo files
- icon.pdn
- psd files in addons\script.reddit.reader\resources\skins\Default\media
  .git
  .settings
  .gitignore
- .pydevproject
  .project
- 
+ .pydevproject
+ icon.pdn
+
+ .pyo files
+ github_notes.txt
+ \youtube_dl folder
+ psd files in addons\script.reddit.reader\resources\skins\Default\media
+
 open notepad ++
  search in files :..\kodi stuff\script.reddit.reader
  
@@ -15,7 +18,7 @@ open notepad ++
  replace with nothing (put the first few lines in file back)
  
 addon.xml
- change python version to 2.25  (for krypton)
+ change xbmc.python version to 2.25  (for krypton)
  
 change LOGNOTICE to LOGDEBUG in utils.py and guis.py
 
@@ -114,6 +117,8 @@ upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
 
 
 if need to change things...
+   git add .
+   git commit -m "[script.reddit.reader] 095b"
 
 git rebase --interactive HEAD~2
 (bunch of vi stuff later...)
@@ -128,6 +133,15 @@ git rebase --interactive HEAD~2
 ** sometimes need to use "git rebase --abort" to start over
 
 git push origin script.reddit.reader --force
+
+
+
+
+
+
+
+
+
 
 
 

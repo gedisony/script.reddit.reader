@@ -374,7 +374,6 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
         #if quality is None:
         #    quality = util.getSetting('video_quality', 1)
         #disable_dash = util.getSetting('disable_dash_video', True)
-
         entries = r.get('entries') or [r]
 
         minHeight, maxHeight = _getQualityLimits(quality)

@@ -708,7 +708,7 @@ def listLinksInComment(url, name, type_):
 def reddit_comment_worker(idx, h, q_out,submitter):
     from domains import parse_reddit_link, sitesBase
     from utils import format_description, ret_info_type_icon, build_script, is_filtered
-    from ContextMenus import build_youtube_context_menu_entries
+    from ContextMenus import build_youtube_context_menu_entries, build_reddit_context_menu_entries
 
 #         h[0]=score,
 #         h[1]=link_desc,
@@ -815,7 +815,10 @@ def reddit_comment_worker(idx, h, q_out,submitter):
                 liz.setProperty('link_url', link_url )  #just used as text at bottom of the screen
                 #liz.setPath(DirectoryItem_url)
 
-                liz.setProperty('context_menu', str(build_youtube_context_menu_entries(type_='',youtube_url=link_url,video_id=None)) )
+                context_menu_list=[]
+                context_menu_list.extend(build_youtube_context_menu_entries(type_='',youtube_url=link_url,video_id=None))
+                context_menu_list.extend(build_reddit_context_menu_entries(link_url))
+                liz.setProperty('context_menu', str(context_menu_list) )
 
                 #directory_items.append( (DirectoryItem_url, liz,) )
         else:

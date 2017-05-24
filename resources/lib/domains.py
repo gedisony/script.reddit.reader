@@ -2539,7 +2539,8 @@ class ClassReddit(sitesBase):
 
     def get_playable_url(self, link_url, is_probably_a_video):
         from reddit import assemble_reddit_filter_string
-        self.get_video_id()
+        subreddit=self.get_video_id(link_url)
+        self.video_id=subreddit
         #log('    **get_playable_url subreddit=' + self.video_id )
 
         self.media_type=sitesBase.TYPE_REDDIT
@@ -2550,9 +2551,9 @@ class ClassReddit(sitesBase):
             return link_url, self.media_type
         else:
             #link_url is in the form of "r/subreddit". this type of link is found in comments
-            if self.video_id:
+            if subreddit:
                 self.link_action='listSubReddit'
-                reddit_url=assemble_reddit_filter_string('',self.video_id)
+                reddit_url=assemble_reddit_filter_string('',subreddit)
                 return reddit_url, self.media_type
             if link_url.startswith('/u/'):
                 author=link_url.split('/u/')[1]
@@ -2561,17 +2562,15 @@ class ClassReddit(sitesBase):
                 reddit_url=assemble_reddit_filter_string("","/user/"+author+'/submitted')
                 return reddit_url, self.media_type
         return '',''
-
-    def get_video_id(self):
+    @classmethod
+    def get_video_id(self, reddit_url):
         #returns subreddit name
-        self.video_id=''
-        match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://.+?\.reddit\.com\/r\/(.+?)(?:\/|$)' , self.media_url)
+        match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://.+?\.reddit\.com\/r\/(.+?)(?:\/|$)' , reddit_url)
         #returns an array of tuples
         if match:
             for m in match[0]:
                 if m: #just use the first non-empty match
-                    self.video_id=m
-                    return
+                    return m
 
     def get_thumb_url(self):
         headers = {'User-Agent': reddit_userAgent}
