@@ -1,3 +1,6 @@
+0.9.7
+  - context menu for links in youtube description
+
 0.9.6
   - context menu for youtube links in comments gui
   - recognize youtube channel url, parse channelID and use appropriate context menu

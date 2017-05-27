@@ -95,7 +95,7 @@ if __name__ == '__main__':
     #ctp = "&content_type="+content_type   #for the lazy
     #log("content_type:"+content_type)
 
-    log( "----------------v" + addon.getAddonInfo('version')  + ' ' + ( mode+': '+url if mode else '' ) +'-----------------')
+    log( "----------------v{0} {1}:{2} {3}".format( addon.getAddonInfo('version'), mode,type_,(url if mode else '' ) ))
     #log("params="+sys.argv[1]+"  ")
 #    log( repr(sys.argv))
 #    log("----------------------")

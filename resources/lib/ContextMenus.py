@@ -107,12 +107,12 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
         #cxm_list.append( ('Search reddit posts with this link'    , build_script("listSubReddit", assemble_reddit_filter_string(link_url,'','',''), 'Search')  ) )
 
     if cxm_show_youtube_items:
-        cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None ))
+        cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None, title=post_title ))
 
     return cxm_list
 
 #called from actions.py listRelatedVideo() and reddit_comment_worker()
-def build_youtube_context_menu_entries(type_, youtube_url,video_id=None):
+def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None):
     from domains import ClassYoutube
     cxm_list=[]
     #log('build_youtube_context_menu_entries '+youtube_url)
@@ -124,11 +124,12 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None):
         channel_id_from_url=ClassYoutube.get_channel_id_from_url(youtube_url)
 
         if type_=='channel': #no need to list the "show more videos from this channel" entry if we're already showing "videos from this channel"
-            cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, '', 'related')  ) )
+            cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
         else:
-            cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, '', 'channel')  ) )
+            cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
             if video_id and not channel_id_from_url:#if we can parse channel id from url, and there is no video id, the url is for a channel. skip showing related videos
-                cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, '', 'related')  ) )
+                cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
+                cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
 
         #url+= "/search.json?q=" + urllib.quote_plus(search_string)
         if video_id:
@@ -144,7 +145,7 @@ def build_reddit_context_menu_entries(url):
     match=re.compile( ClassReddit.regex, re.I).findall( url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
     if match:
         subreddit=ClassReddit.get_video_id(url)
-        if subreddit:
+        if subreddit: # and cxm_show_by_subreddit:
             cxm_list.append( (translation(32508).format(subreddit=subreddit),
                               build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit)  ) )
 

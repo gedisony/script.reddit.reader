@@ -54,6 +54,7 @@ class sitesBase(object):
     media_w=0
     media_h=0
     description=None  #additional description gathered from link
+    video_id=''
 
     include_gif_in_get_playable=False   #it is best to parse the link and get the mp4/webm version of a gif media. we can't do this with some sites so we just return the gif media instead of looking for mp4/webm
 
@@ -177,6 +178,16 @@ class sitesBase(object):
                 else:
                     return match[0]
 
+    @classmethod
+    def split_text_into_links(self,string_with_url):
+        if string_with_url:
+            string_with_url=string_with_url+" \nhttp://blank.padding\n" #imperfect regex: need a padding to make regex work
+            #match = re.compile("([\s\S]+?(?:(https?://\S*?\.\S*?)(?:[\s)\[\]{},;\"\':<]|\.\s|$)))").findall(string_with_url)
+            match = re.compile("([\s\S]*?(?:(https?://\S*?\.\S*?)(?:[\s)\[\]{},;\"\':<]|$)))").findall(string_with_url) #imperfect regex: this regex needs more work so that we don't need to add the padding above and modify the match to remove the http... later in code.
+            if match:
+                #import pprint; log(pprint.pformat(match))
+                return match
+
     def set_media_type_thumb_and_action(self,media_url,default_type=TYPE_VIDEO, default_action=DI_ACTION_YTDL):
         _,ext=parse_filename_and_ext_from_url(media_url)
         self.media_url=media_url
@@ -291,6 +302,7 @@ class ClassYoutube(sitesBase):
     api_key='AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI'
 
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
+
         if not media_url:
             media_url=self.media_url
 
@@ -429,27 +441,31 @@ class ClassYoutube(sitesBase):
                 return channel_id
             #log(description)
             #log('***channel_id:'+channel_id)
-            links_from_description=self.get_first_url_from(description, return_all_as_list=True)
-            if links_from_description:
-                for i,l in enumerate(links_from_description,1):
-                    log('    parsing link: '+l )
-                    ld=parse_reddit_link(l, assume_is_video=False, needs_preview=False )  #setting needs_preview=True slows things down
+            #links_from_description=self.get_first_url_from(description, return_all_as_list=True)
+
+            text_and_links_tuple_list=self.split_text_into_links(description)
+
+            if text_and_links_tuple_list:
+                for text, link in text_and_links_tuple_list:
+                    ld=parse_reddit_link(link, assume_is_video=False, needs_preview=False )  #setting needs_preview=True slows things down
                     if ld:
-                        links.append( {'title': l,
+                        links.append( {'title': text,
                                         'type': ld.media_type,
-                                        'description': 'link #{index} from video description\n{link}'.format(index=i,link=l),
-                                        'url': ld.playable_url,
+                                        'description': text,
+                                        'url': link,  #ld.playable_url, (setting this to 'link' will likely cause problems if not youtube)
                                         'thumb':ld.thumb,
         #                                'isPlayable':'true',
                                         'link_action':ld.link_action,
+                                        'video_id':ld.video_id,
                                         }  )
                     else:
-                        links.append( {'title': l,
+                        links.append( {'title': text,
                                         'type': self.TYPE_UNKNOWN,
-                                        'description': 'link #{index} from video description\n{link}'.format(index=i,link=l),
-                                        'url': l,
+                                        'description': text,
+                                        'url': link,
                                         }  )
-                return links
+                self.assemble_images_dictList(links)
+                return self.dictList
         else:
             log("  can't get video id")
             if return_channelID_only:
@@ -2575,7 +2591,6 @@ class ClassReddit(sitesBase):
     def get_thumb_url(self):
         headers = {'User-Agent': reddit_userAgent}
         body_text=None
-        from utils import clean_str
         import random
 
         #log('get thumb url from '+self.original_url)
@@ -3298,7 +3313,7 @@ class genericVideo(sitesBase):
 
 
 class LinkDetails():
-    def __init__(self, media_type, link_action, playable_url='', thumb='', poster='', poster_w=0, poster_h=0, dictlist=None, description='' ):
+    def __init__(self, media_type, link_action, playable_url='', thumb='', poster='', poster_w=0, poster_h=0, dictlist=None, description='' , video_id=''):
         #self.kodi_url = kodi_url
         self.playable_url = playable_url
         self.media_type = media_type
@@ -3309,6 +3324,7 @@ class LinkDetails():
         self.poster_h = poster_h
         self.dictlist = dictlist #for img albums
         self.desctiption=description #for text gathered from link to present to the user. (r/bestof comment body for now)
+        self.video_id=video_id   #for youtube video id
 
 def sitesManager( media_url ):
     #picks which class will handle the media identification and extraction for website_name
@@ -3358,7 +3374,10 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                     #log(repr(album_dict_list))
                     hoster.link_action='listAlbum'
 
-            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url, dictlist=album_dict_list,description=hoster.description  )
+            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url, 
+                           dictlist=album_dict_list,
+                           description=hoster.description, 
+                           video_id=hoster.video_id  )
             return ld
 
         else:

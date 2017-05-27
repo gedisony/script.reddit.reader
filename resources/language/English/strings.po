@@ -598,6 +598,10 @@ msgctxt "#32524"
 msgid "Search reddit for this video ID"
 msgstr ""
 
+msgctxt "#32525"
+msgid "Description (YouTube)"
+msgstr ""
+
 #: used in context menu. (not implemented in reddit.reader)
 msgctxt "#30058"
 msgid "Reddit: Save this post"

@@ -655,24 +655,35 @@ def listRelatedVideo(url,name,type_):
         #log('***** isYouTubeable' + repr(url))
         yt=ClassYoutube(url)
         try:
-            links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+            xbmc_busy(True)
+            if type_=='links_in_description':
+                links_dictList=yt.get_links_in_description(return_channelID_only=False)
+            else: # 'channel' 'related default
+                links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+            xbmc_busy(False)
+
             if links_dictList:
                 #log(pprint.pformat(links_dictList))
                 directory_items=dictlist_to_listItems(links_dictList)
                 for li in directory_items:
                     link_url=li.getProperty('link_url')
                     video_id=li.getProperty('video_id')
+                    label=li.getProperty('label')
+                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label)) )
 
-                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id)) )
+                if type_=='links_in_description':
+                    from guis import text_to_links_gui
+                    ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=name)
 
-                from guis import cGUI
-                ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
-                ui.include_parent_directory_entry=False
-
+                else: # 'channel' 'related default
+                    from guis import cGUI
+                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+                    ui.include_parent_directory_entry=False
                 ui.doModal()
                 del ui
             else:
                 xbmc_notify('Nothing to list', url)
+
         except ValueError as e:
             xbmc_notify('Error', str(e))
     else:
