@@ -408,17 +408,22 @@ class listSubRedditGUI(cGUI):
 
         self.album_listbox = self.getControl(self.ALBUM_LIST)
 
-        #scb=self.getControl(17)#trying to hide the scrollbar. not working...
-        #scb.setVisible(False)
+        #NOTE: there is a bug with album images. if the very first item in the list is an album, onAction() is not triggered and album images are not loaded.
+        #  user has to focus out then back in  can't fix the issue with the below code. album_images is empty when called from here
+        #item=self.gui_listbox.getSelectedItem()
+        #self.load_album_images_if_available(item)
 
-        #self.subreddits_listbox = self.getControl(self.SUBREDDITS_LIST)
-        #self.subreddits_listbox.reset()
-        #self.subreddits_listbox.addItems( self.load_subreddits_file_into_a_listitem() )
+    def load_album_images_if_available(self,selected_item):
+        from utils import dictlist_to_listItems
+        album_images=selected_item.getProperty('album_images')  #set in main_listing.py addLink()
+        self.album_listbox.reset()
+        if album_images:
+            dictlist=json.loads(album_images)
+            listItems=dictlist_to_listItems(dictlist)
+            #log(pprint.pformat(listItems))
+            self.album_listbox.addItems(listItems)
 
     def onAction(self, action):
-        from utils import dictlist_to_listItems
-        import pprint
-
         try:focused_control=self.getFocusId()
         except:focused_control=0
         #log( "  onAction focused control=" +  str(focused_control) + " " + str( self.a ))
@@ -428,14 +433,7 @@ class listSubRedditGUI(cGUI):
             item = self.gui_listbox.getSelectedItem()
             item_type=item.getProperty('item_type').lower()
 
-            album_images=item.getProperty('album_images')  #set in main_listing.py addLink()
-            self.album_listbox.reset()
-            if album_images:
-                dictlist=json.loads(album_images)
-                listItems=dictlist_to_listItems(dictlist)
-                #log(pprint.pformat(listItems))
-                self.album_listbox.addItems(listItems)
-
+            self.load_album_images_if_available(item)
             #I want the grouplist to always scroll back on top
             #slider_ctl=self.getControl(self.SLIDER_CTL) #unknown control type in python
             #slider_ctl.setPercent(0)
@@ -749,15 +747,16 @@ class comments_GUI2(cGUI):
         if focused_control==self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
-            if item.getProperty('link_url'):
-                self.clear_x_controls()
-            else:
-                tlc_id=int(item.getProperty('tlc_id'))
-                #log('    tlc_id:'+repr(tlc_id) +'\n      '+ repr(self.child_lists[tlc_id]) )
-                self.populate_tlc_children(tlc_id)
+            if item: #item will be None if there are no comments. AttributeError
+                if item.getProperty('link_url'):
+                    self.clear_x_controls()
+                else:
+                    tlc_id=int(item.getProperty('tlc_id'))
+                    #log('    tlc_id:'+repr(tlc_id) +'\n      '+ repr(self.child_lists[tlc_id]) )
+                    self.populate_tlc_children(tlc_id)
 
-            if action in [xbmcgui.ACTION_CONTEXT_MENU]:
-                self.pop_context_menu(item)
+                if action in [xbmcgui.ACTION_CONTEXT_MENU]:
+                    self.pop_context_menu(item)
 
     def populate_tlc_children(self,tlc_id):
         #controls_generator=generator(controls)
@@ -811,19 +810,12 @@ class text_to_links_gui(comments_GUI2):
         xbmcgui.WindowXML.__init__(self, *args, **kwargs)
         self.listing = kwargs.get("listing")
         self.title_bar_text=kwargs.get("title")
-        #log('   ***'+repr(title))
+        self.poster=kwargs.get("poster")
+
         self.main_control_id = None #not used, left here so that we can use the base class methods without error. onClick()
 
-        #listing_generator=generator(self.listing)
-
-#        for listing in self.listing:
-#            label=listing.getLabel()
-#            link_url=listing.getProperty('link_url')
-#            log('***'+repr(label)+'\n*****'+repr(link_url))
-
-            #self.items_for_grouplist.append(listing)
-        #log(pprint.pformat(self.child_lists))
         self.exit_monitor = ExitMonitor(self.close_gui)#monitors for abortRequested and calls close on the gui
+
 
         #can't dynamically create an auto-height textbox inside a grouplist
         #  so we make x of them in the xml and hope they're enough
@@ -842,23 +834,26 @@ class text_to_links_gui(comments_GUI2):
             self.ctl_title_bar = self.getControl(1)
             self.ctl_title_bar.setText(self.title_bar_text)
 
+        if self.poster:
+            #self.getControl(2).setImage(self.poster)
+            self.getControl(3).setImage(self.poster)
 
         listing_generator=generator(self.listing)
 
         for control_id in self.x_controls:
             tx_control=self.getControl(control_id)
             bn_control=self.getControl(control_id+1000)
+            img_control=self.getControl(control_id+2000)
 
             try:
                 #gether the listitem properties and prepare to put them on the button
                 li=listing_generator.next()
                 link_url=li.getProperty('link_url')
-
                 label=li.getLabel()
                 label=label.replace(link_url, "")  #remove the http:... part to avoid it looking duplicated because it is already put as a label in button.
-                #label=label.strip()
-                #log('item_type='+repr(item_type) )
-                #log('onClick_action='+repr(onClick_action) )
+                thumb=li.getArt('thumb')
+                #log('item_type='+repr(li.getProperty('item_type')) )
+                #log('onClick_action='+repr(li.getProperty('onClick_action')) )
             except StopIteration:
                 li=label=link_url=None
 
@@ -873,6 +868,11 @@ class text_to_links_gui(comments_GUI2):
                 tx_control.setText(None)
                 tx_control.setVisible(False)
                 bn_control.setVisible(False)
+
+            if thumb:
+                img_control.setImage(thumb)
+            else:
+                img_control.setVisible(False) #hide the unused controls so they don't occupy 'space' in the grouplist
 #
 #        if self.gui_listbox_SelectedPosition > 0:
 #            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )

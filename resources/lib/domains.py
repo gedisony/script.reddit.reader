@@ -11,7 +11,8 @@ import urlparse
 
 from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
-from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff
+from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff, nested_lookup
+
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
@@ -83,6 +84,7 @@ class sitesBase(object):
 
         return content.text
 
+    @classmethod
     def requests_get(self, link_url, headers=None, timeout=REQUEST_TIMEOUT, allow_redirects=True):
         content = requests.get( link_url, headers=headers, timeout=timeout, allow_redirects=allow_redirects )
         #if hasattr(content, "from_cache"): log( '  #cached:{0} {1}'.format( repr(content.from_cache),link_url) )
@@ -298,6 +300,7 @@ def url_resolver_support(link_url):
 class ClassYoutube(sitesBase):
     regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
     video_id=''
+    url_type=''
 
     api_key='AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI'
 
@@ -309,10 +312,13 @@ class ClassYoutube(sitesBase):
         o = urlparse.urlparse(media_url)
         query = urlparse.parse_qs(o.query)
 
-        self.video_id=self.get_video_id( self.media_url )
+        #self.video_id=self.get_video_id( self.media_url )
+        self.url_type, id_from_url=self.get_video_channel_user_or_playlist_id_from_url( self.media_url )
         #log('      youtube video id:' + self.video_id )
 
-        if self.video_id:
+        if self.url_type=='video':
+            self.video_id=id_from_url
+            self.get_thumb_url() #there is no request penalty for getting yt thumb url so we do it here
             self.link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube()
 
             #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
@@ -322,16 +328,40 @@ class ClassYoutube(sitesBase):
                 return media_url, self.TYPE_VIDEO
             else:
                 return playable_url, self.TYPE_VIDEO
+        elif self.url_type in ['channel','playlist','user']:
+            log("    %s_ID=%s <--%s" %( self.url_type, repr(id_from_url), self.media_url) )
+            self.link_action='listRelatedVideo'
+            return media_url, self.TYPE_VIDS
         else:
-            log("    %s cannot get videoID %s" %( self.__class__.__name__, media_url) )
-            channel_id=self.get_channel_id_from_url( self.media_url )
+            self.link_action='playYTDLVideo'
+            return media_url, self.TYPE_VIDEO
+
+#    def ret_album_list(self, album_url):
+#        self.url_type, id_from_url=self.get_video_channel_user_or_playlist_id_from_url( self.media_url )
+#
+#        if self.url_type in ['channel','playlist','user']:
+#            pass
+
+    @classmethod
+    def get_video_channel_user_or_playlist_id_from_url(self, youtube_url):
+        o = urlparse.urlparse(youtube_url)
+        query = urlparse.parse_qs(o.query)
+
+        video_id=self.get_video_id( youtube_url )
+        if video_id:
+            return 'video', video_id
+        else:
+            channel_id=self.get_channel_id_from_url( youtube_url )
+            user_id=self.get_user_id_from_url( youtube_url )
+            playlist_id=query.get('list','')
+            #log( '  1:'+repr(channel_id) +'  2:'+ repr(user_id)+'  3:'+repr(playlist_id))
             if channel_id:
-                log("      got channelID %s" %(channel_id) )
-                self.link_action='listRelatedVideo'
-                return media_url, self.TYPE_VIDEO
-            else:
-                self.link_action='playYTDLVideo'
-                return media_url, self.TYPE_VIDEO
+                return 'channel', channel_id
+            elif playlist_id:
+                return 'playlist', playlist_id[0]
+            elif user_id:
+                return 'user', user_id
+        return '',''
 
     def return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self, video_id=None):
         if not video_id:
@@ -381,7 +411,17 @@ class ClassYoutube(sitesBase):
     @classmethod
     def get_channel_id_from_url(self, yt_url):
         channel_id=''
-        channel_id_regex=re.compile('(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:channel\/)([a-zA-Z0-9\-]{1,})', re.DOTALL)
+        channel_id_regex=re.compile('(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:channel\/)([a-zA-Z0-9\-_]{1,})', re.DOTALL)
+        match = channel_id_regex.findall(yt_url)
+        if match:
+            channel_id=match[0]
+        #log('yt channelID='+repr(channel_id))
+        return channel_id
+
+    @classmethod
+    def get_user_id_from_url(self, yt_url):
+        channel_id=''
+        channel_id_regex=re.compile('(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:user\/)([a-zA-Z0-9\-_]{1,})', re.DOTALL)
         match = channel_id_regex.findall(yt_url)
         if match:
             channel_id=match[0]
@@ -410,7 +450,7 @@ class ClassYoutube(sitesBase):
         """
         quality0123=1
         if not self.video_id:
-            self.get_video_id(self.media_url)
+            self.video_id=self.get_video_id(self.media_url)
 
         if self.video_id:
             self.thumb_url='http://img.youtube.com/vi/%s/%d.jpg' %(self.video_id,quality0123)
@@ -452,7 +492,7 @@ class ClassYoutube(sitesBase):
                         links.append( {'title': text,
                                         'type': ld.media_type,
                                         'description': text,
-                                        'url': link,  #ld.playable_url, (setting this to 'link' will likely cause problems if not youtube)
+                                        'url': ld.playable_url if ld.playable_url else link,
                                         'thumb':ld.thumb,
         #                                'isPlayable':'true',
                                         'link_action':ld.link_action,
@@ -483,15 +523,19 @@ class ClassYoutube(sitesBase):
         youtube_api_key=self.ret_api_key()
         links=[]
         query_params={}
-        self.video_id=self.get_video_id( self.media_url )
-        channel_id_from_url=self.get_channel_id_from_url( self.media_url)
+
+        self.url_type, id_from_url=self.get_video_channel_user_or_playlist_id_from_url( self.media_url )
+
         if type_=='channel':  #here, user specifically asked to show videos in channel via context menu
             channel_id=self.get_links_in_description(return_channelID_only=True)
             if not channel_id:
                 raise ValueError('Could not get channel_id')
-            query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id)
+            request_action, query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id)
         else:  #if type_=='related':
-            if self.video_id:
+            if self.url_type=='video':
+                self.video_id=id_from_url
+
+                request_action='search'
                 query_params = {    #https://developers.google.com/youtube/v3/docs/search/list#relatedToVideoId
                     'key': youtube_api_key,
                     'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
@@ -501,18 +545,26 @@ class ClassYoutube(sitesBase):
                     'order': 'date',
                     'relatedToVideoId': self.video_id,
                 }
-            elif channel_id_from_url: #try to see if we were able to parse channel_id from url if no video_id was parsed
-                query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id_from_url)
+
+            elif self.url_type=='channel': #try to see if we were able to parse channel_id from url if no video_id was parsed
+                request_action, query_params = self.build_query_params_for_channel_videos(youtube_api_key,id_from_url)
+            elif  self.url_type=='playlist':
+                request_action, query_params = self.build_query_params_for_playlist_videos(youtube_api_key,id_from_url)
+            elif  self.url_type=='user':
+                #https://stackoverflow.com/questions/22613903/youtube-api-v3-get-list-of-users-videos
+                channel_id,uploads=self.get_id_from_user(id_from_url)
+                #request_action, query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id) #100 quota cost
+                request_action, query_params = self.build_query_params_for_playlist_videos(youtube_api_key,uploads)    #  2 quota cost
 
         if query_params:
-            links.extend( self.search(query_params) )
+            links.extend( self.get_video_list(request_action, query_params) )
 
             #log(repr(links))
             self.assemble_images_dictList(links)
             return self.dictList
 
     def build_query_params_for_channel_videos(self,youtube_api_key, channel_id):
-        return  {
+        return  'search', {
                 'key': youtube_api_key,
                 'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
                 'type': 'video',         #video,channel,playlist.
@@ -521,13 +573,54 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet',
                 'order': 'date',
                 'channelId': channel_id,
-    #            'playlistId': 'YOUR-PLAYLIST-ID-HERE',
+            }
+    #not used, not tested.
+    def build_query_params_for_channel(self, channel_display_name):
+        return  'search', {
+                'key': self.ret_api_key(),
+                'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
+                'type': 'channel',         #video,channel,playlist.
+                'maxResults': '50',      # Acceptable values are 0 to 50
+                'part': 'snippet',
+                'order': 'date',
+                'q': channel_display_name,
+            }
+    def build_query_params_for_playlist_videos(self,youtube_api_key, playlist_id):
+        return  'playlistItems', {
+                'key': youtube_api_key,
+                #'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))', can't specify fields for playlistItems
+                'type': 'video',         #video,channel,playlist.
+                'maxResults': '50',      # Acceptable values are 0 to 50
+                'part': 'snippet',
+                'playlistId': playlist_id,
+            }
+    def build_query_params_for_user_videos(self,youtube_api_key, user_id):
+        return  'channels', {
+                'key': youtube_api_key,
+                'maxResults': '50',      # Acceptable values are 0 to 50
+                'part': 'snippet,contentDetails',
+                'forUsername': user_id,
             }
 
+    def get_id_from_user(self,user_id):
+        query_params = {
+            'key': self.ret_api_key(),
+            'part': 'snippet,contentDetails',
+            'forUsername': user_id,
+        }
+        api_url='https://www.googleapis.com/youtube/v3/channels?'+urllib.urlencode(query_params)
+        r = self.requests_get(api_url)
+        #log(r.text)
+        j=r.json()   #.loads(r.text)  #j=json.loads(r.text.replace('\\"', '\''))
+        channel_id=clean_str(j, ['items',0,'id'])
+        uploads=clean_str(j, ['items',0,'contentDetails','relatedPlaylists','uploads'])
+        #log('channel_id:'+repr(channel_id) +' uploads:'+ repr(uploads))
+        return channel_id,uploads
 
-    def search(self, query_params):
+    def get_video_list(self, request_action, query_params):
         links=[]
-        api_url='https://www.googleapis.com/youtube/v3/search?'+urllib.urlencode(query_params)
+        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(request_action,urllib.urlencode(query_params))
+        #log(api_url)
         r = self.requests_get(api_url)
         #log(r.text)
         j=r.json()
@@ -535,9 +628,11 @@ class ClassYoutube(sitesBase):
         for i in items:
             #snippet has: publishedAt channelId title description thumbnails{}
 
-            #log('i:'+repr(i))
-            #id_kind=clean_str(i, ['id','kind'])
-            videoId=clean_str(i, ['id','videoId'])
+            if request_action=='search':
+                videoId=clean_str(i, ['id','videoId'])
+            elif request_action=='playlistItems': #videoId is located somewhere else in the json if using playlistItems
+                videoId=clean_str(i, ['snippet','resourceId','videoId'])
+
             #log('video id:'+repr(videoId))
             publishedAt=clean_str(i, ['snippet','publishedAt'])
             pretty_date=self.pretty_date(publishedAt)
@@ -1607,52 +1702,125 @@ class ClassInstagram(sitesBase):
     def get_playable_url(self, media_url, is_probably_a_video=True):
         #the instagram api has limits and that would not work for this purpose
         #  scrape the instagram post instead.
-        from utils import nested_lookup
-
         r = self.requests_get(media_url)
         #log(r.text)
-            #grab the json-like object
+        #grab the json-like object
         jo=re.compile('window._sharedData = ({.*});</script>').findall(r.text)
         if jo:
-
-            #log( pprint.pformat(jo[0], indent=1) )
+            #import pprint; log( pprint.pformat(jo[0], indent=1) )
             try:
                 j=json.loads(jo[0] )
                 #log(str(j))
-                if j.get('entry_data'):
-                    post_pages=j.get('entry_data').get('PostPage')
-                    #log('    post_pages %d' %len(post_pages) )
-                    #log('    post_page ' +repr(post_pages[0]) )
-                    post_page=post_pages[0]
-                    media=post_page.get('media')
-                    if media:
-                        #log(str(j['entry_data']['PostPage'][0]['media']['display_src']))
-                        display_src=media.get('display_src')
-                    else:
-                        #this part added to parse: https://www.instagram.com/p/BBqU7WPtudX/?taken-by=insecuregod
-                        media=nested_lookup('shortcode_media',post_page)[0]
-                        display_src=media.get('display_url')
+                entry_data=j.get('entry_data')
+                if entry_data:
+                    #log(repr(entry_data.keys()))
+                    if 'PostPage' in entry_data.keys():
+                        post_pages=entry_data.get('PostPage')
+                        #log('    post_pages %d' %len(post_pages) )
+                        #log('    post_page ' +repr(post_pages[0]) )
+                        post_page=post_pages[0]
+                        media=post_page.get('media')
+                        if media:
+                            #log(str(j['entry_data']['PostPage'][0]['media']['display_src']))
+                            display_src=media.get('display_src')
+                        else:
+                            #this part added to parse: https://www.instagram.com/p/BBqU7WPtudX/?taken-by=insecuregod
+                            media=nested_lookup('shortcode_media',post_page)[0]
+                            display_src=media.get('display_url')
 
-                    is_video=media.get('is_video')
-                    self.media_w=media.get('dimensions').get('width')
-                    self.media_h=media.get('dimensions').get('height')
+                        is_video=media.get('is_video')
+                        self.media_w=media.get('dimensions').get('width')
+                        self.media_h=media.get('dimensions').get('height')
 
-                    self.thumb_url=display_src
-                    self.poster_url=self.thumb_url
-                    #log('      vid=%s %dx%d %s' %(is_video,self.media_w,self.media_h,display_src)  )
-                    if is_video:
-                        self.media_url=media.get('video_url')
-                        self.link_action=sitesBase.DI_ACTION_PLAYABLE
-                        return self.media_url, sitesBase.TYPE_VIDEO
-                    else:
-                        return display_src, sitesBase.TYPE_IMAGE
+                        self.thumb_url=display_src
+                        self.poster_url=self.thumb_url
+                        #log('      vid=%s %dx%d %s' %(is_video,self.media_w,self.media_h,display_src)  )
+                        if is_video:
+                            self.media_url=media.get('video_url')
+                            self.link_action=sitesBase.DI_ACTION_PLAYABLE
+                            return self.media_url, sitesBase.TYPE_VIDEO
+                        else:
+                            return display_src, sitesBase.TYPE_IMAGE
+                    if 'ProfilePage' in entry_data.keys():
+                        profile_page=entry_data.get('ProfilePage')[0]
+                        #user=profile_page.get('user')
+
+                        self.thumb_url=nested_lookup('profile_pic_url',profile_page)[0]
+                        #log('  profile thumb='+repr(self.thumb_url))
+
+                        images=self.ret_images_dict_from_album_json(profile_page)
+                        #for i in images: log( '##' + repr(i))
+                        self.assemble_images_dictList(images)
+
+                        return media_url, sitesBase.TYPE_ALBUM
                 else:
                     log("  Could not get 'entry_data' from scraping instagram [window._sharedData = ]")
 
-            except Exception as e:
+            except (AttributeError,TypeError) as e:
                 log('    exception while parsing json:'+str(e))
 
         return '', ''
+
+    def ret_images_dict_from_album_json(self, j):
+        images=[]
+        album_nodes=j.get('user').get('media').get('nodes') #only returns about 12. we're not getting the rest for now
+        #log(' insta album:'+repr(album))
+
+        for entry in album_nodes:
+            is_video=entry.get('is_video')
+            link_action=''
+            if is_video:
+                #'code' and 'id' might be used to get the video?
+                media_url=entry.get('video_url')  #video_url is not in json!
+                #media_url=entry.get('display_src')
+                link_action=sitesBase.DI_ACTION_PLAYABLE
+                media_type=self.TYPE_VIDEO
+                isPlayable='true'
+            else:
+                media_url=entry.get('display_src')
+                media_type=self.TYPE_IMAGE
+                isPlayable='false'
+
+            width    =entry.get('dimensions').get('width')
+            height   =entry.get('dimensions').get('height')
+            title    =entry.get('caption')
+            descrip  =entry.get('caption')
+            thumb_url=entry.get('thumbnail_src')
+
+            images.append( {'title': title,
+                            'type': media_type,
+                            'description': descrip,
+                            'url': media_url,
+                            'thumb': thumb_url,
+                            'width': width,
+                            'height': height,
+                            'isPlayable':isPlayable,
+                            'link_action':link_action,
+                            }  )
+        return images
+
+    def ret_album_list(self,album_url):
+        r = self.requests_get(album_url)
+        jo=re.compile('window._sharedData = ({.*});</script>').findall(r.text)
+        if jo:
+            #import pprint; log( pprint.pformat(jo[0], indent=1) )
+            try:
+                j=json.loads(jo[0] )
+                entry_data=j.get('entry_data')
+                if entry_data:
+                    if 'ProfilePage' in entry_data.keys():
+                        profile_page=entry_data.get('ProfilePage')[0]
+
+                        images=self.ret_images_dict_from_album_json(profile_page)
+                        #for i in images: log( '##' + repr(i))
+                        self.assemble_images_dictList(images)
+
+                        return self.dictList
+                else:
+                    log("  Could not get 'entry_data' from scraping instagram [window._sharedData = ]")
+
+            except (AttributeError,TypeError) as e:
+                log('    exception while parsing json:'+str(e))
 
     def get_thumb_url(self):
         if self.thumb_url:
@@ -3328,13 +3496,20 @@ class LinkDetails():
 
 def sitesManager( media_url ):
     #picks which class will handle the media identification and extraction for website_name
+
+    #first resolve url shortener
+    shorteners=['bit.ly','goo.gl','tinyurl.com']
+    if any(shortener in media_url for shortener in shorteners):
+        #v=sitesBase.requests_get('https://unshorten.me/s/'+ urllib.quote_plus( media_url ) )
+        v = requests.head( media_url, timeout=REQUEST_TIMEOUT, allow_redirects=True )
+        log('  short url(%s)=%s'%(media_url,repr(v.url)))
+        media_url=v.url
+
     for subcls in sitesBase.__subclasses__():
         regex=subcls.regex
         if regex:
             match=re.compile( regex  , re.I).findall( media_url )
-            #if 'giphy' in media_url: log('      checking '+ subcls.regex )
             if match :
-                #log('      *****match '+ subcls.regex )
                 return subcls( media_url )
 
 def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_playable_url=False, image_ar=0 ):
@@ -3374,9 +3549,9 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                     #log(repr(album_dict_list))
                     hoster.link_action='listAlbum'
 
-            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url, 
+            ld=LinkDetails(media_type, hoster.link_action, prepped_media_url, hoster.thumb_url, hoster.poster_url,
                            dictlist=album_dict_list,
-                           description=hoster.description, 
+                           description=hoster.description,
                            video_id=hoster.video_id  )
             return ld
 
@@ -3400,7 +3575,6 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
             #    media_url=ydtl_get_playable_url(link_url)
             #    if media_url:
             #        ld=LinkDetails(sitesBase.TYPE_VIDEO, sitesBase.DI_ACTION_PLAYABLE, media_url[0], '', '')
-
             if 'ld' in vars(): #avoid UnboundLocalError - local variable 'ld' referenced before assignment
                 return ld
 

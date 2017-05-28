@@ -75,11 +75,8 @@ def build_script( mode, url="", name="", type_="", script_to_call=''):
     else:
         #if name.startswith('In style'): log ('    namearg=' + name + ' ' + urllib.quote_plus(name.decode('unicode_escape').encode('ascii','ignore')) )
         #remove unicode characters in name.
-        if name:
-            name=name.decode('unicode_escape').encode('ascii','ignore')
-        else:
-            name=''
-        url='' if url==None else url #causes error in urllib.quote_plus() if None
+        name='' if name==None else name.decode('unicode_escape').encode('ascii','ignore')
+        url=''  if url==None else url.decode('unicode_escape').encode('ascii','ignore') #causes error in urllib.quote_plus() if None
         script_to_call=addonID
         #log("&url="+repr(url)+"&name="+repr(name)+"&type="+repr(type_))
         #return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type_) )
@@ -753,7 +750,6 @@ def dictlist_to_listItems(dictlist):
         ti=d.get('li_thumbnailImage')
         media_url=d.get('DirectoryItem_url')
         media_type=d.get('type')
-        media_thumb=d.get('thumb','')
         isPlayable=d.get('isPlayable')
         link_action=d.get('link_action')
         channel_id=d.get('channel_id')
@@ -774,7 +770,11 @@ def dictlist_to_listItems(dictlist):
 
         liz=xbmcgui.ListItem(label=label, label2=label2)
 
-        if media_type==sitesBase.TYPE_VIDEO:
+        if media_type==sitesBase.TYPE_IMAGE:
+            liz.setProperty('item_type','script')
+            liz.setProperty('onClick_action', build_script('viewImage', media_url,'',ti) )
+            liz.setArt({"thumb": ti, "banner":media_url })
+        else:  #if media_type==sitesBase.TYPE_VIDEO:
 #            if link_action or link_action!='playable':
 #                isPlayable='false'          #if there's a link_action then media_url is not straight up playable
             if not link_action:
@@ -786,10 +786,9 @@ def dictlist_to_listItems(dictlist):
                 liz.setProperty('is_video','true')
             else:
                 liz.setProperty('item_type','script')
-                liz.setProperty('onClick_action', build_script(link_action, media_url,'',media_thumb) )
-        elif media_type==sitesBase.TYPE_IMAGE:
-            liz.setProperty('item_type','script')
-            liz.setProperty('onClick_action', build_script('viewImage', media_url,'',media_thumb) )
+                liz.setProperty('onClick_action', build_script(link_action, media_url,'','') )
+
+            liz.setArt({"thumb": ti })
 
         liz.setProperty('link_url', media_url )  #added so we have a way to retrieve the link
         liz.setProperty('channel_id', channel_id )
@@ -798,7 +797,6 @@ def dictlist_to_listItems(dictlist):
 
         liz.setInfo( type='video', infoLabels=infoLabels ) #this tricks the skin to show the plot. where we stored the picture descriptions
         #liz.setArt({"thumb": ti, "poster":poster_url, "banner":d['DirectoryItem_url'], "fanart":poster_url, "landscape":d['DirectoryItem_url']   })
-        liz.setArt({"thumb": ti, "banner":media_url })
 
         directory_items.append( liz )
 

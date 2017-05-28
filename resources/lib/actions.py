@@ -655,6 +655,10 @@ def listRelatedVideo(url,name,type_):
         #log('***** isYouTubeable' + repr(url))
         yt=ClassYoutube(url)
         try:
+            yt.get_thumb_url()
+            poster=yt.poster_url
+            #log('  thung:'+yt.thumb_url)
+
             xbmc_busy(True)
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
@@ -673,11 +677,11 @@ def listRelatedVideo(url,name,type_):
 
                 if type_=='links_in_description':
                     from guis import text_to_links_gui
-                    ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=name)
+                    ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=name, poster=poster)
 
                 else: # 'channel' 'related default
                     from guis import cGUI
-                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=name, poster=poster)
                     ui.include_parent_directory_entry=False
                 ui.doModal()
                 del ui
@@ -686,6 +690,8 @@ def listRelatedVideo(url,name,type_):
 
         except ValueError as e:
             xbmc_notify('Error', str(e))
+        finally:
+            xbmc_busy(False)
     else:
         xbmc_notify('cannot identify youtube url', url)
 

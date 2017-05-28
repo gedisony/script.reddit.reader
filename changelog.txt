@@ -1,6 +1,10 @@
+0.9.8
+  - add parsing for instagram profile page (album)
+  - get youtube channel video list from a userid
+  - add/show thumbnails on links in youtube description
+  - resolve shortened urls
 0.9.7
   - context menu for links in youtube description
-
 0.9.6
   - context menu for youtube links in comments gui
   - recognize youtube channel url, parse channelID and use appropriate context menu

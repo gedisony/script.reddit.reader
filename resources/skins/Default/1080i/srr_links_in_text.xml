@@ -9,13 +9,13 @@
 		<!--BEGIN include name="DefaultBackground"-->
 			<control type="group">
 				<animation effect="zoom" center="960,540" end="102,102" time="0" condition="Integer.IsGreater(System.StereoscopicMode,0)">conditional</animation>
-				<control type="image">
+				<control type="image" id="2">
 					<depth>DepthBackground</depth>
 					<!--include>FullScreenDimensions</include-->
 					<aspectratio>scale</aspectratio>
 					<animation effect="fade" start="100" end="bg_alpha" time="0" condition="Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))">Conditional</animation>
 					<animation effect="fade" start="0" end="100" time="100" condition="Window.Previous(fullscreenvideo) | Window.Previous(startup)">WindowOpen</animation>
-					<texture fallback="srr_SKINDEFAULT.jpg">$VAR[GlobalFanartVar]</texture>
+					<texture fallback="srr_SKINDEFAULT.jpg">srr_SKINDEFAULT.jpg</texture>
 				</control>
 				<control type="image">
 					<depth>DepthBackground</depth>
@@ -30,7 +30,11 @@
 			</control>
 		<!--END include name="DefaultBackground"-->
 
-	<!--BEGIN include>View_55_WideList</include -->
+	<default type="button"><!-- defaults does not work -->
+		<font>font14</font>
+		<textoffsetx>24</textoffsetx>
+		<pulseonselect>true</pulseonselect>
+	</default>
 
 		<control type="group"><description>Right side panel. this is where the comment and preview is shown</description>
 			<animation type="WindowOpen">  <effect type="fade" start="0" end="100" time="100" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation>
@@ -77,28 +81,29 @@
 						<label></label>
 					</control-->
 					
-					<control type="textbox" id="1000"><height>auto</height><font>font14</font></control><control type="button" id="2000"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1001"><height>auto</height><font>font14</font></control><control type="button" id="2001"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1002"><height>auto</height><font>font14</font></control><control type="button" id="2002"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1003"><height>auto</height><font>font14</font></control><control type="button" id="2003"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1004"><height>auto</height><font>font14</font></control><control type="button" id="2004"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1005"><height>auto</height><font>font14</font></control><control type="button" id="2005"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1006"><height>auto</height><font>font14</font></control><control type="button" id="2006"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1007"><height>auto</height><font>font14</font></control><control type="button" id="2007"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1008"><height>auto</height><font>font14</font></control><control type="button" id="2008"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1009"><height>auto</height><font>font14</font></control><control type="button" id="2009"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1010"><height>auto</height><font>font14</font></control><control type="button" id="2010"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1000"><height>auto</height><font>font14</font></control><control type="image" id="3000"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2000"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					
+					<control type="textbox" id="1001"><height>auto</height><font>font14</font></control><control type="image" id="3001"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2001"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1002"><height>auto</height><font>font14</font></control><control type="image" id="3002"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2002"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1003"><height>auto</height><font>font14</font></control><control type="image" id="3003"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2003"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1004"><height>auto</height><font>font14</font></control><control type="image" id="3004"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2004"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1005"><height>auto</height><font>font14</font></control><control type="image" id="3005"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2005"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1006"><height>auto</height><font>font14</font></control><control type="image" id="3006"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2006"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1007"><height>auto</height><font>font14</font></control><control type="image" id="3007"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2007"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1008"><height>auto</height><font>font14</font></control><control type="image" id="3008"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2008"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1009"><height>auto</height><font>font14</font></control><control type="image" id="3009"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2009"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1010"><height>auto</height><font>font14</font></control><control type="image" id="3010"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2010"><font>font14</font><textoffsetx>24</textoffsetx></control>
 
-					<control type="textbox" id="1011"><height>auto</height><font>font14</font></control><control type="button" id="2011"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1012"><height>auto</height><font>font14</font></control><control type="button" id="2012"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1013"><height>auto</height><font>font14</font></control><control type="button" id="2013"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1014"><height>auto</height><font>font14</font></control><control type="button" id="2014"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1015"><height>auto</height><font>font14</font></control><control type="button" id="2015"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1016"><height>auto</height><font>font14</font></control><control type="button" id="2016"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1017"><height>auto</height><font>font14</font></control><control type="button" id="2017"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1018"><height>auto</height><font>font14</font></control><control type="button" id="2018"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1019"><height>auto</height><font>font14</font></control><control type="button" id="2019"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					<control type="textbox" id="1020"><height>auto</height><font>font14</font></control><control type="button" id="2020"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1011"><height>auto</height><font>font14</font></control><control type="image" id="3011"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2011"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1012"><height>auto</height><font>font14</font></control><control type="image" id="3012"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2012"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1013"><height>auto</height><font>font14</font></control><control type="image" id="3013"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2013"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1014"><height>auto</height><font>font14</font></control><control type="image" id="3014"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2014"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1015"><height>auto</height><font>font14</font></control><control type="image" id="3015"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2015"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1016"><height>auto</height><font>font14</font></control><control type="image" id="3016"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2016"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1017"><height>auto</height><font>font14</font></control><control type="image" id="3017"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2017"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1018"><height>auto</height><font>font14</font></control><control type="image" id="3018"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2018"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1019"><height>auto</height><font>font14</font></control><control type="image" id="3019"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2019"><font>font14</font><textoffsetx>24</textoffsetx></control>
+					<control type="textbox" id="1020"><height>auto</height><font>font14</font></control><control type="image" id="3020"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2020"><font>font14</font><textoffsetx>24</textoffsetx></control>
 
 				</control>
 
@@ -131,7 +136,7 @@
 				<!--  animation effect="slide" end="0,-90" time="300" tween="sine" easing="inout" condition="$EXP[infodialog_active]">conditional</animation-->
 				<depth>DepthBars</depth>
 				<animation effect="fade" start="0" end="100" time="300" condition="[Window.Previous(fullscreenvideo) | Window.Previous(startup)] + !Window.IsVisible(1109)">WindowOpen</animation>
-				<control type="image">
+				<control type="image"><description>background:top bar</description>
 					<left>0</left>
 					<top>0</top>
 					<width>2000</width>
@@ -139,29 +144,20 @@
 					<texture>srr_InfoBar.png</texture>
 					<animation effect="fade" start="100" end="0" time="300" condition="Window.Next(screencalibration)">WindowClose</animation>
 				</control>
-				<control type="image"><description>little icon on Left of top bar </description>
-					<top>12</top>
+				<control type="image" id="3"><description>little icon on Left of top bar </description>
+					<top>4</top>
 					<left>10</left>
-					<width>50</width>
-					<height>50</height>
+					<width>83</width>
+					<height>73</height>
 					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
 					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
 					<texture colordiffuse="FF12A8DA">changelog.png</texture>
-					<aspectratio align="center" aligny="center">stretch</aspectratio>
+					<aspectratio align="left" aligny="center">keep</aspectratio>
 				</control>
-				<!--control type="button">
-					<top>0</top>
-					<width>120</width>
-					<height>100</height>
-					<onclick condition="!String.IsEmpty(Container.FolderPath)">Container.Update(" ",replace)</onclick>
-					<onclick condition="String.IsEmpty(Container.FolderPath)">Action(Back)</onclick>
-					<texturefocus>-</texturefocus>
-					<texturenofocus>-</texturenofocus>
-				</control-->
 
 				<control type="textbox" id="1">
 					<top>0</top>
-					<left>85</left>
+					<left>100</left>
 					<height>76</height>
 					<width>1500</width>
 					<autoscroll delay="3000" time="2000" repeat="4000">true</autoscroll>
@@ -173,7 +169,7 @@
 					<top>40</top>
 					<label></label>
 					<font>font10</font>
-					<left>85</left>
+					<left>100</left>
 					<shadowcolor>text_shadow</shadowcolor>
 					<height>100</height>
 					<width>auto</width>
