@@ -30,7 +30,6 @@ import xbmcgui
 from xbmcgui import ControlButton
 
 from utils import build_script, generator
-#import xbmcplugin
 
 addon = xbmcaddon.Addon()
 addonID    = addon.getAddonInfo('id')  #script.reddit.reader
@@ -70,8 +69,6 @@ class contextMenu(xbmcgui.WindowXMLDialog):
             self.close()
 
     def onClick(self, controlID):
-        from reddit import assemble_reddit_filter_string
-
         selected_item=self.list_control.getSelectedItem()
         di_url=selected_item.getPath()
         xbmc.executebuiltin( di_url  )
@@ -165,7 +162,6 @@ class cGUI(xbmcgui.WindowXML):
             #item_type=clicked_item.getProperty('item_type').lower()
             pass
 
-
         log( "  clicked %s  IsPlayable=%s  url=%s " %( repr(clicked_item),item_type, di_url )   )
         if item_type=='playable':
                 #a big thank you to spoyser (http://forum.kodi.tv/member.php?action=profile&uid=103929) for this help
@@ -191,7 +187,7 @@ class cGUI(xbmcgui.WindowXML):
         if focused_control==self.main_control_id:  #main_control_id is the listbox
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
-            item_type=item.getProperty('item_type').lower()
+            #item_type=item.getProperty('item_type').lower()
 
             if action in [xbmcgui.ACTION_CONTEXT_MENU]:
                 self.pop_context_menu(item)
@@ -377,18 +373,6 @@ class listSubRedditGUI(cGUI):
     reddit_query_of_this_gui=''
     SUBREDDITS_LIST=550
     SIDE_SLIDE_PANEL=9000
-    #all controls in the side panel needs to be included in focused_control ACTION_MOVE_RIGHT check
-    BTN_GOTO_SUBREDDIT=6052
-    BTN_ZOOM_N_SLIDE=6053
-    BTN_PLAY_ALL=6054
-    BTN_SLIDESHOW=6055
-    BTN_READ_HTML=6056
-    BTN_PLAY_FROM_HERE=6057
-    BTN_COMMENTS=6058
-    BTN_SEARCH=6059
-    BTN_RELOAD=6060
-    IMG_POST_PREVIEW=201
-    IMG_POST_PREVIEW2=203
     SLIDER_CTL=17
     ALBUM_LIST=5501
 
@@ -459,9 +443,9 @@ class listSubRedditGUI(cGUI):
             if action in [xbmcgui.ACTION_MOVE_LEFT]:
                 self.setFocusId(self.main_control_id)
 
-        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW, self.BTN_READ_HTML, self.BTN_COMMENTS, self.BTN_SEARCH, self.BTN_RELOAD]:
-            if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
-                self.setFocusId(self.main_control_id)
+#        if focused_control in [self.SIDE_SLIDE_PANEL,self.SUBREDDITS_LIST,self.BTN_GOTO_SUBREDDIT,self.BTN_ZOOM_N_SLIDE,self.BTN_SLIDESHOW, self.BTN_READ_HTML, self.BTN_COMMENTS, self.BTN_SEARCH, self.BTN_RELOAD]:
+#            if action in [xbmcgui.ACTION_MOVE_RIGHT, xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
+#                self.setFocusId(self.main_control_id)
 
         if focused_control==self.ALBUM_LIST:
             #SelectedPosition = self.album_listbox.getSelectedPosition()
@@ -505,100 +489,6 @@ class listSubRedditGUI(cGUI):
 #            yt=ClassYoutube(link_url)
 #            links_dictList=yt.get_more_info()  #returns a list of dict same as one used for albums
         pass
-
-
-#    def play_from_here(self):
-#        i=self.gui_listbox.getSelectedPosition()
-#        list_item_bs = self.gui_listbox.getListItem(i-1)
-#        post_id_bs   = list_item_bs.getProperty('post_id')
-#
-#        #replace or put &after=post_id to the reddit query so that the returned posts will be "&after=post_id"
-#        rq=self.reddit_query_of_this_gui.split('&after=')[0]
-#        #log('  rq= %s ' %( rq ) )
-#        if post_id_bs:
-#            rq = rq + '&after=' + post_id_bs
-#        #log('  rq= %s ' %( rq ) )
-#
-#        action=build_script('autoPlay', rq,'','')
-#        log('  PLAY_FROM_HERE %d %s %s' %( i, post_id_bs, list_item_bs.getLabel() ) )
-#        self.busy_execute_sleep(action, 10000,False)
-
-class commentsGUI(cGUI):
-    BTN_LINKS=6771
-    links_on_top=False
-    links_top_selected_position=0
-    listbox_selected_position=0
-
-    #NOTE: i cannot get the links button to hide. so instead, I set a property when calling this class and have the button xml check for this property.
-    #self.btn_links = self.getControl(self.BTN_LINKS)
-    #self.btn_links.setVisible(True)
-    def onInit(self):
-        cGUI.onInit(self)
-
-        #after playing a video, onInit is called again. we return the list to the state where it was at.
-        if self.links_on_top:
-            self.sort_links_top()
-            if self.gui_listbox_SelectedPosition > 0:
-                self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
-            self.setFocus(self.gui_listbox)
-        #else:
-        #    self.sort_links_normal()
-
-    def onAction(self, action):
-        #self.btn_links.setVisible(True)
-        focused_control=self.getFocusId()
-        if action in [ xbmcgui.ACTION_MOVE_LEFT ]:
-            if focused_control==self.main_control_id:
-                self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
-                item = self.gui_listbox.getSelectedItem()
-                self.setFocusId(self.BTN_LINKS)
-            elif focused_control==self.BTN_LINKS:
-                self.close()
-
-        if action in [ xbmcgui.ACTION_MOVE_RIGHT ]:
-            if focused_control==self.BTN_LINKS:
-                self.setFocusId(self.main_control_id)
-
-        if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
-            self.close()
-
-    pass
-
-    def onClick(self, controlID):
-        cGUI.onClick(self, controlID)
-
-        if controlID == self.BTN_LINKS:
-            self.toggle_links_sorting()
-            #set focus back to list so that user don't have to go back
-            self.setFocusId(self.main_control_id)
-
-    def getKey(self, li):
-        #for sorting the comments list with links on top
-        if li.getProperty('onClick_action'): return 1
-        else:                                return 2
-
-    def toggle_links_sorting(self):
-        if self.links_on_top:
-            self.sort_links_normal()
-        else:
-            self.sort_links_top()
-
-    def sort_links_top(self):
-        self.listbox_selected_position=self.gui_listbox.getSelectedPosition()
-
-        self.gui_listbox.reset()
-        self.gui_listbox.addItems( sorted( self.listing, key=self.getKey)  )
-        self.gui_listbox.selectItem( self.links_top_selected_position )
-        self.links_on_top=True
-
-    def sort_links_normal(self):
-        self.links_top_selected_position=self.gui_listbox.getSelectedPosition()
-        self.gui_listbox.reset()
-        self.gui_listbox.addItems( self.listing  )
-        self.gui_listbox.selectItem( self.listbox_selected_position )
-        self.links_on_top=False
-
-
 def log(message, level=xbmc.LOGNOTICE):
     xbmc.log("reddit.reader GUI:"+message, level=level)
 

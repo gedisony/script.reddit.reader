@@ -13,7 +13,6 @@ from default import addon, streamable_quality   #,addon_path,pluginhandle,addonI
 from default import reddit_userAgent, REQUEST_TIMEOUT
 from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff, nested_lookup
 
-
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
 use_addon_for_Liveleak    = addon.getSetting("use_addon_for_Liveleak") == "true"
@@ -38,9 +37,7 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'channel_id'         #used in youtube videos
       ,'video_id'           #used in youtube videos
       ]
-
 ytdl_sites=[]
-
 #deviantart mixtape.moe sli.mg
 
 class sitesBase(object):
@@ -285,8 +282,6 @@ class sitesBase(object):
 #    print dictList
 #    for item in dictList:
 #        print ' '.join([item[key] for key in keys])
-
-
 def all_same(items):
     #returns True if all items the same
     return all(x == items[0] for x in items)
@@ -305,16 +300,13 @@ class ClassYoutube(sitesBase):
     api_key='AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI'
 
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
-
         if not media_url:
             media_url=self.media_url
 
         o = urlparse.urlparse(media_url)
         query = urlparse.parse_qs(o.query)
 
-        #self.video_id=self.get_video_id( self.media_url )
         self.url_type, id_from_url=self.get_video_channel_user_or_playlist_id_from_url( self.media_url )
-        #log('      youtube video id:' + self.video_id )
 
         if self.url_type=='video':
             self.video_id=id_from_url
@@ -335,12 +327,6 @@ class ClassYoutube(sitesBase):
         else:
             self.link_action='playYTDLVideo'
             return media_url, self.TYPE_VIDEO
-
-#    def ret_album_list(self, album_url):
-#        self.url_type, id_from_url=self.get_video_channel_user_or_playlist_id_from_url( self.media_url )
-#
-#        if self.url_type in ['channel','playlist','user']:
-#            pass
 
     @classmethod
     def get_video_channel_user_or_playlist_id_from_url(self, youtube_url):
@@ -384,7 +370,6 @@ class ClassYoutube(sitesBase):
 
     @classmethod
     def get_video_id(self, yt_url):
-
         #video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
         #added parsing for video_id in kodi_youtube_plugin url
         video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/|plugin:\/\/plugin\.video\.youtube\/play\/\?video_id=)([a-zA-Z0-9_-]{11})', re.DOTALL)
@@ -405,7 +390,6 @@ class ClassYoutube(sitesBase):
                     video_id=match[0]
                 else:
                     log("    Can't get youtube video id:"+yt_url)
-
         return video_id
 
     @classmethod
@@ -519,7 +503,7 @@ class ClassYoutube(sitesBase):
             youtube_api_key=self.api_key
         return youtube_api_key
 
-    def get_more_info(self, type_='related'):
+    def ret_album_list(self, type_='related'):
         youtube_api_key=self.ret_api_key()
         links=[]
         query_params={}
@@ -2389,7 +2373,6 @@ class ClassEroshare(sitesBase):
         #    log('      retrieved:'+ str(content) )
 
         match = re.compile('var album\s=\s(.*)\;').findall(content.text)
-        #log('********* ' + match[0])
         if match:
             j = json.loads(match[0])
             items = j.get('items')
@@ -2405,7 +2388,6 @@ class ClassEroshare(sitesBase):
                     self.link_action=sitesBase.DI_ACTION_PLAYABLE
 
                 return playable_url, self.media_type
-
             else:
                 #check if all items are video or image
                 media_types = []
@@ -2428,7 +2410,6 @@ class ClassEroshare(sitesBase):
                         self.media_type=self.TYPE_VIDS
 
                     return link_url, self.media_type
-
                 else: #video and images
                     log('    eroshare link has mixed video and images %d' %len(items) )
                     self.link_action=None #sitesBase.DI_ACTION_YTDL

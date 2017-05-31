@@ -663,7 +663,7 @@ def listRelatedVideo(url,name,type_):
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
             else: # 'channel' 'related default
-                links_dictList=yt.get_more_info(type_)  #returns a list of dict same as one used for albums
+                links_dictList=yt.ret_album_list(type_)  #returns a list of dict same as one used for albums
             xbmc_busy(False)
 
             if links_dictList:
