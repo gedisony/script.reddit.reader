@@ -505,7 +505,9 @@ def playYTDLVideo(url, name, type_):
 
 def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
-    #url="d://mp4-live-mpd-AV-BS.mpd.xml"
+    #log('***befor:'+repr(url))
+    url=urllib.quote_plus(url.encode('utf-8'), safe="&$+,/:;=?@#<>[]{}|\^%")
+    #log('***after :'+repr(url))
     title=video_info.get('title') or title
     ytdl_format=video_info.get('ytdl_format')
     if ytdl_format:

@@ -50,11 +50,9 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     label_search=translation(32520)
 
     cxm_list=[]
-    if cxm_show_html_to_text:
-        cxm_list.append((label_html_to_text , build_script('readHTML', link_url)         ))
 
-    if cxm_show_open_browser:
-        cxm_list.append((label_open_browser , build_script('openBrowser', link_url)         ))
+    cxm_list.extend( build_link_in_browser_context_menu_entries(link_url) )
+    cxm_list.extend( build_open_browser_to_pair_context_menu_entries(link_url) )
 
     if cxm_show_comments:
         cxm_list.append((label_view_comments , build_script('listLinksInComment', commentsUrl )  ))
@@ -151,6 +149,31 @@ def build_reddit_context_menu_entries(url):
 
     return cxm_list
 
+#Open links in browser
+def build_link_in_browser_context_menu_entries(url):
+    label_html_to_text=translation(32502)
+    label_open_browser=translation(32503)
+    cxm_list=[]
+    if cxm_show_html_to_text:
+        cxm_list.append((label_html_to_text , build_script('readHTML', url)         ))
+
+    if cxm_show_open_browser:
+        cxm_list.append((label_open_browser , build_script('openBrowser', url)         ))
+
+    return cxm_list
+
+def build_open_browser_to_pair_context_menu_entries(url):
+    cxm_list=[]
+    lcase_url=url.lower()
+    if "openload.co" in lcase_url:
+        pairing_url="https://olpair.com"
+    if "thevideo.me" in lcase_url:
+        pairing_url="https://thevideo.me/pair"
+
+        if cxm_show_open_browser:
+            cxm_list.append(("Go to [B][COLOR=cyan]{}[/COLOR][/B]".format(pairing_url), build_script('openBrowser', pairing_url)         ))
+
+    return cxm_list
 
 if __name__ == '__main__':
     pass
