@@ -724,6 +724,8 @@ def reddit_comment_worker(idx, h, q_out,submitter):
             domain='subreddit'
         elif link_url.startswith('/u/'):
             domain='redditor'
+        elif link_url.startswith('#'): #some sort of css flair
+            link_url=''
         else:
             from urlparse import urlparse
             domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
