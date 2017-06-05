@@ -54,11 +54,16 @@ git checkout master
 # Merge upstream changes   ### use this to get your fork in github UP TO DATE with the actual thing on kodi
 git merge upstream/krypton   <-- errors -->   git reset --hard upstream/krypton  -- <-- force my fork to be same as upstream(kodi)
 
-
+***Your branch and 'origin/master' have diverged,
+    git pull
+    git add .
+    git commit -m "resolved conflict"
+    git push
+    (takes a little time)
 
 #then make our fork up to date with kodis
 git push origin krypton
-
+---Everything up-to-date
 
 
 
@@ -138,6 +143,91 @@ git push origin script.reddit.reader --force
 
 
 
+
+--------------------------------------------------------------------------------------------------------------------------------------
+new github notes (6/5/2017) special thanks to Skipmode A1  http://forum.kodi.tv/showthread.php?tid=280882&pid=2365444#pid2365444
+
+cd C:\Users\edipc\kodi stuff\repo-scripts
+git remote -v
+rem make sure that these are the origin and upstream repos
+pause
+
+rem get the latest changes from upstream:
+git checkout krypton
+
+rem Fetch upstream changes
+git fetch upstream
+rem Make sure you are on your 'master' branch
+git checkout master
+rem Merge upstream changes   ### use this to get your fork in github UP TO DATE with the actual thing on kodi
+rem force my fork in github to be same as upstream(kodi)
+git reset --hard upstream/krypton
+
+git merge upstream/krypton
+***Your branch and 'origin/master' have diverged,
+    git pull
+    git add .
+    git commit -m "resolved conflict"
+    git push
+    (takes a little time)
+
+#then make our fork up to date with kodis
+git push origin krypton
+
+---Everything up-to-date
+
+$ git push origin master
+Everything up-to-date
+
+rem continue if it says Already up-to-date
+pause
+
+#still on (master)
+rem Add the addon in your github as a remote
+git remote add script.module.requests-cache git@github.com:gedisony/script.module.requests-cache
+
+rem Fetch your addon from your github
+git fetch script.module.requests-cache
+
+rem Make a branch for your addon and go to that branch    #git checkout -b %1 script.module.requests-cache/master
+git checkout -b 0.0.1 script.module.requests-cache/master
+
+#now on (0.0.1)
+rem go to the krypton branch
+git checkout krypton
+
+#now on (krypton)
+rem delete the old version of the addon
+git rm .\script.module.requests-cache\ -r
+
+rem get the new version of the addon from the branch you created
+git read-tree --prefix=script.module.requests-cache/ -u 0.0.1
+
+#ls -la now shows the folder script.module.requests-cache\
+
+rem force remove .git files
+git rm -f script.module.requests-cache\.gitattributes
+git rm -f script.module.requests-cache\.gitignore
+
+pause
+
+#don't know how to use diff
+#rem show the differences
+#git diff --staged
+
+git status
+git add .
+git commit -m "[script.module.requests-cache] 0.0.1"
+
+rem push the stuff to the krypton branch in your github (if everything went ok):
+git push origin krypton
+
+go to github website:
+gedisony/repo-scripts
+
+upper left : base fork: xbmc/repo-scripts         base:    krypton
+upper right: head fork: gedisony/repo-scripts     compare: krypton
+(click on green button create pull request)
 
 
 
