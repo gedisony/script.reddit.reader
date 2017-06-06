@@ -32,9 +32,9 @@ msgctxt "#32007"
 msgid "Custom Multireddit"
 msgstr ""
 
-#Show youtube.com links //Show vimeo.com links
+#Posts to youtube.com //Posts to vimeo.com
 msgctxt "#32008"
-msgid "Show %s links"
+msgid "Posts to "
 msgstr ""
 
 #failed to retrieve link for xbmc
@@ -107,10 +107,6 @@ msgstr ""
 #notification that we're checking websites gathering icons
 msgctxt "#32023"
 msgid "Gathering icons"
-msgstr ""
-
-msgctxt "#32024"
-msgid "Gathering icons.. %s"
 msgstr ""
 
 msgctxt "#32025"

@@ -16,7 +16,7 @@
 		<provides>executable</provides>
 	</extension>
 	<extension point="xbmc.ui.screensaver" library="screensaver.py" />
-    
+
     <extension point="xbmc.addon.metadata">
         <platform>all</platform>
         <summary lang="en_GB">Browse Reddit on Kodi</summary>
