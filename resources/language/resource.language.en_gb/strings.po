@@ -72,7 +72,7 @@ msgstr ""
 
 #description for custom search shortcut on index page
 msgctxt "#32016"
-msgid "Custom Search"
+msgid "Search"
 msgstr ""
 
 #YTDL dialogProgressBG message
@@ -80,9 +80,10 @@ msgctxt "#32017"
 msgid "Parsing multiple videos.."
 msgstr ""
 
-
-
-
+#description to open settings
+msgctxt "#32018"
+msgid "Settings"
+msgstr ""
 
 msgctxt "#32019"
 msgid "Shortcut added"
@@ -117,7 +118,7 @@ msgctxt "#32026"
 msgid "No playable items"
 msgstr ""
 
-#32025-32059 unused
+#32027-32059 unused
 
 
 
@@ -236,16 +237,17 @@ msgctxt "#32107"
 msgid "Hide NSFW content"
 msgstr ""
 
-msgctxt "#32107"
-msgid "Hide NSFW content"
-msgstr ""
-
 msgctxt "#32108"
 msgid "Main GUI skin"
 msgstr ""
 
 msgctxt "#32109"
 msgid "Hide links in comment with these words (csv)"
+msgstr ""
+
+#intentionally left blank; these are the filter words in csv
+msgctxt "#32110"
+msgid ""
 msgstr ""
 
 #32109-32111 empty

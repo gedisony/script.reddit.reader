@@ -29,7 +29,7 @@ import xbmcaddon
 import xbmcgui
 from xbmcgui import ControlButton
 
-from utils import build_script, generator
+from utils import build_script, generator, translation
 
 addon = xbmcaddon.Addon()
 addonID    = addon.getAddonInfo('id')  #script.reddit.reader
@@ -269,7 +269,10 @@ class cGUI(xbmcgui.WindowXML):
                 liz.setProperty('nsfw', 'true' )
             listing.append(liz)
 
-        li_setting=compose_list_item( "Settings", "Program", "icon_settings.png", "script", "Addon.OpenSettings(%s)"%addonID )
+        li_search=compose_list_item( translation(32016), translation(32016), "icon_search_subreddit.png", "script", build_script("search", '', '') )
+        listing.append(li_search)
+
+        li_setting=compose_list_item( translation(32018), "Program", "icon_settings.png", "script", "Addon.OpenSettings(%s)"%addonID )
         listing.append(li_setting)
 
         return listing
@@ -606,17 +609,15 @@ class comments_GUI2(cGUI):
 
         if self.title_bar_text:
             self.ctl_title_bar = self.getControl(1)
-            #self.ctl_title_bar.setLabel(self.title_bar_text)
             self.ctl_title_bar.setText(self.title_bar_text)
-        #url="plugin://plugin.video.reddit_viewer/?url=plugin%3A%2F%2Fplugin.video.youtube%2Fplay%2F%3Fvideo_id%3D73lsIXzBar0&mode=playVideo"
-        #url="http://i.imgur.com/ARdeL4F.mp4"
 
         self.gui_listbox.addItems(self.items_for_listbox)
         self.setFocus(self.gui_listbox)
 
         if self.gui_listbox_SelectedPosition > 0:
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
-        self.onAction(0)
+
+        self.show_comment_children()
 
     def onFocus(self,controlId):
         if controlId==self.grouplist_scrollbar_id:
@@ -637,16 +638,21 @@ class comments_GUI2(cGUI):
         if focused_control==self.main_control_id:
             self.gui_listbox_SelectedPosition = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
-            if item: #item will be None if there are no comments. AttributeError
-                if item.getProperty('link_url'):
-                    self.clear_x_controls()
-                else:
-                    tlc_id=int(item.getProperty('tlc_id'))
-                    #log('    tlc_id:'+repr(tlc_id) +'\n      '+ repr(self.child_lists[tlc_id]) )
-                    self.populate_tlc_children(tlc_id)
+            if item:
+                self.show_comment_children()
 
                 if action in [xbmcgui.ACTION_CONTEXT_MENU]:
                     self.pop_context_menu(item)
+
+    def show_comment_children(self):
+        item = self.gui_listbox.getSelectedItem()
+        if item: #item will be None if there are no comments. AttributeError
+            if item.getProperty('link_url'):
+                self.clear_x_controls()
+            else:
+                tlc_id=int(item.getProperty('tlc_id'))
+                #log('    tlc_id:'+repr(tlc_id) +'\n      '+ repr(self.child_lists[tlc_id]) )
+                self.populate_tlc_children(tlc_id)
 
     def populate_tlc_children(self,tlc_id):
         #controls_generator=generator(controls)

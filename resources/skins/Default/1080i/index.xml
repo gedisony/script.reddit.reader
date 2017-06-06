@@ -185,7 +185,7 @@
 					<height>810</height>
 					<font>font14</font>
 					<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-					<visible>isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<visible>String.IsEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<visible>!Player.HasMedia</visible>
 					<label>$INFO[Container(55).ListItem.Plot]</label>					<!-- label>$INFO[ListItem.Label]</label-->
 				</control>
@@ -197,7 +197,7 @@
 					<height>156</height>
 					<font>font13</font>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
+					<!--visible>!String.IsEmpty(Container(55).ListItem.Art(thumb)</visible-->
 					<visible>!Control.IsVisible(65591)</visible>
 					
 					<label>$INFO[Container(55).ListItem.Plot]</label>					
@@ -210,7 +210,7 @@
 					<height>756</height>
 					<aspectratio>keep</aspectratio>
 					<fadetime>300</fadetime>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<visible>!String.IsEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<visible>!Player.HasMedia</visible>
 					<texture fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
