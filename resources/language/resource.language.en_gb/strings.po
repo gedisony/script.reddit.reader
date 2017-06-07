@@ -250,7 +250,10 @@ msgctxt "#32110"
 msgid ""
 msgstr ""
 
-#32109-32111 empty
+msgctxt "#32111"
+msgid "Open the first link in the text post instead of viewing the comments[CR]for the following subreddits. (csv)"
+msgstr ""
+
 
 msgctxt "#32112"
 msgid "Use youtube_dl add-on for Youtube videos"

@@ -9,6 +9,9 @@
         <setting id="use_slideshow_for_album"  type="bool" label="32222" default="false"/>
         <setting                               type="sep" />
         <setting id="main_gui_skin"            type="text" label="32108" default="main_list01.xml"/>
+        <setting                               type="sep" />
+        <setting                               type="lsep"    label="32111" enable="true"/>
+        <setting id="use_first_link_in_textpost_for_the_following_subreddits"  type="text"    label="32110" default=""/>
     </category>
 
     <category label="32200">

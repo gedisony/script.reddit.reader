@@ -10,7 +10,7 @@ screensaver_subreddit = addon.getSetting("screensaver_subreddit")
 from resources.lib.reddit import assemble_reddit_filter_string
 
 if __name__ == '__main__':
-    xbmc.log('starting reddit_reader screensaver',xbmc.LOGNOTICE)
+    xbmc.log('starting reddit_reader screensaver',xbmc.LOGDEBUG)
     reddit_url=assemble_reddit_filter_string(search_string='',subreddit=screensaver_subreddit )
 
     #xbmc.executescript("script.reddit.reader,mode=autoSlideshow&url=https%3A%2F%2Fwww.reddit.com%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10&name=&type=")

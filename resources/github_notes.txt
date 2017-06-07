@@ -89,7 +89,7 @@ Untracked files:
 
 nothing added to commit but untracked files present
 
-edipc@DESKTOP-5C55U1P MINGW64 ~/kodi stuff/repo-plugins (add-on-branch-name)
+ ~/kodi stuff/repo-plugins (add-on-branch-name)
 $ git add .    <---- did this to fix the error.
 
 $ git commit -m "[script.reddit.reader] 0.7.1"  <------- this will now work
@@ -147,7 +147,7 @@ git push origin script.reddit.reader --force
 --------------------------------------------------------------------------------------------------------------------------------------
 new github notes (6/5/2017) special thanks to Skipmode A1  http://forum.kodi.tv/showthread.php?tid=280882&pid=2365444#pid2365444
 
-cd C:\Users\edipc\kodi stuff\repo-scripts
+cd kodi stuff\repo-scripts
 git remote -v
 rem make sure that these are the origin and upstream repos
 pause
@@ -157,13 +157,16 @@ git checkout krypton
 
 rem Fetch upstream changes
 git fetch upstream
+
 rem Make sure you are on your 'master' branch
 git checkout master
+
 rem Merge upstream changes   ### use this to get your fork in github UP TO DATE with the actual thing on kodi
 rem force my fork in github to be same as upstream(kodi)
 git reset --hard upstream/krypton
 
 git merge upstream/krypton
+
 ***Your branch and 'origin/master' have diverged,
     git pull
     git add .
@@ -185,12 +188,17 @@ pause
 #still on (master)
 rem Add the addon in your github as a remote
 git remote add script.module.requests-cache git@github.com:gedisony/script.module.requests-cache
+git remote add script.reddit.reader git@github.com:gedisony/script.reddit.reader
+
 
 rem Fetch your addon from your github
 git fetch script.module.requests-cache
+git fetch script.reddit.reader
 
 rem Make a branch for your addon and go to that branch    #git checkout -b %1 script.module.requests-cache/master
 git checkout -b 0.0.1 script.module.requests-cache/master
+git checkout -b srr099 script.reddit.reader/master
+
 
 #now on (0.0.1)
 rem go to the krypton branch
@@ -199,6 +207,7 @@ git checkout krypton
 #now on (krypton)
 rem delete the old version of the addon
 git rm .\script.module.requests-cache\ -r
+rm script.reddit.reader -r
 
 rem get the new version of the addon from the branch you created
 git read-tree --prefix=script.module.requests-cache/ -u 0.0.1
@@ -209,6 +218,23 @@ rem force remove .git files
 git rm -f script.module.requests-cache\.gitattributes
 git rm -f script.module.requests-cache\.gitignore
 
+***** PREPARE FOR RELEASE DELETE/EDIT kodi stuff\repo-scripts\script.reddit.reader
+.gitignore
+icon.pdn
+\resources\github_notes.txt
+\resources\skins\Default\media\icons.psd
+\resources\skins\Default\media\types.psd
+
+open notepad ++
+  - Find in Files :..\kodi stuff\repo-scripts\script.reddit.reader
+  - search for comments (regex)-->    ^\s*\#.*?(?=\r?$)
+  - replace with nothing (put the first few lines in file back)
+
+  addon.xml
+    - change xbmc.python version to 2.25  (for krypton)
+
+  change LOGNOTICE to LOGDEBUG in utils.py and guis.py
+
 pause
 
 #don't know how to use diff
@@ -218,12 +244,14 @@ pause
 git status
 git add .
 git commit -m "[script.module.requests-cache] 0.0.1"
+git commit -m "[script.reddit.reader] 0.9.9"
 
 rem push the stuff to the krypton branch in your github (if everything went ok):
 git push origin krypton
 
 go to github website:
 gedisony/repo-scripts
+Change branch to krypton
 
 upper left : base fork: xbmc/repo-scripts         base:    krypton
 upper right: head fork: gedisony/repo-scripts     compare: krypton

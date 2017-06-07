@@ -11,13 +11,14 @@ from Queue import Queue
 import os,sys
 
 from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, subredditsPickle, int_CommentTreshold,addonUserDataFolder,CACHE_FILE
-from utils import xbmc_busy, log, translation
+from utils import xbmc_busy, log, translation, post_excluded_from
 
 
 use_requests_cache   = addon.getSetting("use_requests_cache") == "true"
 default_frontpage    = addon.getSetting("default_frontpage")
 no_index_page        = addon.getSetting("no_index_page") == "true"
 main_gui_skin        = addon.getSetting("main_gui_skin")
+use_first_link_in_textpost_for_the_following_subreddits=addon.getSetting("use_first_link_in_textpost_for_the_following_subreddits")
 
 if use_requests_cache:
     import requests_cache
@@ -278,6 +279,7 @@ def reddit_post_worker(idx, entry, q_out):
     import datetime
     from utils import pretty_datediff, clean_str, get_int, format_description
     from reddit import determine_if_video_media_from_reddit_json
+    from domains import sitesBase
     try:
         credate = ""
         is_a_video=False
@@ -306,12 +308,14 @@ def reddit_post_worker(idx, entry, q_out):
                 description=clean_str(data,['body'])
                 domain='Comment post'
 
-            description=format_description(description)
+            description=format_description(description, hide_text_in_parens=False)
+            first_link_in_description=None
+
             #title=strip_emoji(title) #an emoji in the title was causing a KeyError  u'\ud83c'
             title=format_description(title)
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
-            log("  POST%cTITLE%.2d=%s" %( ("v" if is_a_video else " "), idx, title ))
+            log("  POS%s%cTITLE%.2d=%s" %( kind, ("v" if is_a_video else " "), idx, title ))
             #log("description%.2d=%s" %(idx,description))
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
@@ -330,6 +334,14 @@ def reddit_post_worker(idx, entry, q_out):
             author=clean_str(data,['author'])
             #log("     DOMAIN%.2d=%s" %(idx,domain))
 
+            #post_excluded_from() is a misnomer. it just returns true if subreddit is in csv-list
+            if (post_excluded_from( use_first_link_in_textpost_for_the_following_subreddits, subreddit) or
+                post_excluded_from( use_first_link_in_textpost_for_the_following_subreddits, 'all')        ):
+                first_link_in_description=sitesBase.get_first_url_from(description)
+                #override the domain so that bottom right of gui matches link
+                if first_link_in_description:
+                    domain = '{uri.netloc}'.format( uri=urlparse.urlparse( first_link_in_description ) )
+
             ups = data.get('score',0)       #downs not used anymore
             num_comments = data.get('num_comments',0)
 
@@ -341,7 +353,7 @@ def reddit_post_worker(idx, entry, q_out):
 #            log('    link_url='+link_url)
 #            log('   permalink='+clean_str(data,['permalink']))
 #            log('    media_oembed_url='+media_oembed_url)
-            media_url=next((item for item in [d_url,link_url,media_oembed_url] if item ), '')
+            media_url=next((item for item in [first_link_in_description,d_url,link_url,media_oembed_url] if item ), '')
             #log("     MEDIA%.2d=%s" %(idx,media_url))
 
             thumb=clean_str(data,['thumbnail'])
@@ -727,8 +739,7 @@ def reddit_comment_worker(idx, h, q_out,submitter):
         elif link_url.startswith('#'): #some sort of css flair
             link_url=''
         else:
-            from urlparse import urlparse
-            domain = '{uri.netloc}'.format( uri=urlparse( link_url ) )
+            domain = '{uri.netloc}'.format( uri=urlparse.urlparse( link_url ) )
 
         if link_url:
             log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
