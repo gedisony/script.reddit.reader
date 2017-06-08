@@ -1,3 +1,6 @@
+1.0.0
+  - context menu to show youtube playlist videos if link has playlist id
+  - add option to open link in textpost when clicked
 0.9.9 (06-06-2017)
   - prep for Leia
     - isEmpty() is now String.IsEmpty()

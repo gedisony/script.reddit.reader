@@ -651,6 +651,7 @@ def listRelatedVideo(url,name,type_):
     from domains import ClassYoutube
     from utils import dictlist_to_listItems
     from ContextMenus import build_youtube_context_menu_entries
+    import requests
 
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
     if match:
@@ -690,7 +691,7 @@ def listRelatedVideo(url,name,type_):
             else:
                 xbmc_notify('Nothing to list', url)
 
-        except ValueError as e:
+        except (ValueError, requests.exceptions.RequestException) as e:
             xbmc_notify('Error', str(e))
         finally:
             xbmc_busy(False)

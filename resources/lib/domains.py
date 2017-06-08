@@ -168,14 +168,18 @@ class sitesBase(object):
         log("    %s error:%s %s" %( self.__class__.__name__, error_code ,request_url) )
     @classmethod
     def get_first_url_from(self,string_with_url,return_all_as_list=False):
-        if string_with_url:
+        #first, search for [link description](https:www.yhotuve.com/...) pattern
+        #  NOTE that the [...](...) pattern has a space inserted between the [] and () in format_description() and we account for this in the regex
+        match = re.compile('\[.*?\][ ]??\((https?:\/\/.*?)\)').findall(string_with_url)
+        if not match:
             match = re.compile("(https?://[^\s/$.?#].[^\s]*)['\\\"]?(?:$)?").findall(string_with_url)
-            #log('   get_first_url_from:matches' + repr(match) )
-            if match:
-                if return_all_as_list:
-                    return match
-                else:
-                    return match[0]
+
+        #log('   get_first_url_from:matches' + repr(match) )
+        if match:
+            if return_all_as_list:
+                return match
+            else:
+                return match[0]
 
     @classmethod
     def split_text_into_links(self,string_with_url):
@@ -349,6 +353,15 @@ class ClassYoutube(sitesBase):
                 return 'user', user_id
         return '',''
 
+    @classmethod
+    def get_playlist_id_from_url(self, youtube_url):
+        o = urlparse.urlparse(youtube_url)
+        query = urlparse.parse_qs(o.query)
+
+        playlist_id=query.get('list',None)
+        if playlist_id:
+            return playlist_id[0]
+
     def return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self, video_id=None):
         if not video_id:
             video_id=self.video_id
@@ -515,6 +528,9 @@ class ClassYoutube(sitesBase):
             if not channel_id:
                 raise ValueError('Could not get channel_id')
             request_action, query_params = self.build_query_params_for_channel_videos(youtube_api_key,channel_id)
+        elif type_=='playlist':  #here, user specifically asked to show videos in playlist via context menu
+            playlist_id=self.get_playlist_id_from_url( self.media_url )
+            request_action, query_params = self.build_query_params_for_playlist_videos(youtube_api_key,playlist_id)
         else:  #if type_=='related':
             if self.url_type=='video':
                 self.video_id=id_from_url
@@ -637,7 +653,7 @@ class ClassYoutube(sitesBase):
                             'label2': pretty_date,
                             'description': description,
                             'url': playable_url,
-                            'thumb': next((i for i in [thumb640,thumb480,thumb320] if i ), ''),
+                            'thumb': next((i for i in [thumb320,thumb480,thumb640] if i ), ''),
                             'isPlayable': 'true' if link_action==self.DI_ACTION_PLAYABLE else 'false',
                             'link_action':link_action,
                             'channel_id':channel_id,

@@ -301,7 +301,7 @@ def reddit_post_worker(idx, entry, q_out):
                 description=clean_str(data,['media','oembed','description'])
                 post_selftext=clean_str(data,['selftext'])
 
-                description=post_selftext+'[CR]'+description if post_selftext else description
+                description=post_selftext+'\n'+description if post_selftext else description
                 domain=clean_str(data,['domain'])
             else:
                 title=clean_str(data,['link_title'])

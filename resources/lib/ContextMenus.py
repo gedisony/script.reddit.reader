@@ -113,25 +113,32 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
 def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None):
     from domains import ClassYoutube
     cxm_list=[]
-    #log('build_youtube_context_menu_entries '+youtube_url)
-    match=re.compile( ClassYoutube.regex, re.I).findall( youtube_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
-    if match:
-        if not video_id: #no video id was supplied when this fn was called
-            video_id=ClassYoutube.get_video_id(youtube_url)
-        #see if we can parse channel id from url
-        channel_id_from_url=ClassYoutube.get_channel_id_from_url(youtube_url)
 
-        if type_=='channel': #no need to list the "show more videos from this channel" entry if we're already showing "videos from this channel"
-            cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
-        else:
-            cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
-            if video_id and not channel_id_from_url:#if we can parse channel id from url, and there is no video id, the url is for a channel. skip showing related videos
+    try:
+        match=re.compile( ClassYoutube.regex, re.I).findall( youtube_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
+        if match:
+            if not video_id: #no video id was supplied when this fn was called
+                video_id=ClassYoutube.get_video_id(youtube_url)
+            #see if we can parse channel id from url
+            channel_id_from_url=ClassYoutube.get_channel_id_from_url(youtube_url)
+            playlist_id_from_url=ClassYoutube.get_playlist_id_from_url(youtube_url)
+
+            if type_=='channel': #no need to list the "show more videos from this channel" entry if we're already showing "videos from this channel"
                 cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
-                cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
+            else:
+                cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
+                if video_id and not channel_id_from_url:#if we can parse channel id from url, and there is no video id, the url is for a channel. skip showing related videos
+                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
+                    cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
+            if playlist_id_from_url: #if there is a playlist id in the url, also show an entry for the playlist
+                cxm_list.append( (translation(32526)  , build_script("listRelatedVideo", youtube_url, title, 'playlist')  ) )
 
-        #url+= "/search.json?q=" + urllib.quote_plus(search_string)
-        if video_id:
-            cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
+            #url+= "/search.json?q=" + urllib.quote_plus(search_string)
+            if video_id:
+                cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
+
+    except Exception as e:
+        log('  EXCEPTION build_youtube_context_menu_entries():'+str(e))
 
     return cxm_list
 
