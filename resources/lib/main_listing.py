@@ -336,11 +336,12 @@ def reddit_post_worker(idx, entry, q_out):
 
             #post_excluded_from() is a misnomer. it just returns true if subreddit is in csv-list
             if (post_excluded_from( use_first_link_in_textpost_for_the_following_subreddits, subreddit) or
-                post_excluded_from( use_first_link_in_textpost_for_the_following_subreddits, 'all')        ):
+                post_excluded_from( use_first_link_in_textpost_for_the_following_subreddits, 'all')     and
+                domain.startswith('self.')):
                 first_link_in_description=sitesBase.get_first_url_from(description)
                 #override the domain so that bottom right of gui matches link
                 if first_link_in_description:
-                    domain = '{uri.netloc}'.format( uri=urlparse.urlparse( first_link_in_description ) )
+                    domain = '({uri.netloc})'.format( uri=urlparse.urlparse( first_link_in_description ) )
 
             ups = data.get('score',0)       #downs not used anymore
             num_comments = data.get('num_comments',0)

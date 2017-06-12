@@ -15,7 +15,8 @@
 					<aspectratio>scale</aspectratio>
 					<animation effect="fade" start="100" end="bg_alpha" time="0" condition="Player.HasMedia + String.IsEmpty(Window(Videos).Property(PlayingBackgroundMedia))">Conditional</animation>
 					<animation effect="fade" start="0" end="100" time="300" condition="Window.Previous(fullscreenvideo) | Window.Previous(startup)">WindowOpen</animation>
-					<texture fallback="srr_SKINDEFAULT.jpg">$VAR[GlobalFanartVar]</texture>
+					<texture fallback="srr_SKINDEFAULT.jpg">srr_SKINDEFAULT.jpg</texture>
+					<colordiffuse>FFFFFFFF</colordiffuse>
 				</control>
 			</control>
 		<!--END include name="DefaultBackground"-->
