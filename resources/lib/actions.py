@@ -155,7 +155,7 @@ def searchReddits(url, subreddit, type_):
         search_string=keyboard.getText()
 
         if search_string:
-            search_string=urllib.unquote_plus(search_string)
+            search_string=urllib.quote_plus(search_string,safe='&=') #only &= are used because they're in the initial_search_string
 
     #    #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
     #    #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all

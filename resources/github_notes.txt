@@ -13,13 +13,13 @@ delete:
 
 open notepad ++
  search in files :..\kodi stuff\script.reddit.reader
- 
+
  search for comments (regex)-->    ^\s*\#.*?(?=\r?$)
  replace with nothing (put the first few lines in file back)
- 
+
 addon.xml
  change xbmc.python version to 2.25  (for krypton)
- 
+
 change LOGNOTICE to LOGDEBUG in utils.py and guis.py
 
 
@@ -105,7 +105,7 @@ git push origin script.reddit.readerZZZ      <------- script.reddit.readerZZZ is
 *** go to browser, github, on your fork. make sure it does not say "This branch is X commit behind of xbmc:jarvis."
 *** if so:  git merge upstream/jarvis   +  git push origin jarvis
 
- 
+
 *** on browser: click on pull request
 upper left : base fork: xbmc/repo-plugins         base:    jarvis
 upper right: head fork: gedisony/repo-plugins     compare: add-on-branch-name
@@ -151,6 +151,12 @@ cd kodi stuff\repo-scripts
 git remote -v
 rem make sure that these are the origin and upstream repos
 pause
+
+***get upstream krypton branch (reset everything)
+***git checkout -b krypton upstream/krypton
+*** a file still said modified: script.video.randomtv/resources/language/resource.language.en_gb/strings.po
+*** vi .gitattribute and comment out the text=auto line. <--not sure if it works
+
 
 rem get the latest changes from upstream:
 git checkout krypton

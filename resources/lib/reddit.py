@@ -358,6 +358,10 @@ def parse_subreddit_entry(subreddit_entry_from_file):
     #save that view id in our global mailbox (retrieved by listSubReddit)
     #WINDOW.setProperty('viewid-'+subreddit, viewid)
 
+    if subreddit.startswith('*'):
+        entry_type='link'
+        description=translation(32027)  #"Saved Link"
+
     return entry_type, subreddit, alias, description
 
 def ret_settings_type_default_icon(entry_type):

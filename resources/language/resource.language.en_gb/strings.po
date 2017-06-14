@@ -118,6 +118,10 @@ msgctxt "#32026"
 msgid "No playable items"
 msgstr ""
 
+msgctxt "#32027"
+msgid "Saved link"
+msgstr ""
+
 #32027-32059 unused
 
 

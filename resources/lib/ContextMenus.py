@@ -100,7 +100,7 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
             cxm_list.append( (label_search        , build_script("search", '', '')  ) )
         else:
             label_search+=' {}'.format(colored_subreddit_full)
-            cxm_list.append( (label_search        , build_script("listSubReddit", '', subreddit)  ) )
+            cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
         #NOTE: below works for www.reddit.com but not for oauth.reddit.com
         #cxm_list.append( ('Search reddit posts with this link'    , build_script("listSubReddit", assemble_reddit_filter_string(link_url,'','',''), 'Search')  ) )
 
