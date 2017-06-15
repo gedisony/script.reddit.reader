@@ -168,13 +168,9 @@ def autoSlideshow(url, name, type_):
                     if addon.getSetting('use_reddit_preview')=='true':
                         if preview: image=preview
                         elif ld.poster: image=ld.poster
-                        #if preview: entries.append([title,preview,preview_w, preview_h,len(entries)]) #log('      (N)added preview:%s %s' %( title,preview) )
-                        #elif ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])    #log('      (N)added poster:%s %s' % ( title,ld.poster) )
                     else:
                         if ld.poster:  image=ld.poster #entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
                         elif preview: image=preview  #entries.append([title,preview,preview_w, preview_h,len(entries)])
-                        #if ld.poster: entries.append([title,ld.poster,preview_w, preview_h,len(entries)])
-                        #elif preview: entries.append([title,preview,preview_w, preview_h,len(entries)])
 
                     append_entry( entries, title,image,preview_w, preview_h, description )
             else:
@@ -445,9 +441,6 @@ class ScreensaverBase(object):
             #self.log('    %d images' % len(images))
 
         return images
-
-
-    #for movie, audio or tv shows
 
     def _get_folder_images(self, path):
         self.log('_get_folder_images started with path: %s' % repr(path))
@@ -967,17 +960,6 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
             self.txt_background.setImage('')
 
         if self.SHOW_TITLE:
-#             if self.info_requested:
-#                 self.txt_background.setPosition(0, 498)
-#                 self.image_label.setPosition(10, 500)
-#                 self.txt_background.setHeight(220)
-#                 self.image_label.setHeight(220)
-#             else:
-#                 self.txt_background.setPosition(0, 685)
-#                 self.image_label.setPosition(10, 683)
-#                 self.txt_background.setHeight(40)
-#                 self.image_label.setHeight(40)
-
             if self.image_label.getLabel() == desc_and_image[0]:  #avoid animating the same text label if previous one is the same
                 self.image_label.setAnimations( [ ('conditional', 'condition=true effect=fade delay=0 time=0 start=100 end=100  ' ) ]  )
             else:

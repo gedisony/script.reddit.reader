@@ -90,6 +90,7 @@ class cGUI(xbmcgui.WindowXML):
         self.subreddits_file = kwargs.get("subreddits_file")
         self.listing = kwargs.get("listing")
         self.main_control_id = kwargs.get("id")
+        self.title_bar_text = kwargs.get("title")
         #log( str(args) )
         #log(sys.argv[1])
 
@@ -218,50 +219,57 @@ class cGUI(xbmcgui.WindowXML):
 
             #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
             entry_type, subreddit, alias, shortcut_description=parse_subreddit_entry(subreddit_entry)
-            #log( subreddit + "   " + shortcut_description )
             icon=default_icon=ret_settings_type_default_icon(entry_type)
-            reddit_url= assemble_reddit_filter_string("",subreddit, "yes")
 
             pretty_label=prettify_reddit_query(alias)
             pretty_label=pretty_label.replace('+',' + ')
-            if entry_type=='domain':
-                #remove the identifier that this setting is a domain
-                pretty_label=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
 
-            if subreddit.lower() in ["all","popular"]:
-                liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
-            else:
-                if addtl_subr_info: #if we have additional info about this subreddit
-                    #log(repr(addtl_subr_info))
-                    title=addtl_subr_info.get('title','')+'\n'
-                    display_name=xstr(addtl_subr_info.get('display_name',''))
-                    if samealphabetic( title, display_name): title=''
-                    #if re.sub('\W+','', display_name.lower() )==re.sub('\W+','', title.lower()): title=''
-                    #display_name=re.sub('\W+','', display_name.lower() )
-                    #title=re.sub('\W+','', title.lower())
-
-                    header_title=xstr(addtl_subr_info.get('header_title',''))
-                    public_description=xstr( addtl_subr_info.get('public_description',''))
-                    nsfw=addtl_subr_info.get('over18')
-
-                    if samealphabetic( header_title, public_description): public_description=''
-                    if samealphabetic(title,public_description): public_description=''
-                    #if hassamealphabetic(header_title,title,public_description): public_description=''
-
-                    shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
-
+            if entry_type=='link':  #<-- added new ability to have youtube channels as a shortcut on the main screen
+                #here, the subreddit variable contains a url. we made sure that it points to a youtube channel(ContextMenus.py). that way, there is no need to specify 'channel' when calling listRelatedVideo
+                liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listRelatedVideo",subreddit,alias) )
+                if addtl_subr_info:
                     icon=addtl_subr_info.get('icon_img')
-                    banner=addtl_subr_info.get('banner_img')
-                    header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen
+            else: #domain, subreddit, combined, search, multireddit
+                reddit_url=assemble_reddit_filter_string("",subreddit, "yes")
 
-                    #log( subreddit + ' icon=' + repr(icon) +' header=' + repr(header))
-                    #picks the first item that is not None
-                    icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
-                    #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
+                if entry_type=='domain':
+                    #remove the identifier that this setting is a domain
+                    pretty_label=re.findall(r'(?::|\/domain\/)(.+)',subreddit)[0]
+
+                if subreddit.lower() in ["all","popular"]:
                     liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
-
                 else:
-                    liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
+                    if addtl_subr_info: #if we have additional info about this subreddit
+                        #log(repr(addtl_subr_info))
+                        title=addtl_subr_info.get('title','')+'\n'
+                        display_name=xstr(addtl_subr_info.get('display_name',''))
+                        if samealphabetic( title, display_name): title=''
+                        #if re.sub('\W+','', display_name.lower() )==re.sub('\W+','', title.lower()): title=''
+                        #display_name=re.sub('\W+','', display_name.lower() )
+                        #title=re.sub('\W+','', title.lower())
+
+                        header_title=xstr(addtl_subr_info.get('header_title',''))
+                        public_description=xstr( addtl_subr_info.get('public_description',''))
+                        nsfw=addtl_subr_info.get('over18')
+
+                        if samealphabetic( header_title, public_description): public_description=''
+                        if samealphabetic(title,public_description): public_description=''
+                        #if hassamealphabetic(header_title,title,public_description): public_description=''
+
+                        shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
+
+                        icon=addtl_subr_info.get('icon_img')
+                        banner=addtl_subr_info.get('banner_img')
+                        header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen
+
+                        #log( subreddit + ' icon=' + repr(icon) +' header=' + repr(header))
+                        #picks the first item that is not None
+                        icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
+                        #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
+                        liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
+
+                    else:
+                        liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
 
             liz.setArt({ "thumb": icon })
             liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )

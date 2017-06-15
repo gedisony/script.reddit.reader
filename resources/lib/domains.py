@@ -29,12 +29,12 @@ keys=[ 'li_label'           #  the text that will show for the list
       ,'type'               # video pictures  liz.setInfo(type='pictures',
       ,'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this
       ,'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-      ,'context_menu'       # ...
       ,'width'
       ,'height'
       ,'description'
       ,'link_action'
       ,'channel_id'         #used in youtube videos
+      ,'channel_name'
       ,'video_id'           #used in youtube videos
       ]
 ytdl_sites=[]
@@ -252,9 +252,11 @@ class sitesBase(object):
                 isPlayable=item.get('isPlayable')
                 link_action=item.get('link_action','')
                 channel_id=item.get('channel_id','')
+                channel_name=item.get('channel_name','')
                 video_id=item.get('video_id','')
 
             infoLabels={ "Title": title, "plot": desc }
+            #order is important here.
             e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
                ,label2                  #'li_label2'          #
                ,""                      #'li_iconImage'       #
@@ -264,12 +266,12 @@ class sitesBase(object):
                ,item_type               #'type'               # video pictures  liz.setInfo(type='pictures',
                ,isPlayable              #'isPlayable'         # key:value       liz.setProperty('IsPlayable', 'true')  #there are other properties but we only use this
                ,infoLabels              #'infoLabels'         # {"title": post_title, "plot": description, "plotoutline": description, "Aired": credate, "mpaa": mpaa, "Genre": "r/"+subreddit, "studio": hoster, "director": posted_by }   #, "duration": 1271}   (duration uses seconds for titan skin
-               ,'none'                  #'context_menu'       # ...
                ,width
                ,height
                ,desc                    #'description'
                ,link_action             #'link_action'
                ,channel_id              #'channel_id'
+               ,channel_name            #'channel_name'
                ,video_id                #'video_id'
                 ]
             self.dictList.append(dict(zip(keys, e)))
@@ -538,7 +540,7 @@ class ClassYoutube(sitesBase):
                 request_action='search'
                 query_params = {    #https://developers.google.com/youtube/v3/docs/search/list#relatedToVideoId
                     'key': youtube_api_key,
-                    'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
+                    'fields':'items(id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                     'type': 'video',
                     'maxResults': '50',
                     'part': 'snippet',
@@ -566,7 +568,7 @@ class ClassYoutube(sitesBase):
     def build_query_params_for_channel_videos(self,youtube_api_key, channel_id):
         return  'search', {
                 'key': youtube_api_key,
-                'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
+                'fields':'items(id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                 'type': 'video',         #video,channel,playlist.
     #            'kind': 'youtube#video',
                 'maxResults': '50',      # Acceptable values are 0 to 50
@@ -645,6 +647,7 @@ class ClassYoutube(sitesBase):
             thumb640=clean_str(i, ['snippet','thumbnails','standard','url']) #640x480
             thumb480=clean_str(i, ['snippet','thumbnails','high','url'])   #480x360
             thumb320=clean_str(i, ['snippet','thumbnails','medium','url']) #320x180
+            channelTitle=clean_str(i, ['snippet','channelTitle'])
 
             link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(videoId)
             #log('  link_action:'+link_action +' -->'+ playable_url)
@@ -657,6 +660,7 @@ class ClassYoutube(sitesBase):
                             'isPlayable': 'true' if link_action==self.DI_ACTION_PLAYABLE else 'false',
                             'link_action':link_action,
                             'channel_id':channel_id,
+                            'channel_name':channelTitle,
                             'video_id':videoId,
                             }  )
         return links
@@ -2746,7 +2750,7 @@ class ClassReddit(sitesBase):
     @classmethod
     def get_video_id(self, reddit_url):
         #returns subreddit name
-        match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://.+?\.reddit\.com\/r\/(.+?)(?:\/|$)' , reddit_url)
+        match = re.findall( '^\/?r\/(.+?)(?:\/|$)|https?://(?:.+?\.)?reddit\.com\/r\/(.+?)(?:\/|$)' , reddit_url)
         #returns an array of tuples
         if match:
             for m in match[0]:
@@ -3525,7 +3529,7 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
             prepped_media_url, media_type = hoster.get_playable(link_url, assume_is_video)
             #log( '    parsed: [%s] type=%s url=%s ' % ( hoster.link_action, media_type,  prepped_media_url ) )
             if not prepped_media_url:
-                log("  Failed to parse %s" %(link_url) )
+                log("  %s Failed to parse %s" %(hoster.__class__.__name__, link_url) )
 
             if needs_preview:
                 hoster.get_thumb_url()

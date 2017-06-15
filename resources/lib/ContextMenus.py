@@ -109,8 +109,7 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
 
     return cxm_list
 
-#called from actions.py listRelatedVideo() and reddit_comment_worker()
-def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None):
+def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None,channel_id=None,channel_name=None):
     from domains import ClassYoutube
     cxm_list=[]
 
@@ -132,6 +131,11 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=No
                     cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
             if playlist_id_from_url: #if there is a playlist id in the url, also show an entry for the playlist
                 cxm_list.append( (translation(32526)  , build_script("listRelatedVideo", youtube_url, title, 'playlist')  ) )
+
+            if channel_id:
+                #create a shortcut to this channel on the index page
+                channel_url="https://youtube.com/channel/{}".format(channel_id)
+                cxm_list.append( ("{0}{1}".format(translation(32527),channel_name), build_script("addSubreddit", "{0}[{1}]".format(channel_url,channel_name))  ) )
 
             #url+= "/search.json?q=" + urllib.quote_plus(search_string)
             if video_id:

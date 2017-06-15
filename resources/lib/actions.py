@@ -654,6 +654,7 @@ def listRelatedVideo(url,name,type_):
     import requests
 
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
+    gui_title_text=None
     if match:
         #log('***** isYouTubeable' + repr(url))
         yt=ClassYoutube(url)
@@ -676,15 +677,22 @@ def listRelatedVideo(url,name,type_):
                     link_url=li.getProperty('link_url')
                     video_id=li.getProperty('video_id')
                     label=li.getProperty('label')
-                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label)) )
+                    channel_name=li.getProperty('channel_name')
+                    channel_id=li.getProperty('channel_id')
+                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name)) )
 
                 if type_=='links_in_description':
                     from guis import text_to_links_gui
                     ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=name, poster=poster)
 
-                else: # 'channel' 'related default
+                else: # 'channel' 'related' default
+                    if type_=='related':
+                        gui_title_text="Related videos"
+                    else:
+                        gui_title_text="Channel:{}".format(links_dictList[0].get('channel_name'))
+
                     from guis import cGUI
-                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=name, poster=poster)
+                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
                     ui.include_parent_directory_entry=False
                 ui.doModal()
                 del ui
