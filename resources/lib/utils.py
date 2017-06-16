@@ -542,7 +542,10 @@ def clean_str(dict_obj, keys_list, default=''):
                 return default
             else:
                 continue
-        return unescape(dd.encode('utf-8'))
+        if hasattr(dd, 'encode'):#int does not have encode()
+            return unescape(dd.encode('utf-8'))
+        else:
+            return dd
     except (AttributeError,IndexError) as e:
         log( 'clean_str:' + str(e) )
         return default
@@ -777,7 +780,7 @@ def dictlist_to_listItems(dictlist):
                 liz.setProperty('is_video','true')
             else:
                 liz.setProperty('item_type','script')
-                liz.setProperty('onClick_action', build_script(link_action, media_url,'','') )
+                liz.setProperty('onClick_action', build_script(link_action, media_url,label,'') )
 
             liz.setArt({"thumb": ti })
 

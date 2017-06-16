@@ -135,6 +135,7 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=No
             if channel_id:
                 #create a shortcut to this channel on the index page
                 channel_url="https://youtube.com/channel/{}".format(channel_id)
+                cxm_list.append( (translation(32528)  , build_script("listRelatedVideo", channel_url, title, 'playlists')  ) )
                 cxm_list.append( ("{0}{1}".format(translation(32527),channel_name), build_script("addSubreddit", "{0}[{1}]".format(channel_url,channel_name))  ) )
 
             #url+= "/search.json?q=" + urllib.quote_plus(search_string)

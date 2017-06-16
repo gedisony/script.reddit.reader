@@ -79,7 +79,7 @@
 						<control type="textbox"><!-- ListItem.Label -->
 							<left>310</left>
 							<top>0</top>
-							<height>188</height>
+							<height>172</height>
 							<width>310</width>
 							<aligny>center</aligny>
 							<scrolltime>200</scrolltime>
@@ -119,7 +119,7 @@
 					<control type="textbox"><!-- ListItem.Label -->
 						<left>310</left>
 						<top>0</top>
-						<height>188</height>
+						<height>172</height>
 						<width>310</width>
 						<aligny>center</aligny>
 						<scrolltime>0</scrolltime>

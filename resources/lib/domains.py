@@ -533,14 +533,18 @@ class ClassYoutube(sitesBase):
         elif type_=='playlist':  #here, user specifically asked to show videos in playlist via context menu
             playlist_id=self.get_playlist_id_from_url( self.media_url )
             request_action, query_params = self.build_query_params_for_playlist_videos(youtube_api_key,playlist_id)
-        else:  #if type_=='related':
+        elif type_=='playlists':  #here, user specifically asked to show playlists in the channel. the url is required to be a channel (channel_url built in ContextMenus.py)
+            channel_id=self.get_channel_id_from_url( self.media_url )
+            request_action, query_params = self.build_query_params_for_playlists_in_channel(youtube_api_key,channel_id)
+
+        else:  #in this portion, we determine if we will determine what kind of related videos to list by the url provided. usually it is related by videoid, but we can also handle channel, user or playlist url's
             if self.url_type=='video':
                 self.video_id=id_from_url
 
                 request_action='search'
                 query_params = {    #https://developers.google.com/youtube/v3/docs/search/list#relatedToVideoId
                     'key': youtube_api_key,
-                    'fields':'items(id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
+                    'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                     'type': 'video',
                     'maxResults': '50',
                     'part': 'snippet',
@@ -568,7 +572,7 @@ class ClassYoutube(sitesBase):
     def build_query_params_for_channel_videos(self,youtube_api_key, channel_id):
         return  'search', {
                 'key': youtube_api_key,
-                'fields':'items(id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
+                'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                 'type': 'video',         #video,channel,playlist.
     #            'kind': 'youtube#video',
                 'maxResults': '50',      # Acceptable values are 0 to 50
@@ -603,6 +607,13 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet,contentDetails',
                 'forUsername': user_id,
             }
+    def build_query_params_for_playlists_in_channel(self,youtube_api_key, channel_id):
+        return  'playlists', {
+                'key': youtube_api_key,
+                'maxResults': '50',      # Acceptable values are 0 to 50
+                'part': 'snippet,contentDetails',
+                'channelId': channel_id,
+            }
 
     def get_id_from_user(self,user_id):
         query_params = {
@@ -627,13 +638,25 @@ class ClassYoutube(sitesBase):
         #log(r.text)
         j=r.json()
         items=j.get('items')
+        all_same_channel=all_same([clean_str(i, ['snippet','channelTitle']) for i in items])
+        #log(repr(channels))
         for i in items:
             #snippet has: publishedAt channelId title description thumbnails{}
+            kind=clean_str(i, ['kind'])
+            #log(repr(kind))
 
-            if request_action=='search':
-                videoId=clean_str(i, ['id','videoId'])
-            elif request_action=='playlistItems': #videoId is located somewhere else in the json if using playlistItems
-                videoId=clean_str(i, ['snippet','resourceId','videoId'])
+            if kind in ['youtube#searchResult','youtube#playlistItem']: #if request_action in ['search','playlistItems']:
+                if kind=='youtube#searchResult':
+                    videoId=clean_str(i, ['id','videoId'])
+                elif kind=='youtube#playlistItem':    #videoId is located somewhere else in the json if using playlistItems
+                    videoId=clean_str(i, ['snippet','resourceId','videoId'])
+                link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(videoId)
+
+            elif kind=='youtube#playlist': # if request_action=='playlists':     #these are playlists. we construct playlist url's
+                videoId=''
+                playlist_id=clean_str(i, ['id'])
+                link_action='listRelatedVideo'
+                playable_url="https://www.youtube.com/playlist?list={}".format(playlist_id)
 
             #log('video id:'+repr(videoId))
             publishedAt=clean_str(i, ['snippet','publishedAt'])
@@ -648,15 +671,21 @@ class ClassYoutube(sitesBase):
             thumb480=clean_str(i, ['snippet','thumbnails','high','url'])   #480x360
             thumb320=clean_str(i, ['snippet','thumbnails','medium','url']) #320x180
             channelTitle=clean_str(i, ['snippet','channelTitle'])
+            items_in_playlist=clean_str(i, ['contentDetails','itemCount'],default=0) #exists only for playlist. does not exist in searchResult or playlistItem
+            if items_in_playlist==1:
+                title="[B]{} video[/B]\n{}".format(items_in_playlist,title)
+            elif items_in_playlist>1:
+                title="[B]{} videos[/B]\n{}".format(items_in_playlist,title)
+            if not all_same_channel:
+                pretty_date="{} [I]@{}[/I]".format(pretty_date,channelTitle)
 
-            link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(videoId)
             #log('  link_action:'+link_action +' -->'+ playable_url)
             links.append( {'title': title,
                             'type': self.TYPE_VIDEO,
                             'label2': pretty_date,
                             'description': description,
                             'url': playable_url,
-                            'thumb': next((i for i in [thumb320,thumb480,thumb640] if i ), ''),
+                            'thumb': next((i for i in [thumb320,thumb480,thumb640] if i ), ''), #there are instances where a playlist will have a thumbnail that has three dots. (default no image thumbnail)
                             'isPlayable': 'true' if link_action==self.DI_ACTION_PLAYABLE else 'false',
                             'link_action':link_action,
                             'channel_id':channel_id,

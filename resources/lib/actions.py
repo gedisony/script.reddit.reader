@@ -652,7 +652,7 @@ def listRelatedVideo(url,name,type_):
     from utils import dictlist_to_listItems
     from ContextMenus import build_youtube_context_menu_entries
     import requests
-
+    #log('*****name='+repr(name))
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
     gui_title_text=None
     if match:
@@ -662,7 +662,8 @@ def listRelatedVideo(url,name,type_):
             yt.get_thumb_url()
             poster=yt.poster_url
             #log('  thung:'+yt.thumb_url)
-
+            url_type,_=yt.get_video_channel_user_or_playlist_id_from_url(url)
+            #log('  url_type:'+repr(url_type))
             xbmc_busy(True)
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
@@ -687,9 +688,20 @@ def listRelatedVideo(url,name,type_):
 
                 else: # 'channel' 'related' default
                     if type_=='related':
-                        gui_title_text="Related videos"
-                    else:
+                        gui_title_text="Related videos to {}".format(name)
+                    elif type_=='channel':
                         gui_title_text="Channel:{}".format(links_dictList[0].get('channel_name'))
+                    elif type_=='playlist':
+                        gui_title_text="{}".format(name)
+                    elif type_=='playlists':
+                        gui_title_text="Playlists in channel:{}".format(links_dictList[0].get('channel_name'))
+                    else:#type determined from url
+                        if url_type=='channel':
+                            gui_title_text="Videos in channel"
+                        elif url_type=='playlist':
+                            gui_title_text="{}".format(name)
+                        elif url_type=='user':
+                            gui_title_text="User Videos"
 
                     from guis import cGUI
                     ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
