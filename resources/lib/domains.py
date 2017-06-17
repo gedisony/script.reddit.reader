@@ -568,7 +568,7 @@ class ClassYoutube(sitesBase):
             #log(repr(links))
             self.assemble_images_dictList(links)
             return self.dictList
-
+    @classmethod
     def build_query_params_for_channel_videos(self,youtube_api_key, channel_id):
         return  'search', {
                 'key': youtube_api_key,
@@ -580,8 +580,8 @@ class ClassYoutube(sitesBase):
                 'order': 'date',
                 'channelId': channel_id,
             }
-    #not used, not tested.
-    def build_query_params_for_channel(self, channel_display_name):
+    @classmethod
+    def build_query_params_for_channel(self, channel_display_name):    #not used, not tested.
         return  'search', {
                 'key': self.ret_api_key(),
                 'fields':'items(id(videoId),snippet(publishedAt,channelId,title,description,thumbnails(medium)))',
@@ -591,6 +591,7 @@ class ClassYoutube(sitesBase):
                 'order': 'date',
                 'q': channel_display_name,
             }
+    @classmethod
     def build_query_params_for_playlist_videos(self,youtube_api_key, playlist_id):
         return  'playlistItems', {
                 'key': youtube_api_key,
@@ -600,6 +601,7 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet',
                 'playlistId': playlist_id,
             }
+    @classmethod
     def build_query_params_for_user_videos(self,youtube_api_key, user_id):
         return  'channels', {
                 'key': youtube_api_key,
@@ -607,6 +609,7 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet,contentDetails',
                 'forUsername': user_id,
             }
+    @classmethod
     def build_query_params_for_playlists_in_channel(self,youtube_api_key, channel_id):
         return  'playlists', {
                 'key': youtube_api_key,
@@ -630,14 +633,25 @@ class ClassYoutube(sitesBase):
         #log('channel_id:'+repr(channel_id) +' uploads:'+ repr(uploads))
         return channel_id,uploads
 
-    def get_video_list(self, request_action, query_params):
+    def get_video_list(self, request_action, query_params, direct_api_request_url=None, prev_page=1 ):
+        from utils import set_query_field
         links=[]
-        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(request_action,urllib.urlencode(query_params))
+        if direct_api_request_url:
+            log('direct api request url provided:'+repr(direct_api_request_url))
+            api_url=direct_api_request_url
+        else:
+            api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(request_action,urllib.urlencode(query_params))
         #log(api_url)
         r = self.requests_get(api_url)
         #log(r.text)
         j=r.json()
+
+        nextPageToken=clean_str(j, ['nextPageToken'])
+        totalResults=clean_str(j, ['pageInfo','totalResults'])
+        log('nextPageToken={}   totalResults={}'.format(nextPageToken,totalResults))
+
         items=j.get('items')
+
         all_same_channel=all_same([clean_str(i, ['snippet','channelTitle']) for i in items])
         #log(repr(channels))
         for i in items:
@@ -691,6 +705,20 @@ class ClassYoutube(sitesBase):
                             'channel_id':channel_id,
                             'channel_name':channelTitle,
                             'video_id':videoId,
+                            }  )
+        if nextPageToken:
+            new_url_with_next_page=set_query_field(api_url,'pageToken',nextPageToken,True)
+            links.append( {'title': "Page {}".format(prev_page + 1), #'Show more',
+                            'type': self.TYPE_ALBUM,
+                            'label2': None,
+                            'description': "More items from total:{}".format(totalResults),
+                            'url': new_url_with_next_page,
+                            'thumb': 'DefaultFolderNextSquare.png',
+                            'isPlayable': 'false',
+                            'link_action':'listMoreVideo',
+                            'channel_id':None,
+                            'channel_name':None,
+                            'video_id':None,
                             }  )
         return links
 

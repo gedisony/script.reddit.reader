@@ -69,10 +69,10 @@
 
 					<control type="group">
 						<control type="image">
-							<left>24</left>
-							<height>198</height>
+							<left>24</left><top>10</top>
+							<height>172</height>
 							<width>280</width>
-							<aspectratio aligny="center" align="left">keep</aspectratio>
+							<aspectratio aligny="center">keep</aspectratio>
 							<texture diffuse="gdx_diffuse2.png">$INFO[ListItem.Art(thumb)]</texture>
 						</control>
 							
@@ -109,10 +109,10 @@
 					</control>
 				
 					<control type="image">
-						<left>24</left>
-						<height>198</height>
+						<left>24</left><top>10</top>
+						<height>172</height>
 						<width>280</width>
-						<aspectratio aligny="center" align="left">keep</aspectratio>
+						<aspectratio aligny="center">keep</aspectratio>
 						<texture diffuse="gdx_diffuse2.png" >$INFO[ListItem.Art(thumb)]</texture>
 					</control>
 

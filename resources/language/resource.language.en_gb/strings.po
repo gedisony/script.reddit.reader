@@ -616,7 +616,11 @@ msgid "Create shortcut to "
 msgstr ""
 
 msgctxt "#32528"
-msgid "Playlists in channel"
+msgid "Playlists in this channel"
+msgstr ""
+
+msgctxt "#32529"
+msgid "Search (YouTube)"
 msgstr ""
 
 #: used in context menu. (not implemented in reddit.reader)

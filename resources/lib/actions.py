@@ -649,12 +649,9 @@ def listRelatedVideo(url,name,type_):
     #       'related' -related videos
     #only youtube is supported for now
     from domains import ClassYoutube
-    from utils import dictlist_to_listItems
-    from ContextMenus import build_youtube_context_menu_entries
     import requests
     #log('*****name='+repr(name))
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
-    gui_title_text=None
     if match:
         #log('***** isYouTubeable' + repr(url))
         yt=ClassYoutube(url)
@@ -667,47 +664,14 @@ def listRelatedVideo(url,name,type_):
             xbmc_busy(True)
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
+            elif type_=='search':
+                pass
             else: # 'channel' 'related default
                 links_dictList=yt.ret_album_list(type_)  #returns a list of dict same as one used for albums
             xbmc_busy(False)
 
             if links_dictList:
-                #log(pprint.pformat(links_dictList))
-                directory_items=dictlist_to_listItems(links_dictList)
-                for li in directory_items:
-                    link_url=li.getProperty('link_url')
-                    video_id=li.getProperty('video_id')
-                    label=li.getProperty('label')
-                    channel_name=li.getProperty('channel_name')
-                    channel_id=li.getProperty('channel_id')
-                    li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name)) )
-
-                if type_=='links_in_description':
-                    from guis import text_to_links_gui
-                    ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=name, poster=poster)
-
-                else: # 'channel' 'related' default
-                    if type_=='related':
-                        gui_title_text="Related videos to {}".format(name)
-                    elif type_=='channel':
-                        gui_title_text="Channel:{}".format(links_dictList[0].get('channel_name'))
-                    elif type_=='playlist':
-                        gui_title_text="{}".format(name)
-                    elif type_=='playlists':
-                        gui_title_text="Playlists in channel:{}".format(links_dictList[0].get('channel_name'))
-                    else:#type determined from url
-                        if url_type=='channel':
-                            gui_title_text="Videos in channel"
-                        elif url_type=='playlist':
-                            gui_title_text="{}".format(name)
-                        elif url_type=='user':
-                            gui_title_text="User Videos"
-
-                    from guis import cGUI
-                    ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
-                    ui.include_parent_directory_entry=False
-                ui.doModal()
-                del ui
+                dictlist_to_RelatedVideo_gui(links_dictList, url, url_type, name, type_, poster)
             else:
                 xbmc_notify('Nothing to list', url)
 
@@ -717,6 +681,71 @@ def listRelatedVideo(url,name,type_):
             xbmc_busy(False)
     else:
         xbmc_notify('cannot identify youtube url', url)
+
+def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=None ):
+    from utils import dictlist_to_listItems
+    from ContextMenus import build_youtube_context_menu_entries
+
+    gui_title_text=None
+    if dictlist:
+        #log(pprint.pformat(links_dictList))
+        directory_items=dictlist_to_listItems(dictlist)
+        for li in directory_items:
+            link_url=li.getProperty('link_url')
+            video_id=li.getProperty('video_id')
+            label=li.getProperty('label')
+            channel_name=li.getProperty('channel_name')
+            channel_id=li.getProperty('channel_id')
+            li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name)) )
+
+        if type_=='links_in_description':
+            from guis import text_to_links_gui
+            ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=title, poster=poster)
+
+        else: # 'channel' 'related' default
+            if type_=='related':
+                gui_title_text="Related videos to {}".format(title)
+            elif type_=='channel':
+                gui_title_text="Channel:{}".format(dictlist[0].get('channel_name'))
+            elif type_=='playlist':
+                gui_title_text="{}".format(title)
+            elif type_=='playlists':
+                gui_title_text="Playlists in channel:{}".format(dictlist[0].get('channel_name'))
+            else:#type determined from url
+                if url_type=='channel':
+                    gui_title_text="Videos in channel"
+                elif url_type=='playlist':
+                    gui_title_text="{}".format(title)
+                elif url_type=='user':
+                    gui_title_text="User Videos"
+                elif url_type=='more':
+                    gui_title_text="{}".format(title)
+
+            from guis import cGUI
+            ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
+            ui.include_parent_directory_entry=False
+        ui.doModal()
+        del ui
+
+def listMoreVideo(google_api_request_url,label_name,type_):
+    from domains import ClassYoutube
+    from utils import safe_cast
+
+    #https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&type=video&maxResults=50&key=AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI&playlistId=PLJ8cMiYb3G5eJquaiw6Xlyt3Qhe-3e7Xh
+    yt=ClassYoutube(google_api_request_url)#this will be a broken class because it won't be able to parse 
+
+    just_numbers_from_label=re.sub("[^0-9]", "", label_name) #Removes all non-numeric characters  "Page 2" becomes "2"
+    page_indicator=safe_cast(just_numbers_from_label,int,default=0)
+    links=yt.get_video_list(None,None,google_api_request_url,page_indicator)
+    yt.assemble_images_dictList(links)
+
+    links_dictList=yt.dictList
+
+    if links_dictList:
+        dictlist_to_RelatedVideo_gui(links_dictList, google_api_request_url, 'more', label_name, type_)
+    else:
+        xbmc_notify('Nothing to list', google_api_request_url)
+
 
 if __name__ == '__main__':
     pass

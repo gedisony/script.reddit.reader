@@ -36,7 +36,7 @@
 		<pulseonselect>true</pulseonselect>
 	</default>
 
-		<control type="group"><description>Right side panel. this is where the comment and preview is shown</description>
+		<control type="group"><description>main panel. this is where the comment and preview is shown</description>
 			<animation type="WindowOpen">  <effect type="fade" start="0" end="100" time="100" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation>
 			<animation type="WindowClose"> <effect type="fade" start="100" end="0" time="100" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 			<visible>true</visible>
@@ -75,14 +75,14 @@
 					<onright>17</onright>
 					<align>top</align><!-- this is aligny -->
 
-					<!-- control type="button" id="999"><!-- hidden button. when this gets focus, grouplist204 will scroll to top
-						<height>1</height><!-- setting this to 0 defaults to something about 18 
+					<control type="button" id="999"><!-- hidden button. needs to be here because if there are no links in description, can't <onright> to the scrollbar -->
+						<height>1</height><!-- setting this to 0 defaults to something about 18 -->
+						<width>1</width>
 						<texturenofocus>transparent_1x1.png</texturenofocus>
 						<label></label>
-					</control-->
+					</control>
 					
 					<control type="textbox" id="1000"><height>auto</height><font>font14</font></control><control type="image" id="3000"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2000"><font>font14</font><textoffsetx>24</textoffsetx></control>
-					
 					<control type="textbox" id="1001"><height>auto</height><font>font14</font></control><control type="image" id="3001"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2001"><font>font14</font><textoffsetx>24</textoffsetx></control>
 					<control type="textbox" id="1002"><height>auto</height><font>font14</font></control><control type="image" id="3002"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2002"><font>font14</font><textoffsetx>24</textoffsetx></control>
 					<control type="textbox" id="1003"><height>auto</height><font>font14</font></control><control type="image" id="3003"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2003"><font>font14</font><textoffsetx>24</textoffsetx></control>
@@ -106,28 +106,6 @@
 					<control type="textbox" id="1020"><height>auto</height><font>font14</font></control><control type="image" id="3020"><height>200</height><aspectratio>keep</aspectratio></control><control type="button" id="2020"><font>font14</font><textoffsetx>24</textoffsetx></control>
 
 				</control>
-
-				<!-- control type="textbox" id="65592">
-					<left>518</left>
-					<top>98</top>
-					<width>1210</width>
-					<height>156</height>
-					<font>font14</font>
-					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-					<visible>!isEmpty(Container(55).ListItem.Property(link_url))</visible>
-					<label>$INFO[Container(55).ListItem.Plot]</label>					
-				</control-->
-				
-				<!-- control type="image">
-					<left>860</left>
-					<top>383</top>
-					<width>683</width>
-					<height>378</height>
-					<aspectratio>keep</aspectratio>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb))+isEmpty(Container(55).ListItem.Art(banner))</visible>
-					<visible>!Player.HasMedia</visible>
-					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
-				</control-->
 		</control>
 
 

@@ -112,7 +112,7 @@ if __name__ == '__main__':
     from resources.lib.utils import addtoFilter,open_web_browser
     from resources.lib.actions import manage_subreddits, addSubreddit, editSubreddit, removeSubreddit,\
     loopedPlayback,error_message,viewImage, listAlbum, viewTallImage,update_youtube_dl_core,\
-    playVideo, playYTDLVideo, playURLRVideo,searchReddits, delete_setting_file, listRelatedVideo
+    playVideo, playYTDLVideo, playURLRVideo,searchReddits, delete_setting_file, listRelatedVideo, listMoreVideo
     from resources.lib.reddit import reddit_get_refresh_token, reddit_get_access_token, reddit_revoke_refresh_token, reddit_save
     from resources.lib.main_listing import index, listSubReddit, listLinksInComment
 
@@ -145,6 +145,7 @@ if __name__ == '__main__':
                     ,'reddit_save'          : reddit_save
                     ,'delete_setting_file'  : delete_setting_file
                     ,'listRelatedVideo'     : listRelatedVideo
+                    ,'listMoreVideo'        : listMoreVideo
                     ,'openBrowser'          : open_web_browser
                     }
     plugin_modes[mode](url,name,type_)

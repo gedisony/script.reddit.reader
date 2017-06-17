@@ -128,6 +128,7 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=No
                 cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
                 if video_id and not channel_id_from_url:#if we can parse channel id from url, and there is no video id, the url is for a channel. skip showing related videos
                     cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
+                    cxm_list.append( (translation(32529)  , build_script("listRelatedVideo", youtube_url, title, 'search')  ) )
                     cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
             if playlist_id_from_url: #if there is a playlist id in the url, also show an entry for the playlist
                 cxm_list.append( (translation(32526)  , build_script("listRelatedVideo", youtube_url, title, 'playlist')  ) )
