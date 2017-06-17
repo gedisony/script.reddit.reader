@@ -742,7 +742,7 @@ def listMoreVideo(google_api_request_url,label_name,type_):
     from utils import safe_cast
 
     #https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&type=video&maxResults=50&key=AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI&playlistId=PLJ8cMiYb3G5eJquaiw6Xlyt3Qhe-3e7Xh
-    yt=ClassYoutube(google_api_request_url)#this will be a broken class because it won't be able to parse 
+    yt=ClassYoutube(google_api_request_url)#this will be a broken class because it won't be able to parse
 
     just_numbers_from_label=re.sub("[^0-9]", "", label_name) #Removes all non-numeric characters  "Page 2" becomes "2"
     page_indicator=safe_cast(just_numbers_from_label,int,default=0)
