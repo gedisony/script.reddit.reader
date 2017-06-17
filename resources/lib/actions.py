@@ -651,6 +651,7 @@ def listRelatedVideo(url,name,type_):
     from domains import ClassYoutube
     import requests
     #log('*****name='+repr(name))
+    links_dictList=[]
     match=re.compile( ClassYoutube.regex, re.I).findall( url )
     if match:
         #log('***** isYouTubeable' + repr(url))
@@ -665,7 +666,14 @@ def listRelatedVideo(url,name,type_):
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
             elif type_=='search':
-                pass
+                keyboard = xbmc.Keyboard(name, translation(32529))
+                keyboard.doModal()
+                if keyboard.isConfirmed() and keyboard.getText():
+                    search_string=keyboard.getText()
+                    if search_string:
+                        links_dictList=yt.ret_album_list(type_,search_string)
+                        name=search_string #this shows up on the top of screen
+
             else: # 'channel' 'related default
                 links_dictList=yt.ret_album_list(type_)  #returns a list of dict same as one used for albums
             xbmc_busy(False)
@@ -704,13 +712,15 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
 
         else: # 'channel' 'related' default
             if type_=='related':
-                gui_title_text="Related videos to {}".format(title)
+                gui_title_text="Related videos: {}".format(title)
+            if type_=='search':
+                gui_title_text="Search: {}".format(title)
             elif type_=='channel':
-                gui_title_text="Channel:{}".format(dictlist[0].get('channel_name'))
+                gui_title_text="Channel: {}".format(dictlist[0].get('channel_name'))
             elif type_=='playlist':
                 gui_title_text="{}".format(title)
             elif type_=='playlists':
-                gui_title_text="Playlists in channel:{}".format(dictlist[0].get('channel_name'))
+                gui_title_text="Playlists in channel: {}".format(dictlist[0].get('channel_name'))
             else:#type determined from url
                 if url_type=='channel':
                     gui_title_text="Videos in channel"
