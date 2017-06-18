@@ -138,7 +138,7 @@ git rebase --interactive HEAD~2
 ** sometimes need to use "git rebase --abort" to start over
 
 git push origin script.reddit.reader --force
-
+git push origin (branch-name) --force
 
 
 
