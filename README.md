@@ -6,13 +6,17 @@ This is a program addon for viewing reddit content on Kodi. See also my video ad
 This addon is inspired by the original [reddit addon](https://github.com/rasjani/plugin.video.reddit_tv) by AddonscriptorDE and maintained by rasjani.
 - Create shortcuts to your favorite subreddits or filter posts by domain
 - Play video links supported by the [youtube_dl addon](https://github.com/ruuk/script.module.youtube.dl)
-  - Ability to download an updated copy of the [youtube-dl](https://github.com/rg3/youtube-dl) core
+  - Ability to download an updated copy of the [youtube-dl](https://github.com/rg3/YouTube-dl) core
 - View images and image albums
 - Reddit OAuth support
   - Access to your private subreddits
 - Explore other subreddits
-- Extra functionality for reddit posts that link to youtube:
-  - List related videos and other videos in channel
+- Extra functionality for reddit posts that link to YouTube:
+  - Explore related videos
+  - List other videos in channel
+  - Show playlists in channel
+  - Search YouTube
+  - Search reddit for posts linking to the same YouTube video
 - Read user comments
   - Explore links posted in comments
 - Use images from a subreddit as your screensaver
@@ -27,4 +31,4 @@ This addon is inspired by the original [reddit addon](https://github.com/rasjani
 
 ---
 
-This addon is not published nor endorsed by reddit inc. 
+This addon is not published nor endorsed by Reddit inc.
