@@ -86,10 +86,10 @@
 				<focusedlayout width="440" height="144">
 					<control type="image">
 						<left>2</left>
-						<texture colordiffuse="AA12A8DA">srr_focus.png</texture>
+						<texture colordiffuse="AA12A8DA" fallback="srr_focus.png">$INFO[ListItem.Art(banner)]</texture>
 						<visible>Control.HasFocus(55)</visible>
-						<animation effect="fade" start="0" end="100" time="50">Focus</animation>
-						<animation effect="fade" start="100" end="0" time="50">Unfocus</animation>
+						<animation effect="fade" start="0" end="100" time="80">Focus</animation>
+						<animation effect="fade" start="100" end="0" time="80">Unfocus</animation>
 					</control>
 					<control type="image">
 						<left>8</left>
@@ -122,7 +122,7 @@
 				<itemlayout width="440" height="144">
 					<control type="image">
 						<aspectratio>stretch</aspectratio>
-						<texture>srr_dialog-bg.png</texture>
+						<texture fallback="srr_dialog-bg.png">srr_dialog-bg.png</texture>
 					</control>
 					<control type="image">
 						<left>8</left>

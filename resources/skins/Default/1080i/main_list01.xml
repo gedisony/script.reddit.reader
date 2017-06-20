@@ -65,13 +65,13 @@
 					</control>
 					
 					<control type="image" id="2"><description>little header on Left of top bar. visible if icon is missing and header is not</description>
-						<top>0</top>
+						<top>-10</top>
 						<left>0</left>
 						<width>auto</width>
-						<height>100</height>
+						<height>120</height>
 						<visible>String.IsEmpty(Window.Property(subreddit_icon)) + !String.IsEmpty(Window.Property(subreddit_header))</visible>
 						<texture>$INFO[Window.Property(subreddit_header)]</texture>
-						<aspectratio align="center" aligny="center">stretch</aspectratio>
+						<aspectratio align="center" aligny="center">keep</aspectratio>
 					</control>
 						
 					<control type="label" id="1"><description>subreddit name</description>

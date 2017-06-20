@@ -262,12 +262,12 @@ class cGUI(xbmcgui.WindowXML):
                         banner=addtl_subr_info.get('banner_img')
                         header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen
 
-                        #log( subreddit + ' icon=' + repr(icon) +' header=' + repr(header))
+                        #log('{} icon={} header={} banner={}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
                         #picks the first item that is not None
                         icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
                         #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
-
+                        liz.setArt({"banner":banner})
                     else:
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
 
