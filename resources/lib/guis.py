@@ -255,9 +255,7 @@ class cGUI(xbmcgui.WindowXML):
                         if samealphabetic( header_title, public_description): public_description=''
                         if samealphabetic(title,public_description): public_description=''
                         #if hassamealphabetic(header_title,title,public_description): public_description=''
-
-                        shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
-
+                        #shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
                         icon=addtl_subr_info.get('icon_img')
                         banner=addtl_subr_info.get('banner_img')
                         header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen

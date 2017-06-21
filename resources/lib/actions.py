@@ -19,7 +19,6 @@ ytdl_DASH=addon.getSetting("ytdl_DASH")=='true'
 def manage_subreddits(subreddit, name, type_):
     from main_listing import index
     log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type_) )
-    #this funciton is called by the listSubRedditGUI when user presses left button when on the subreddits list
 
     #http://forum.kodi.tv/showthread.php?tid=148568
     dialog = xbmcgui.Dialog()
@@ -351,7 +350,7 @@ def listAlbum(album_url, name, type_):
         if not dictlist:
             xbmc_notify(translation(32200), translation(32055)) #slideshow, no playable items
             return
-
+        #log(pprint.pformat(dictlist))
         if addon.getSetting('use_slideshow_for_album') == 'true':
             slideshowAlbum( dictlist, name )
         else:
