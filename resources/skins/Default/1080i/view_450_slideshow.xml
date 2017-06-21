@@ -312,7 +312,7 @@
 			<height>220</height>
 			
 			<visible>! [Control.HasFocus(101)|Control.HasFocus(102)|Control.HasFocus(103)|Control.HasFocus(104)|Control.HasFocus(105)]</visible>
-			<visible>true</visible>
+
 			<animation effect="fade" time="200" start="0" end="100" >Visible</animation>
 			<animation effect="fade" time="200" start="100" end="0" >Hidden</animation>
 
