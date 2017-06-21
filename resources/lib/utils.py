@@ -764,7 +764,6 @@ def dictlist_to_listItems(dictlist):
             liz.setProperty('item_type','script')
             liz.setProperty('onClick_action', build_script('viewImage', media_url,'',ti) )
             liz.setArt({"thumb": ti, "banner":media_url })
-            #log('image {} {}'.format(media_url,label))
         else:  #if media_type==sitesBase.TYPE_VIDEO:
 #            if link_action or link_action!='playable':
 #                isPlayable='false'          #if there's a link_action then media_url is not straight up playable
