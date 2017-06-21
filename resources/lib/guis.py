@@ -198,6 +198,7 @@ class cGUI(xbmcgui.WindowXML):
         from reddit import parse_subreddit_entry, assemble_reddit_filter_string, ret_sub_info, ret_settings_type_default_icon
         entries=[]
         listing=[]
+        icon=banner=header=public_description=display_name=None
 
         if os.path.exists(self.subreddits_file):
             with open(self.subreddits_file, 'r') as fh:
@@ -224,11 +225,16 @@ class cGUI(xbmcgui.WindowXML):
             pretty_label=prettify_reddit_query(alias)
             pretty_label=pretty_label.replace('+',' + ')
 
+            if addtl_subr_info:
+                icon=addtl_subr_info.get('icon_img')
+                banner=addtl_subr_info.get('banner_img')  #rectangular shape
+                header=addtl_subr_info.get('header_img')  #square shape  from  bannerTvImageUrl
+                public_description=xstr( addtl_subr_info.get('public_description',''))
+                display_name=xstr(addtl_subr_info.get('display_name',''))
+
             if entry_type=='link':  #<-- added new ability to have youtube channels as a shortcut on the main screen
                 #here, the subreddit variable contains a url. we made sure that it points to a youtube channel(ContextMenus.py). that way, there is no need to specify 'channel' when calling listRelatedVideo
                 liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listRelatedVideo",subreddit,alias) )
-                if addtl_subr_info:
-                    icon=addtl_subr_info.get('icon_img')
             else: #domain, subreddit, combined, search, multireddit
                 reddit_url=assemble_reddit_filter_string("",subreddit, "yes")
 
@@ -244,32 +250,22 @@ class cGUI(xbmcgui.WindowXML):
                         title=addtl_subr_info.get('title','')+'\n'
                         display_name=xstr(addtl_subr_info.get('display_name',''))
                         if samealphabetic( title, display_name): title=''
-                        #if re.sub('\W+','', display_name.lower() )==re.sub('\W+','', title.lower()): title=''
-                        #display_name=re.sub('\W+','', display_name.lower() )
-                        #title=re.sub('\W+','', title.lower())
 
-                        header_title=xstr(addtl_subr_info.get('header_title',''))
-                        public_description=xstr( addtl_subr_info.get('public_description',''))
+                        #header_title=xstr(addtl_subr_info.get('header_title',''))
+                        #in reddit_viewer,  title, header_title and public_description is shown as plot
                         nsfw=addtl_subr_info.get('over18')
-
-                        if samealphabetic( header_title, public_description): public_description=''
-                        if samealphabetic(title,public_description): public_description=''
-                        #if hassamealphabetic(header_title,title,public_description): public_description=''
-                        #shortcut_description='[COLOR cadetblue][B]r/%s[/B][/COLOR]\n%s[I]%s[/I]\n%s' %(display_name,title,header_title,public_description )
-                        icon=addtl_subr_info.get('icon_img')
-                        banner=addtl_subr_info.get('banner_img')
-                        header=addtl_subr_info.get('header_img')  #usually the small icon on upper left side on subreddit screen
 
                         #log('{} icon={} header={} banner={}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
                         #picks the first item that is not None
                         icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
                         #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
-                        liz.setArt({"banner":banner})
                     else:
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
 
-            liz.setArt({ "thumb": icon })
+            liz.setArt({ "thumb": icon, "banner":banner })
+            liz.setInfo('video', {"Title":display_name, "plot":public_description} )
+
             liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )
             if nsfw:
                 liz.setProperty('nsfw', 'true' )

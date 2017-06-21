@@ -22,7 +22,7 @@ use_first_link_in_textpost_for_the_following_subreddits=addon.getSetting("use_fi
 
 if use_requests_cache:
     import requests_cache
-    requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=604800 )  #cache expires after: 86400=1day   604800=7 days
+    requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=86400 )  #cache expires after: 86400=1day   604800=7 days
 
 def index(url,name,type_):
     ## this is where the __main screen is created
