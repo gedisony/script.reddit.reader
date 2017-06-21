@@ -39,8 +39,8 @@
 					<width>1100</width>
 					<height>100</height>
 					<!-- texture colordiffuse="22EEEEEE" fallback="focus_f2.png">$INFO[Window.Property(subreddit_banner)]</texture-->
-					<texture colordiffuse="BBCECECE" diffuse="diffuse_right.png" fallback="srr_dlg-bg.pngg">$INFO[Window.Property(subreddit_banner)]</texture>
-					<aspectratio align="center" aligny="center">scale</aspectratio>
+					<texture colordiffuse="BBCECECE" diffuse="diffuse_right.png" fallback="srr_dlg-bg.png">$INFO[Window.Property(subreddit_banner)]</texture>
+					<aspectratio>scale</aspectratio>
 				</control>
 				
 				<control type="grouplist"><description>horizontal group</description>
@@ -71,7 +71,7 @@
 						<height>120</height>
 						<visible>String.IsEmpty(Window.Property(subreddit_icon)) + !String.IsEmpty(Window.Property(subreddit_header))</visible>
 						<texture>$INFO[Window.Property(subreddit_header)]</texture>
-						<aspectratio align="center" aligny="center">keep</aspectratio>
+						<aspectratio>keep</aspectratio>
 					</control>
 						
 					<control type="label" id="1"><description>subreddit name</description>

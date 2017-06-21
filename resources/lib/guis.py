@@ -247,9 +247,9 @@ class cGUI(xbmcgui.WindowXML):
                 else:
                     if addtl_subr_info: #if we have additional info about this subreddit
                         #log(repr(addtl_subr_info))
-                        title=addtl_subr_info.get('title','')+'\n'
-                        display_name=xstr(addtl_subr_info.get('display_name',''))
-                        if samealphabetic( title, display_name): title=''
+                        #title=addtl_subr_info.get('title','')+'\n'
+                        #display_name=xstr(addtl_subr_info.get('display_name',''))
+                        #if samealphabetic( title, display_name): title=''
 
                         #header_title=xstr(addtl_subr_info.get('header_title',''))
                         #in reddit_viewer,  title, header_title and public_description is shown as plot
