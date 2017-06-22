@@ -7,7 +7,7 @@ import re
 import os
 
 from default import addon, subredditsFile, urlMain, itemsPerPage,subredditsPickle,REQUEST_TIMEOUT
-from utils import log, translation,xbmc_notify
+from utils import log, translation,xbmc_notify,clean_str
 from default import reddit_clientID, reddit_userAgent, reddit_redirect_uri
 
 
@@ -524,7 +524,6 @@ def collect_thumbs( entry ):
     return
 
 def determine_if_video_media_from_reddit_json( data ):
-    from utils import clean_str
     #reads the reddit json and determines if link is a video
     is_a_video=False
 
@@ -579,8 +578,12 @@ def get_subreddit_info( subreddit ):
                                    'subscribers':j.get('subscribers'),
                                    'created':j.get('created'),        #public, private
                                    'over18':j.get('over18'),
+                                   'icon_size':j.get('icon_size'),
+                                   'banner_size':j.get('banner_size'),
+                                   'header_size':j.get('header_size'),
                                    } )
-                #log( pprint.pformat(subs_dict, indent=1) )
+                import pprint
+                log( pprint.pformat(subs_dict, indent=1) )
                 return subs_dict
         except ValueError:
             log('    ERROR:No data for (%s)'%subreddit)
@@ -739,6 +742,44 @@ def get_subreddit_entry_info_thread(sub_list):
             subreddits_dlist.append(sub_info)
             save_dict(subreddits_dlist, subredditsPickle)
             #log('****saved ')
+def subreddit_icoheader_banner(subreddit):
+    #from reddit import get_subreddit_entry_info, ret_sub_info
+    addtl_subr_info=ret_sub_info(subreddit)
+    #log('addtl_subr_info'+repr(addtl_subr_info))
+    try: #if addtl_subr_info:
+        icon=addtl_subr_info.get('icon_img')
+        banner=addtl_subr_info.get('banner_img')
+        header=addtl_subr_info.get('header_img',None)  #usually the small icon on upper left side on subreddit screen // also sometimes a very wide banner
+
+        #icon_ar=img_ar(addtl_subr_info.get('icon_size'))
+        #banner_ar=img_ar(addtl_subr_info.get('banner_size'))
+        header_ar=img_ar(addtl_subr_info.get('header_size'))
+
+        #some subreddits have a very long header image(r/mealtimevideos)
+        #we'll use that as banner (shows at top of gui)
+        if header_ar > 8 and not banner:
+            #log( 'replacing banner with header')
+            banner=header
+            header=None
+
+        #log('\nicon:'+repr(icon)+'\nheader:'+repr(header)+'\nbanner:'+repr(banner))
+        #icoheader=(icon if icon else header)
+    except AttributeError:
+        icon=banner=header=None
+        #get subreddit info and store it in out subreddits pickle for next time
+        get_subreddit_entry_info(subreddit)
+    return icon,banner,header
+
+def img_ar(img_size_array):
+    #img_size_array is from from reddit's about.json
+    ar=0
+    try:
+        w,h=img_size_array
+        ar=float(w)/h
+        #log("{} = {},{}".format(ar,w,h) )
+    except (TypeError,ZeroDivisionError):  #,ValueError):
+        ar=0
+    return ar
 
 if __name__ == '__main__':
     pass

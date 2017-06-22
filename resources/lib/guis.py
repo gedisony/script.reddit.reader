@@ -195,10 +195,9 @@ class cGUI(xbmcgui.WindowXML):
 
     def load_subreddits_file_into_a_listitem(self):
         from utils import compose_list_item, prettify_reddit_query, xstr, samealphabetic, hassamealphabetic
-        from reddit import parse_subreddit_entry, assemble_reddit_filter_string, ret_sub_info, ret_settings_type_default_icon
+        from reddit import parse_subreddit_entry, assemble_reddit_filter_string, ret_sub_info, ret_settings_type_default_icon, img_ar
         entries=[]
         listing=[]
-        icon=banner=header=public_description=display_name=None
 
         if os.path.exists(self.subreddits_file):
             with open(self.subreddits_file, 'r') as fh:
@@ -216,6 +215,8 @@ class cGUI(xbmcgui.WindowXML):
         addtl_subr_info={}
         for subreddit_entry in entries:
             nsfw=False
+            icon=banner=header=public_description=display_name=override_header_image=None
+            header_ar=0
             addtl_subr_info=ret_sub_info(subreddit_entry)
 
             #strip out the alias identifier from the subreddit string retrieved from the file so we can process it.
@@ -229,8 +230,13 @@ class cGUI(xbmcgui.WindowXML):
                 icon=addtl_subr_info.get('icon_img')
                 banner=addtl_subr_info.get('banner_img')  #rectangular shape
                 header=addtl_subr_info.get('header_img')  #square shape  from  bannerTvImageUrl
+                header_ar=img_ar(addtl_subr_info.get('header_size'))
+                if header_ar > 8: #some header_img are very wide. this is to check and override the icon display in the gui
+                    override_header_image=header
                 public_description=xstr( addtl_subr_info.get('public_description',''))
                 display_name=xstr(addtl_subr_info.get('display_name',''))
+
+            #log('{} icon={} header={} banner={}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
 
             if entry_type=='link':  #<-- added new ability to have youtube channels as a shortcut on the main screen
                 #here, the subreddit variable contains a url. we made sure that it points to a youtube channel(ContextMenus.py). that way, there is no need to specify 'channel' when calling listRelatedVideo
@@ -255,15 +261,14 @@ class cGUI(xbmcgui.WindowXML):
                         #in reddit_viewer,  title, header_title and public_description is shown as plot
                         nsfw=addtl_subr_info.get('over18')
 
-                        #log('{} icon={} header={} banner={}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
-                        #picks the first item that is not None
-                        icon=next((item for item in [icon,banner,header] if item ), '') or default_icon
+                        icon=next((item for item in [icon,banner,header] if item ), '') or default_icon #picks the first item that is not None
+                        #icon=icon or default_icon
                         #log( pretty_label + ' icon=' + icon + ' nsfw='+repr(nsfw))
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
                     else:
                         liz = compose_list_item( pretty_label, entry_type, "", "script", build_script("listSubReddit",reddit_url,alias) )
 
-            liz.setArt({ "thumb": icon, "banner":banner })
+            liz.setArt({ "thumb": icon, "banner":banner, "fanart":override_header_image })
             liz.setInfo('video', {"Title":display_name, "plot":public_description} )
 
             liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )

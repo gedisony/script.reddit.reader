@@ -60,26 +60,10 @@ GCXM_hasmultipleauthor=False
 GCXM_actual_url_used_to_generate_these_posts=''
 GCXM_reddit_query_of_this_gui=''
 
-def subreddit_icoheader_banner(subreddit):
-    from reddit import get_subreddit_entry_info, ret_sub_info
-    addtl_subr_info=ret_sub_info(subreddit)
-    #log('addtl_subr_info'+repr(addtl_subr_info))
-    try: #if addtl_subr_info:
-        icon=addtl_subr_info.get('icon_img')
-        banner=addtl_subr_info.get('banner_img')
-        header=addtl_subr_info.get('header_img',None)  #usually the small icon on upper left side on subreddit screen
-        #log('\nicon:'+repr(icon)+'\nheader:'+repr(header)+'\nbanner:'+repr(banner))
-        #icoheader=(icon if icon else header)
-    except AttributeError:
-        icon=banner=header=None
-        #get subreddit info and store it in out subreddits pickle for next time
-        get_subreddit_entry_info(subreddit)
-    return icon,banner,header
-
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
     from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query, set_query_field
-    from reddit import reddit_request, has_multiple, assemble_reddit_filter_string
+    from reddit import reddit_request, has_multiple, assemble_reddit_filter_string, subreddit_icoheader_banner
 
     global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
     #the +'s got removed by url conversion

@@ -97,6 +97,15 @@
 						<aspectratio>keep</aspectratio>
 						<bordersize>4</bordersize>
 						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(thumb)]</texture>
+						<visible>String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
+					</control>
+					<control type="image"><!-- override_header_image, if the header image is very wide r/mealtimevideos -->
+						<top>12</top><left>18</left>
+						<width>120</width><height>120</height>
+						<aspectratio scalediffuse="false" align="left">scale</aspectratio>
+						<bordersize>4</bordersize>
+						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(fanart)]</texture>
+						<visible>!String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
 					</control>
 					<control type="textbox"><!-- ListItem.Label -->
 						<left>148</left>
@@ -130,8 +139,17 @@
 						<aspectratio>keep</aspectratio>
 						<bordersize>4</bordersize>
 						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(thumb)]</texture>
+						<visible>String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
 					</control>
-					<control type="textbox">
+					<control type="image"><!-- override_header_image, if the header image is very wide r/mealtimevideos -->
+						<top>12</top><left>18</left>
+						<width>120</width><height>120</height>
+						<aspectratio scalediffuse="false" align="left">scale</aspectratio>
+						<bordersize>4</bordersize>
+						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(fanart)]</texture>
+						<visible>!String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
+					</control>
+					<control type="textbox"><!-- ListItem.Label -->
 						<left>148</left>
 						<height>138</height>
 						<width>280</width>
