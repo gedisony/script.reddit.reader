@@ -264,7 +264,7 @@
 
 
 	<control type="group"><description>Right side panel(images and post-text)</description>
-
+			<visible>!Player.HasVideo</visible>
 			<!-- OpenClose_Right - OpenClose_FadeSlide_Right --><animation type="WindowOpen"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out" /><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="WindowClose"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 
@@ -464,6 +464,15 @@
 				<visible>true</visible>
 			</control>
 
+		<control type="videowindow"><!-- some links take a while to load(timeout waiting for buffer).
+		user thinks that the link is not working but video will end up playing in the background.
+		having a videowindow here prevents that -->
+			<left>640</left>
+			<top>100</top>
+			<width>1280</width>
+			<height>900</height>
+		</control>
+
 			<control type="fixedlist" id="55">
 				<left>6</left>
 				<top>100</top>
@@ -660,6 +669,7 @@
 		<control type="group"><description>big wide image that fades in</description>
 					<control type="group">
 						<visible>!Container(55).OnNext+!Container(55).OnPrevious + !String.IsEmpty(Container(55).ListItem.Property(preview_ar))</visible>
+						<visible>!Player.HasVideo</visible>
 						<animation type="Visible"><description>clear image fades in after delay</description>
 							<effect type="fade"  start="0" end="100" time="1000" tween="cubic" easing="in" delay="3000"/>
 						</animation>
