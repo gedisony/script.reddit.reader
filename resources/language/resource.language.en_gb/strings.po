@@ -226,27 +226,13 @@ msgid "Skip subreddit selection screen"
 msgstr ""
 
 msgctxt "#32104"
-msgid "Posts with links to websites in this list will be hidden (csv)"
+msgid "Enable debug mode"
 msgstr ""
 
-msgctxt "#32105"
-msgid "Posts from subreddit(s) in this list will be hidden (csv)"
-msgstr ""
-
-msgctxt "#32106"
-msgid "Comments threshold"
-msgstr ""
-
-msgctxt "#32107"
-msgid "Hide NSFW content"
-msgstr ""
+#blank 32105 -32107
 
 msgctxt "#32108"
 msgid "Main GUI skin"
-msgstr ""
-
-msgctxt "#32109"
-msgid "Hide links in comment with these words (csv)"
 msgstr ""
 
 #intentionally left blank; these are the filter words in csv
@@ -257,7 +243,6 @@ msgstr ""
 msgctxt "#32111"
 msgid "Open the first link in the text post instead of viewing the comments[CR]for the following subreddits. (csv)"
 msgstr ""
-
 
 msgctxt "#32112"
 msgid "Use youtube_dl add-on for Youtube videos"
@@ -275,11 +260,6 @@ msgstr ""
 msgctxt "#32115"
 msgid "Repeat gif playback"
 msgstr ""
-
-
-
-#setting category
-
 
 # settings category
 msgctxt "#32150"
@@ -338,6 +318,9 @@ msgctxt "#32204"
 msgid "Slide orthogonal"
 msgstr ""
 
+msgctxt "#32205"
+msgid "Source Subreddit"
+msgstr ""
 
 msgctxt "#32221"
 msgid "Slideshow speed"
@@ -377,10 +360,30 @@ msgctxt "#32300"
 msgid "Filters"
 msgstr ""
 
-msgctxt "#32301"
-msgid "Source Subreddit"
+msgctxt "#32304"
+msgid "Posts with links to websites in this list will be hidden (csv)"
 msgstr ""
 
+msgctxt "#32305"
+msgid "Posts from subreddit(s) in this list will be hidden (csv)"
+msgstr ""
+
+msgctxt "#32306"
+msgid "Comments threshold"
+msgstr ""
+
+msgctxt "#32307"
+msgid "Hide NSFW content"
+msgstr ""
+
+msgctxt "#32309"
+msgid "Hide links in comment with these words (csv)"
+msgstr ""
+
+#intentionally left blank; these are the filter words in csv
+msgctxt "#32310"
+msgid ""
+msgstr ""
 
 
 

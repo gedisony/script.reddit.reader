@@ -12,6 +12,7 @@
         <setting                               type="sep" />
         <setting                               type="lsep"    label="32111" enable="true"/>
         <setting id="use_first_link_in_textpost_for_the_following_subreddits"  type="text"    label="32110" default=""/>
+        <setting id="show_debug_messages"      type="bool" label="32104" default="false"/>
     </category>
 
     <category label="32200">
@@ -23,21 +24,21 @@
         <setting id="random_post_order"        type="bool"   label="32226" default="false"/>
         <setting id="random_image_order"       type="bool"   label="32227" default="false"/>
         <setting                               type="lsep"   label="32228" enable="true" />
-        <setting id="screensaver_subreddit"    type="text"   label="32301" values="" default=""/>
+        <setting id="screensaver_subreddit"    type="text"   label="32205" values="" default=""/>
     </category>
 
     <category label="32300">
-        <setting id="CommentTreshold"          type="select"  label="32106" values="All|0|5|10|50|100"/>
-        <setting                               type="lsep"    label="32104" enable="true"/>
-        <setting id="domain_filter"            type="text"    label="32110" default=""/>
+        <setting id="CommentTreshold"          type="select"  label="32306" values="All|0|5|10|50|100"/>
+        <setting                               type="lsep"    label="32304" enable="true"/>
+        <setting id="domain_filter"            type="text"    label="32310" default=""/>
         <setting                               type="sep" />
-        <setting                               type="lsep"    label="32105" enable="true"/>
-        <setting id="subreddit_filter"         type="text"    label="32110" default=""/>
+        <setting                               type="lsep"    label="32305" enable="true"/>
+        <setting id="subreddit_filter"         type="text"    label="32310" default=""/>
         <setting                               type="sep" />
-        <setting                               type="lsep"    label="32109" enable="true"/>
-        <setting id="comments_link_filter"     type="text"    label="32110" default="message/compose,np.reddit.com,"/>
+        <setting                               type="lsep"    label="32309" enable="true"/>
+        <setting id="comments_link_filter"     type="text"    label="32310" default="message/compose,np.reddit.com,"/>
         <setting                               type="sep" />
-        <setting id="hide_nsfw"                type="bool"    label="32107" default="false"/>
+        <setting id="hide_nsfw"                type="bool"    label="32307" default="false"/>
     </category>
 
     <category label="32500">

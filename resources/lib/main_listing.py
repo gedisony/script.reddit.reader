@@ -468,7 +468,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #***build context menu***
     #    convert a list of tuple into a string then set it as a property
     #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
-    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by)) )
+    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, liz.getProperty('onClick_action') )) )
 
     if previewimage: needs_preview=False
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one

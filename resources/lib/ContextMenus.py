@@ -27,7 +27,7 @@ cxm_show_search           = addon.getSetting("cxm_show_search") == "true"
 #cxm_show_reddit_save      = addon.getSetting("cxm_show_reddit_save") == "true"
 cxm_show_youtube_items    = addon.getSetting("cxm_show_youtube_items") == "true"
 
-def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by):
+def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, onClick_action):
 
     s=truncate(subreddit,15)     #crop long subreddit names in context menu
     colored_subreddit_short=colored_subreddit( s )
@@ -106,6 +106,9 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
 
     if cxm_show_youtube_items:
         cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None, title=post_title ))
+
+    #'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' % (sys.argv[0], _ADDTOSF, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd), urllib.quote_plus(keyword), meta)))
+    #cxm_list.append( ('super favorites'   , 'XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,post_title,'thumb',onClick_action,'keyw','meta')                           ) )
 
     return cxm_list
 

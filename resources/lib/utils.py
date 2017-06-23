@@ -35,9 +35,14 @@ def xbmc_busy(busy=True):
     else:
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
 
-def log(message, level=xbmc.LOGNOTICE):
+def log(message):
     import threading
     t=threading.currentThread()
+    show_debug_messages=addon.getSetting("show_debug_messages") == "true"
+    if show_debug_messages:
+        level=xbmc.LOGNOTICE
+    else:
+        level=xbmc.LOGDEBUG
     xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
 
 def translation(id_):

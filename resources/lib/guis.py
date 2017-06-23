@@ -29,7 +29,7 @@ import xbmcaddon
 import xbmcgui
 from xbmcgui import ControlButton
 
-from utils import build_script, generator, translation
+from utils import build_script, generator, translation, log
 
 addon = xbmcaddon.Addon()
 addonID    = addon.getAddonInfo('id')  #script.reddit.reader
@@ -499,8 +499,6 @@ class listSubRedditGUI(cGUI):
 #            yt=ClassYoutube(link_url)
 #            links_dictList=yt.get_more_info()  #returns a list of dict same as one used for albums
         pass
-def log(message, level=xbmc.LOGNOTICE):
-    xbmc.log("reddit.reader GUI:"+message, level=level)
 
 class progressBG( xbmcgui.DialogProgressBG ):
     progress=0.00
