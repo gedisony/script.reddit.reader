@@ -1,4 +1,5 @@
 import re
+import urllib
 
 
 from main_listing import GCXM_hasmultipleauthor, GCXM_hasmultiplesubreddit, GCXM_hasmultipledomain, GCXM_actual_url_used_to_generate_these_posts, GCXM_reddit_query_of_this_gui
@@ -108,7 +109,13 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
         cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None, title=post_title ))
 
     #'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' % (sys.argv[0], _ADDTOSF, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd), urllib.quote_plus(keyword), meta)))
-    #cxm_list.append( ('super favorites'   , 'XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,post_title,'thumb',onClick_action,'keyw','meta')                           ) )
+    #save_favorites_command='XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
+    #save_favorites_command='XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,urllib.quote_plus(post_title),'thumb',urllib.quote_plus(onClick_action),'keyw','meta')
+    #save_favorites_command="RunAddon(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',urllib.quote_plus(onClick_action),'keyw','meta')
+    #save_favorites_command="RunAddon(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
+    #save_favorites_command="RunPlugin(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
+    #log(repr(save_favorites_command))
+    #cxm_list.append( ('super favorites'   ,  save_favorites_command ) )
 
     return cxm_list
 

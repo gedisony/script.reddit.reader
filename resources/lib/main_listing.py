@@ -464,6 +464,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     #force all links to ytdl to see if they are playable
     liz.setProperty('item_type','script')
     liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
+    #liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'','') )
 
     #***build context menu***
     #    convert a list of tuple into a string then set it as a property
