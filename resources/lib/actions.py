@@ -769,7 +769,7 @@ def addtoKodiFavorites(command, name, thumbnail):
 
 #adding to favorites involve 3 steps:
 #  1.) add the favorite via jsonrpc (script params not included)
-#  2.) modify the favourites.xml to include script params <-- i think there is another favourites file or this file is cached until another favorite is added
+#  2.) modify the favourites.xml to include script params <-- (kodi18 leia alpha1) i think there is another favourites file or this file is cached until another favorite is added 
 #  3.) ??? <-- adding another favorite will delete the first one (until kodi is restarted) need to find a way for kodi to reload the modified favourite.xml
 
     #http://kodi.wiki/view/JSON-RPC_API/v8#Favourites

@@ -1,3 +1,9 @@
+1.0.2
+  - next page for youtube lists
+  - search youtube context menu item
+  - remove bugs, gui adjustments
+  - add to favourites context menu item
+  - debug mode setting
 1.0.1
   - create shortcut to youtube channel on index page
   - fix search not properly urlencoded
