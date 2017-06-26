@@ -122,7 +122,11 @@ msgctxt "#32027"
 msgid "Saved link"
 msgstr ""
 
-#32027-32059 unused
+msgctxt "#32028"
+msgid "Favourite added"
+msgstr ""
+
+#32029-32059 unused
 
 
 
@@ -624,6 +628,10 @@ msgstr ""
 
 msgctxt "#32529"
 msgid "Search (YouTube)"
+msgstr ""
+
+msgctxt "#32530"
+msgid "Add to favorites"
 msgstr ""
 
 #: used in context menu. (not implemented in reddit.reader)

@@ -84,7 +84,7 @@ def build_script( mode, url="", name="", type_="", script_to_call=''):
         script_to_call=addonID
         #log("&url="+repr(url)+"&name="+repr(name)+"&type="+repr(type_))
         #return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type_) )
-        return "RunAddon({script_to_call},mode={mode}&url={url}&name={name}&type={type})".format( script_to_call=script_to_call,
+        return "RunScript({script_to_call},mode={mode}&url={url}&name={name}&type={type})".format( script_to_call=script_to_call,
                                                                                                   mode=mode,
                                                                                                   url=urllib.quote_plus(url),
                                                                                                   name=urllib.quote_plus(name),

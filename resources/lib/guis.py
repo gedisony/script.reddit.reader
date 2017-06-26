@@ -231,8 +231,9 @@ class cGUI(xbmcgui.WindowXML):
                 banner=addtl_subr_info.get('banner_img')  #rectangular shape
                 header=addtl_subr_info.get('header_img')  #square shape  from  bannerTvImageUrl
                 header_ar=img_ar(addtl_subr_info.get('header_size'))
-                if header_ar > 8: #some header_img are very wide. this is to check and override the icon display in the gui
+                if (header_ar > 8) and (not icon): #some header_img are very wide. this is to check and override the icon display in the gui
                     override_header_image=header
+                    banner=header
                 public_description=xstr( addtl_subr_info.get('public_description',''))
                 display_name=xstr(addtl_subr_info.get('display_name',''))
 

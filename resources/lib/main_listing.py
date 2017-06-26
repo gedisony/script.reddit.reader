@@ -26,9 +26,11 @@ if use_requests_cache:
 
 def index(url,name,type_):
     ## this is where the __main screen is created
-
     from guis import indexGui
     from reddit import assemble_reddit_filter_string, create_default_subreddits, populate_subreddits_pickle
+
+    #from actions import addtoKodiFavorites_x
+    #addtoKodiFavorites_x('','[IMG]cgorilla','')
 
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
@@ -466,11 +468,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
     #liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'','') )
 
-    #***build context menu***
-    #    convert a list of tuple into a string then set it as a property
-    #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
-    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments, commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, liz.getProperty('onClick_action') )) )
-
     if previewimage: needs_preview=False
     else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
 
@@ -534,6 +531,20 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
         #unsupported type here:
         pass
 
+    #***build context menu***
+    #    convert a list of tuple into a string then set it as a property
+    #    in GUI, the string is converted back via ast.literal_eval() and put into listItems
+    liz.setProperty('context_menu', str(build_context_menu_entries(num_comments,
+                                                                   commentsUrl,
+                                                                   subreddit,
+                                                                   domain,
+                                                                   link_url,
+                                                                   post_id,
+                                                                   post_title,
+                                                                   posted_by,
+                                                                   liz.getProperty('onClick_action'),
+                                                                   iconimage
+                                                                   )) )
     return liz
 
 

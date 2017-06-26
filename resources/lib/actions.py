@@ -6,6 +6,7 @@ import sys
 import shutil, os
 import re, urllib
 import pprint
+import json
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
 from utils import xbmc_busy, log, translation, xbmc_notify
@@ -691,7 +692,9 @@ def listRelatedVideo(url,name,type_):
 
 def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=None ):
     from utils import dictlist_to_listItems
-    from ContextMenus import build_youtube_context_menu_entries
+    from ContextMenus import build_youtube_context_menu_entries, build_add_to_favourites_context_menu_entry
+
+    context_menu_list=[]
 
     gui_title_text=None
     if dictlist:
@@ -703,7 +706,12 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
             label=li.getProperty('label')
             channel_name=li.getProperty('channel_name')
             channel_id=li.getProperty('channel_id')
-            li.setProperty('context_menu', str(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name)) )
+            onClick_action=li.getProperty('onClick_action')
+            thumbnail=li.getArt('thumb')
+            del context_menu_list[:] #empty the list
+            context_menu_list.extend(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name))
+            context_menu_list.extend(build_add_to_favourites_context_menu_entry(label,onClick_action,thumbnail) )
+            li.setProperty('context_menu', str(context_menu_list) )
 
         if type_=='links_in_description':
             from guis import text_to_links_gui
@@ -755,6 +763,76 @@ def listMoreVideo(google_api_request_url,label_name,type_):
     else:
         xbmc_notify('Nothing to list', google_api_request_url)
 
+def addtoKodiFavorites(command, name, thumbnail):
+    import xml.etree.ElementTree
+    from utils import unescape
+
+#adding to favorites involve 3 steps:
+#  1.) add the favorite via jsonrpc (script params not included)
+#  2.) modify the favourites.xml to include script params <-- i think there is another favourites file or this file is cached until another favorite is added
+#  3.) ??? <-- adding another favorite will delete the first one (until kodi is restarted) need to find a way for kodi to reload the modified favourite.xml
+
+    #http://kodi.wiki/view/JSON-RPC_API/v8#Favourites
+    #schema=xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "JSONRPC.Introspect", "id": 1}')
+    #log(repr(schema))
+    favorite_was_found=False
+    #add_dummy_favorite()
+    temp_command='script.reddit.reader' #can't add script favorites with parameter using jsonrpc
+    saved_command='RunScript("script.reddit.reader")'
+
+    json_rpc_command={"jsonrpc": "2.0",
+                      "method": "Favourites.AddFavourite",
+                      'params': {
+                                 'title': name,
+                                 'type': 'script',
+                                 'path': temp_command,
+                                 'thumbnail':thumbnail,
+                                 },
+                      'id': '1'
+                      }
+    a=xbmc.executeJSONRPC(json.dumps(json_rpc_command))
+    #log(repr(a))
+    a=json.loads(a)
+    if a.get('result','')=="OK":
+        log('Favourite added')
+        #now that we've created the favorite, we edit it to add parameters
+        favorites_xml       = xbmc.translatePath(os.path.join(addon.getAddonInfo('profile'), '..','..','favourites.xml'))
+        if os.path.exists(favorites_xml):
+            #log('{} exists'.format(favorites_xml) )
+            et = xml.etree.ElementTree.parse(favorites_xml)
+            root=et.getroot()
+
+            for f in root.findall('favourite'):
+                #the name attribute is escape encoded the xml file.
+                fav_name=unescape( f.get('name') ) #replaces &amp; to & etc.
+                fav_cmd=f.text
+                #log('*a*'+repr(name) + '  ' + saved_command)
+                #log('*b*'+repr(fav_name) + '  ' + fav_cmd )
+                #log('---')
+                if (fav_name==name) and (fav_cmd==saved_command):
+                    log('Favourite entry found {}'.format(fav_name) )
+                    favorite_was_found=True
+                    f.text=command
+
+            if favorite_was_found:
+                et.write(favorites_xml)
+                xbmc_notify(translation(32028), fav_name, icon=thumbnail)
+                #log('Favourite file updated')
+
+    #add_dummy_favorite() #second time removes it
+
+def add_dummy_favorite():
+    json_rpc_command={"jsonrpc": "2.0",
+                      "method": "Favourites.AddFavourite",
+                      'params': {
+                                 'title': 'dummy',
+                                 'type': 'script',
+                                 'path': 'dummy_command_enough_to_e_unique',
+                                 },
+                      'id': '1'
+                      }
+    a=xbmc.executeJSONRPC(json.dumps(json_rpc_command))
+    log("dummy favorite:" + repr(a))
 
 if __name__ == '__main__':
     pass

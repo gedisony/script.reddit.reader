@@ -27,8 +27,9 @@ cxm_show_search           = addon.getSetting("cxm_show_search") == "true"
 
 #cxm_show_reddit_save      = addon.getSetting("cxm_show_reddit_save") == "true"
 cxm_show_youtube_items    = addon.getSetting("cxm_show_youtube_items") == "true"
+cxm_show_add_to_favorites = addon.getSetting("cxm_show_add_to_favorites") == "true"
 
-def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, onClick_action):
+def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, onClick_action, thumbnail):
 
     s=truncate(subreddit,15)     #crop long subreddit names in context menu
     colored_subreddit_short=colored_subreddit( s )
@@ -108,15 +109,14 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     if cxm_show_youtube_items:
         cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None, title=post_title ))
 
-    #'XBMC.RunPlugin(%s?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' % (sys.argv[0], _ADDTOSF, urllib.quote_plus(name), urllib.quote_plus(thumb), urllib.quote_plus(cmd), urllib.quote_plus(keyword), meta)))
-    #save_favorites_command='XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
-    #save_favorites_command='XBMC.RunPlugin(plugin://plugin.program.super.favourites?mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)' %(250,urllib.quote_plus(post_title),'thumb',urllib.quote_plus(onClick_action),'keyw','meta')
-    #save_favorites_command="RunAddon(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',urllib.quote_plus(onClick_action),'keyw','meta')
-    #save_favorites_command="RunAddon(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
-    #save_favorites_command="RunPlugin(plugin.program.super.favourites,mode=%d&name=%s&thumb=%s&cmd=%s&keyword=%s&meta=%s)" %(250,urllib.quote_plus(post_title),'thumb',onClick_action,'keyw','meta')
-    #log(repr(save_favorites_command))
-    #cxm_list.append( ('super favorites'   ,  save_favorites_command ) )
+    cxm_list.extend( build_add_to_favourites_context_menu_entry(title=post_title, onClick_action=onClick_action,thumbnail=thumbnail) )
 
+    return cxm_list
+
+def build_add_to_favourites_context_menu_entry(title, onClick_action, thumbnail=None):
+    cxm_list=[]
+    if cxm_show_add_to_favorites:
+        cxm_list.append( (translation(32530) , build_script("addtoKodiFavorites", onClick_action,title,thumbnail)  ) )
     return cxm_list
 
 def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None,channel_id=None,channel_name=None):
@@ -152,6 +152,9 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=No
             #url+= "/search.json?q=" + urllib.quote_plus(search_string)
             if video_id:
                 cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
+
+        #if cxm_show_add_to_favorites:
+        #    cxm_list.append( (translation(32530) , build_script("addtoKodiFavorites", onClick_action,title,thumbnail)  ) )
 
     except Exception as e:
         log('  EXCEPTION build_youtube_context_menu_entries():'+str(e))
