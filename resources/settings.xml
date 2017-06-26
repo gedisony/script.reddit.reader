@@ -57,11 +57,11 @@
         <setting id="cxm_show_add_shortcuts"    type="bool" label="32515" default="true"/>
         <!-- setting id="cxm_show_new_from"         type="bool" label="32517" default="true"/-->
 
-        <setting id="cxm_show_filter"           type="bool" label="32518" default="true"/>
+        <setting id="cxm_show_filter"           type="bool" label="32518" default="false"/>
         <setting id="cxm_show_search"           type="bool" label="32520" default="true"/>
 
         <setting id="cxm_show_youtube_items"    type="bool" label="32521" default="true"/>
-        <setting id="cxm_show_add_to_favorites" type="bool" label="32530" default="true"/>
+        <setting id="cxm_show_add_to_favorites" type="bool" label="32530" default="false"/>
 
         <!-- setting id="cxm_show_reddit_save"      type="bool" label="32510" default="true"/-->
     </category>

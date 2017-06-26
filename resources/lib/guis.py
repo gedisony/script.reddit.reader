@@ -62,7 +62,7 @@ class contextMenu(xbmcgui.WindowXMLDialog):
     def onInit(self):
         self.list_control=self.getControl(996)
         self.list_control.addItems(self.listing)
-        pass
+        self.setFocus(self.list_control)
 
     def onAction(self, action):
         if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
@@ -76,17 +76,13 @@ class contextMenu(xbmcgui.WindowXMLDialog):
         #dump(selected_item)
 
 class cGUI(xbmcgui.WindowXML):
-    # view_461_comments.xml
     include_parent_directory_entry=True
     title_bar_text=""
     gui_listbox_SelectedPosition=0
 
-    #plot_font="a" #font used for 'plot' <- where the image or comment description is stored ### cannot set font size.
-    #CONTROL_ID_FOR_PLOT_TEXTBOX=65591
-
     def __init__(self, *args, **kwargs):
         xbmcgui.WindowXML.__init__(self, *args, **kwargs)
-        #xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)   #<--- what's the difference?
+        #xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)   #<--- what's the difference? WindowXMLDialog animations are more system-demanding but can have transparent background.
         self.subreddits_file = kwargs.get("subreddits_file")
         self.listing = kwargs.get("listing")
         self.main_control_id = kwargs.get("id")
@@ -156,7 +152,7 @@ class cGUI(xbmcgui.WindowXML):
             di_url=clicked_item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
             item_type=clicked_item.getProperty('item_type').lower()
         elif isinstance(clicked_item, xbmcgui.ControlButton ):
-            #bottons have no setProperty() hiding it in Label2 no good.
+            #buttons have no setProperty() hiding it in Label2 no good.
             #ast.literal_eval(cxm_string):
             #di_url=clicked_item.getLabel2()
             #log('  button label2='+repr(di_url))
@@ -247,7 +243,6 @@ class cGUI(xbmcgui.WindowXML):
                 del li[:]
 
     def busy_execute_sleep(self,executebuiltin, sleep=500, close=True):
-        #
         xbmc.executebuiltin("ActivateWindow(busydialog)")
         #RunAddon(script.reddit.reader,mode=listSubReddit&url=https%3A%2F%2Fwww.reddit.com%2Fr%2Fall%2F.json%3F%26nsfw%3Ano%2B%26limit%3D10%26after%3Dt3_4wmiag&name=all&type=)
         xbmc.executebuiltin( executebuiltin  )
@@ -259,12 +254,10 @@ class cGUI(xbmcgui.WindowXML):
             self.close()
         else:
             xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-        pass
 
     def close_gui(self):
         log('  close gui via exit monitor')
         self.close()
-        pass
 
 class indexGui(cGUI):
     #this is the gui that handles the initial screen.
@@ -291,7 +284,6 @@ class indexGui(cGUI):
             self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
 
     def onAction(self, action):
-
         if action in [ xbmcgui.ACTION_PREVIOUS_MENU, xbmcgui.ACTION_NAV_BACK ]:
             self.close()
 
@@ -303,21 +295,14 @@ class indexGui(cGUI):
             self.gui_listbox_SelectedPosition  = self.gui_listbox.getSelectedPosition()
             item = self.gui_listbox.getSelectedItem()
 
-            try:
-                item_type=item.getProperty('item_type').lower()
+            item_type=item.getProperty('item_type').lower()
 
-                if action in [ xbmcgui.ACTION_CONTEXT_MENU ]:
-                    ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
-                    log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
-                    #xbmc.executebuiltin("ActivateWindow(busydialog)")
-                    if ACTION_manage_subreddits:
-                        xbmc.executebuiltin( ACTION_manage_subreddits  )
-                        self.close()
-                    #xbmc.sleep(2000)
-                    #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-            except:
-                #panel control lets you pick a blank listitem at the end. this causes an error
-                pass
+            if action in [ xbmcgui.ACTION_CONTEXT_MENU ]:
+                ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
+                log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
+                if ACTION_manage_subreddits:
+                    xbmc.executebuiltin( ACTION_manage_subreddits  )
+                    self.close()
 
 class listSubRedditGUI(cGUI):
     reddit_query_of_this_gui=''
@@ -665,7 +650,6 @@ class text_to_links_gui(comments_GUI2):
 
     def onInit(self):
         xbmc.executebuiltin( "Dialog.Close(busydialog)" )
-
         #important to reset the listbox. when control comes back to this GUI(after calling another gui).
         #  kodi will "onInit" this GUI again. we end up adding items in gui_listbox
         #self.gui_listbox.reset()
@@ -714,10 +698,6 @@ class text_to_links_gui(comments_GUI2):
                 img_control.setImage(thumb)
             else:
                 img_control.setVisible(False) #hide the unused controls so they don't occupy 'space' in the grouplist
-#
-#        if self.gui_listbox_SelectedPosition > 0:
-#            self.gui_listbox.selectItem( self.gui_listbox_SelectedPosition )
-#        self.onAction(0)
 
     def onFocus(self,controlId):
         pass

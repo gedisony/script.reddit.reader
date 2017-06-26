@@ -19,12 +19,9 @@ cxm_show_autoplay         = addon.getSetting("cxm_show_autoplay") == "true"
 cxm_show_slideshow        = addon.getSetting("cxm_show_slideshow") == "true"
 
 cxm_show_add_shortcuts    = addon.getSetting("cxm_show_add_shortcuts") == "true"
-
 #cxm_show_new_from         = addon.getSetting("cxm_show_new_from") == "true"
-
 cxm_show_filter           = addon.getSetting("cxm_show_filter") == "true"
 cxm_show_search           = addon.getSetting("cxm_show_search") == "true"
-
 #cxm_show_reddit_save      = addon.getSetting("cxm_show_reddit_save") == "true"
 cxm_show_youtube_items    = addon.getSetting("cxm_show_youtube_items") == "true"
 cxm_show_add_to_favorites = addon.getSetting("cxm_show_add_to_favorites") == "true"
@@ -38,8 +35,6 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     post_title_short=truncate(post_title,15)
     post_author=truncate(posted_by,15)
 
-    label_html_to_text=translation(32502)
-    label_open_browser=translation(32503)
     label_view_comments=translation(32504)+' ({})'.format(num_comments)
     label_more_by_author=translation(32506).format(author=post_author)
     label_goto_subreddit=translation(32508).format(subreddit=subreddit)
@@ -47,8 +42,6 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     label_autoplay_after=translation(32513)+' '+colored_subreddit( post_title_short, 'gray',False )
 
     label_add_to_shortcuts=translation(32516).format(subreddit=subreddit)
-
-
     label_search=translation(32520)
 
     cxm_list=[]
@@ -152,9 +145,6 @@ def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=No
             #url+= "/search.json?q=" + urllib.quote_plus(search_string)
             if video_id:
                 cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
-
-        #if cxm_show_add_to_favorites:
-        #    cxm_list.append( (translation(32530) , build_script("addtoKodiFavorites", onClick_action,title,thumbnail)  ) )
 
     except Exception as e:
         log('  EXCEPTION build_youtube_context_menu_entries():'+str(e))

@@ -59,7 +59,6 @@ def compose_list_item(label,label2,iconImage,property_item_type, onClick_action,
     liz.setArt({"icon":iconImage, "thumb":iconImage,})
     liz.setProperty('item_type', property_item_type)  #item type "script" -> ('RunAddon(%s):' % di_url )
 
-    #liz.setInfo( type='video', infoLabels={"plot": shortcut_description, } )
     liz.setProperty('onClick_action', onClick_action)
 
     if infolabels==None:
@@ -68,7 +67,6 @@ def compose_list_item(label,label2,iconImage,property_item_type, onClick_action,
         liz.setInfo(type="Video", infoLabels=infolabels)
 
     return liz
-
 
 def build_script( mode, url="", name="", type_="", script_to_call=''):
     #builds the parameter for xbmc.executebuiltin   --> 'RunAddon(script.reddit.reader, ... )'

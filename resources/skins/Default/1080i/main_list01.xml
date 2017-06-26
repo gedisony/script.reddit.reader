@@ -10,7 +10,6 @@
 		<constant name="cccccc">srr_SKINDEFAULT.jpg</constant>
 		<param name="bbbbbb" value="srr_SKINDEFAULT.jpg"/>
 	-->
-	
 	<!-- this WILL work
 		<onload>SetProperty(bg_image,srr_blackbg.jpg)</onload>
 		but we set this up in python: - xbmcgui.WindowXML class e.g.: self.setProperty("bg_image", "srr_SKINDEFAULT.jpg")
