@@ -205,11 +205,11 @@ def listSubReddit(url, subreddit_key, type_):
         #log('$$$currenturl: ' +currentUrl)
         #log('$$$   nextUrl: ' +nextUrl)
 
-        liz = compose_list_item( translation(32004), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after) )
+        liz = compose_list_item( translation(32024), "", "DefaultFolderNextSquare.png", "script", build_script("listSubReddit",nextUrl,title_bar_name,after) )
 
         #for items at the bottom left corner
         liz.setArt({ "clearart": "DefaultFolderNextSquare.png"  })
-        liz.setInfo(type='video', infoLabels={"Studio":translation(32004)})
+        liz.setInfo(type='video', infoLabels={"Studio":translation(32024)})
         liz.setProperty('link_url', nextUrl )
         li.append(liz)
 

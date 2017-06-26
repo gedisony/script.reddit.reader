@@ -17,15 +17,15 @@ try: ytdl_quality=[0, 1, 2, 3][ int(ytdl_quality) ]
 except ValueError: ytdl_quality=1
 ytdl_DASH=addon.getSetting("ytdl_DASH")=='true'
 
-def manage_subreddits(subreddit, name, type_):
+def manage_subreddits(subreddit_entry, name, type_):
     from main_listing import index
-    log('manage_subreddits(%s, %s, %s)' %(subreddit, name, type_) )
+    log('manage_subreddits(%s, %s, %s)' %(subreddit_entry, name, type_) )
 
     #http://forum.kodi.tv/showthread.php?tid=148568
     dialog = xbmcgui.Dialog()
     #funcs = (        addSubreddit,        editSubreddit,        removeSubreddit,    )
     #elected_index = dialog.select(subreddit, ['add new subreddi', 'edit   subreddit', 'remove subreddit'])
-    selected_index = dialog.select(subreddit, [translation(32001), translation(32003), translation(32002)])
+    selected_index = dialog.select(subreddit_entry, [translation(32001), translation(32003), translation(32002), translation(32004)])
 
     #the if statements below is not as elegant as autoselecting the func from funcs but more flexible in the case with add subreddit where we should not send a subreddit parameter
     #    func = funcs[selected_index]
@@ -35,9 +35,13 @@ def manage_subreddits(subreddit, name, type_):
     if selected_index == 0:       # 0->first item
         addSubreddit('','','')
     elif selected_index == 1:     # 1->second item
-        editSubreddit(subreddit,'','')
+        editSubreddit(subreddit_entry,'','')
     elif selected_index == 2:     # 2-> third item
-        removeSubreddit(subreddit,'','')
+        removeSubreddit(subreddit_entry,'','')
+    elif selected_index == 3:     # 3-> fourth item
+        from reddit import subreddit_entry_to_listitem
+        li=subreddit_entry_to_listitem(subreddit_entry)
+        li_to_KodiFavourites(li)
     else:                         #-1 -> escape pressed or [cancel]
         pass
 
@@ -703,7 +707,7 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
         for li in directory_items:
             link_url=li.getProperty('link_url')
             video_id=li.getProperty('video_id')
-            label=li.getProperty('label')
+            label=li.getLabel()
             channel_name=li.getProperty('channel_name')
             channel_id=li.getProperty('channel_id')
             onClick_action=li.getProperty('onClick_action')
@@ -762,6 +766,14 @@ def listMoreVideo(google_api_request_url,label_name,type_):
         dictlist_to_RelatedVideo_gui(links_dictList, google_api_request_url, 'more', label_name, type_)
     else:
         xbmc_notify('Nothing to list', google_api_request_url)
+
+def li_to_KodiFavourites(listitem):
+    onClick_action=listitem.getProperty('onClick_action')
+    if onClick_action:
+        addtoKodiFavorites(command=onClick_action,
+                           name=listitem.getLabel(),
+                           thumbnail=listitem.getArt('thumb')
+                           )
 
 def addtoKodiFavorites(command, name, thumbnail):
     import xml.etree.ElementTree

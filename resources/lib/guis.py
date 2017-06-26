@@ -310,8 +310,9 @@ class indexGui(cGUI):
                     ACTION_manage_subreddits=item.getProperty('ACTION_manage_subreddits')
                     log( "   left pressed  %d IsPlayable=%s  url=%s " %(  self.gui_listbox_SelectedPosition, item_type, ACTION_manage_subreddits )   )
                     #xbmc.executebuiltin("ActivateWindow(busydialog)")
-                    xbmc.executebuiltin( ACTION_manage_subreddits  )
-                    self.close()
+                    if ACTION_manage_subreddits:
+                        xbmc.executebuiltin( ACTION_manage_subreddits  )
+                        self.close()
                     #xbmc.sleep(2000)
                     #xbmc.executebuiltin( "Dialog.Close(busydialog)" )
             except:

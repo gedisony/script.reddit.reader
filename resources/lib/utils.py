@@ -788,7 +788,6 @@ def dictlist_to_listItems(dictlist):
         liz.setProperty('link_url', media_url )  #added so we have a way to retrieve the link
         liz.setProperty('channel_id', channel_id )
         liz.setProperty('video_id', video_id )   #youtube only for now
-        liz.setProperty('label', label )
         liz.setProperty('channel_name', channel_name )
         liz.setProperty('channel_id', channel_id )
 
