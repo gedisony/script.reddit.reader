@@ -4,6 +4,7 @@
   - remove bugs, gui adjustments
   - add to favourites context menu item
   - debug mode setting
+  - add delay when threads query the same domain
 1.0.1
   - create shortcut to youtube channel on index page
   - fix search not properly urlencoded
