@@ -285,6 +285,14 @@ def count_links_from_same_domain(entry):
     else:
         return '',0
 
+def count_links_from_same_domain_comments(link_url): #this one is used in comments links
+    domain = '{uri.netloc}'.format( uri=urlparse.urlparse( link_url ) )
+    if domain:
+        domains_d[domain] += 1
+        return domain,domains_d[domain]  #returns a count of how many domain in domains_d
+    else:
+        return '',0
+
 def reddit_post_worker(idx, entry, q_out, delay=0):
     import datetime
     from utils import pretty_datediff, clean_str, get_int, format_description
@@ -670,13 +678,19 @@ def listLinksInComment(url, name, type_):
                 filtered_posts+=1
                 continue
 
+            domain,domain_count=count_links_from_same_domain_comments(link_url) #count how many same domains we're hitting
+            if domain.startswith("self."): #self posts are exempt
+                delay=0
+            else:
+                delay=(domain_count-1)*anti_dos_delay if domain_count>1 else 0
+
             #have threads process each comment post
-            t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter), name='#t%.2d'%idx)
+            t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter,delay), name='#t%.2d'%idx)
             c_threads.append(t)
             t.start()
 
         #loading_indicator.update(20,'Filtered %d comments' %(filtered_posts) )
-
+        log(repr(domains_d))
         #check the queue to determine progress
         break_counter=0 #to avoid infinite loop
         expected_listitems=(comments_count-filtered_posts)
@@ -728,11 +742,13 @@ def listLinksInComment(url, name, type_):
     del ui
     return
 
-def reddit_comment_worker(idx, h, q_out,submitter):
+def reddit_comment_worker(idx, h, q_out,submitter,delay=0):
     from domains import parse_reddit_link, sitesBase
     from utils import format_description, ret_info_type_icon, build_script, is_filtered
     from ContextMenus import build_youtube_context_menu_entries, build_reddit_context_menu_entries, build_link_in_browser_context_menu_entries, build_open_browser_to_pair_context_menu_entries
 
+    if delay>0:
+        xbmc.Monitor().waitForAbort( float(delay)/1000 )         #xbmc.sleep(delay)
 #         h[0]=score,
 #         h[1]=link_desc,
 #         h[2]=link_http,
