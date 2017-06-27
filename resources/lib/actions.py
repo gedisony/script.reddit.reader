@@ -665,7 +665,7 @@ def listRelatedVideo(url,name,type_):
             poster=yt.poster_url
             #log('  thung:'+yt.thumb_url)
             url_type,_=yt.get_video_channel_user_or_playlist_id_from_url(url)
-            #log('  url_type:'+repr(url_type))
+            #log('  listRelatedVideo:type_:{} url_type:{} url:{}'.format(type_,url_type,url) )
             xbmc_busy(True)
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
@@ -713,7 +713,7 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
             onClick_action=li.getProperty('onClick_action')
             thumbnail=li.getArt('thumb')
             del context_menu_list[:] #empty the list
-            context_menu_list.extend(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id=channel_id,channel_name=channel_name))
+            context_menu_list.extend(build_youtube_context_menu_entries(type_,link_url,video_id, title=label, channel_id_from_previous_listing=channel_id,channel_name=channel_name))
             context_menu_list.extend(build_add_to_favourites_context_menu_entry(label,onClick_action,thumbnail) )
             li.setProperty('context_menu', str(context_menu_list) )
 

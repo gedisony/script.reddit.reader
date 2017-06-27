@@ -112,37 +112,53 @@ def build_add_to_favourites_context_menu_entry(title, onClick_action, thumbnail=
         cxm_list.append( (translation(32530) , build_script("addtoKodiFavorites", onClick_action,title,thumbnail)  ) )
     return cxm_list
 
-def build_youtube_context_menu_entries(type_, youtube_url,video_id=None,title=None,channel_id=None,channel_name=None):
+def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url,video_id=None,title=None,channel_id_from_previous_listing=None,channel_name=None):
     from domains import ClassYoutube
     cxm_list=[]
 
     try:
         match=re.compile( ClassYoutube.regex, re.I).findall( youtube_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
         if match:
-            if not video_id: #no video id was supplied when this fn was called
-                video_id=ClassYoutube.get_video_id(youtube_url)
-            #see if we can parse channel id from url
-            channel_id_from_url=ClassYoutube.get_channel_id_from_url(youtube_url)
-            playlist_id_from_url=ClassYoutube.get_playlist_id_from_url(youtube_url)
+            if channel_id_from_previous_listing:
+                channel_url="https://youtube.com/channel/{}".format(channel_id_from_previous_listing)
 
-            if type_=='channel': #no need to list the "show more videos from this channel" entry if we're already showing "videos from this channel"
-                cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
-            else:
+            yt=ClassYoutube(youtube_url)
+            url_type,id_=yt.get_video_channel_user_or_playlist_id_from_url(youtube_url)
+
+            log('previous_listing_was_of_type='+repr(previous_listing_was_of_type))
+
+            cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
+
+            if previous_listing_was_of_type=='channel':
+                #cxm_list.append( (translation(32528)  , build_script("listRelatedVideo", channel_url, title, 'playlists')  ) ) #Playlists in this channel
+                pass
+            elif previous_listing_was_of_type=='playlist':
                 cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
-                if video_id and not channel_id_from_url:#if we can parse channel id from url, and there is no video id, the url is for a channel. skip showing related videos
-                    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
-                    cxm_list.append( (translation(32529)  , build_script("listRelatedVideo", youtube_url, title, 'search')  ) )
+            elif previous_listing_was_of_type=='playlists':
+                pass
+            else:
+                if url_type=='video':
+                    video_id=id_
+                    cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
                     cxm_list.append( (translation(32525)  , build_script("listRelatedVideo", youtube_url, title, 'links_in_description')  ) )
-            if playlist_id_from_url: #if there is a playlist id in the url, also show an entry for the playlist
-                cxm_list.append( (translation(32526)  , build_script("listRelatedVideo", youtube_url, title, 'playlist')  ) )
+                elif url_type=='channel':
+                    channel_id_from_url=id_
+                    cxm_list.append( (translation(32522)  , build_script("listRelatedVideo", youtube_url, title, 'channel')  ) )
+                elif url_type=='playlist':
+                    #playlist_id_from_url=id_
+                    if not previous_listing_was_of_type=='playlists':
+                        cxm_list.append( (translation(32526)  , build_script("listRelatedVideo", youtube_url, title, 'playlist')  ) )  #Show playlist (YouTube)
+                #elif url_type=='user':
+                #    cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
 
-            if channel_id:
-                #create a shortcut to this channel on the index page
-                channel_url="https://youtube.com/channel/{}".format(channel_id)
-                cxm_list.append( (translation(32528)  , build_script("listRelatedVideo", channel_url, title, 'playlists')  ) )
+            cxm_list.append( (translation(32529)  , build_script("listRelatedVideo", youtube_url, title, 'search')  ) )
+
+            if channel_id_from_previous_listing:
+                if not previous_listing_was_of_type=='playlists':
+                    cxm_list.append( (translation(32528)  , build_script("listRelatedVideo", channel_url, title, 'playlists')  ) ) #Playlists in this channel
                 cxm_list.append( ("{0}{1}".format(translation(32527),channel_name), build_script("addSubreddit", "{0}[{1}]".format(channel_url,channel_name))  ) )
 
-            #url+= "/search.json?q=" + urllib.quote_plus(search_string)
+            #Search reddit for this video ID"  #url+= "/search.json?q=" + urllib.quote_plus(search_string)
             if video_id:
                 cxm_list.append( (translation(32524)    , build_script("listSubReddit", assemble_reddit_filter_string(video_id,'','',''), 'Search')  ) )
 
