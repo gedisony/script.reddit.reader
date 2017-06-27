@@ -13,7 +13,7 @@
         <setting                               type="lsep"   label="32111" enable="true"/>
         <setting id="use_first_link_in_textpost_for_the_following_subreddits"  type="text"    label="32110" default=""/>
         <setting id="show_debug_messages"      type="bool"   label="32104" default="false"/>
-        <setting id="anti_dos_delay"           type="number" label="32105" default="100"/>
+        <setting id="anti_dos_delay"           type="number" label="32105" default="50"/>
     </category>
 
     <category label="32200">

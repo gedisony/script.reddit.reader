@@ -2465,7 +2465,7 @@ class ClassGfycat(sitesBase):
                     #log('      using mp4   wm(%d) m4(%d)' %(webmSize,mp4Size) )
                     stream_url=gfyItem.get('mp4Url') if gfyItem.get('mp4Url') else gfyItem.get('webmUrl')
 
-                log('      %dx%d %s' %(self.media_w,self.media_h,stream_url)  )
+                #log('      %dx%d %s' %(self.media_w,self.media_h,stream_url)  )
 
                 self.link_action=sitesBase.DI_ACTION_PLAYABLE
                 return stream_url, self.TYPE_GIF #sitesBase.TYPE_VIDEO

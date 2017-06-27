@@ -26,6 +26,10 @@ if use_requests_cache:
     import requests_cache
     requests_cache.install_cache(CACHE_FILE, backend='sqlite', expire_after=86400 )  #cache expires after: 86400=1day   604800=7 days
 
+sites_that_will_ban_if_excessive_connections=['pornhub','youporn']
+domains_d=defaultdict(int)  #anti_dos_delay used in count_links_from_same_domain() to keep track of the domains in a subreddit listing
+domains_exempt_from_anti_dos_delay=['youtube','youtu.be','imgur.com','redd.it','gfycat.com'] #checked in compute_anti_dos_delay()
+
 def index(url,name,type_):
     ## this is where the __main screen is created
     from guis import indexGui
@@ -64,7 +68,6 @@ GCXM_hasmultipleauthor=False
 GCXM_actual_url_used_to_generate_these_posts=''
 GCXM_reddit_query_of_this_gui=''
 
-domains_d=defaultdict(int)  #used in count_links_from_same_domain() to keep track of the domains in a subreddit listing
 
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
@@ -134,11 +137,7 @@ def listSubReddit(url, subreddit_key, type_):
                 continue
 
             domain,domain_count=count_links_from_same_domain( entry ) #count how many same domains we're hitting
-            if domain.startswith("self."): #self posts are exempt
-                delay=0
-            else:
-                delay=(domain_count-1)*anti_dos_delay if domain_count>1 else 0
-
+            delay=compute_anti_dos_delay(domain,domain_count)
             #have threads process each reddit post
             t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz,delay), name='#t%.2d'%idx)
             threads.append(t)
@@ -292,6 +291,16 @@ def count_links_from_same_domain_comments(link_url): #this one is used in commen
         return domain,domains_d[domain]  #returns a count of how many domain in domains_d
     else:
         return '',0
+
+def compute_anti_dos_delay(domain,domain_count):
+    if domain.startswith("self."): #self posts are exempt
+        delay=0
+    elif any(d in domain for d in domains_exempt_from_anti_dos_delay):
+        delay=0
+    else:
+        delay=(domain_count-1)*anti_dos_delay if domain_count>1 else 0
+
+    return delay
 
 def reddit_post_worker(idx, entry, q_out, delay=0):
     import datetime
@@ -503,8 +512,15 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'',previewimage) )
     #liz.setProperty('onClick_action', build_script('playYTDLVideo', link_url,'','') )
 
-    if previewimage: needs_preview=False
-    else:            needs_preview=True  #reddit has no thumbnail for this link. please get one
+    #get meta_ogimage_content for links that do not have a preview image
+    if previewimage:
+        needs_preview=False
+    else:
+        if any(site in domain for site in sites_that_will_ban_if_excessive_connections):
+            previewimage=iconimage
+            needs_preview=False
+        else:
+            needs_preview=True  #reddit has no thumbnail for this link. please get one
 
     ld=parse_reddit_link(link_url,reddit_says_is_video, needs_preview, False, preview_ar  )
 
@@ -515,8 +531,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
+    #log( '        %s' %(domain))
     #log( '          reddit thumb[%s] ' %(iconimage ))
-    #og( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
     #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
@@ -557,9 +574,7 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                                                  url=ld.playable_url,
                                                  name=post_title ,
                                                  type_=previewimage )
-
         #log('    action %s--%s' %( ld.link_action, DirectoryItem_url) )
-
         liz.setProperty('item_type',property_link_type)
         liz.setProperty('onClick_action',DirectoryItem_url)
     else:
@@ -650,7 +665,6 @@ def listLinksInComment(url, name, type_):
         #for i, h in enumerate(harvest):
         #    log( '  %d %s %.4d -%s   link[%s]' % ( i, h[7].ljust(8)[:8], h[0], h[3].ljust(20)[:20],h[2] ) )
 
-
         comments_count_orig=len(harvest)
         #log(' len harvest1 '+repr(len(harvest)))
         #remove duplicate links
@@ -679,10 +693,7 @@ def listLinksInComment(url, name, type_):
                 continue
 
             domain,domain_count=count_links_from_same_domain_comments(link_url) #count how many same domains we're hitting
-            if domain.startswith("self."): #self posts are exempt
-                delay=0
-            else:
-                delay=(domain_count-1)*anti_dos_delay if domain_count>1 else 0
+            delay=compute_anti_dos_delay(domain,domain_count)
 
             #have threads process each comment post
             t = threading.Thread(target=reddit_comment_worker, args=(idx, h,q_liz,submitter,delay), name='#t%.2d'%idx)
