@@ -7,17 +7,19 @@ import json
 import threading
 import re
 from Queue import Queue
-
+from collections import defaultdict
 import os,sys
 
 from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, subredditsPickle, int_CommentTreshold,addonUserDataFolder,CACHE_FILE
 from utils import xbmc_busy, log, translation, post_excluded_from
 
-
 use_requests_cache   = addon.getSetting("use_requests_cache") == "true"
 default_frontpage    = addon.getSetting("default_frontpage")
 no_index_page        = addon.getSetting("no_index_page") == "true"
 main_gui_skin        = addon.getSetting("main_gui_skin")
+anti_dos_delay       = addon.getSetting("anti_dos_delay")
+try:anti_dos_delay=int(anti_dos_delay)
+except ValueError:anti_dos_delay=100
 use_first_link_in_textpost_for_the_following_subreddits=addon.getSetting("use_first_link_in_textpost_for_the_following_subreddits")
 
 if use_requests_cache:
@@ -61,6 +63,8 @@ GCXM_hasmultipledomain=False
 GCXM_hasmultipleauthor=False
 GCXM_actual_url_used_to_generate_these_posts=''
 GCXM_reddit_query_of_this_gui=''
+
+domains_d=defaultdict(int)  #used in count_links_from_same_domain() to keep track of the domains in a subreddit listing
 
 def listSubReddit(url, subreddit_key, type_):
     from guis import progressBG
@@ -125,20 +129,25 @@ def listSubReddit(url, subreddit_key, type_):
 
     for idx, entry in enumerate(content['data']['children']):
         try:
-            #if entry.get('kind')!='t3':
-            #    filtered_out_posts+=1
-            #    continue
             if post_is_filtered_out( entry.get('data') ):
                 filtered_out_posts+=1
                 continue
+
+            domain,domain_count=count_links_from_same_domain( entry ) #count how many same domains we're hitting
+            if domain.startswith("self."): #self posts are exempt
+                delay=0
+            else:
+                delay=(domain_count-1)*anti_dos_delay if domain_count>1 else 0
+
             #have threads process each reddit post
-            t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz), name='#t%.2d'%idx)
+            t = threading.Thread(target=reddit_post_worker, args=(idx, entry,q_liz,delay), name='#t%.2d'%idx)
             threads.append(t)
             t.start()
 
         except Exception as e:
             log(" EXCEPTION:="+ str( sys.exc_info()[0]) + "  " + str(e) )
 
+    log( repr(domains_d) )
     #check the queue to determine progress
     break_counter=0 #to avoid infinite loop
     expected_listitems=(posts_count-filtered_out_posts)
@@ -146,9 +155,9 @@ def listSubReddit(url, subreddit_key, type_):
         loading_indicator.set_tick_total(expected_listitems)
         last_queue_size=0
         while q_liz.qsize() < expected_listitems:
-            if break_counter>=100:
+            if break_counter>=500:
+                #log('break counter reached limit')
                 break
-
             #each change in the queue size gets a tick on our progress track
             if last_queue_size < q_liz.qsize():
                 items_added=q_liz.qsize()-last_queue_size
@@ -162,7 +171,7 @@ def listSubReddit(url, subreddit_key, type_):
     #wait for all threads to finish before collecting the list items
     for idx, t in enumerate(threads):
         #log('    joining %s' %t.getName())
-        t.join(timeout=20)
+        t.join(timeout=20) #<-- does not seem to work
 
     xbmc_busy(False)
 
@@ -261,11 +270,29 @@ def skin_launcher(mode,**kwargs ):
         log('  skin_launcher:%s(%s)' %( str(e), main_gui_skin ) )
         xbmc.executebuiltin('XBMC.Notification("%s","%s[CR](%s)")' %(  translation(32108), str(e), main_gui_skin)  )
 
-def reddit_post_worker(idx, entry, q_out):
+def count_links_from_same_domain(entry):
+    #the purpose of this function is to provide a number that will be used as a delay for the threads that will query the same domain
+    from utils import clean_str
+    kind=entry.get('kind')  #t1 for comments  t3 for posts
+    data=entry.get('data')
+
+    if kind=='t3':
+        domain=clean_str(data,['domain'])
+        domains_d[domain] += 1
+        #title=clean_str(data,['title'])
+        #log( '{:<20.20}... {:>22.22}.. {}'.format(title, domain,domains_d[domain]))
+        return domain,domains_d[domain]  #returns a count of how many domain in domains_d
+    else:
+        return '',0
+
+def reddit_post_worker(idx, entry, q_out, delay=0):
     import datetime
     from utils import pretty_datediff, clean_str, get_int, format_description
     from reddit import determine_if_video_media_from_reddit_json
     from domains import sitesBase
+
+    if delay>0:
+        xbmc.Monitor().waitForAbort( float(delay)/1000 )         #xbmc.sleep(delay)
     try:
         credate = ""
         is_a_video=False
@@ -301,7 +328,7 @@ def reddit_post_worker(idx, entry, q_out):
             title=format_description(title)
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
-            log("  POS%s%cTITLE%.2d=%s" %( kind, ("v" if is_a_video else " "), idx, title ))
+            log("  POS%s%cTITLE%.2d=%s d=%d" %( kind, ("v" if is_a_video else " "), idx, title,delay ))
             #log("description%.2d=%s" %(idx,description))
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
@@ -546,7 +573,6 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
                                                                    iconimage
                                                                    )) )
     return liz
-
 
 def listLinksInComment(url, name, type_):
     from guis import progressBG

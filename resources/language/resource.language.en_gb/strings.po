@@ -237,7 +237,11 @@ msgctxt "#32104"
 msgid "Enable debug mode"
 msgstr ""
 
-#blank 32105 -32107
+msgctxt "#32105"
+msgid "Delay(ms) when querying same domain"
+msgstr ""
+
+#blank 32106 -32107
 
 msgctxt "#32108"
 msgid "Main GUI skin"
