@@ -200,27 +200,6 @@
 				<onright>55</onright>
 				<orientation>vertical</orientation>
 			</control>
-
-			<control type="button" id="6771"><description>button to sort links on top</description>
-				<visible>!IsEmpty(Window.Property(comments))</visible>
-					<top>200</top>
-					<left>-80</left>
-					<width>80</width>
-					<height>360</height>
-					<angle>90</angle>
-					<font>font12</font>
-					<align>center</align>
-					<aligny>center</aligny>
-					<texturefocus border="40" colordiffuse="FF12A8DA">srr_dialogbutton-fo.png</texturefocus>
-					<texturenofocus colordiffuse="71FFFFFF" border="40">srr_button-alt-nofo.png</texturenofocus>
-					<textoffsetx>20</textoffsetx>
-					<textwidth>320</textwidth>
-					<textcolor>white</textcolor>
-					<invalidcolor>invalid</invalidcolor>
-				<label>$ADDON[script.reddit.reader 32015]</label>
-				<onclick></onclick>
-			</control>
-
 			
 		</control>
 	<!--END include>View_55_WideList</include -->
@@ -247,7 +226,6 @@
 					<font>font14</font>
 					<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
 					<visible>isEmpty(Container(55).ListItem.Art(thumb))</visible>
-					<visible>!Player.HasMedia</visible>
 					<label>$INFO[Container(55).ListItem.Plot]</label>					<!-- label>$INFO[ListItem.Label]</label-->
 				</control>
 				
@@ -258,9 +236,8 @@
 					<height>156</height>
 					<font>font13</font>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-					<!--visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible-->
-					<visible>!Control.IsVisible(65591)</visible>
-					
+					<visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible>
+					<!-- visible>!Control.IsVisible(65591)</visible-->
 					<label>$INFO[Container(55).ListItem.Plot]</label>					
 				</control>
 				
@@ -272,8 +249,7 @@
 					<aspectratio>keep</aspectratio>
 					<fadetime>300</fadetime>
 					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
-					<visible>!Player.HasMedia</visible>
-					<texture fallback="colors/black.png">$INFO[Container(55).ListItem.Art(thumb)]</texture>
+					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
 				<control type="videowindow">
 					<left>602</left>

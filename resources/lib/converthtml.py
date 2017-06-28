@@ -10,7 +10,7 @@ from default import log, addon_path
 def readHTML(link_url, a, b):
     #from resources.lib.domains import parse_reddit_link, sitesBase
     from resources.lib.utils import markdown_to_bbcode, unescape  #, ret_info_type_icon, build_script
-    from resources.lib.guis import commentsGUI
+    from resources.lib.guis import cGUI
 
     from resources.lib.html2text import HTML2Text
 
@@ -104,7 +104,7 @@ def readHTML(link_url, a, b):
 
 
 
-    ui = commentsGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=listitems, id=55)
+    ui = cGUI('view_461_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=listitems, id=55)
     #ui.setProperty('comments', 'no')   #i cannot get the links button to show/hide in the gui class. I resort to setting a property and having the button xml check for this property to show/hide
 
     #ui = commentsGUI('view_463_comments.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
