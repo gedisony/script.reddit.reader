@@ -125,7 +125,7 @@ def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url
             yt=ClassYoutube(youtube_url)
             url_type,id_=yt.get_video_channel_user_or_playlist_id_from_url(youtube_url)
 
-            log('previous_listing_was_of_type='+repr(previous_listing_was_of_type))
+            #log('previous_listing_was_of_type='+repr(previous_listing_was_of_type))
 
             cxm_list.append( (translation(32523)  , build_script("listRelatedVideo", youtube_url, title, 'related')  ) )
 

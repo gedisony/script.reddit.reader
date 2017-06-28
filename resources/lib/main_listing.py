@@ -869,7 +869,7 @@ def reddit_comment_worker(idx, h, q_out,submitter,delay=0):
                 #liz.setPath(DirectoryItem_url)
 
                 context_menu_list=[]
-                context_menu_list.extend(build_youtube_context_menu_entries(type_='',youtube_url=link_url,video_id=None))
+                context_menu_list.extend(build_youtube_context_menu_entries(previous_listing_was_of_type='',youtube_url=link_url,video_id=None))
                 context_menu_list.extend(build_reddit_context_menu_entries(link_url))
                 context_menu_list.extend(build_link_in_browser_context_menu_entries(link_url))
                 context_menu_list.extend(build_open_browser_to_pair_context_menu_entries(link_url))
