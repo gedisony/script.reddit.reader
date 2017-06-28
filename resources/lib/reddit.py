@@ -582,8 +582,8 @@ def get_subreddit_info( subreddit ):
                                    'banner_size':j.get('banner_size'),
                                    'header_size':j.get('header_size'),
                                    } )
-                import pprint
-                log( pprint.pformat(subs_dict, indent=1) )
+                #import pprint
+                #log( pprint.pformat(subs_dict, indent=1) )
                 return subs_dict
         except ValueError:
             log('    ERROR:No data for (%s)'%subreddit)

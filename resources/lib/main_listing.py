@@ -35,9 +35,6 @@ def index(url,name,type_):
     from guis import indexGui
     from reddit import assemble_reddit_filter_string, create_default_subreddits, populate_subreddits_pickle
 
-    #from actions import addtoKodiFavorites_x
-    #addtoKodiFavorites_x('','[IMG]cgorilla','')
-
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
 

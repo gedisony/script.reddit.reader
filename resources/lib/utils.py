@@ -189,7 +189,6 @@ def post_excluded_from( filter_, str_to_check):
 def add_to_csv_setting(setting_id, string_to_add):
     #adds a string to the end of a setting id in settings.xml
     #this is assuming that it is a comma separated list used in filtering subreddit / domain
-    addon=xbmcaddon.Addon()
     csv_setting=addon.getSetting(setting_id)
     csv_list=csv_setting.split(',')
     csv_list=[x.lower().strip() for x in csv_list]
