@@ -217,16 +217,16 @@
 					<texture border="22">srr_dialog-bg.png</texture>
 				</control>
 				
-				<control type="textbox" id="65591">
-					<description>if thumb is empty this bigger textbox is visible</description>
+				<control type="textbox" id="65591"><description>if thumb is empty this bigger textbox is visible</description>
 					<left>612</left>
 					<top>128</top>
 					<width>1210</width>
 					<height>810</height>
 					<font>font14</font>
 					<autoscroll delay="10000" time="2000" repeat="10000">true</autoscroll>
-					<visible>isEmpty(Container(55).ListItem.Art(thumb))</visible>
-					<label>$INFO[Container(55).ListItem.Plot]</label>					<!-- label>$INFO[ListItem.Label]</label-->
+					<visible>String.IsEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<label>$INFO[Container(55).ListItem.Plot]</label>
+					<align>justify</align>
 				</control>
 				
 				<control type="textbox" id="65592">
@@ -236,7 +236,7 @@
 					<height>156</height>
 					<font>font13</font>
 					<autoscroll delay="8000" time="2000" repeat="10000">true</autoscroll>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb)</visible>
+					<visible>!String.IsEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<!-- visible>!Control.IsVisible(65591)</visible-->
 					<label>$INFO[Container(55).ListItem.Plot]</label>					
 				</control>
@@ -248,7 +248,7 @@
 					<height>756</height>
 					<aspectratio>keep</aspectratio>
 					<fadetime>300</fadetime>
-					<visible>!isEmpty(Container(55).ListItem.Art(thumb))</visible>
+					<visible>!String.IsEmpty(Container(55).ListItem.Art(thumb))</visible>
 					<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
 				</control>
 				<control type="videowindow">
