@@ -67,39 +67,42 @@
 						<animation effect="fade" start="100" end="0" time="100">Unfocus</animation>
 					</control>
 
-					<control type="group">
-						<control type="image">
-							<left>24</left><top>10</top>
-							<height>172</height>
-							<width>280</width>
-							<aspectratio aligny="center">keep</aspectratio>
-							<texture diffuse="gdx_diffuse2.png">$INFO[ListItem.Art(thumb)]</texture>
-						</control>
-							
-						<control type="textbox"><!-- ListItem.Label -->
-							<left>310</left>
-							<top>0</top>
-							<height>172</height>
-							<width>310</width>
-							<aligny>center</aligny>
-							<scrolltime>200</scrolltime>
-							<autoscroll delay="3000" time="2000" repeat="4000">!Container(55).OnNext+!Container(55).OnPrevious</autoscroll>
-							<font>font13</font>
-							<label>$INFO[ListItem.Label]</label>
-							<textcolor>EEFFFFFF</textcolor>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
-						<control type="label"><!-- ListItem.Label2 -->
-							<left>310</left>
-							<top>154</top>
-							<height>43</height>
-							<width>310</width>
-							<aligny>center</aligny>
-							<font>font10</font>
-							<label>$INFO[ListItem.Label2]</label>
-							<textcolor>grey</textcolor>
-							<shadowcolor>text_shadow</shadowcolor>
-						</control>
+					<control type="image">
+						<left>24</left><top>10</top>
+						<height>172</height>
+						<width>280</width>
+						<aspectratio aligny="center">keep</aspectratio>
+						<texture diffuse="gdx_diffuse2.png">$INFO[ListItem.Art(thumb)]</texture>
+					</control>
+
+					<control type="textbox"><!-- ListItem.Label -->
+						<left>310</left>
+						<top>0</top>
+						<height>164</height>
+						<width>310</width>
+						<aligny>center</aligny>
+						<scrolltime>0</scrolltime>
+						<autoscroll>false</autoscroll>
+						<font>font13</font>
+						<label>$INFO[ListItem.Label]</label>
+						<shadowcolor>text_shadow</shadowcolor>
+					</control>
+					<control type="label"><!-- ListItem.Label2 -->
+						<left>310</left>
+						<top>158</top><height>43</height>
+						<width>310</width>
+						<font>font10</font>
+						<label>$INFO[ListItem.Label2]</label>
+						<textcolor>grey</textcolor>
+						<shadowcolor>text_shadow</shadowcolor>
+					</control>
+					<control type="label"><!-- # videos or Duration -->
+						<left>18</left><width>280</width>
+						<top>150</top>
+						<align>right</align>
+						<font>font13</font>
+						<label>$INFO[ListItem.set]$INFO[ListItem.Duration]</label>
+						<shadowcolor>grey</shadowcolor>
 					</control>
 				</focusedlayout>
 
@@ -119,7 +122,7 @@
 					<control type="textbox"><!-- ListItem.Label -->
 						<left>310</left>
 						<top>0</top>
-						<height>172</height>
+						<height>164</height>
 						<width>310</width>
 						<aligny>center</aligny>
 						<scrolltime>0</scrolltime>
@@ -131,14 +134,20 @@
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
 						<left>310</left>
-						<top>154</top>
-						<height>43</height>
+						<top>158</top><height>43</height>
 						<width>310</width>
-						<aligny>center</aligny>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
 						<textcolor>grey</textcolor>
 						<shadowcolor>text_shadow</shadowcolor>
+					</control>
+					<control type="label"><!-- # videos or Duration -->
+						<left>18</left><width>280</width>
+						<top>150</top>
+						<align>right</align>
+						<font>font13</font>
+						<label>$INFO[ListItem.set]$INFO[ListItem.Duration]</label>
+						<shadowcolor>grey</shadowcolor>
 					</control>
 				</itemlayout>
 			</control>

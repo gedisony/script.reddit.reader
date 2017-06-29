@@ -702,7 +702,7 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
 
     gui_title_text=None
     if dictlist:
-        #log(pprint.pformat(links_dictList))
+        #log(pprint.pformat(dictlist))
         directory_items=dictlist_to_listItems(dictlist)
         for li in directory_items:
             link_url=li.getProperty('link_url')

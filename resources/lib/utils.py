@@ -889,5 +889,39 @@ def set_query_field(url, field, value, replace=False):
     )
     return urlparse.urlunparse(new_components)
 
+def ytDurationToSeconds(duration): #https://stackoverflow.com/questions/16742381/how-to-convert-youtube-api-duration-to-seconds
+    week = 0
+    day  = 0
+    hour = 0
+    min  = 0
+    sec  = 0
+
+    duration = duration.lower()
+
+    value = ''
+    for c in duration:
+        if c.isdigit():
+            value += c
+            continue
+
+        elif c == 'p':
+            pass
+        elif c == 't':
+            pass
+        elif c == 'w':
+            week = int(value) * 604800
+        elif c == 'd':
+            day = int(value)  * 86400
+        elif c == 'h':
+            hour = int(value) * 3600
+        elif c == 'm':
+            min = int(value)  * 60
+        elif c == 's':
+            sec = int(value)
+
+        value = ''
+
+    return week + day + hour + min + sec
+
 if __name__ == '__main__':
     pass

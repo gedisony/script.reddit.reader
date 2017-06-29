@@ -251,8 +251,10 @@ class sitesBase(object):
                 channel_id=item.get('channel_id','')
                 channel_name=item.get('channel_name','')
                 video_id=item.get('video_id','')
+                duration=item.get('duration','') #kodi prefers infolabels.duration in seconds
+                set_=item.get('set','')           #infolabels.set, name of the collection, i'm using this to show "14 videos" if item is a playlist
 
-            infoLabels={ "Title": title, "plot": desc }
+            infoLabels={ "Title": title, "plot": desc, "duration":duration, "set":set_,}
             #order is important here.
             e=[ title                   #'li_label'           #  the text that will show for the list (we use description because most albumd does not have entry['type']
                ,label2                  #'li_label2'          #
@@ -598,7 +600,7 @@ class ClassYoutube(sitesBase):
     def build_query_params_for_search(self,youtube_api_key,search_string,type_='video'):
         return  'search', {
                 'key': youtube_api_key,
-                'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
+                'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)), )',
                 'type': type_,         #video,channel,playlist.
                 'maxResults': '50',      # Acceptable values are 0 to 50
                 'part': 'snippet',
@@ -638,7 +640,7 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet,brandingSettings',  #https://developers.google.com/youtube/v3/docs/channels#resource
                 'id': channel_id,
             }
-
+    @classmethod
     def get_id_from_user(self,user_id):
         query_params = {
             'key': self.ret_api_key(),
@@ -688,6 +690,44 @@ class ClassYoutube(sitesBase):
             log( pprint.pformat(channel_info, indent=1) )
             return channel_info
 
+    def ret_videoId_list_from(self,items_from_api_response):
+        video_ids=[]
+        for i in items_from_api_response:
+            kind=clean_str(i, ['kind'])
+            if kind in ['youtube#searchResult','youtube#playlistItem']: #if request_action in ['search','playlistItems']:
+                if kind=='youtube#searchResult':
+                    videoId=clean_str(i, ['id','videoId'])
+                elif kind=='youtube#playlistItem':    #videoId is located somewhere else in the json if using playlistItems
+                    videoId=clean_str(i, ['snippet','resourceId','videoId'])
+                video_ids.append(videoId)
+        return video_ids
+    def get_video_durations(self,youtube_api_key,videoIds):
+        from utils import ytDurationToSeconds
+        durations=[]
+        query_params={'key': youtube_api_key,
+                'part': 'contentDetails',
+                'id': ",".join(videoIds),            #','.join(map(str, myList))#if the list contains numbers
+            }
+        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format("videos",urllib.urlencode(query_params))
+        r = self.requests_get(api_url)
+        j=r.json()
+        #log(repr(j))
+        for i in j.get('items'):
+            d=clean_str(i, ['contentDetails','duration'],'')
+            durations.append(ytDurationToSeconds(d))
+            #import iso8601
+            #iso8601.parse_duration(d)
+        return durations
+    def get_video_durations_dict(self,youtube_api_key,items_from_api_response):
+        video_ids=self.ret_videoId_list_from(items_from_api_response)
+        #log('aaaaaaaaaa'+repr(video_ids))
+        durations=self.get_video_durations(youtube_api_key, video_ids)
+        #log('aaaaaaaaaa'+repr(durations))
+        vnd=dict(zip(video_ids,durations))
+        del video_ids[:]
+        del durations[:]
+        return vnd
+
     def get_video_list(self, request_action, query_params, direct_api_request_url=None, prev_page=1 ):
         from utils import set_query_field
         links=[]
@@ -707,6 +747,9 @@ class ClassYoutube(sitesBase):
         items=j.get('items')
         all_same_channel=all_same([clean_str(i, ['snippet','channelTitle']) for i in items])
         #log(repr(channels))
+        videoId_and_durations=self.get_video_durations_dict(self.api_key,items)
+        #log('videoId_and_durations:'+repr(videoId_and_durations))
+
         for i in items:
             #snippet has: publishedAt channelId title description thumbnails{}
             kind=clean_str(i, ['kind'])
@@ -728,7 +771,7 @@ class ClassYoutube(sitesBase):
             publishedAt=clean_str(i, ['snippet','publishedAt'])
             pretty_date=self.pretty_date(publishedAt)
             #log('publishedAt:'+repr(publishedAt) + ' which is ' + pretty_date)
-
+            set_='' #infolabels set(name of the collection)  i'll use this to store "14 videos" for playlist
             channel_id=clean_str(i, ['snippet','channelId'])
             title=clean_str(i, ['snippet','title'])
             description=clean_str(i, ['snippet','description'])
@@ -738,11 +781,12 @@ class ClassYoutube(sitesBase):
             thumb320=clean_str(i, ['snippet','thumbnails','medium','url']) #320x180
             channelTitle=clean_str(i, ['snippet','channelTitle'])
             items_in_playlist=clean_str(i, ['contentDetails','itemCount'],default=0) #exists only for playlist. does not exist in searchResult or playlistItem
+            duration=videoId_and_durations.get(videoId)
             if items_in_playlist==1:
-                title="[B]{} video[/B]\n{}".format(items_in_playlist,title)
+                set_="{} video".format(items_in_playlist)
             elif items_in_playlist>1:
-                title="[B]{} videos[/B]\n{}".format(items_in_playlist,title)
-            if not all_same_channel:
+                set_="{} videos".format(items_in_playlist)
+            if not all_same_channel: #if all videos in the list is not from the same channel, add channel name beside date
                 pretty_date="{} [I]@{}[/I]".format(pretty_date,channelTitle)
 
             #log('  link_action:'+link_action +' -->'+ playable_url)
@@ -757,6 +801,8 @@ class ClassYoutube(sitesBase):
                             'channel_id':channel_id,
                             'channel_name':channelTitle,
                             'video_id':videoId,
+                            'duration':duration,
+                            'set':set_,
                             }  )
         if nextPageToken:
             new_url_with_next_page=set_query_field(api_url,'pageToken',nextPageToken,True)
