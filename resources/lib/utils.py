@@ -923,5 +923,13 @@ def ytDurationToSeconds(duration): #https://stackoverflow.com/questions/16742381
 
     return week + day + hour + min + sec
 
+def seconds_to_hms(seconds):
+    try:
+        m, s = divmod(seconds, 60)
+        h, m = divmod(m, 60)
+        return "{}:{:02d}:{:02d}".format(h,m,s) if h else "{:02d}:{:02d}".format(m,s) #%d:%02d:%02d" % (h, m, s)
+    except TypeError:
+        return ""
+
 if __name__ == '__main__':
     pass

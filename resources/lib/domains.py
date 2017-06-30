@@ -729,7 +729,7 @@ class ClassYoutube(sitesBase):
         return vnd
 
     def get_video_list(self, request_action, query_params, direct_api_request_url=None, prev_page=1 ):
-        from utils import set_query_field
+        from utils import set_query_field, seconds_to_hms
         links=[]
         if direct_api_request_url:
             log('direct api request url provided:'+repr(direct_api_request_url))
@@ -782,6 +782,9 @@ class ClassYoutube(sitesBase):
             channelTitle=clean_str(i, ['snippet','channelTitle'])
             items_in_playlist=clean_str(i, ['contentDetails','itemCount'],default=0) #exists only for playlist. does not exist in searchResult or playlistItem
             duration=videoId_and_durations.get(videoId)
+            duration_hms=seconds_to_hms(duration)
+            if items_in_playlist==0: #we're supposed to use listitem.duration for this field. but kodi <18 only formats this field in mmm. kodi 18 formats this to hh:mm:ss
+                set_=duration_hms    # we resort to formatting it ourselves and putting it in a different field(set) that is also displayed in the gui on the same location 
             if items_in_playlist==1:
                 set_="{} video".format(items_in_playlist)
             elif items_in_playlist>1:
@@ -801,7 +804,7 @@ class ClassYoutube(sitesBase):
                             'channel_id':channel_id,
                             'channel_name':channelTitle,
                             'video_id':videoId,
-                            'duration':duration,
+                            #'duration':duration,
                             'set':set_,
                             }  )
         if nextPageToken:
