@@ -102,7 +102,7 @@
 						<align>right</align>
 						<font>font13</font>
 						<label>$INFO[ListItem.set]$INFO[ListItem.Duration]</label>
-						<shadowcolor>grey</shadowcolor>
+						<shadowcolor>CC222222</shadowcolor>
 					</control>
 				</focusedlayout>
 
@@ -147,7 +147,7 @@
 						<align>right</align>
 						<font>font13</font>
 						<label>$INFO[ListItem.set]$INFO[ListItem.Duration]</label>
-						<shadowcolor>grey</shadowcolor>
+						<shadowcolor>CC222222</shadowcolor>
 					</control>
 				</itemlayout>
 			</control>
