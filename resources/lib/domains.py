@@ -292,9 +292,13 @@ def all_same(items):
     return all(x == items[0] for x in items)
 
 def url_resolver_support(link_url):
-    import urlresolver
-    if urlresolver.HostedMediaFile(link_url).valid_url():
-        return True
+    try:
+        import urlresolver
+        if urlresolver.HostedMediaFile(link_url).valid_url():
+            return True
+    except ValueError as e:
+        log('error importing urlresolver:'+str(e))
+        pass
     return False
 
 class ClassYoutube(sitesBase):
@@ -3730,7 +3734,6 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
         else:
             link_action=sitesBase.DI_ACTION_YTDL  #default action for unknown links is to have youtube_dl parse it
             preview_img=""
-
             #try to get a preview image by asking for meta og image for the link. (this slows down the show comments feature)
             if needs_preview:
                 sb=sitesBase(link_url)
