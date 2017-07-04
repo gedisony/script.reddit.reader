@@ -646,7 +646,6 @@ def listLinksInComment(url, name, type_):
         xbmc_busy()
         content = json.loads(content)
 
-        del harvest[:]
         #harvest links in the post text (just 1)
         r_linkHunter(content[0]['data']['children'])
 

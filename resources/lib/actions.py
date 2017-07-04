@@ -553,7 +553,6 @@ def ytdl_get_version_info(which_one='latest'):
 
 def update_youtube_dl_core(url,name,action_type):
 #credit to ruuk for most of the download code
-    import urllib
     import tarfile
 
     if action_type=='download':

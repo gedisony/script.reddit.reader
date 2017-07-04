@@ -3,13 +3,12 @@
 import re
 import xbmcgui
 import requests
-import pprint
 
 from default import log, addon_path
 
 def readHTML(link_url, a, b):
     #from resources.lib.domains import parse_reddit_link, sitesBase
-    from resources.lib.utils import markdown_to_bbcode, unescape  #, ret_info_type_icon, build_script
+    from resources.lib.utils import markdown_to_bbcode  #, ret_info_type_icon, build_script
     from resources.lib.guis import cGUI
 
     from resources.lib.html2text import HTML2Text
@@ -69,7 +68,7 @@ def readHTML(link_url, a, b):
                 liz=listitem(side, alt,uri,uri,domain )
             else:
                 liz=listitem(str(len(line)), markdown_to_bbcode(line) )
-            pass
+
         else:
             liz=listitem( label=line[0:30].replace('\n',''),
                           plot=line,
@@ -77,7 +76,6 @@ def readHTML(link_url, a, b):
                           art_thumb='',
                           domain='',
                           votes=len(line) )
-
         if liz:
             listitems.append(liz)
 

@@ -893,7 +893,7 @@ def ytDurationToSeconds(duration): #https://stackoverflow.com/questions/16742381
     week = 0
     day  = 0
     hour = 0
-    min  = 0
+    min_ = 0
     sec  = 0
 
     duration = duration.lower()
@@ -915,13 +915,13 @@ def ytDurationToSeconds(duration): #https://stackoverflow.com/questions/16742381
         elif c == 'h':
             hour = int(value) * 3600
         elif c == 'm':
-            min = int(value)  * 60
+            min_ = int(value)  * 60
         elif c == 's':
             sec = int(value)
 
         value = ''
 
-    return week + day + hour + min + sec
+    return week + day + hour + min_ + sec
 
 def seconds_to_hms(seconds):
     try:

@@ -298,7 +298,7 @@ def url_resolver_support(link_url):
             return True
     except ValueError as e:
         log('error importing urlresolver:'+str(e))
-        pass
+
     return False
 
 class ClassYoutube(sitesBase):
