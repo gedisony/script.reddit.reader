@@ -367,14 +367,14 @@ def playURLRVideo(url, name, type_):
     dialog_progress_YTDL.create(dialog_progress_title )
     dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
 
-    import urlresolver
     from urlparse import urlparse
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
-    #hmf = urlresolver.HostedMediaFile(url)
-    dialog_progress_YTDL.update(20,dialog_progress_title,translation(32012)  )
-
     try:
+        import urlresolver
+        #hmf = urlresolver.HostedMediaFile(url)
+        dialog_progress_YTDL.update(20,dialog_progress_title,translation(32012)  )
+
         media_url = urlresolver.resolve(url)
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
         if media_url:

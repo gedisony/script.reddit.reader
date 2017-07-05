@@ -2714,75 +2714,76 @@ class ClassEroshare(sitesBase):
     def get_thumb_url(self):
         return self.thumb_url
 
-class ClassVidble(sitesBase):
-    regex='(vidble.com)'
-
-    def is_album(self, media_url):
-        if '/album/' in media_url:
-            self.media_type = self.TYPE_ALBUM
-            return True
-        else:
-            return False
-
-    def get_playable_url(self, link_url, is_probably_a_video=False ):
-
-        if self.is_album(link_url):
-            self.media_type = sitesBase.TYPE_ALBUM
-            return link_url, self.media_type
-
-        #note: image can be got by just adding .jpg at end of url
-
-        content = self.requests_get( link_url)
-        #if 'pnnh' in media_url:
-        #    log('      retrieved:'+ str(content) )
-
-        #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
-        thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
-        #log('    thumb='+repr(thumb))
-        if thumb:
-            self.thumb_url=thumb[0]
-
-        div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
-        #log('    div_item_list=' + repr(div_item_list))
-        if div_item_list:
-            images = parseDOM(div_item_list, "img", ret = "src")
-            #for idx, item in enumerate(images):
-            #    log('    %d %s' %(idx, item))
-            if images[0]:
-                self.poster_url = 'http://www.vidble.com' + images[0]
-
-                return self.poster_url, self.TYPE_IMAGE
-
-    def ret_album_list(self, album_url, thumbnail_size_code=''):
-        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
-        content = self.requests_get(album_url)
-
-        #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
-        #thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
-        #log('    thumb='+repr(thumb))
-
-        div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
-        #log('      div_item_list=' + repr(div_item_list))
-
-        if div_item_list:
-            images = parseDOM(div_item_list, "img", ret = "src")
-            prefix = 'http://www.vidble.com'
-
-            self.assemble_images_dictList(   (prefix + s for s in images)    )
-
-        else:
-            log('      vidble: no div_item_list:  ')
-
-        #log( pprint.pformat(self.dictList, indent=1) )
-        return self.dictList
-
-    def get_thumb_url(self):
-        if not self.thumb_url:
-            img=self.request_meta_ogimage_content()
-            self.thumb_url=img
-            self.poster_url=self.thumb_url
-
-        return self.thumb_url
+#no longer working (requires javascript)
+#class ClassVidble(sitesBase):
+#    regex='(vidble.com)'
+#
+#    def is_album(self, media_url):
+#        if '/album/' in media_url:
+#            self.media_type = self.TYPE_ALBUM
+#            return True
+#        else:
+#            return False
+#
+#    def get_playable_url(self, link_url, is_probably_a_video=False ):
+#
+#        if self.is_album(link_url):
+#            self.media_type = sitesBase.TYPE_ALBUM
+#            return link_url, self.media_type
+#
+#        #note: image can be got by just adding .jpg at end of url
+#
+#        content = self.requests_get( link_url)
+#        #if 'pnnh' in media_url:
+#        #log('      retrieved:'+ str(content) )
+#
+#        #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
+#        thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
+#        #log('    thumb='+repr(thumb))
+#        if thumb:
+#            self.thumb_url=thumb[0]
+#
+#        div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
+#        #log('    div_item_list=' + repr(div_item_list))
+#        if div_item_list:
+#            images = parseDOM(div_item_list, "img", ret = "src")
+#            #for idx, item in enumerate(images):
+#            #    log('    %d %s' %(idx, item))
+#            if images[0]:
+#                self.poster_url = 'http://www.vidble.com' + images[0]
+#
+#                return self.poster_url, self.TYPE_IMAGE
+#
+#    def ret_album_list(self, album_url, thumbnail_size_code=''):
+#        #returns an object (list of dicts) that contain info for the calling function to create the listitem/addDirectoryItem
+#        content = self.requests_get(album_url)
+#
+#        #<meta id="metaTag" property="og:image" content="http://www.vidble.com/a9CvdmX9gu_sqr.jpeg"></meta>
+#        #thumb= parseDOM(content.text, "meta", attrs = { "id": "metaTag" }, ret = "content")
+#        #log('    thumb='+repr(thumb))
+#
+#        div_item_list = parseDOM(content.text, "div", attrs = { "id": "ContentPlaceHolder1_divContent" })
+#        #log('      div_item_list=' + repr(div_item_list))
+#
+#        if div_item_list:
+#            images = parseDOM(div_item_list, "img", ret = "src")
+#            prefix = 'http://www.vidble.com'
+#
+#            self.assemble_images_dictList(   (prefix + s for s in images)    )
+#
+#        else:
+#            log('      vidble: no div_item_list:  ')
+#
+#        #log( pprint.pformat(self.dictList, indent=1) )
+#        return self.dictList
+#
+#    def get_thumb_url(self):
+#        if not self.thumb_url:
+#            img=self.request_meta_ogimage_content()
+#            self.thumb_url=img
+#            self.poster_url=self.thumb_url
+#
+#        return self.thumb_url
 
 #class ClassPhotobucket(sitesBase):
 #    SITE='photobucket'
