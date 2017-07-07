@@ -9,7 +9,7 @@ import json
 import urlparse
 #sys.setdefaultencoding("utf-8")
 
-from default import addon, streamable_quality   #,addon_path,pluginhandle,addonID
+from default import addon, streamable_quality,hide_nsfw   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
 from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff, nested_lookup
 
@@ -599,17 +599,19 @@ class ClassYoutube(sitesBase):
                 'part': 'snippet',
                 'order': 'date',
                 'relatedToVideoId': video_id,
+                'safeSearch':'moderate' if hide_nsfw else 'none',
             }
     @classmethod
     def build_query_params_for_search(self,youtube_api_key,search_string,type_='video'):
         return  'search', {
                 'key': youtube_api_key,
-                'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)), )',
+                'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                 'type': type_,         #video,channel,playlist.
                 'maxResults': '50',      # Acceptable values are 0 to 50
                 'part': 'snippet',
                 'order': 'date',
                 'q': search_string,
+                'safeSearch':'moderate' if hide_nsfw else 'none',
             }
     @classmethod
     def build_query_params_for_playlist_videos(self,youtube_api_key, playlist_id):
