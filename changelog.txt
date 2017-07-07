@@ -1,3 +1,9 @@
+1.0.3
+  - update youtube link parsing (attribution)
+  - show youtube video duration on gui
+  - misc. gui adjustments
+  - ignore urlresolver import error
+  - bugfix on youtube search and apply nsfw filter on yt search
 1.0.2
   - next page for youtube lists
   - search youtube context menu item
