@@ -46,7 +46,7 @@
 				<left>0</left>
 				<top>85</top>
 				<width>1902</width>
-				<height>770</height>
+				<height>920</height>
 				<preloaditems>true</preloaditems>
 				<scrolltime tween="cubic" easing="out">500</scrolltime>
 				<orientation>vertical</orientation>
@@ -54,7 +54,7 @@
 				<preloaditems>true</preloaditems>
 
 				<visible>true</visible>
-				<focusedlayout height="88" >
+				<focusedlayout height="84" >
 					<control type="image">
 						<texture>srr_dialog-bg.png</texture>
 					</control>
@@ -85,7 +85,7 @@
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
 						<left>152</left>
-						<top>44</top><height>43</height>
+						<top>55</top><height>43</height>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
 						<textcolor>grey</textcolor>
@@ -93,7 +93,7 @@
 					</control>
 				</focusedlayout>
 
-				<itemlayout height="88" >
+				<itemlayout height="84" >
 					<control type="image">
 						<texture>srr_dialog-bg.png</texture>
 					</control>
@@ -118,19 +118,20 @@
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
 						<left>152</left>
-						<top>44</top><height>43</height>
+						<top>55</top><height>43</height>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
 						<textcolor>grey</textcolor>
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
+
 				</itemlayout>
 			</control>
 			<control type="scrollbar" id="55600">
 				<left>1900</left>
 				<top>85</top>
 				<width>12</width>
-				<height>770</height>
+				<height>920</height>
 				<onleft>55</onleft>
 				<onright>55</onright>
 				<orientation>vertical</orientation>
@@ -142,7 +143,7 @@
 	<!--BEGIN include name="UpDownArrows"-->
 		<control type="button" id="55588">
 			<left>20</left>
-			<top>830</top>
+			<top>980</top>
 			<width>48</width>
 			<height>24</height>
 			<texturefocus colordiffuse="FF12A8DA">srr_arrowdown.png</texturefocus>
@@ -173,7 +174,7 @@
 	<!--END include name="UpDownArrows"-->
 
 	<control type="label"><description>number/total items label</description>
-		<top>820</top>
+		<top>970</top>
 		<left>1500</left>
 		<width>410</width>
 		<height>48</height>
@@ -200,11 +201,11 @@
 				<control type="image"><description>little icon on Left of top bar </description>
 					<top>8</top>
 					<left>10</left>
-					<width>70</width>
+					<width>60</width>
 					<height>60</height>
 					<animation effect="fade" start="0" end="100" time="300">WindowOpen</animation>
 					<animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
-					<texture colordiffuse="FF12A8DA">type_youtube.png</texture>
+					<texture colordiffuse="FF12A8DA">changelog.png</texture>
 					<aspectratio align="center" aligny="center">keep</aspectratio>
 				</control>
 				<control type="label" id="1">
@@ -258,36 +259,51 @@
 			</control>
 		<!--END include name="TopBar"-->
 
-	<control type="group">
-		<left>0</left>
-		<top>850</top>
-		<width>1948</width>
-		<height>230</height>
-		<control type="image">
-			<left>-26</left>
-			<texture>srr_dialog-bg.png</texture>
-		</control>
-
-		<control type="textbox">
-			<left>24</left>
-			<top>2</top>
-			<width>1874</width>
-			<height>230</height>
-		
-			<visible>true</visible>
-			<colordiffuse>FFFFFFFF</colordiffuse>
-			<font>font13</font>
-			<textcolor>FFFFFFFF</textcolor>
-			<!--visible>!String.IsEmpty(Container(55).ListItem.Plot)</visible-->
-			<autoscroll delay="10000" time="3000" repeat="10000">true</autoscroll>
-			<label>$INFO[Container(55).ListItem.Plot]</label>
-			<align>left</align>
-			<aligny>center</aligny>
+		<control type="group"><description>bottom bar</description>
+			<left>0</left>
+			<top>1005</top>
+			<width>1948</width>
+			<height>80</height>
 			<animation type="WindowOpen"><effect type="slide" start="0,400" end="0" time="400" tween="cubic" easing="out" /></animation>
 			<animation type="WindowClose"><effect type="slide" start="0" end="0,400" time="400" tween="cubic" easing="out" /></animation>
-		</control>
-	</control>
 
+			<control type="image"><description>background</description>
+				<left>-26</left>
+				<texture>srr_dialog-bg.png</texture>
+			</control>
+			
+			<control type="image"><description>icon depicting what kind of media the link points to</description>
+				<top>14</top>
+				<left>18</left>
+				<width>48</width>
+				<height>48</height>
+				<aspectratio>keep</aspectratio>
+				<texture colordiffuse="FF12A8DA">$INFO[Container(55).ListItem.Art(clearart)]</texture>
+			</control>
+			
+			<control type="label"><description>domain</description>
+				<top>8</top>
+				<left>78</left>
+				<label>[B]$INFO[Container(55).ListItem.Studio][/B]</label>
+				<font>font13</font>
+				<shadowcolor>text_shadow</shadowcolor>
+				<height>35</height>
+				<width min="1" max="992">auto</width>
+			</control>
+			
+			<control type="label" >
+				<top>44</top>
+				<left>78</left>
+				<height>25</height>
+				<width>1920</width>
+				<font>font10</font>
+				<shadowcolor>text_shadow</shadowcolor>
+				<haspath>true</haspath>
+				<textcolor>44B2D4F5</textcolor>
+				<label>$INFO[Container(55).ListItem.Property(link_url)]</label>
+			</control>
+			
+		</control>
 
 	</controls>
 </window>

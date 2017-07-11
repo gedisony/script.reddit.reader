@@ -11,7 +11,8 @@ import urlparse
 
 from default import addon, streamable_quality,hide_nsfw   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
-from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff, nested_lookup
+from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
+from locale import format_string
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
@@ -775,7 +776,7 @@ class ClassYoutube(sitesBase):
 
             #log('video id:'+repr(videoId))
             publishedAt=clean_str(i, ['snippet','publishedAt'])
-            pretty_date=self.pretty_date(publishedAt)
+            pretty_date=pretty_datediff_wrap(publishedAt, format_string="%Y-%m-%dT%H:%M:%S.000Z")
             #log('publishedAt:'+repr(publishedAt) + ' which is ' + pretty_date)
             set_='' #infolabels set(name of the collection)  i'll use this to store "14 videos" for playlist
             channel_id=clean_str(i, ['snippet','channelId'])
@@ -828,22 +829,6 @@ class ClassYoutube(sitesBase):
                             'video_id':None,
                             }  )
         return links
-
-    def pretty_date(self, yt_date_string):
-        from datetime import datetime
-        import time
-        #http://forum.kodi.tv/showthread.php?tid=112916
-        try:
-            date_object = datetime.strptime(yt_date_string,"%Y-%m-%dT%H:%M:%S.000Z")
-        except TypeError:
-            date_object = datetime(*(time.strptime(yt_date_string,"%Y-%m-%dT%H:%M:%S.000Z")[0:6]))
-
-        #date_object_ts=time.mktime(date_object.timetuple())
-        now_utc = datetime.utcnow()
-        #log('  yt ts : '+repr(date_object) )
-        #log('  yt now: '+repr(now_utc) )
-        #log('  pretty : '+pretty_datediff(now_utc, date_object) )
-        return pretty_datediff(now_utc, date_object)
 
 class ClassImgur(sitesBase):
     regex='(imgur.com)'

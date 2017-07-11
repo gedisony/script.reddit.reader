@@ -208,14 +208,14 @@ class cGUI(xbmcgui.WindowXML):
         entries.sort()
         #log( '  entries count ' + str( len( entries) ) )
 
-        li_setting=compose_list_item( "listRecentlyPlayed", "Program", "icon_settings.png", "script", build_script("listRecentlyPlayed", '', '') )
-        listing.append(li_setting)
-
         for subreddit_entry in entries:
             liz=subreddit_entry_to_listitem(subreddit_entry)
 
             liz.setProperty('ACTION_manage_subreddits', build_script('manage_subreddits', subreddit_entry,"","" ) )
             listing.append(liz)
+
+        li_setting=compose_list_item( translation(32029), "History", "icon_search_subreddit.png", "script", build_script("listRecentlyPlayed", '', '') )
+        listing.append(li_setting)
 
         li_search=compose_list_item( translation(32016), translation(32016), "icon_search_subreddit.png", "script", build_script("search", '', '') )
         listing.append(li_search)

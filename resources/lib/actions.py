@@ -852,7 +852,7 @@ def parse_web_url_from(recently_played_url):
     from domains import ClassYoutube
     ret_url=recently_played_url.split("|", 1)[0] #remove |Useragent:...
     link_components=urlparse.urlparse( recently_played_url )
-    log("*****{} scheme[{}]**".format( recently_played_url, link_components.scheme ) )
+    #log("*****{} scheme[{}]**".format( recently_played_url, link_components.scheme ) )
     if link_components.scheme=="plugin":
         query = urlparse.parse_qs(link_components.query)
         netloc=link_components.netloc
@@ -867,7 +867,7 @@ def parse_web_url_from(recently_played_url):
     return ret_url
 
 def listRecentlyPlayed(url,name,type_):
-    from utils import db_getLastPlayedVideos,build_script,ret_info_type_icon,truncate_middle
+    from utils import db_getLastPlayedVideos,build_script,ret_info_type_icon,truncate_middle,pretty_datediff_wrap
     from domains import parse_reddit_link,sitesBase
     from ContextMenus import build_youtube_context_menu_entries,build_reddit_search_context_menu_entries
 
@@ -877,16 +877,18 @@ def listRecentlyPlayed(url,name,type_):
     for idx, recently_played_tuple in enumerate(recently_played_links):
         #log(repr(recently_played_tuple))
         last_played, recently_played_url=recently_played_tuple
+        pretty_date=pretty_datediff_wrap(last_played,use_utc_as_base=False)
+        #log("---{} {}".format(pretty_date, last_played ) )
         parsed_web_url=parse_web_url_from(recently_played_url) #grabs the (youtube) url from plugin://plugin.video...
         #log('recent{}:{}'.format(idx, recently_played_url))
         link_components=urlparse.urlparse( parsed_web_url )
         domain=link_components.netloc
         label=parsed_web_url     #recently_played_url.split("|", 1)[0] #remove |Useragent:...
-        liz=xbmcgui.ListItem(label=truncate_middle(label, 110), label2='{}'.format(recently_played_url) )
+        liz=xbmcgui.ListItem(label=truncate_middle(label, 110), label2=pretty_date )
 
         liz.setInfo( type="Video", infoLabels={ "Title": parsed_web_url, "plot": recently_played_url, "studio": domain } )
 
-        ld=parse_reddit_link(link_url=parsed_web_url, assume_is_video=True, needs_preview=True )
+        ld=parse_reddit_link(link_url=parsed_web_url, assume_is_video=True, needs_preview=False )
         if ld:
             #use clearart to indicate if link is video, album or image. here, we default to unsupported.
             #clearart=ret_info_type_icon(setInfo_type, mode_type)
@@ -927,7 +929,7 @@ def listRecentlyPlayed(url,name,type_):
     #from guis import text_to_links_gui
     #ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title='Recently Played', poster=None)
     from guis import cGUI
-    ui = cGUI('srr_history_list.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+    ui = cGUI('srr_history_list.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title='Recently Played')
     ui.include_parent_directory_entry=False
 
     ui.doModal()

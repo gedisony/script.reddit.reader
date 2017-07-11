@@ -108,7 +108,13 @@ def build_reddit_search_context_menu_entries(hasmultiplesubreddit,subreddit,link
             label_search+=' {}'.format(colored_subreddit_full)
             cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
         #NOTE: can't use the entire link_url because it will work for www.reddit.com but not for oauth.reddit.com
-        cxm_list.append( (translation(32531)    , build_script("listSubReddit", assemble_reddit_filter_string(parts_of_link_url.path,'','',''), 'Search')  ) )
+        part_to_search="{} {}".format(parts_of_link_url.path,parts_of_link_url.query)
+
+        remove_these_words=['.mp4','.webm','/v/','.jpg','.png'] #mainly to match imgur links where we want to catch the imageID not "imageID.mp4"
+        part_to_search=re.sub('|'.join(re.escape(word) for word in remove_these_words), '', part_to_search)
+
+        #log('parts to search='+part_to_search)
+        cxm_list.append( (translation(32531)    , build_script("listSubReddit", assemble_reddit_filter_string(part_to_search,'','',''), name=translation(32531))  ) ) #"Other posts with this link"
     return cxm_list
 
 def build_add_to_favourites_context_menu_entry(title, onClick_action, thumbnail=None):

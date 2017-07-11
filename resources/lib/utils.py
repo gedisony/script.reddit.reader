@@ -166,6 +166,22 @@ def pretty_datediff(dt1, dt2):
                 return str(day_diff / 365) + translation(32070)    #" years ago"
     except:
         pass
+def pretty_datediff_wrap( date_to_prettify, format_string="%Y-%m-%d %H:%M:%S", use_utc_as_base=True ):
+    from datetime import datetime
+    import time
+
+    try: #try/except is done this way because of a bug  https://forum.kodi.tv/showthread.php?tid=112916
+        date_object=datetime.strptime(date_to_prettify, format_string)
+    except TypeError:
+        date_object=datetime(*(time.strptime(date_to_prettify, format_string)[0:6]))
+
+    now = datetime.now()
+    if use_utc_as_base:
+        now = datetime.utcnow()
+    #log('  yt ts : '+repr(date_object) )
+    #log('  yt now: '+repr(now) )
+    #log('  pretty : '+pretty_datediff(now, date_object) )
+    return pretty_datediff(now, date_object)
 
 def is_filtered(filter_csv, str_to_check):
     #import csv; for row in csv.reader(['one,two,three']):
@@ -987,7 +1003,7 @@ def db_getLastPlayedVideos():
 
     dbPath = getDbPath()
     if dbPath:
-        conn = sqlite3.connect(dbPath)
+        conn = sqlite3.connect(dbPath)  # detect_types=sqlite3.PARSE_DECLTYPES <-- might have worked if lastPlayed field is not type-text in database
         c = conn.cursor()
 
         #str_sql='SELECT strFilename FROM files ORDER BY lastPlayed DESC LIMIT 10'
@@ -999,11 +1015,11 @@ def db_getLastPlayedVideos():
         #",f.strFilename "                                                   #plugin://plugin.video.reddit_viewer/?url=http%3A%2F%2Fyoutu...
         " FROM files AS f LEFT OUTER JOIN path p ON f.idPath=p.idPath "
         " WHERE strFilename NOT IN ('videoplayback') "                       #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
-        " ORDER BY lastPlayed DESC LIMIT 10;")
+        " ORDER BY lastPlayed DESC LIMIT 30;")
         c.execute(str_sql)
 
         result = c.fetchall()
-        #log('*****************'+repr(result) )
+        #log('-------------------------------------------------'+repr(result) )
 
         if result:
             return result
