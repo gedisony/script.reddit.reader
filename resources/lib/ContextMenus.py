@@ -109,6 +109,7 @@ def build_reddit_search_context_menu_entries(hasmultiplesubreddit,subreddit,link
             cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
         #NOTE: can't use the entire link_url because it will work for www.reddit.com but not for oauth.reddit.com
         part_to_search="{} {}".format(parts_of_link_url.path,parts_of_link_url.query)
+        if part_to_search.startswith('/'): part_to_search=part_to_search[1:]  #remove starting '/'
 
         remove_these_words=['.mp4','.webm','/v/','.jpg','.png'] #mainly to match imgur links where we want to catch the imageID not "imageID.mp4"
         part_to_search=re.sub('|'.join(re.escape(word) for word in remove_these_words), '', part_to_search)
