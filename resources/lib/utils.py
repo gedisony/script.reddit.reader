@@ -1014,8 +1014,8 @@ def db_getLastPlayedVideos():
         #",p.strPath "                                                       #plugin://plugin.video.reddit_viewer/
         #",f.strFilename "                                                   #plugin://plugin.video.reddit_viewer/?url=http%3A%2F%2Fyoutu...
         " FROM files AS f LEFT OUTER JOIN path p ON f.idPath=p.idPath "
-        " WHERE strFilename NOT IN ('videoplayback') "                       #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
-        " ORDER BY lastPlayed DESC LIMIT 30;")
+        #" WHERE strFilename NOT IN ('videoplayback') "                       #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
+        " ORDER BY lastPlayed DESC LIMIT 10;")
         c.execute(str_sql)
 
         result = c.fetchall()

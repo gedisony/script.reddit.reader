@@ -3604,6 +3604,27 @@ class genericAlbum1(sitesBase):
                         if link_url_is_playable( i ) == 'image':
                             images_list.append( i )
 
+class smb(sitesBase):
+    regex='(^smb:\/\/)'
+    def get_thumb_url(self):
+        pass
+    def get_playable(self, link_url='', is_probably_a_video=False ):
+        self.link_action=self.DI_ACTION_PLAYABLE
+        return link_url,self.TYPE_VIDEO
+
+    def get_playable_url(self, link_url, is_probably_a_video):
+        pass
+
+class local(sitesBase):
+    regex=r"^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\"  #^(?:[a-zA-Z]\:|\\\\[\w\.]+\\[\w.$]+)\\(?:[\w]+\\)*\w([\w.])+$'
+    def get_thumb_url(self):
+        pass
+    def get_playable(self, link_url='', is_probably_a_video=False ):
+        self.link_action=self.DI_ACTION_PLAYABLE
+        return link_url,self.TYPE_VIDEO
+    def get_playable_url(self, link_url, is_probably_a_video):
+        pass
+
 class genericImage(sitesBase):
     regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
 
@@ -3643,7 +3664,6 @@ class genericVideo(sitesBase):
     def get_playable_url(self, link_url, is_probably_a_video):
         pass
 
-
 class LinkDetails():
     def __init__(self, media_type, link_action, playable_url='', thumb='', poster='', poster_w=0, poster_h=0, dictlist=None, description='' , video_id=''):
         #self.kodi_url = kodi_url
@@ -3673,6 +3693,7 @@ def sitesManager( media_url ):
         regex=subcls.regex
         if regex:
             match=re.compile( regex  , re.I).findall( media_url )
+            #log("testing:{}[{}] {}".format(media_url,regex, repr(match)) )
             if match :
                 return subcls( media_url )
 

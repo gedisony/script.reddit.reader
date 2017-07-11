@@ -439,10 +439,9 @@ def playYTDLVideo(url, name, type_):
     dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
 
     from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
-    from urlparse import urlparse, parse_qs
 
-    o = urlparse(url)
-    query = parse_qs(o.query)
+    o = urlparse.urlparse(url)
+    query = urlparse.parse_qs(o.query)
     video_index=0
     #note that in domains.py youtube class will send a simplified url to avoid sending
     #   https://www.youtube.com/watch?v=R6_dZhE-4bk&index=22&list=PLGJ6ezwqAB2a4RP8hWEWAGB9eT2bmaBsy  (ytdl will parse around 90+ videos, takes a very long time)
@@ -849,6 +848,7 @@ def add_dummy_favorite():
 def parse_web_url_from(recently_played_url):
 # builds the youtube url from plugin://plugin.video.youtube/play/?video_id=dIgSKPzLC9g
 # grabs the youtube url from plugin://plugin.video.reddit_viewer/?mode=play&url=https%3A%2F%2Fyoutu.be%2FUhOx-FpEAQk
+# excludes googlevideo.com/videoplayback
     from domains import ClassYoutube
     ret_url=recently_played_url.split("|", 1)[0] #remove |Useragent:...
     link_components=urlparse.urlparse( recently_played_url )
@@ -863,6 +863,10 @@ def parse_web_url_from(recently_played_url):
             video_id=query.get("video_id")
             ret_url=ClassYoutube.build_youtube_url_with_video_id(''.join(video_id))  #''.join(video_id)  <-- list to string
             #log("***** video ID="+''.join(video_id)) #ClassYoutube
+    elif link_components.scheme=="https":
+        #log(link_components.path)
+        if link_components.path.startswith('/videoplayback'): #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
+            ret_url=None
 
     return ret_url
 
@@ -881,6 +885,9 @@ def listRecentlyPlayed(url,name,type_):
         #log("---{} {}".format(pretty_date, last_played ) )
         parsed_web_url=parse_web_url_from(recently_played_url) #grabs the (youtube) url from plugin://plugin.video...
         #log('recent{}:{}'.format(idx, recently_played_url))
+        if not parsed_web_url:
+            log('    listRecentlyPlayed skipping:{}'.format(recently_played_url))
+            continue
         link_components=urlparse.urlparse( parsed_web_url )
         domain=link_components.netloc
         label=parsed_web_url     #recently_played_url.split("|", 1)[0] #remove |Useragent:...

@@ -56,11 +56,15 @@
 				<visible>true</visible>
 				<focusedlayout height="84" >
 					<control type="image">
+						<top>0</top><height>84</height>
+						<left>0</left><width>1902</width>
 						<texture>srr_dialog-bg.png</texture>
 					</control>
 					<control type="image">
+						<top>0</top><height>84</height>
+						<left>0</left><width>1902</width>
 						<texture colordiffuse="5512A8DA" flipx="false">focus_f2.png</texture>
-						<!-- visible>Control.HasFocus(55)</visible-->
+						<visible>Control.HasFocus(55)</visible>
 						<animation effect="fade" start="0" end="100" time="100">Focus</animation>
 						<animation effect="fade" start="100" end="0" time="100">Unfocus</animation>
 					</control>
@@ -73,8 +77,8 @@
 					</control>
 
 					<control type="textbox"><!-- ListItem.Label -->
-						<left>152</left><!-- width>310</width-->
 						<top>0</top><height>44</height>
+						<left>152</left><width>1900</width>
 						<aligny>center</aligny>
 						<scrolltime>0</scrolltime>
 						<autoscroll>false</autoscroll>
@@ -84,8 +88,8 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
-						<left>152</left>
 						<top>55</top><height>43</height>
+						<left>152</left><width>1900</width>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
 						<textcolor>grey</textcolor>
@@ -95,6 +99,8 @@
 
 				<itemlayout height="84" >
 					<control type="image">
+						<top>0</top><height>84</height>
+						<left>0</left><width>1902</width>
 						<texture>srr_dialog-bg.png</texture>
 					</control>
 				
@@ -106,8 +112,8 @@
 					</control>
 
 					<control type="textbox"><!-- ListItem.Label -->
-						<left>152</left><!-- width>310</width-->
 						<top>0</top><height>44</height>
+						<left>152</left><width>1900</width>
 						<aligny>center</aligny>
 						<scrolltime>0</scrolltime>
 						<autoscroll>false</autoscroll>
@@ -117,8 +123,8 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
 					<control type="label"><!-- ListItem.Label2 -->
-						<left>152</left>
 						<top>55</top><height>43</height>
+						<left>152</left><width>1900</width>
 						<font>font10</font>
 						<label>$INFO[ListItem.Label2]</label>
 						<textcolor>grey</textcolor>
