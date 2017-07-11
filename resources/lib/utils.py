@@ -592,10 +592,20 @@ def hassamealphabetic(*args):
 
 def colored_subreddit(subreddit,color='cadetblue', add_r=True):
     #return "[COLOR "+color+"]r/" + subreddit + "[/COLOR]"
-    return "[COLOR %s]%s%s[/COLOR]" %(color,('r/' if add_r else ''),subreddit )
+    return "[COLOR %s]%s%s[/COLOR]" %(color,('r/' if (add_r and subreddit) else ''),subreddit )
 
 def truncate(string, length, ellipse='...'):
     return (string[:length] + ellipse) if len(string) > length else string
+#https://www.xormedia.com/string-truncate-middle-with-ellipsis/
+def truncate_middle(s, n):
+    if len(s) <= n:
+        # string is already short-enough
+        return s
+    # half of the size, minus the 3 .'s
+    n_2 = int(n) / 2 - 3
+    # whatever's left
+    n_1 = n - n_2 - 3
+    return '{0}...{1}'.format(s[:n_1], s[-n_2:])
 
 def xbmc_notify(line1, line2, time=3000, icon=''):
     if icon and os.path.sep not in icon:
@@ -930,6 +940,76 @@ def seconds_to_hms(seconds):
         return "{}:{:02d}:{:02d}".format(h,m,s) if h else "{:02d}:{:02d}".format(m,s) #%d:%02d:%02d" % (h, m, s)
     except TypeError:
         return ""
+
+def getDbPath():
+    path = xbmc.translatePath("special://userdata/Database")
+    files = os.listdir(path)
+    latest = ""
+    for file_ in files:
+        if file_[:8] == 'MyVideos' and file_[-3:] == '.db':
+            if file_ > latest:
+                latest = file_
+    if latest:
+        return os.path.join(path, latest)
+    else:
+        return ""
+
+def db_getPlayCount(url):
+    import sqlite3
+
+    dbPath = getDbPath()
+    if dbPath:
+        conn = sqlite3.connect(dbPath)
+        c = conn.cursor()
+
+        #log(url[:120])
+        #c.execute('SELECT playCount FROM files WHERE strFilename LIKE ?', [url[:100]])
+
+        str_sql='SELECT playCount FROM files WHERE strFilename LIKE ?'
+        args=[url[:120]+'%']
+
+        #str_sql='SELECT playCount FROM files WHERE strFilename = ?'
+        #args=[url]
+
+        c.execute(str_sql,args)
+
+        result = c.fetchone()
+        #log('*****************'+repr(result) )
+        if result:
+            result = result[0]
+            if result:
+                return int(result)
+            return 0
+    return -1
+
+def db_getLastPlayedVideos():
+    import sqlite3
+
+    dbPath = getDbPath()
+    if dbPath:
+        conn = sqlite3.connect(dbPath)
+        c = conn.cursor()
+
+        #str_sql='SELECT strFilename FROM files ORDER BY lastPlayed DESC LIMIT 10'
+        str_sql=("SELECT "
+        " f.lastPlayed "
+        ",(p.strPath || replace(f.strFilename, p.strPath, '') ) AS fieldB " #Need the REPLACE part because:
+        #",(p.strPath || f.strFilename) "                                    #<--sometimes this results in plugin://plugin.video.reddit_viewer/plugin://plugin.video.reddit_viewer/?url=http%3A%2F%2Fyoutu...
+        #",p.strPath "                                                       #plugin://plugin.video.reddit_viewer/
+        #",f.strFilename "                                                   #plugin://plugin.video.reddit_viewer/?url=http%3A%2F%2Fyoutu...
+        " FROM files AS f LEFT OUTER JOIN path p ON f.idPath=p.idPath "
+        " WHERE strFilename NOT IN ('videoplayback') "                       #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
+        " ORDER BY lastPlayed DESC LIMIT 10;")
+        c.execute(str_sql)
+
+        result = c.fetchall()
+        #log('*****************'+repr(result) )
+
+        if result:
+            return result
+
+    return -1
+
 
 if __name__ == '__main__':
     pass

@@ -208,6 +208,9 @@ class cGUI(xbmcgui.WindowXML):
         entries.sort()
         #log( '  entries count ' + str( len( entries) ) )
 
+        li_setting=compose_list_item( "listRecentlyPlayed", "Program", "icon_settings.png", "script", build_script("listRecentlyPlayed", '', '') )
+        listing.append(li_setting)
+
         for subreddit_entry in entries:
             liz=subreddit_entry_to_listitem(subreddit_entry)
 
@@ -677,8 +680,8 @@ class text_to_links_gui(comments_GUI2):
                 label=li.getLabel()
                 label=label.replace(link_url, "")  #remove the http:... part to avoid it looking duplicated because it is already put as a label in button.
                 thumb=li.getArt('thumb')
-                #log('item_type='+repr(li.getProperty('item_type')) )
-                #log('onClick_action='+repr(li.getProperty('onClick_action')) )
+                log('item_type='+repr(li.getProperty('item_type')) )
+                log('onClick_action='+repr(li.getProperty('onClick_action')) )
             except StopIteration:
                 li=label=link_url=None
 

@@ -7,6 +7,7 @@ import shutil, os
 import re, urllib
 import pprint
 import json
+import urlparse
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
 from utils import xbmc_busy, log, translation, xbmc_notify
@@ -844,6 +845,93 @@ def add_dummy_favorite():
                       }
     a=xbmc.executeJSONRPC(json.dumps(json_rpc_command))
     log("dummy favorite:" + repr(a))
+
+def parse_web_url_from(recently_played_url):
+# builds the youtube url from plugin://plugin.video.youtube/play/?video_id=dIgSKPzLC9g
+# grabs the youtube url from plugin://plugin.video.reddit_viewer/?mode=play&url=https%3A%2F%2Fyoutu.be%2FUhOx-FpEAQk
+    from domains import ClassYoutube
+    ret_url=recently_played_url.split("|", 1)[0] #remove |Useragent:...
+    link_components=urlparse.urlparse( recently_played_url )
+    log("*****{} scheme[{}]**".format( recently_played_url, link_components.scheme ) )
+    if link_components.scheme=="plugin":
+        query = urlparse.parse_qs(link_components.query)
+        netloc=link_components.netloc
+
+        if netloc=="plugin.video.reddit_viewer":
+            ret_url=''.join(query.get("url"))
+        elif netloc=="plugin.video.youtube":
+            video_id=query.get("video_id")
+            ret_url=ClassYoutube.build_youtube_url_with_video_id(''.join(video_id))  #''.join(video_id)  <-- list to string
+            #log("***** video ID="+''.join(video_id)) #ClassYoutube
+
+    return ret_url
+
+def listRecentlyPlayed(url,name,type_):
+    from utils import db_getLastPlayedVideos,build_script,ret_info_type_icon,truncate_middle
+    from domains import parse_reddit_link,sitesBase
+    from ContextMenus import build_youtube_context_menu_entries,build_reddit_search_context_menu_entries
+
+    recently_played_links=db_getLastPlayedVideos()
+
+    directory_items=[]
+    for idx, recently_played_tuple in enumerate(recently_played_links):
+        #log(repr(recently_played_tuple))
+        last_played, recently_played_url=recently_played_tuple
+        parsed_web_url=parse_web_url_from(recently_played_url) #grabs the (youtube) url from plugin://plugin.video...
+        #log('recent{}:{}'.format(idx, recently_played_url))
+        link_components=urlparse.urlparse( parsed_web_url )
+        domain=link_components.netloc
+        label=parsed_web_url     #recently_played_url.split("|", 1)[0] #remove |Useragent:...
+        liz=xbmcgui.ListItem(label=truncate_middle(label, 110), label2='{}'.format(recently_played_url) )
+
+        liz.setInfo( type="Video", infoLabels={ "Title": parsed_web_url, "plot": recently_played_url, "studio": domain } )
+
+        ld=parse_reddit_link(link_url=parsed_web_url, assume_is_video=True, needs_preview=True )
+        if ld:
+            #use clearart to indicate if link is video, album or image. here, we default to unsupported.
+            #clearart=ret_info_type_icon(setInfo_type, mode_type)
+            clearart=ret_info_type_icon(ld.media_type, ld.link_action, domain )
+            liz.setArt({ "clearart": clearart  })
+
+            if ld.link_action == sitesBase.DI_ACTION_PLAYABLE:
+                property_link_type=ld.link_action
+                DirectoryItem_url =ld.playable_url
+            else:
+                property_link_type='script'
+                DirectoryItem_url = build_script(mode=ld.link_action,
+                                                 url=ld.playable_url,
+                                                 name='' ,
+                                                 type_='' )
+
+            if DirectoryItem_url:
+                #log(DirectoryItem_url)
+                liz.setArt({"thumb": ld.thumb,"banner":ld.poster })
+
+                liz.setProperty('item_type',property_link_type)   #script or playable
+                liz.setProperty('onClick_action', DirectoryItem_url)  #<-- needed by the xml gui skin
+                liz.setProperty('link_url', recently_played_url )  #just used as text at bottom of the screen
+                #liz.setPath(DirectoryItem_url)
+
+                context_menu_list=[]
+                context_menu_list.extend(build_youtube_context_menu_entries(previous_listing_was_of_type='',youtube_url=parsed_web_url,video_id=None))
+                context_menu_list.extend(build_reddit_search_context_menu_entries(False,'',parsed_web_url) )
+                #context_menu_list.extend(build_reddit_context_menu_entries(link_url))
+                liz.setProperty('context_menu', str(context_menu_list) )
+
+                #directory_items.append( (DirectoryItem_url, liz,) )
+        else:
+            log("*************not ld*****************")
+
+        directory_items.append( liz )
+
+    #from guis import text_to_links_gui
+    #ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title='Recently Played', poster=None)
+    from guis import cGUI
+    ui = cGUI('srr_history_list.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55)
+    ui.include_parent_directory_entry=False
+
+    ui.doModal()
+    del ui
 
 if __name__ == '__main__':
     pass

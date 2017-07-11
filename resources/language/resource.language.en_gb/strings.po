@@ -642,6 +642,10 @@ msgctxt "#32530"
 msgid "Add to favorites"
 msgstr ""
 
+msgctxt "#32531"
+msgid "Other posts with this link"
+msgstr ""
+
 #: used in context menu. (not implemented in reddit.reader)
 msgctxt "#30058"
 msgid "Reddit: Save this post"

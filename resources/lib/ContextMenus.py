@@ -1,6 +1,6 @@
 import re
 import urllib
-
+import urlparse
 
 from main_listing import GCXM_hasmultipleauthor, GCXM_hasmultiplesubreddit, GCXM_hasmultipledomain, GCXM_actual_url_used_to_generate_these_posts, GCXM_reddit_query_of_this_gui
 from default import addon
@@ -27,10 +27,8 @@ cxm_show_youtube_items    = addon.getSetting("cxm_show_youtube_items") == "true"
 cxm_show_add_to_favorites = addon.getSetting("cxm_show_add_to_favorites") == "true"
 
 def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link_url, post_id, post_title, posted_by, onClick_action, thumbnail):
-
     s=truncate(subreddit,15)     #crop long subreddit names in context menu
     colored_subreddit_short=colored_subreddit( s )
-    colored_subreddit_full=colored_subreddit( subreddit )
     colored_domain_full=colored_subreddit( domain, 'tan',False )
     post_title_short=truncate(post_title,15)
     post_author=truncate(posted_by,15)
@@ -42,8 +40,6 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     label_autoplay_after=translation(32513)+' '+colored_subreddit( post_title_short, 'gray',False )
 
     label_add_to_shortcuts=translation(32516).format(subreddit=subreddit)
-    label_search=translation(32520)
-
     cxm_list=[]
 
     cxm_list.extend( build_link_in_browser_context_menu_entries(link_url) )
@@ -89,21 +85,30 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
         cxm_list.append( (translation(32519).format(colored_subreddit_short), build_script("addtoFilter", subreddit,'','subreddit')  ) )
         cxm_list.append( (translation(32519).format(colored_domain_full)    , build_script("addtoFilter", domain,'','domain')  ) )
 
-    #Search
-    if cxm_show_search:
-        if GCXM_hasmultiplesubreddit:
-            cxm_list.append( (label_search        , build_script("search", '', '')  ) )
-        else:
-            label_search+=' {}'.format(colored_subreddit_full)
-            cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
-        #NOTE: below works for www.reddit.com but not for oauth.reddit.com
-        #cxm_list.append( ('Search reddit posts with this link'    , build_script("listSubReddit", assemble_reddit_filter_string(link_url,'','',''), 'Search')  ) )
+    #Search / Other posts with this link
+    cxm_list.extend( build_reddit_search_context_menu_entries(GCXM_hasmultiplesubreddit,subreddit,link_url) )
 
     if cxm_show_youtube_items:
         cxm_list.extend( build_youtube_context_menu_entries('', link_url, video_id=None, title=post_title ))
 
     cxm_list.extend( build_add_to_favourites_context_menu_entry(title=post_title, onClick_action=onClick_action,thumbnail=thumbnail) )
 
+    return cxm_list
+
+def build_reddit_search_context_menu_entries(hasmultiplesubreddit,subreddit,link_url ):
+    cxm_list=[]
+    colored_subreddit_full=colored_subreddit( subreddit )
+    label_search=translation(32520)
+    parts_of_link_url=urlparse.urlparse(link_url)
+
+    if cxm_show_search:
+        if GCXM_hasmultiplesubreddit:
+            cxm_list.append( (label_search        , build_script("search", '', '')  ) )
+        else:
+            label_search+=' {}'.format(colored_subreddit_full)
+            cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
+        #NOTE: can't use the entire link_url because it will work for www.reddit.com but not for oauth.reddit.com
+        cxm_list.append( (translation(32531)    , build_script("listSubReddit", assemble_reddit_filter_string(parts_of_link_url.path,'','',''), 'Search')  ) )
     return cxm_list
 
 def build_add_to_favourites_context_menu_entry(title, onClick_action, thumbnail=None):
@@ -171,11 +176,10 @@ def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url
 def build_reddit_context_menu_entries(url):
     from domains import ClassReddit
     cxm_list=[]
-    #log('build_youtube_context_menu_entries '+youtube_url)
-    match=re.compile( ClassReddit.regex, re.I).findall( url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
+    match=re.compile( ClassReddit.regex, re.I).findall( url ) 
     if match:
         subreddit=ClassReddit.get_video_id(url)
-        if subreddit: # and cxm_show_by_subreddit:
+        if subreddit: # and cxm_show_by_subreddit:  Go to r/{subreddit}
             cxm_list.append( (translation(32508).format(subreddit=subreddit),
                               build_script("listSubReddit", assemble_reddit_filter_string("",subreddit), subreddit)  ) )
 

@@ -334,7 +334,7 @@ class ClassYoutube(sitesBase):
         if self.url_type=='video':
             self.video_id=id_from_url
             self.get_thumb_url() #there is no request penalty for getting yt thumb url so we do it here
-            self.link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube()
+            self.link_action, playable_url=self.return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self.video_id)
 
             #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
             #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
@@ -370,10 +370,8 @@ class ClassYoutube(sitesBase):
             elif user_id:
                 return 'user', user_id
         return '',''
-
-    def return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self, video_id=None):
-        if not video_id:
-            video_id=self.video_id
+    @classmethod
+    def return_action_and_link_tuple_accdg_to_setting_wether_to_use_addon_for_youtube(self, video_id):
         link_actn=''
         link_=''
 
@@ -386,10 +384,12 @@ class ClassYoutube(sitesBase):
                 #some youtube links take a VERY long time for youtube_dl to parse. we simplify it by getting the video id and using a simpler url
                 #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
                 #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
-                link_="http://youtube.com/v/{0}".format(video_id)
+                link_=self.build_youtube_url_with_video_id(video_id)
             #log('    returning:{} {}'.format(link_actn, link_))
             return link_actn, link_
-
+    @classmethod
+    def build_youtube_url_with_video_id(self,video_id):
+        return "http://youtube.com/v/{0}".format(video_id)
     @classmethod
     def get_video_id(self, yt_url):
         #video_id_regex=re.compile('(?:youtube(?:-nocookie)?\.com/(?:\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&;]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})', re.DOTALL)
