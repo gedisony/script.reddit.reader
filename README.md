@@ -26,8 +26,14 @@ This addon is inspired by the original [reddit addon](https://github.com/rasjani
 - [Install from zip file](http://kodi.wiki/view/HOW-TO:Install_add-ons_from_zip_files)
 
 ### Difference from reddit_viewer
-- Custom UI to maximize the preview image; Saves you a click.
+- Custom UI so that the preview image is larger; Saves you a click.
 - Better UI for reading comments
+- Added features for searching reddit
+  - Youtube links: list related videos, show videos/playlists in channel
+  - Search for posts by youtube video id
+  - Search for posts with the same link
+  - List recently played videos and search reddit for those links
+- Search youtube
 
 ---
 
