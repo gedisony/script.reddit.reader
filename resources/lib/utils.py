@@ -1026,6 +1026,22 @@ def db_getLastPlayedVideos():
 
     return -1
 
+def ret_bracketed_option(string_with_bracket_opt):
+    a=re.compile(r"(\[[^\]]*\])") #this regex only catches the []
+    in_bracket=""
+
+    stripped_string = a.sub("",string_with_bracket_opt).strip()
+    #log( "  re:" +  stripped_string )
+
+    #get the []
+    a= a.findall(string_with_bracket_opt)
+    if a:
+        in_bracket=a[0]
+    else:
+        in_bracket = ''
+
+    return stripped_string, in_bracket[1:-1]
+
 
 if __name__ == '__main__':
     pass

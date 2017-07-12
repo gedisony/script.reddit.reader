@@ -598,20 +598,32 @@ class ClassYoutube(sitesBase):
                 'type': 'video',         #video,channel,playlist.
                 'maxResults': '50',      # Acceptable values are 0 to 50
                 'part': 'snippet',
-                'order': 'date',
-                'relatedToVideoId': video_id,
+                'relatedToVideoId': video_id,  #if the relatedToVideoId parameter is set, the only other supported parameters are part, maxResults, pageToken, regionCode, relevanceLanguage, safeSearch, type (which must be set to video), and fields.
                 'safeSearch':'moderate' if hide_nsfw else 'none',
             }
     @classmethod
     def build_query_params_for_search(self,youtube_api_key,search_string,type_='video'):
+        from utils import ret_bracketed_option
+        #specify different results by adding order_option in square brackets in the search string.
+        stripped_string, order_option=ret_bracketed_option(search_string)  #developer feature: specify the order in search parameter "[date]" etc.
+        if order_option:
+            if order_option.lower() in['date','rating','relevance','title','videocount','viewcount']:
+                log('  youtube search:using special order option [{}]'.format(order_option))
+            else:
+                log('  youtube search:unsupported order option [{}]'.format(order_option))
+                order_option='relevance'
+                stripped_string=search_string
+        else:
+            order_option='relevance'
+
         return  'search', {
                 'key': youtube_api_key,
                 'fields':'items(kind,id(videoId),snippet(publishedAt,channelTitle,channelId,title,description,thumbnails(medium)))',
                 'type': type_,         #video,channel,playlist.
                 'maxResults': '50',      # Acceptable values are 0 to 50
                 'part': 'snippet',
-                'order': 'date',
-                'q': search_string,
+                'order': order_option, #date,rating,relevance,title,videoCount,viewCount
+                'q': stripped_string,
                 'safeSearch':'moderate' if hide_nsfw else 'none',
             }
     @classmethod
