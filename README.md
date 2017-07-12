@@ -25,6 +25,7 @@ This addon is inspired by the original [reddit addon](https://github.com/rasjani
 ## Installation
 - Download zip
 - [Install from zip file](http://kodi.wiki/view/HOW-TO:Install_add-ons_from_zip_files)
+- *You might need to install the requests-cache module [here](https://github.com/gedisony/script.module.requests-cache)
 
 ### Difference from reddit_viewer
 - Custom UI so that the preview image is larger; Saves you a click.

@@ -262,11 +262,10 @@ def create_default_subreddits():
     #create a default file and sites
     with open(subredditsFile, 'a') as fh:
 
-        #fh.write('/user/gummywormsyum/m/videoswithsubstance\n')
+        fh.write('/user/gummywormsyum/m/videoswithsubstance[videos with substance]\n')
         fh.write('/user/sallyyy19/m/video[%s]\n' %(translation(32006)))  # user   http://forum.kodi.tv/member.php?action=profile&uid=134499
         fh.write('Documentaries+ArtisanVideos+lectures+LearnUselessTalents\n')
         fh.write('Stop_Motion+FrameByFrame+Brickfilms+Animation\n')
-        fh.write('random\n')
         #fh.write('randnsfw\n')
         fh.write('animemusic+amv+animetrailers\n')
         fh.write('popular\n')
