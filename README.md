@@ -19,6 +19,7 @@ This addon is inspired by the original [reddit addon](https://github.com/rasjani
   - Search reddit for posts linking to the same YouTube video
 - Read user comments
   - Explore links posted in comments
+- List recently played videos & search reddit posts with those link
 - Use images from a subreddit as your screensaver
 
 ## Installation
@@ -28,12 +29,7 @@ This addon is inspired by the original [reddit addon](https://github.com/rasjani
 ### Difference from reddit_viewer
 - Custom UI so that the preview image is larger; Saves you a click.
 - Better UI for reading comments
-- Added features for searching reddit
-  - Youtube links: list related videos, show videos/playlists in channel
-  - Search for posts by youtube video id
-  - Search for posts with the same link
-  - List recently played videos and search reddit for those links
-- Search youtube
+- Added features for searching related videos and posts
 
 ---
 
