@@ -730,13 +730,13 @@ class text_to_links_gui(comments_GUI2):
 def animation_format(delay, time, effect, start, end, tween='', easing='', center='', extras=''  ):
     a='condition=true delay={0} time={1} '.format(delay, time)
 
-    a+= 'effect={} '.format(effect)
-    if start!=None: a+= 'start={} '.format(start)
-    if end!=None:   a+= 'end={} '.format(end)
+    a+= 'effect={0} '.format(effect)
+    if start!=None: a+= 'start={0} '.format(start)
+    if end!=None:   a+= 'end={0} '.format(end)
 
-    if center: a+= 'center={} '.format(center)
-    if tween:  a+= 'tween={} '.format(tween)
-    if easing: a+= 'easing={} '.format(easing)  #'in' 'out' 'inout'
+    if center: a+= 'center={0} '.format(center)
+    if tween:  a+= 'tween={0} '.format(tween)
+    if easing: a+= 'easing={0} '.format(easing)  #'in' 'out' 'inout'
     if extras: a+= extras
 
     #log( '  ' + a )

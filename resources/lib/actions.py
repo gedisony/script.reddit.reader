@@ -486,7 +486,7 @@ def playYTDLVideo(url, name, type_):
                 add_ytdl_video_info_to_playlist(video_info, pl, name)
 
         if len(pl)>1:
-            xbmc_notify("Multiple video", "{} videos in playlist".format(len(pl)))
+            xbmc_notify("Multiple video", "{0} videos in playlist".format(len(pl)))
 
         xbmc.Player().play(pl, windowed=False)
         #only use the time skip code if there is only one item in the playlist
@@ -532,7 +532,7 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     pl.add(url, li)
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
-YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{}.tar.gz'
+YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{0}.tar.gz'
 
 def ytdl_get_version_info(which_one='latest'):
     import urllib2
@@ -664,7 +664,7 @@ def listRelatedVideo(url,name,type_):
             poster=yt.poster_url
             #log('  thung:'+yt.thumb_url)
             url_type,_=yt.get_video_channel_user_or_playlist_id_from_url(url)
-            #log('  listRelatedVideo:type_:{} url_type:{} url:{}'.format(type_,url_type,url) )
+            #log('  listRelatedVideo:type_:{0} url_type:{1} url:{2}'.format(type_,url_type,url) )
             xbmc_busy(True)
             if type_=='links_in_description':
                 links_dictList=yt.get_links_in_description(return_channelID_only=False)
@@ -722,24 +722,24 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
 
         else: # 'channel' 'related' default
             if type_=='related':
-                gui_title_text="Related videos: {}".format(title)
+                gui_title_text="Related videos: {0}".format(title)
             if type_=='search':
-                gui_title_text="Search: {}".format(title)
+                gui_title_text="Search: {0}".format(title)
             elif type_=='channel':
-                gui_title_text="Channel: {}".format(dictlist[0].get('channel_name'))
+                gui_title_text="Channel: {0}".format(dictlist[0].get('channel_name'))
             elif type_=='playlist':
-                gui_title_text="{}".format(title)
+                gui_title_text="{0}".format(title)
             elif type_=='playlists':
-                gui_title_text="Playlists in channel: {}".format(dictlist[0].get('channel_name'))
+                gui_title_text="Playlists in channel: {0}".format(dictlist[0].get('channel_name'))
             else:#type determined from url
                 if url_type=='channel':
                     gui_title_text="Videos in channel"
                 elif url_type=='playlist':
-                    gui_title_text="{}".format(title)
+                    gui_title_text="{0}".format(title)
                 elif url_type=='user':
                     gui_title_text="User Videos"
                 elif url_type=='more':
-                    gui_title_text="{}".format(title)
+                    gui_title_text="{0}".format(title)
 
             from guis import cGUI
             ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
@@ -809,7 +809,7 @@ def addtoKodiFavorites(command, name, thumbnail):
         #now that we've created the favorite, we edit it to add parameters
         favorites_xml       = xbmc.translatePath(os.path.join(addon.getAddonInfo('profile'), '..','..','favourites.xml'))
         if os.path.exists(favorites_xml):
-            #log('{} exists'.format(favorites_xml) )
+            #log('{0} exists'.format(favorites_xml) )
             et = xml.etree.ElementTree.parse(favorites_xml)
             root=et.getroot()
 
@@ -821,7 +821,7 @@ def addtoKodiFavorites(command, name, thumbnail):
                 #log('*b*'+repr(fav_name) + '  ' + fav_cmd )
                 #log('---')
                 if (fav_name==name) and (fav_cmd==saved_command):
-                    log('Favourite entry found {}'.format(fav_name) )
+                    log('Favourite entry found {0}'.format(fav_name) )
                     favorite_was_found=True
                     f.text=command
 
@@ -852,7 +852,7 @@ def parse_web_url_from(recently_played_url):
     from domains import ClassYoutube
     ret_url=recently_played_url.split("|", 1)[0] #remove |Useragent:...
     link_components=urlparse.urlparse( recently_played_url )
-    #log("*****{} scheme[{}]**".format( recently_played_url, link_components.scheme ) )
+    #log("*****{0} scheme[{1}]**".format( recently_played_url, link_components.scheme ) )
     if link_components.scheme=="plugin":
         query = urlparse.parse_qs(link_components.query)
         netloc=link_components.netloc
@@ -882,11 +882,11 @@ def listRecentlyPlayed(url,name,type_):
         #log(repr(recently_played_tuple))
         last_played, recently_played_url=recently_played_tuple
         pretty_date=pretty_datediff_wrap(last_played,use_utc_as_base=False)
-        #log("---{} {}".format(pretty_date, last_played ) )
+        #log("---{0} {1}".format(pretty_date, last_played ) )
         parsed_web_url=parse_web_url_from(recently_played_url) #grabs the (youtube) url from plugin://plugin.video...
-        #log('recent{}:{}'.format(idx, recently_played_url))
+        #log('recent{0}:{1}'.format(idx, recently_played_url))
         if not parsed_web_url:
-            log('    listRecentlyPlayed skipping:{}'.format(recently_played_url))
+            log('    listRecentlyPlayed skipping:{0}'.format(recently_played_url))
             continue
         link_components=urlparse.urlparse( parsed_web_url )
         domain=link_components.netloc

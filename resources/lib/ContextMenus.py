@@ -33,7 +33,7 @@ def build_context_menu_entries(num_comments,commentsUrl, subreddit, domain, link
     post_title_short=truncate(post_title,15)
     post_author=truncate(posted_by,15)
 
-    label_view_comments=translation(32504)+' ({})'.format(num_comments)
+    label_view_comments=translation(32504)+' ({0})'.format(num_comments)
     label_more_by_author=translation(32506).format(author=post_author)
     label_goto_subreddit=translation(32508).format(subreddit=subreddit)
     label_goto_domain=translation(32510).format(domain=domain)
@@ -105,10 +105,10 @@ def build_reddit_search_context_menu_entries(hasmultiplesubreddit,subreddit,link
         if GCXM_hasmultiplesubreddit:
             cxm_list.append( (label_search        , build_script("search", '', '')  ) )
         else:
-            label_search+=' {}'.format(colored_subreddit_full)
+            label_search+=' {0}'.format(colored_subreddit_full)
             cxm_list.append( (label_search        , build_script("search", '', subreddit)  ) )
         #NOTE: can't use the entire link_url because it will work for www.reddit.com but not for oauth.reddit.com
-        part_to_search="{} {}".format(parts_of_link_url.path,parts_of_link_url.query)
+        part_to_search="{0} {1}".format(parts_of_link_url.path,parts_of_link_url.query)
         if part_to_search.startswith('/'): part_to_search=part_to_search[1:]  #remove starting '/'
 
         remove_these_words=['.mp4','.webm','/v/','.jpg','.png'] #mainly to match imgur links where we want to catch the imageID not "imageID.mp4"
@@ -132,7 +132,7 @@ def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url
         match=re.compile( ClassYoutube.regex, re.I).findall( youtube_url )  #regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
         if match:
             if channel_id_from_previous_listing:
-                channel_url="https://youtube.com/channel/{}".format(channel_id_from_previous_listing)
+                channel_url="https://youtube.com/channel/{0}".format(channel_id_from_previous_listing)
 
             yt=ClassYoutube(youtube_url)
             url_type,id_=yt.get_video_channel_user_or_playlist_id_from_url(youtube_url)
@@ -214,7 +214,7 @@ def build_open_browser_to_pair_context_menu_entries(url):
         pairing_url="https://thevideo.me/pair"
 
         if cxm_show_open_browser:
-            cxm_list.append(("Go to [B][COLOR=cyan]{}[/COLOR][/B]".format(pairing_url), build_script('openBrowser', pairing_url)         ))
+            cxm_list.append(("Go to [B][COLOR=cyan]{0}[/COLOR][/B]".format(pairing_url), build_script('openBrowser', pairing_url)         ))
 
     return cxm_list
 

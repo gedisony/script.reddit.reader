@@ -775,7 +775,7 @@ def img_ar(img_size_array):
     try:
         w,h=img_size_array
         ar=float(w)/h
-        #log("{} = {},{}".format(ar,w,h) )
+        #log("{0} = {1},{2}".format(ar,w,h) )
     except (TypeError,ZeroDivisionError):  #,ValueError):
         ar=0
     return ar
@@ -806,7 +806,7 @@ def subreddit_entry_to_listitem(subreddit_entry):
         public_description=xstr( addtl_subr_info.get('public_description',''))
         display_name=xstr(addtl_subr_info.get('display_name',''))
 
-    #log('{} icon={} header={} banner={}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
+    #log('{0} icon={1} header={2} banner={3}'.format( subreddit, repr(icon), repr(header), repr(banner) ))
 
     if entry_type=='link':  #<-- added new ability to have youtube channels as a shortcut on the main screen
         #here, the subreddit variable contains a url. we made sure that it points to a youtube channel(ContextMenus.py). that way, there is no need to specify 'channel' when calling listRelatedVideo

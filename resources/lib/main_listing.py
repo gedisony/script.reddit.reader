@@ -276,7 +276,7 @@ def count_links_from_same_domain(entry):
         domain=clean_str(data,['domain'])
         domains_d[domain] += 1
         #title=clean_str(data,['title'])
-        #log( '{:<20.20}... {:>22.22}.. {}'.format(title, domain,domains_d[domain]))
+        #log( '{:<20.20}... {:>22.22}.. {0}'.format(title, domain,domains_d[domain]))
         return domain,domains_d[domain]  #returns a count of how many domain in domains_d
     else:
         return '',0
@@ -684,7 +684,7 @@ def listLinksInComment(url, name, type_):
                 continue
 
             if is_filtered(comments_link_filter,link_url):
-                log('    [{}] is hidden by comments_link_filter'.format(link_url))
+                log('    [{0}] is hidden by comments_link_filter'.format(link_url))
                 filtered_posts+=1
                 continue
 

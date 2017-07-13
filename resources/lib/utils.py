@@ -46,7 +46,7 @@ def log(message):
     try:
         xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
     except TypeError as e:
-        xbmc.log("reddit_reader error:{}".format(e), level=level)
+        xbmc.log("reddit_reader error:{0}".format(e), level=level)
 
 def translation(id_):
     return addon.getLocalizedString(id_).encode('utf-8')
@@ -956,7 +956,7 @@ def seconds_to_hms(seconds):
     try:
         m, s = divmod(seconds, 60)
         h, m = divmod(m, 60)
-        return "{}:{:02d}:{:02d}".format(h,m,s) if h else "{:02d}:{:02d}".format(m,s) #%d:%02d:%02d" % (h, m, s)
+        return "{0}:{1:02d}:{2:02d}".format(h,m,s) if h else "{0:02d}:{1:02d}".format(m,s) #%d:%02d:%02d" % (h, m, s)
     except TypeError:
         return ""
 

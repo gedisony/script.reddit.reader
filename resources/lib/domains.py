@@ -386,7 +386,7 @@ class ClassYoutube(sitesBase):
                 #BUT if there is a time skip code in the url, we just pass it right through. youtube-dl can handle this part.
                 #   time skip code comes in the form of ?t=122  OR #t=1m45s OR ?t=2:43
                 link_=self.build_youtube_url_with_video_id(video_id)
-            #log('    returning:{} {}'.format(link_actn, link_))
+            #log('    returning:{0} {1}'.format(link_actn, link_))
             return link_actn, link_
     @classmethod
     def build_youtube_url_with_video_id(self,video_id):
@@ -608,9 +608,9 @@ class ClassYoutube(sitesBase):
         stripped_string, order_option=ret_bracketed_option(search_string)  #developer feature: specify the order in search parameter "[date]" etc.
         if order_option:
             if order_option.lower() in['date','rating','relevance','title','videocount','viewcount']:
-                log('  youtube search:using special order option [{}]'.format(order_option))
+                log('  youtube search:using special order option [{0}]'.format(order_option))
             else:
-                log('  youtube search:unsupported order option [{}]'.format(order_option))
+                log('  youtube search:unsupported order option [{0}]'.format(order_option))
                 order_option='relevance'
                 stripped_string=search_string
         else:
@@ -762,7 +762,7 @@ class ClassYoutube(sitesBase):
 
         nextPageToken=clean_str(j, ['nextPageToken'])
         totalResults=clean_str(j, ['pageInfo','totalResults'])
-        #log('nextPageToken={}   totalResults={}'.format(nextPageToken,totalResults))
+        #log('nextPageToken={0}   totalResults={1}'.format(nextPageToken,totalResults))
         items=j.get('items')
         all_same_channel=all_same([clean_str(i, ['snippet','channelTitle']) for i in items])
         #log(repr(channels))
@@ -784,7 +784,7 @@ class ClassYoutube(sitesBase):
                 videoId=''
                 playlist_id=clean_str(i, ['id'])
                 link_action='listRelatedVideo'
-                playable_url="https://www.youtube.com/playlist?list={}".format(playlist_id)
+                playable_url="https://www.youtube.com/playlist?list={0}".format(playlist_id)
 
             #log('video id:'+repr(videoId))
             publishedAt=clean_str(i, ['snippet','publishedAt'])
@@ -805,11 +805,11 @@ class ClassYoutube(sitesBase):
             if items_in_playlist==0: #we're supposed to use listitem.duration for this field. but kodi <18 only formats this field in mmm. kodi 18 formats this to hh:mm:ss
                 set_=duration_hms    # we resort to formatting it ourselves and putting it in a different field(set) that is also displayed in the gui on the same location 
             if items_in_playlist==1:
-                set_="{} video".format(items_in_playlist)
+                set_="{0} video".format(items_in_playlist)
             elif items_in_playlist>1:
-                set_="{} videos".format(items_in_playlist)
+                set_="{0} videos".format(items_in_playlist)
             if not all_same_channel: #if all videos in the list is not from the same channel, add channel name beside date
-                pretty_date="{} [I]@{}[/I]".format(pretty_date,channelTitle)
+                pretty_date="{0} [I]@{1}[/I]".format(pretty_date,channelTitle)
 
             #log('  link_action:'+link_action +' -->'+ playable_url)
             links.append( {'title': title,
@@ -828,10 +828,10 @@ class ClassYoutube(sitesBase):
                             }  )
         if nextPageToken:
             new_url_with_next_page=set_query_field(api_url,'pageToken',nextPageToken,True)
-            links.append( {'title': "Page {}".format(prev_page + 1), #'Show more',
+            links.append( {'title': "Page {0}".format(prev_page + 1), #'Show more',
                             'type': self.TYPE_ALBUM,
                             'label2': None,
-                            'description': "More items from total:{}".format(totalResults),
+                            'description': "More items from total:{0}".format(totalResults),
                             'url': new_url_with_next_page,
                             'thumb': 'DefaultFolderNextSquare.png',
                             'isPlayable': 'false',
@@ -3705,7 +3705,7 @@ def sitesManager( media_url ):
         regex=subcls.regex
         if regex:
             match=re.compile( regex  , re.I).findall( media_url )
-            #log("testing:{}[{}] {}".format(media_url,regex, repr(match)) )
+            #log("testing:{0}[{1}] {2}".format(media_url,regex, repr(match)) )
             if match :
                 return subcls( media_url )
 
