@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
 	<defaultcontrol>55</defaultcontrol>
-	<backgroundcolor>background</backgroundcolor>
+	<backgroundcolor>black</backgroundcolor>
 
 	<menucontrol>9000</menucontrol>
 
@@ -268,6 +268,7 @@
 			<!-- Visible_Right - Vis_FadeSlide_Right--><animation type="Visible" reversible="False"><effect type="fade" start="0" end="100" time="300" tween="sine" easing="out"/><effect type="slide" start="320" end="0" time="400" tween="cubic" easing="out" /></animation><animation type="Hidden" reversible="False"><effect type="fade" start="100" end="0" time="300" tween="sine" easing="out" /><effect type="slide" start="0" end="320" time="300" tween="cubic" easing="out" /></animation>
 
 			<control type="group"><description>album images list</description>
+				<visible>!String.IsEmpty(Container(55).ListItem.Property(album_images))</visible>
 				<control type="wraplist" id="5501">
 					<left>840</left>
 					<top>0</top>
@@ -277,7 +278,6 @@
 					<preloaditems>true</preloaditems>
 					<scrolltime tween="sine" easing="inout">500</scrolltime>
 					<orientation>horizontal</orientation>
-					<visible>!String.IsEmpty(Container(55).ListItem.Property(album_images))</visible>
 					<!-- pagecontrol>55600</pagecontrol-->
 					<!-- onleft>55</onleft--><!-- not go back to 55 or we end up activating the <onleft> of control(55) as well comment -->
 					<!-- onright>15</onright-->
@@ -345,7 +345,7 @@
 					<align>right</align>
 					<shadowcolor>text_shadow</shadowcolor>
 					<label>$INFO[Container(5501).CurrentItem,, / ]$INFO[Container(5501).NumItems]</label>
-					<visible> Control.IsVisible(5501)</visible>
+					<visible>Control.IsVisible(5501)</visible>
 				</control>
 			</control>
 
@@ -374,7 +374,8 @@
 					<align>center</align><!-- this is aligny -->
 					
 					<control type="image" id="210"><description>thumb visible only when there is no banner(preview) art</description>
-						<height>300</height>
+						<top>0</top><left>0</left>
+						<height>300</height><width>1080</width>
 						<visible>!String.IsEmpty(Container(55).ListItem.Art(thumb)) + String.IsEmpty(Container(55).ListItem.Art(banner))</visible>
 						<aspectratio scalediffuse="true" aligny="center">keep</aspectratio>
 						<texture>$INFO[Container(55).ListItem.Art(thumb)]</texture>
@@ -382,7 +383,7 @@
 					
 					<control type="image" id="201"><description>big square image</description>
 						<!-- top>-470</top><!- 230+400=630 to cover the ListItem.Art(thumb)image control above -->
-						<top>0</top>
+						<top>0</top><left>0</left>
 						<width>1080</width>
 						<height>1080</height>
 						<aspectratio scalediffuse="true">keep</aspectratio>
@@ -391,6 +392,7 @@
 					</control>
 
 					<control type="image" id="207"><description>for tall image</description>
+						<top>0</top><left>0</left>
 						<width>1080</width>
 						<height>3000</height>
 						<aspectratio aligny="top">keep</aspectratio>
