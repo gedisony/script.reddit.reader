@@ -108,7 +108,7 @@
 						<visible>!String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
 					</control>
 					<control type="textbox"><!-- ListItem.Label -->
-						<left>148</left>
+						<left>148</left><top>0</top>
 						<height>138</height>
 						<width>280</width>
 						<aligny>center</aligny>
@@ -118,6 +118,7 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
 					<control type="label"><!-- Label2 -->
+						<left>0</left><top>0</top>
 						<right>20</right>
 						<height>40</height>
 						<align>right</align>
@@ -150,7 +151,7 @@
 						<visible>!String.IsEmpty(ListItem.Art(fanart))</visible><!-- override_header_image is stored in fanart (guis.py) -->
 					</control>
 					<control type="textbox"><!-- ListItem.Label -->
-						<left>148</left>
+						<left>148</left><top>0</top>
 						<height>138</height>
 						<width>280</width>
 						<aligny>center</aligny>
@@ -160,6 +161,7 @@
 						<shadowcolor>text_shadow</shadowcolor>
 					</control>
 					<control type="label"><!-- Label2 -->
+						<left>0</left><top>0</top>
 						<right>20</right>
 						<height>40</height>
 						<align>right</align>
