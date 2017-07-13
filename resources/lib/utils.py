@@ -43,7 +43,10 @@ def log(message):
         level=xbmc.LOGNOTICE
     else:
         level=xbmc.LOGDEBUG
-    xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
+    try:
+        xbmc.log("reddit_reader {0}:{1}".format(t.name, message), level=level)
+    except TypeError as e:
+        xbmc.log("reddit_reader error:{}".format(e), level=level)
 
 def translation(id_):
     return addon.getLocalizedString(id_).encode('utf-8')

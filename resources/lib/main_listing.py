@@ -49,7 +49,7 @@ def index(url,name,type_):
             listSubReddit( assemble_reddit_filter_string("","") , "Reddit-Frontpage", "") #https://www.reddit.com/.json?&&limit=10
     else:
         #subredditsFile loaded in gui
-        ui = indexGui('index.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
+        ui = indexGui('index_1.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', subreddits_file=subredditsFile, id=55)
         ui.title_bar_text="Reddit Reader"
         ui.include_parent_directory_entry=False
 

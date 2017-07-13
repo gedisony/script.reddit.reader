@@ -92,8 +92,8 @@
 						<animation effect="fade" start="100" end="0" time="80">Unfocus</animation>
 					</control>
 					<control type="image">
-						<left>8</left>
-						<width>140</width>
+						<left>8</left><top>0</top>
+						<width>140</width><height>140</height>
 						<aspectratio>keep</aspectratio>
 						<bordersize>4</bordersize>
 						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(thumb)]</texture>
@@ -134,8 +134,8 @@
 						<texture fallback="srr_dialog-bg.png">srr_dialog-bg.png</texture>
 					</control>
 					<control type="image">
-						<left>8</left>
-						<width>140</width>
+						<left>8</left><top>0</top>
+						<width>140</width><height>140</height>
 						<aspectratio>keep</aspectratio>
 						<bordersize>4</bordersize>
 						<texture diffuse="gdx_diffuse2.png" fallback="icon_fallback.png">$INFO[ListItem.Art(thumb)]</texture>
