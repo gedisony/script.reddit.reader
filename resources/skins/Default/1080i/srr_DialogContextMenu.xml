@@ -39,8 +39,7 @@
 			<!-- animation effect="slide" end="-225" time="0" condition="true">conditional</animation-->
 			<control type="image" id="999">
 				<description>background image</description>
-				<left>0</left>
-				<top>0</top>
+				<left>0</left><top>0</top>
 				<width>500</width>
 				<height>800</height>
 				<texture colordiffuse="dialog_tint">colors/white.png</texture>
@@ -52,17 +51,20 @@
 				<orientation>vertical</orientation>
 				<focusedlayout height="63">
 					<control type="image">
+						<left>0</left><top>0</top>
 						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="dialog_tint">colors/white.png</texture>
 					</control>
 					<control type="image">
+						<left>0</left><top>0</top>
 						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="FF12A8DA">srr_focus.png</texture>
 						<visible>Control.HasFocus(996)</visible>
 					</control>
 					<control type="label"><!-- ListItem.Label -->
+						<left>0</left><top>0</top>
 						<height>63</height>
 						<width>550</width>
 						<aligny>center</aligny>
@@ -77,11 +79,13 @@
 				</focusedlayout>
 				<itemlayout height="63">
 					<control type="image">
+						<left>0</left><top>0</top>
 						<width>550</width>
 						<height>63</height>
 						<texture colordiffuse="dialog_tint">colors/white.png</texture>
 					</control>
 					<control type="label"><!-- ListItem.Label -->
+						<left>0</left><top>0</top>
 						<height>63</height>
 						<width>550</width>
 						<aligny>center</aligny>
