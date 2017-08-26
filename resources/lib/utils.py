@@ -176,7 +176,10 @@ def pretty_datediff_wrap( date_to_prettify, format_string="%Y-%m-%d %H:%M:%S", u
     try: #try/except is done this way because of a bug  https://forum.kodi.tv/showthread.php?tid=112916
         date_object=datetime.strptime(date_to_prettify, format_string)
     except TypeError:
-        date_object=datetime(*(time.strptime(date_to_prettify, format_string)[0:6]))
+        try:
+            date_object=datetime(*(time.strptime(date_to_prettify, format_string)[0:6]))
+        except:
+            return
 
     now = datetime.now()
     if use_utc_as_base:
