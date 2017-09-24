@@ -298,6 +298,8 @@ git reset --hard upstream/jarvis
 
 git merge upstream/jarvis
 
+---Already up-to-date.
+
 ***Your branch and 'origin/master' have diverged,
     git pull
     (open text editor on files that have merge conflict)
@@ -321,15 +323,22 @@ pause
 rem Add the addon in your github as a remote
 git remote add plugin.video.reddit_viewer git@github.com:gedisony/plugin.video.reddit_viewer
 
+***fatal: remote plugin.video.reddit_viewer already exists. (just proceed?)
+
 rem Fetch your addon from your github
 git fetch plugin.video.reddit_viewer
+**remote: Counting objects: 52, done.
+**remote: Total 52 (delta 21), reused 21 (delta 21), pack-reused 31
+**Unpacking objects: 100% (52/52), done.
+**From github.com:gedisony/plugin.video.reddit_viewer
+**   a483c36..4212a0e  master     -> plugin.video.reddit_viewer/master
 
 
 rem Make a branch for your addon and go to that branch    #git checkout -b %1 script.module.requests-cache/master
 git checkout -b 350jv plugin.video.reddit_viewer/master
 
-
-
+**Branch 351jv set up to track remote branch master from plugin.video.reddit_viewer.
+**Switched to a new branch '351jv'
 #now on (350jv)
 rem go to the jarvis branch
 git checkout jarvis
@@ -353,12 +362,14 @@ git read-tree --prefix=plugin.video.reddit_viewer/ -u 350jv
 open notepad ++
   - Find in Files :...\kodi stuff\repo-plugins\plugin.video.reddit_viewer
   - search for comments (regex)-->    ^\s*\#.*?(?=\r?$)
-  - replace with nothing (put the first few lines in file back)
+  - Goto Replace tab
+  - find again using list at bottom on np++ to get to each of the files found in 1st step.
+  - replace with nothing (put the cursor after the first few lines and make sure wrap around is not checked)
 
   addon.xml
     - change xbmc.python version to 2.24  (for jarvis)
 
-  change LOGNOTICE to LOGDEBUG in utils.py
+  change LOGNOTICE to LOGDEBUG in utils.py (controlled by setting, no need to change)
 
 pause
 
@@ -369,6 +380,10 @@ pause
 git status
 git add .
 git commit -m "[plugin.video.reddit_viewer] 3.5.0"
+
+**test the exited version:
+**windows explorer: navigate to ...\kodi stuff\repo-plugins and create a zip file for plugin.video.reddit_viewer
+**  ## do not leave the zip file in the folder ##
 
 rem push the stuff to the jarvis branch in your github
 git push origin jarvis
@@ -391,3 +406,13 @@ it has to be green text ~"ok to merge"
   $ git commit -m "[plugin.video.reddit_viewer] 3.5.0"
   $ git push origin jarvis
   (go to browser as above)
+  
+***  To git@github.com:gedisony/repo-plugins.git
+*** ! [rejected]        jarvis -> jarvis (non-fast-forward)
+***error: failed to push some refs to 'git@github.com:gedisony/repo-plugins.git'
+***hint: Updates were rejected because the tip of your current branch is behind
+***hint: its remote counterpart. Integrate the remote changes (e.g.
+***hint: 'git pull ...') before pushing again.
+GIVE UP!!!
+
+USE SIMPLE METHOD

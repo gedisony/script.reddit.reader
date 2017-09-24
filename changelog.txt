@@ -1,3 +1,5 @@
+1.0.4 (09/24/2017)
+  - add parsing for v.redd.it links
 1.0.3
   - update youtube link parsing (attribution)
   - show youtube video duration on gui

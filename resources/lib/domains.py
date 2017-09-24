@@ -12,7 +12,6 @@ import urlparse
 from default import addon, streamable_quality,hide_nsfw   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
 from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
-from locale import format_string
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
@@ -3638,7 +3637,7 @@ class local(sitesBase):
         pass
 
 class genericImage(sitesBase):
-    regex='(Redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
+    regex='(i.redd.it/)|(RedditUploads)|(RedditMedia)|(\.(jpg|jpeg|png|gif)(?:\?|$))'
 
     def get_playable_url(self, link_url, is_probably_a_video=False ):
         media_url=link_url.replace('&amp;','&')  #this replace is only for  RedditUploads but seems harmless for the others...
@@ -3658,7 +3657,7 @@ class genericImage(sitesBase):
         return self.thumb_url
 
 class genericVideo(sitesBase):
-    regex='(\.(mp4|webm|avi|3gp|gif|MPEG|WMV|ASF|FLV|MKV|MKA)(?:\?|$))'
+    regex='(v.redd.it/)|(\.(mp4|webm|avi|3gp|gif|MPEG|WMV|ASF|FLV|MKV|MKA)(?:\?|$))'
     def get_thumb_url(self):
         pass
 
