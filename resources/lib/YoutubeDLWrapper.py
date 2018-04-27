@@ -378,6 +378,13 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
         minHeight, maxHeight = _getQualityLimits(quality)
 
+        #kodi can't play this protocol   from:https://www.zdf.de/familienfieber-100.html
+        banned_protocols=['f4m']
+        #no sound if this codec
+        banned_acodec=['none']
+        #adding a banned vcodec so that we don't play audio only files. v.redd.it
+        banned_vcodec=['none']
+
         #util.LOG('Quality: {0}'.format(quality), debug=True)
         urls = []
         idx = 0
@@ -397,7 +404,14 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             keys = sorted(index.keys())
 
-            fallback = formats[index[keys[0]]]
+            #deciding which will be our fallback format
+            for fmt in keys:
+                fallback = formats[index[fmt]]
+                #weed out unsuitable formats. (exclude audio only streams)
+                if 'height' not in fallback:
+                    continue
+
+            #fallback = formats[index[keys[0]]]
             fallback_format_id=fallback.get('format_id','')
             fallback_protocol=fallback.get('protocol','')
 
@@ -405,10 +419,6 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             #log( "fallback format:"+repr(fallback_format_id) )
             #log( "fallback_protocol:"+repr(fallback_protocol) )
 
-            #kodi can't play this protocol   from:https://www.zdf.de/familienfieber-100.html
-            banned_protocols=['f4m']
-            #no sound if this codec
-            banned_acodec=['none']
 
             if fallback_protocol in banned_protocols:
                 alternate_formats=difflib.get_close_matches(fallback_format_id, keys)
@@ -425,19 +435,34 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             for fmt in keys:
                 fdata = formats[index[fmt]]
                 #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
+                log( 'Available format: ' + fdata.get('format', '') )
                 if 'height' not in fdata:
                     continue
-                if disable_dash and 'dash' in fdata.get('format_note', '').lower():
-                    continue
+
+                #usually we need to skip dash video because audio is in a separate stream and kodi cannot play video+audio from separate streams --youtube videos
+                #youtube have non-dash format streams that have video+audio and we want to pick that
+                #but v.redd.it sometimes have dash only streams and we end up playing audio only(fallback format)
+                #we skip the dash-ban and audio-ban for v.redd.it streams so that we play the video even though there is no audio
+                if 'v.redd.it' not in fdata.get('url',''):
+                    if disable_dash and 'dash' in fdata.get('format_note', '').lower():
+                        continue
+                    if 'acodec' in fdata and fdata.get('acodec') in banned_acodec:
+                        #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
+                        continue
+
                 if 'protocol' in fdata and fdata.get('protocol') in banned_protocols:
                     #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
                     continue
-                if 'acodec' in fdata and fdata.get('acodec') in banned_acodec:
-                    #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
+
+
+                #skip 'none' vcodec to avoid audio only files.
+                if 'vcodec' in fdata and fdata.get('vcodec') in banned_vcodec:
+                    #log('skipped format:' + fdata.get('vcodec') )
                     continue
 
                 h = fdata['height']
                 p = fdata.get('preference', 1)
+                #log('h={0} min={1} max={2}'.format(h,minHeight,maxHeight) )
                 if h >= minHeight and h <= maxHeight:
                     if (h >= prefMax and p > prefPref) or (h > prefMax and p >= prefPref):
                         prefMax = h
@@ -447,6 +472,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                         defMax = h
                         defFormat = fdata
                         defPref = p
+
             formatID = None
             if prefFormat:
                 info = prefFormat

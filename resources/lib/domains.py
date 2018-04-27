@@ -292,6 +292,12 @@ def all_same(items):
     return all(x == items[0] for x in items)
 
 def url_resolver_support(link_url):
+    #try:
+    #    import urlresolver
+    #    if urlresolver.HostedMediaFile(link_url).valid_url():
+    #        return True
+    #except ValueError as e:
+    #    log('error importing urlresolver:'+str(e))
     return False
 
 class ClassYoutube(sitesBase):

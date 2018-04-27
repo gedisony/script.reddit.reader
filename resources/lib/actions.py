@@ -476,7 +476,7 @@ def playYTDLVideo(url, name, type_):
         #link_type=ydl_info.get("_type")
         #entries=ydl_info.get('entries')
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
-        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
+        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         if video_index > 0:

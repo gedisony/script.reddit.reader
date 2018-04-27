@@ -1,3 +1,5 @@
+1.0.6 (04/26/2018)
+  - pick the video-only stream instead of the audio-only (v.redd.it)
 1.0.5 (04/16/2018)
   - remove urlresolver dependency and use
 1.0.4 (09/24/2017)
