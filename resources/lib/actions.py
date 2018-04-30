@@ -8,6 +8,7 @@ import re, urllib
 import pprint
 import json
 import urlparse
+#import inputstream.adaptive
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
 from utils import xbmc_busy, log, translation, xbmc_notify
@@ -476,7 +477,7 @@ def playYTDLVideo(url, name, type_):
         #link_type=ydl_info.get("_type")
         #entries=ydl_info.get('entries')
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
-        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
+        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         if video_index > 0:
@@ -508,7 +509,21 @@ def playYTDLVideo(url, name, type_):
         dialog_progress_YTDL.close()
 
 def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
+    use_input_stream_adaptive=False
+    input_stream_adaptive_manifest_type='mpd'
     url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
+    manifest_url=video_info.get('manifest_url') #v.redd.it has this but youtube does not.  they both support DASH video
+    #log('***befor:'+pprint.pformat(video_info, indent=1, depth=2))
+    if manifest_url:
+        use_input_stream_adaptive=True
+        url=video_info.get('manifest_url')
+        if manifest_url.endswith('.mpd'):
+            input_stream_adaptive_manifest_type='mpd'
+        elif manifest_url.endswith('.m3u8'):
+            input_stream_adaptive_manifest_type='hls'
+        elif manifest_url.endswith('.ism'):
+            input_stream_adaptive_manifest_type='ism'
+
     #log('***befor:'+repr(url))
     url=urllib.quote_plus(url.encode('utf-8'), safe="&$+,/:;=?@#<>[]{}|\^%")
     #log('***after :'+repr(url))
@@ -529,6 +544,18 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     li.setArt({"thumb": video_thumbnail, "icon":video_thumbnail })
     li.setInfo( type="Video", infoLabels={ "Title": title, "plot": description } )
     li.setProperty('StartOffset', str(start_time))
+
+    if use_input_stream_adaptive:
+        li.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        li.setProperty('inputstream.adaptive.manifest_type', input_stream_adaptive_manifest_type)
+        #li.setProperty('inputstream.adaptive.stream_headers', url.split('|')[1])
+        #li.setProperty('inputstream.adaptive.license_key', '|' + url.split('|')[1])
+        #li.setProperty('IsPlayable', 'true')
+
+        #li.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+        #li.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+        #li.setProperty('inputstream.adaptive.license_key', 'https://cwip-shaka-proxy.appspot.com/no_auth' + '||R{SSM}|')
+
     pl.add(url, li)
 
 YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'

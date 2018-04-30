@@ -404,6 +404,25 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
 
             keys = sorted(index.keys())
 
+            streams_video_only=[]
+            streams_audio_only=[]
+            streams_video_and_audio=[]
+
+            for fmt in keys:
+                fdata = formats[index[fmt]]
+                if fdata.get('vcodec')=='none':
+                    streams_audio_only.append(fdata)
+                    continue
+                if fdata.get('acodec')=='none':
+                    streams_video_only.append(fdata)
+                    continue
+                streams_video_and_audio.append(fdata)
+
+            log('v={0} a={1} both={2} all={3}'.format(len(streams_video_only),len(streams_audio_only), len(streams_video_and_audio), len(formats) ) )
+
+            #for v_stream in streams_video_only:
+            #    log( pprint.pformat(v_stream, indent=1, depth=1) )
+
             #deciding which will be our fallback format
             for fmt in keys:
                 fallback = formats[index[fmt]]
@@ -419,7 +438,6 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             #log( "fallback format:"+repr(fallback_format_id) )
             #log( "fallback_protocol:"+repr(fallback_protocol) )
 
-
             if fallback_protocol in banned_protocols:
                 alternate_formats=difflib.get_close_matches(fallback_format_id, keys)
 
@@ -432,17 +450,18 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                         #log('picked alt format:' + a )
                         break
 
+            #sys.exit()
             for fmt in keys:
                 fdata = formats[index[fmt]]
-                #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
-                log( 'Available format: ' + fdata.get('format', '') )
+                log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
+                #log( 'Available format: ' + fdata.get('format', '') )
                 if 'height' not in fdata:
                     continue
 
                 #usually we need to skip dash video because audio is in a separate stream and kodi cannot play video+audio from separate streams --youtube videos
                 #youtube have non-dash format streams that have video+audio and we want to pick that
-                #but v.redd.it sometimes have dash only streams and we end up playing audio only(fallback format)
-                #we skip the dash-ban and audio-ban for v.redd.it streams so that we play the video even though there is no audio
+                #but v.redd.it have dash only streams and we end up playing audio only(fallback format)
+                #we skip the dash-ban and audio-ban for v.redd.it streams and play the video-only version
                 if 'v.redd.it' not in fdata.get('url',''):
                     if disable_dash and 'dash' in fdata.get('format_note', '').lower():
                         continue
@@ -487,8 +506,8 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             url = info['url']
             formatID = info['format_id']
             format_desc=info['format']
-            #log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
-            log( 'Selected format:\n' + pprint.pformat(info, indent=1, depth=1) )
+            log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
+            #log( 'Selected format:\n' + pprint.pformat(info, indent=1, depth=1) )
             #log('********************************************************************************************')
             if url.find("rtmp") == -1:
                 url += '|' + urllib.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
@@ -499,7 +518,8 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             urls.append(
                 {
                     'xbmc_url': url,
-                    'url': info['url'],
+                    'url': info.get('url'),
+                    'manifest_url':info.get('manifest_url'),
                     'title': entry.get('title', ''),
                     'thumbnail': entry.get('thumbnail', ''),
                     'formatID': formatID,

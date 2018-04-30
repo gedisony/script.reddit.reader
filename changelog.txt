@@ -1,3 +1,5 @@
+1.0.6 (04/30/2018)
+  - use inputstream.adaptive to play v.redd.it DASH videos
 1.0.6 (04/26/2018)
   - pick the video-only stream instead of the audio-only (v.redd.it)
 1.0.5 (04/16/2018)
