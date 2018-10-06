@@ -453,8 +453,8 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             #sys.exit()
             for fmt in keys:
                 fdata = formats[index[fmt]]
-                log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
-                #log( 'Available format: ' + fdata.get('format', '') )
+                #log( 'Available format:\n' + pprint.pformat(fdata, indent=1, depth=1) )
+                log( 'Available format: ' + fdata.get('format', '') )
                 if 'height' not in fdata:
                     continue
 

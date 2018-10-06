@@ -98,8 +98,8 @@
 			
 			<control type="grouplist" >
 				<left>0</left>
-				<top>400</top>
-				<width>1280</width>
+				<top>750</top>
+				<width>1920</width>
 				<height>320</height>
 				<orientation>vertical</orientation>
 				<usecontrolcoords>true</usecontrolcoords>
@@ -118,7 +118,7 @@
     				
 				<control type="textbox" id="201">
 					<left>10</left>
-					<width>1260</width>
+					<width>100%</width>
 					<height>auto</height>
 					<visible>!String.IsEmpty(Control.GetLabel(201))</visible>
 					<label></label>
@@ -129,7 +129,7 @@
 
 				<control type="textbox" id="202">
 					<left>10</left>
-					<width>1260</width>
+					<width>100%</width>
 					<height>auto</height>
 					<visible>!String.IsEmpty(Control.GetLabel(202))</visible>
 					<label></label>

@@ -313,9 +313,9 @@ class ScreensaverBase(object):
 
         loading_img = xbmc.validatePath('/'.join((ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
 
-        self.loading_control = ControlImage(576, 296, 128, 128, loading_img)
+        self.loading_control = ControlImage((self.xbmc_window.getWidth()/2)-64, (self.xbmc_window.getHeight()/2)-64, 128, 128, loading_img)
         self.preload_control = ControlImage(-1, -1, 1, 1, '')
-        self.background_control = ControlImage(0, 0, 1280, 720, '')
+        self.background_control = ControlImage(0, 0, self.xbmc_window.getWidth(), self.xbmc_window.getHeight(), '')
         self.global_controls = [
             self.preload_control, self.background_control, self.loading_control
         ]
@@ -328,7 +328,9 @@ class ScreensaverBase(object):
     def init_cycle_controls(self):
         #self.log('  init_cycle_controls start')
         for _ in xrange(self.IMAGE_CONTROL_COUNT):
-            img_control = ControlImage(0, 0, 0, 0, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+            #img_control = ControlImage(0, 0, 0, 0, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+            img_control = ControlImage(0, 0, self.xbmc_window.getWidth(), self.xbmc_window.getHeight(), '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+
             txt_control = ControlTextBox(0, 0, 0, 0, font='font16')
 #                     xbfont_left = 0x00000000
 #                     xbfont_right = 0x00000001
@@ -566,9 +568,10 @@ class HorizontalSlide2(ScreensaverBase):
 
     def init_xbmc_window(self):
         #self.xbmc_window = ScreensaverWindow(  exit_callback=self.stop )
-        self.xbmc_window = ScreensaverXMLWindow( "slideshow02.xml", addon_path, defaultSkin='Default', exit_callback=self.action_id_handler )
-        self.xbmc_window.setCoordinateResolution(5)
+        self.xbmc_window = ScreensaverXMLWindow( "slideshow02.xml", addon_path, defaultSkin='Default', defaultRes='1080i', exit_callback=self.action_id_handler )
+        #self.xbmc_window.setCoordinateResolution(5)
         self.xbmc_window.show()
+        #self.log('HorizontalSlide2 '  + str(self.xbmc_window.getHeight()) )
 
     def load_settings(self):
         self.SPEED = float(addon.getSetting('slideshow_speed'))
@@ -678,6 +681,7 @@ class HorizontalSlide2(ScreensaverBase):
             #hide the title control if missing (this is done in skin but can also be done in python)
             #if desc_and_image[0]:
             self.title_control.setText(title)
+            #self.title_control.setPosition(0,200)
             #    self.title_control.setVisible(True)
             #else:
             #    self.title_control.setVisible(False)
@@ -694,7 +698,7 @@ class HorizontalSlide2(ScreensaverBase):
         #log('  %dx%d %f' %(width,height,ar ) )
 
         direction=random.choice([1,0])
-        sx=1280;ex=-1280
+        sx=self.xbmc_window.getWidth();ex=-sx
 
         if direction:
             sx,ex=ex,sx
@@ -724,13 +728,11 @@ class HorizontalSlide2(ScreensaverBase):
 
         image_control.setImage(self.next_desc_and_image[1])
         image_control.setPosition(0, 0)
-        image_control.setWidth(1280)   #16:9
-        #image_control.setWidth(1680)    #21:9
-        image_control.setHeight(720)
+        image_control.setWidth( self.xbmc_window.getWidth() ) #set the size of the image. needs to be same size as screen.
+        image_control.setHeight( self.xbmc_window.getHeight() )
         image_control.setAnimations(self.IMAGE_ANIMATIONS)
         # show the image
         image_control.setVisible(True)
-
 
 
 class HorizontalSlideScreensaver(ScreensaverBase):
@@ -759,26 +761,25 @@ class HorizontalSlideScreensaver(ScreensaverBase):
                 ('conditional', 'condition=true effect=fade delay=0 time=500 start=0 end=100  ' ),
                 ('conditional', 'condition=true effect=fade delay=%s time=500 start=100 end=0 tween=circle easing=in' % self.NEXT_IMAGE_TIME  ) ]
 
-
     #using WindowXMLDialog(ScreensaverXMLWindow) instead of WindowDialog. the image used in text background does not load when using WindowDialog (???)  some images load, most don't
     def init_xbmc_window(self):
         #self.xbmc_window = ScreensaverWindow(  exit_callback=self.stop )
-        self.xbmc_window = ScreensaverXMLWindow( "slideshow01.xml", addon_path, defaultSkin='Default', exit_callback=self.action_id_handler )
-        self.xbmc_window.setCoordinateResolution(5)
+        self.xbmc_window = ScreensaverXMLWindow( "slideshow01.xml", addon_path, defaultSkin='Default', exit_callback=self.action_id_handler, defaultRes='1080i' )
         self.xbmc_window.show()
-
+        #self.log('HorizontalSlideScreensaver')
 
     def stack_cycle_controls(self):
 
         for txt_ctl, img_ctl in self.tni_controls:
             self.xbmc_window.addControl(img_ctl)
 
+
         if self.SHOW_TITLE:
-            self.txt_background=ControlImage(0, 685, 1280, 40, 'srr_dialog-bg.png', aspectRatio=1)
+            self.txt_background=ControlImage(0, self.xbmc_window.getHeight()-40, self.xbmc_window.getWidth(), 40, 'srr_dialog-bg.png', aspectRatio=1)
             self.xbmc_window.addControl( self.txt_background  )
 
             #ControlLabel(x, y, width, height, label, font=None, textColor=None, disabledColor=None, alignment=0, hasPath=False, angle=0)
-            self.image_label=ControlLabel(10,688,1280,30,'',font='font16', textColor='', disabledColor='', alignment=6, hasPath=False, angle=0)
+            self.image_label=ControlLabel(10,self.xbmc_window.getHeight()-30,self.xbmc_window.getWidth(),30,'',font='font16', textColor='', disabledColor='', alignment=6, hasPath=False, angle=0)
             self.xbmc_window.addControl( self.image_label  )
         #for txt_ctl, img_ctl in self.tni_controls:
         #    self.xbmc_window.addControl(txt_ctl)
@@ -793,7 +794,7 @@ class HorizontalSlideScreensaver(ScreensaverBase):
         text_control.setText('')
 
         direction=random.choice([1,0])
-        sx=1280;ex=-1280
+        sx=self.xbmc_window.getWidth();ex=-sx
 
         if direction:
             sx,ex=ex,sx
@@ -841,9 +842,10 @@ class HorizontalSlideScreensaver(ScreensaverBase):
 
         image_control.setImage(desc_and_image[1])
         image_control.setPosition(0, 0)
-        image_control.setWidth(1280)   #16:9
-        #image_control.setWidth(1680)    #21:9
-        image_control.setHeight(720)
+
+        #image_control.setWidth( self.xbmc_window.getWidth() ) #set the size of the image. needs to be same size as screen.
+        #image_control.setHeight( self.xbmc_window.getHeight() )
+
         image_control.setAnimations(self.IMAGE_ANIMATIONS)
         # show the image
         image_control.setVisible(True)
@@ -882,9 +884,10 @@ class FadeScreensaver( HorizontalSlide2, ScreensaverBase):
 
         image_control.setImage(self.next_desc_and_image[1])
         image_control.setPosition(0, 0)
-        image_control.setWidth(1280)   #16:9
-        #image_control.setWidth(1680)    #21:9
-        image_control.setHeight(720)
+
+        image_control.setWidth( self.xbmc_window.getWidth() ) #set the size of the image. needs to be same size as screen.
+        image_control.setHeight( self.xbmc_window.getHeight() )
+
         image_control.setAnimations(self.IMAGE_ANIMATIONS)
         # show the image
         image_control.setVisible(True)
@@ -925,25 +928,25 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         #log('  %d  %dx%d %f' %(direction, width,height,ar ) )
 
         #default dimension of the image control
-        ctl_width=1680
-        ctl_height=720
+        ctl_width=self.xbmc_window.getWidth()
+        ctl_height=self.xbmc_window.getHeight()
         ctl_x=0
 
         if up_down:
             #with tall images, the image control dimension has to be tall
             sx=0;ex=0
-            sy=-1680;ey=720
+            sy=-1680  ;ey=ctl_height
+            #self.log( "start {}".format( sy ) )
             #prevent some tall images from being zoomed in too much
             if ar > 0.6:
-                ctl_width=940
-                ctl_x=random.randint(0, 340)
-
+                ctl_width=1440
+                ctl_x=random.randint(0, self.xbmc_window.getWidth()-ctl_width  )
             else:
-                ctl_width=1280
+                ctl_width=self.xbmc_window.getWidth()
 
             ctl_height=1680
         else:
-            sx=1280;ex=-1680
+            sx=self.xbmc_window.getWidth();ex=-sx
             sy=0;ey=0
 
         if direction:
@@ -953,6 +956,7 @@ class AdaptiveSlideScreensaver( HorizontalSlideScreensaver, ScreensaverBase):
         slide_animation=[
             ('conditional', 'effect=slide start=%d,%d end=%d,%d center=auto time=%s '
                             'tween=cubic easing=out delay=0 condition=true' % ( sx,sy,ex,ey, self.MAX_TIME)),
+            ('conditional', 'condition=true effect=fade tween=cubic easing=in delay=%s time=1000 start=100 end=0  ' % ( self.MAX_TIME*0.8 ) ),
         ]
 
         if self.SHOW_TITLE:
