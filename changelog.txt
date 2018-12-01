@@ -1,3 +1,5 @@
+1.0.9 (11/30/2018)
+  - update gfycat json api endpoint
 1.0.8 (10/06/2018)
   - remove the use of setCoordinateResolution (no longer supported in leia beta3)
 1.0.7 (04/30/2018)
