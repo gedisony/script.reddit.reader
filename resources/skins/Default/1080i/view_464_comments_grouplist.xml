@@ -249,77 +249,77 @@
 						<!--onleft>55</onleft-->
 					</control>
 					
-					<control type="textbox" id="1000"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1000"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1001"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1002"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1002"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1003"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1004"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1004"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1005"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1006"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1006"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1007"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1008"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1008"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1009"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1010"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1010"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1011"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1012"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1012"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1013"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1014"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1014"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1015"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1016"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1016"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1017"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1018"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1018"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1019"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1020"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1020"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1021"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1022"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1022"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1023"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1024"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1024"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1025"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1026"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1026"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1027"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1028"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1028"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1029"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1030"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1030"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1031"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1032"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1032"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1033"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1034"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1034"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1035"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1036"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1036"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1037"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1038"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1038"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1039"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1040"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1040"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1041"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1042"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1042"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1043"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1044"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1044"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1045"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1046"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1046"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1047"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1048"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1048"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1049"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1050"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1050"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1051"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1052"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1052"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1053"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1054"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1054"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1055"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1056"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1056"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1057"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1058"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1058"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1059"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1060"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1060"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1061"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1062"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1062"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1063"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1064"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1064"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1065"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1066"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1066"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1067"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1068"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1068"><height>auto</height><font>font14</font><label>.</label></control>
 					<control type="textbox" id="1069"><height>auto</height><font>font14</font><textcolor>99FFFFFF</textcolor></control>
-					<control type="textbox" id="1070"><height>auto</height><font>font14</font></control>
+					<control type="textbox" id="1070"><height>auto</height><font>font14</font><label>.</label></control>
 				</control>
 
 				<control type="textbox" id="65592">
