@@ -267,7 +267,7 @@ class YoutubeDLWrapper(youtube_dl.YoutubeDL):
 
     def to_stderr(self, message):
         """Print message to stderr."""
-        assert isinstance(message, basestring)
+        assert  isinstance(message, str)  #isinstance(message, basestring)
         if self.params.get('logger'):
             self.params['logger'].error(message)
         else:
@@ -365,7 +365,7 @@ def _getQualityLimits(quality):
         maxHeight = 720
     return minHeight, maxHeight
 
-from utils import log
+from . utils import log
 import pprint
 
 def _selectVideoQuality(r, quality=1, disable_dash=True):
@@ -418,7 +418,7 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                     continue
                 streams_video_and_audio.append(fdata)
 
-            log('v={0} a={1} both={2} all={3}'.format(len(streams_video_only),len(streams_audio_only), len(streams_video_and_audio), len(formats) ) )
+            log('count of formats available: v={0} a={1} both={2} all={3}'.format(len(streams_video_only),len(streams_audio_only), len(streams_video_and_audio), len(formats) ) )
 
             #for v_stream in streams_video_only:
             #    log( pprint.pformat(v_stream, indent=1, depth=1) )
@@ -473,15 +473,15 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
                     #log('skipped format:' + pprint.pformat(fdata, indent=1, depth=1))
                     continue
 
-
                 #skip 'none' vcodec to avoid audio only files.
                 if 'vcodec' in fdata and fdata.get('vcodec') in banned_vcodec:
                     #log('skipped format:' + fdata.get('vcodec') )
                     continue
 
-                h = fdata['height']
-                p = fdata.get('preference', 1)
-                #log('h={0} min={1} max={2}'.format(h,minHeight,maxHeight) )
+                #In Python 2 comparing an integer to None will "work,"    In Python 3 such comparisons raise a TypeError
+                h = fdata['height'] or 0 
+                p = fdata.get('preference', 1) or 0
+                #log('h={0} prefMax={1} prefPref={2} min={3} max={4} h={5} p={6}'.format(h,prefMax,prefPref,minHeight,maxHeight,h,p) )
                 if h >= minHeight and h <= maxHeight:
                     if (h >= prefMax and p > prefPref) or (h > prefMax and p >= prefPref):
                         prefMax = h
@@ -507,10 +507,10 @@ def _selectVideoQuality(r, quality=1, disable_dash=True):
             formatID = info['format_id']
             format_desc=info['format']
             log(logBase.format(format_desc, info.get('width', '?'), info.get('height', '?'), entry.get('title', '').encode('ascii', 'replace')))
-            #log( 'Selected format:\n' + pprint.pformat(info, indent=1, depth=1) )
+            log( 'Selected format:\n' + pprint.pformat(info, indent=1, depth=1) )
             #log('********************************************************************************************')
             if url.find("rtmp") == -1:
-                url += '|' + urllib.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
+                url += '|' + urllib.parse.urlencode({'User-Agent': entry.get('user_agent') or std_headers['User-Agent']})
             else:
                 url += ' playpath='+fdata['play_path']
             new_info = dict(entry)

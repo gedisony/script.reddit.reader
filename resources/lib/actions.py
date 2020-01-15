@@ -4,15 +4,15 @@ import xbmcgui
 #import xbmcvfs
 import sys
 import shutil, os
-import re, urllib
+import re, urllib.request, urllib.parse, urllib.error
 import pprint
 import json
-import urlparse
+import urllib.parse
 #import inputstream.adaptive
 
 from default import subredditsFile, addon, addon_path, profile_path, ytdl_core_path, subredditsPickle,CACHE_FILE
-from utils import xbmc_busy, log, translation, xbmc_notify
-from reddit import get_subreddit_entry_info
+from .utils import xbmc_busy, log, translation, xbmc_notify
+from .reddit import get_subreddit_entry_info
 
 ytdl_quality=addon.getSetting("ytdl_quality")
 try: ytdl_quality=[0, 1, 2, 3][ int(ytdl_quality) ]
@@ -20,7 +20,7 @@ except ValueError: ytdl_quality=1
 ytdl_DASH=addon.getSetting("ytdl_DASH")=='true'
 
 def manage_subreddits(subreddit_entry, name, type_):
-    from main_listing import index
+    from .main_listing import index
     log('manage_subreddits(%s, %s, %s)' %(subreddit_entry, name, type_) )
 
     #http://forum.kodi.tv/showthread.php?tid=148568
@@ -41,7 +41,7 @@ def manage_subreddits(subreddit_entry, name, type_):
     elif selected_index == 2:     # 2-> third item
         removeSubreddit(subreddit_entry,'','')
     elif selected_index == 3:     # 3-> fourth item
-        from reddit import subreddit_entry_to_listitem
+        from .reddit import subreddit_entry_to_listitem
         li=subreddit_entry_to_listitem(subreddit_entry)
         li_to_KodiFavourites(li)
     else:                         #-1 -> escape pressed or [cancel]
@@ -54,8 +54,8 @@ def manage_subreddits(subreddit_entry, name, type_):
     index("","","")
 
 def addSubreddit(subreddit, name, type_):
-    from utils import colored_subreddit
-    from reddit import this_is_a_multireddit, format_multihub
+    from .utils import colored_subreddit
+    from .reddit import this_is_a_multireddit, format_multihub
     alreadyIn = False
     with open(subredditsFile, 'r') as fh:
         content = fh.readlines()
@@ -112,7 +112,7 @@ def removeSubreddit(subreddit, name, type_):
     xbmc.executebuiltin("Container.Refresh")
 
 def editSubreddit(subreddit, name, type_):
-    from reddit import this_is_a_multireddit, format_multihub
+    from .reddit import this_is_a_multireddit, format_multihub
     log( 'editSubreddit ' + subreddit)
 
     with open(subredditsFile, 'r') as fh:
@@ -144,7 +144,7 @@ def editSubreddit(subreddit, name, type_):
 
 def searchReddits(url, subreddit, type_):
     from default import urlMain
-    from main_listing import listSubReddit
+    from .main_listing import listSubReddit
 
     #reddit search only works with a single subreddit
     if subreddit:
@@ -161,7 +161,7 @@ def searchReddits(url, subreddit, type_):
         search_string=keyboard.getText()
 
         if search_string:
-            search_string=urllib.quote_plus(search_string,safe='&=') #only &= are used because they're in the initial_search_string
+            search_string=urllib.parse.quote_plus(search_string,safe='&=') #only &= are used because they're in the initial_search_string
 
     #    #this    https://www.reddit.com/r/Art/.json?&nsfw:no+&limit=10
     #    #becomes https://www.reddit.com/r/Art/search.json?&nsfw:no+&limit=10&q=SEARCHTERM&restrict_sr=on&sort=relevance&t=all
@@ -177,7 +177,7 @@ def setting_gif_repeat_count():
     return [0, 1, 3, 10, 100][repeat_gif_video]
 
 def viewImage(image_url, name, preview_url):
-    from guis import cGUI
+    from .guis import cGUI
 
     log('  viewImage %s, %s, %s' %( image_url, name, preview_url))
 
@@ -323,11 +323,11 @@ def viewTallImage(image_url, width, height):
         useWindow.removeControls( [img_control,img_loading] )
 
 def display_album_from(dictlist, album_name):
-    from utils import dictlist_to_listItems
+    from .utils import dictlist_to_listItems
 
     directory_items=dictlist_to_listItems(dictlist)
 
-    from guis import cGUI
+    from .guis import cGUI
 
     #msg=WINDOW.getProperty(url)
     #WINDOW.clearProperty( url )
@@ -341,8 +341,8 @@ def display_album_from(dictlist, album_name):
     del ui
 
 def listAlbum(album_url, name, type_):
-    from slideshow import slideshowAlbum
-    from domains import sitesManager
+    from .slideshow import slideshowAlbum
+    from .domains import sitesManager
     log("    listAlbum:"+album_url)
 
     hoster = sitesManager( album_url )
@@ -369,7 +369,7 @@ def playURLRVideo(url, name, type_):
     dialog_progress_YTDL.create(dialog_progress_title )
     dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
 
-    from urlparse import urlparse
+    from urllib.parse import urlparse
     parsed_uri = urlparse( url )
     domain = '{uri.netloc}'.format(uri=parsed_uri)
     try:
@@ -419,7 +419,7 @@ def playVideo(url, name, type_):
     pl.clear()
 
     if url : #sometimes url is a list of url or just a single string
-        if isinstance(url, basestring):
+        if isinstance(url, str):
             pl.add(url, xbmcgui.ListItem(name))
             xbmc.Player().play(pl, windowed=False)  #scripts play video like this.
             #listitem = xbmcgui.ListItem(path=url)   #plugins play video like this.
@@ -439,10 +439,10 @@ def playYTDLVideo(url, name, type_):
     dialog_progress_YTDL.create(dialog_progress_title )
     dialog_progress_YTDL.update(10,dialog_progress_title,translation(32014)  )
 
-    from YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
+    from .YoutubeDLWrapper import YoutubeDLWrapper, _selectVideoQuality
 
-    o = urlparse.urlparse(url)
-    query = urlparse.parse_qs(o.query)
+    o = urllib.parse.urlparse(url)
+    query = urllib.parse.parse_qs(o.query)
     video_index=0
     #note that in domains.py youtube class will send a simplified url to avoid sending
     #   https://www.youtube.com/watch?v=R6_dZhE-4bk&index=22&list=PLGJ6ezwqAB2a4RP8hWEWAGB9eT2bmaBsy  (ytdl will parse around 90+ videos, takes a very long time)
@@ -463,7 +463,9 @@ def playYTDLVideo(url, name, type_):
     #use YoutubeDLWrapper by ruuk to avoid  bad file error
     ytdl=YoutubeDLWrapper()
     try:
-        ydl_info=ytdl.extract_info(url, download=False)
+        ytdl.params['youtube_include_dash_manifest'] = True
+        ytdl.params['verbose'] = True
+        ydl_info=ytdl.extract_info(url, download=False, process=True)
         #in youtube_dl utils.py def unified_timestamp(date_str, day_first=True):
         # there was an error playing https://vimeo.com/14652586
         #   on line 1195:
@@ -471,13 +473,13 @@ def playYTDLVideo(url, name, type_):
         #     to          except (ValueError,TypeError):
         #   this already fixed by ruuk magic. in YoutubeDLWrapper
 
-        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1, depth=3) )
+        #log( "YoutubeDL extract_info:\n" + pprint.pformat(ydl_info, indent=1, depth=4) )
         #log('quality============='+repr(ytdl_quality))
         #log('ytdl_DASH==========='+repr(ytdl_DASH))
         #link_type=ydl_info.get("_type")
         #entries=ydl_info.get('entries')
         video_infos=_selectVideoQuality(ydl_info, quality=ytdl_quality, disable_dash=(not ytdl_DASH) )
-        log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
+        #log( "video_infos:\n" + pprint.pformat(video_infos, indent=1, depth=3) )
         dialog_progress_YTDL.update(80,dialog_progress_title,translation(32013)  )
 
         if video_index > 0:
@@ -514,9 +516,19 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     url=video_info.get('xbmc_url')  #there is also  video_info.get('url')  url without the |useragent...
     manifest_url=video_info.get('manifest_url') #v.redd.it has this but youtube does not.  they both support DASH video
     #log('***befor:'+pprint.pformat(video_info, indent=1, depth=2))
+
+    #test a sample manifest url. player attempts to play but just exits. 
+    #manifest_url='https://v.redd.it/0cjvsnyu7nu01/DASHPlaylist.mpd'   #this works
+    #manifest_url='d:\DASHPlaylist.mpd'                                 #copying the file locally does not work
+    
+    #manifest_url='http://yt-dash-mse-test.commondatastorage.googleapis.com/media/motion-20120802-manifest.mpd'    #this also works 
+    #manifest_url='d:/motion-20120802-manifest.mpd'
+    
+
     if manifest_url:
         use_input_stream_adaptive=True
-        url=video_info.get('manifest_url')
+        log('   using inputstream_adaptive')
+        url=manifest_url
         if manifest_url.endswith('.mpd'):
             input_stream_adaptive_manifest_type='mpd'
         elif manifest_url.endswith('.m3u8'):
@@ -525,7 +537,7 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
             input_stream_adaptive_manifest_type='ism'
 
     #log('***befor:'+repr(url))
-    url=urllib.quote_plus(url.encode('utf-8'), safe="&$+,/:;=?@#<>[]{}|\^%")
+    url=urllib.parse.quote_plus(url.encode('utf-8'), safe="&$+,/:;=?@#<>[]{}|\^%")
     #log('***after :'+repr(url))
     title=video_info.get('title') or title
     ytdl_format=video_info.get('ytdl_format')
@@ -562,17 +574,16 @@ YTDL_VERSION_URL = 'https://yt-dl.org/latest/version'
 YTDL_LATEST_URL_TEMPLATE = 'https://yt-dl.org/latest/youtube-dl-{0}.tar.gz'
 
 def ytdl_get_version_info(which_one='latest'):
-    import urllib2
     if which_one=='latest':
         try:
-            newVersion = urllib2.urlopen(YTDL_VERSION_URL).read().strip()
-            return newVersion
-        except:
+            newVersion = urllib.request.urlopen(YTDL_VERSION_URL).read().strip()
+            return newVersion.decode('utf-8')
+        except Exception as e:
+            log('error getting latest ytdl version:'+str(e))
             return "0.0"
     else:
         try:
-            #*** it seems like the script.module.youtube_dl version gets imported if the one from resources.lib is missing
-            from youtube_dl.version import __version__
+            from .youtube_dl.version import __version__
             return __version__
         except Exception as e:
             log('error getting ytdl local version:'+str(e))
@@ -600,7 +611,7 @@ def update_youtube_dl_core(url,name,action_type):
             update_dl_status('Downloading {0} ...'.format(newVersion))
             log('  From: {0}'.format(LATEST_URL))
             log('    to: {0}'.format(archivePath))
-            urllib.urlretrieve(LATEST_URL,filename=archivePath)
+            urllib.request.urlretrieve(LATEST_URL,filename=archivePath)
 
             if os.path.exists(archivePath):
                 update_dl_status('Extracting ...')
@@ -612,6 +623,7 @@ def update_youtube_dl_core(url,name,action_type):
                 update_dl_status('Download failed')
         except Exception as e:
             update_dl_status('Error:' + str(e))
+            return
 
         update_dl_status('Updating...')
 
@@ -678,7 +690,7 @@ def listRelatedVideo(url,name,type_):
     #type_: 'channel' -other videos in the channel
     #       'related' -related videos
     #only youtube is supported for now
-    from domains import ClassYoutube
+    from .domains import ClassYoutube
     import requests
     #log('*****name='+repr(name))
     links_dictList=[]
@@ -721,8 +733,8 @@ def listRelatedVideo(url,name,type_):
         xbmc_notify('cannot identify youtube url', url)
 
 def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=None ):
-    from utils import dictlist_to_listItems
-    from ContextMenus import build_youtube_context_menu_entries, build_add_to_favourites_context_menu_entry
+    from .utils import dictlist_to_listItems
+    from .ContextMenus import build_youtube_context_menu_entries, build_add_to_favourites_context_menu_entry
 
     context_menu_list=[]
 
@@ -744,7 +756,7 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
             li.setProperty('context_menu', str(context_menu_list) )
 
         if type_=='links_in_description':
-            from guis import text_to_links_gui
+            from .guis import text_to_links_gui
             ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title=title, poster=poster)
 
         else: # 'channel' 'related' default
@@ -768,15 +780,15 @@ def dictlist_to_RelatedVideo_gui(dictlist, url, url_type, title, type_, poster=N
                 elif url_type=='more':
                     gui_title_text="{0}".format(title)
 
-            from guis import cGUI
+            from .guis import cGUI
             ui = cGUI('srr_related_videos.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title=gui_title_text, poster=poster)
             ui.include_parent_directory_entry=False
         ui.doModal()
         del ui
 
 def listMoreVideo(google_api_request_url,label_name,type_):
-    from domains import ClassYoutube
-    from utils import safe_cast
+    from .domains import ClassYoutube
+    from .utils import safe_cast
 
     #https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&type=video&maxResults=50&key=AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI&playlistId=PLJ8cMiYb3G5eJquaiw6Xlyt3Qhe-3e7Xh
     yt=ClassYoutube(google_api_request_url)#this will be a broken class because it won't be able to parse
@@ -803,7 +815,7 @@ def li_to_KodiFavourites(listitem):
 
 def addtoKodiFavorites(command, name, thumbnail):
     import xml.etree.ElementTree
-    from utils import unescape
+    from .utils import unescape
 
 #adding to favorites involve 3 steps:
 #  1.) add the favorite via jsonrpc (script params not included)
@@ -876,12 +888,12 @@ def parse_web_url_from(recently_played_url):
 # builds the youtube url from plugin://plugin.video.youtube/play/?video_id=dIgSKPzLC9g
 # grabs the youtube url from plugin://plugin.video.reddit_viewer/?mode=play&url=https%3A%2F%2Fyoutu.be%2FUhOx-FpEAQk
 # excludes googlevideo.com/videoplayback
-    from domains import ClassYoutube
+    from .domains import ClassYoutube
     ret_url=recently_played_url.split("|", 1)[0] #remove |Useragent:...
-    link_components=urlparse.urlparse( recently_played_url )
+    link_components=urllib.parse.urlparse( recently_played_url )
     #log("*****{0} scheme[{1}]**".format( recently_played_url, link_components.scheme ) )
     if link_components.scheme=="plugin":
-        query = urlparse.parse_qs(link_components.query)
+        query = urllib.parse.parse_qs(link_components.query)
         netloc=link_components.netloc
 
         if netloc=="plugin.video.reddit_viewer":
@@ -898,9 +910,9 @@ def parse_web_url_from(recently_played_url):
     return ret_url
 
 def listRecentlyPlayed(url,name,type_):
-    from utils import db_getLastPlayedVideos,build_script,ret_info_type_icon,truncate_middle,pretty_datediff_wrap
-    from domains import parse_reddit_link,sitesBase
-    from ContextMenus import build_youtube_context_menu_entries,build_reddit_search_context_menu_entries
+    from .utils import db_getLastPlayedVideos,build_script,ret_info_type_icon,truncate_middle,pretty_datediff_wrap
+    from .domains import parse_reddit_link,sitesBase
+    from .ContextMenus import build_youtube_context_menu_entries,build_reddit_search_context_menu_entries
 
     recently_played_links=db_getLastPlayedVideos()
 
@@ -915,7 +927,7 @@ def listRecentlyPlayed(url,name,type_):
         if not parsed_web_url:
             log('    listRecentlyPlayed skipping:{0}'.format(recently_played_url))
             continue
-        link_components=urlparse.urlparse( parsed_web_url )
+        link_components=urllib.parse.urlparse( parsed_web_url )
         domain=link_components.netloc
         label=parsed_web_url     #recently_played_url.split("|", 1)[0] #remove |Useragent:...
         liz=xbmcgui.ListItem(label=truncate_middle(label, 110), label2=pretty_date )
@@ -962,7 +974,7 @@ def listRecentlyPlayed(url,name,type_):
 
     #from guis import text_to_links_gui
     #ui = text_to_links_gui('srr_links_in_text.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, title='Recently Played', poster=None)
-    from guis import cGUI
+    from .guis import cGUI
     ui = cGUI('srr_history_list.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=directory_items, id=55, title='Recently Played')
     ui.include_parent_directory_entry=False
 

@@ -20,7 +20,7 @@
 import os
 import re
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import json
 import ast   #used for processing out context menu
 
@@ -29,7 +29,7 @@ import xbmcaddon
 import xbmcgui
 from xbmcgui import ControlButton
 
-from utils import build_script, generator, translation, log
+from .utils import build_script, generator, translation, log
 
 addon = xbmcaddon.Addon()
 addonID    = addon.getAddonInfo('id')  #script.reddit.reader
@@ -190,8 +190,8 @@ class cGUI(xbmcgui.WindowXML):
                 self.pop_context_menu(item)
 
     def load_subreddits_file_into_a_listitem(self):
-        from utils import compose_list_item
-        from reddit import subreddit_entry_to_listitem
+        from .utils import compose_list_item
+        from .reddit import subreddit_entry_to_listitem
         entries=[]
         listing=[]
 
@@ -336,7 +336,7 @@ class listSubRedditGUI(cGUI):
         #self.load_album_images_if_available(item)
 
     def load_album_images_if_available(self,selected_item):
-        from utils import dictlist_to_listItems
+        from .utils import dictlist_to_listItems
         album_images=selected_item.getProperty('album_images')  #set in main_listing.py addLink()
         self.album_listbox.reset()
         if album_images:
@@ -595,7 +595,7 @@ class comments_GUI2(cGUI):
             control=self.getControl(control_id)
 
             try:
-                post_text,author,depth=child_comments_tuple_generator.next()
+                post_text,author,depth=next(child_comments_tuple_generator)
             except StopIteration:
                 post_text,author,depth=None,None,0
 
@@ -675,7 +675,7 @@ class text_to_links_gui(comments_GUI2):
 
             try:
                 #gether the listitem properties and prepare to put them on the button
-                li=listing_generator.next()
+                li=next(listing_generator)
                 link_url=li.getProperty('link_url')
                 label=li.getLabel()
                 label=label.replace(link_url, "")  #remove the http:... part to avoid it looking duplicated because it is already put as a label in button.

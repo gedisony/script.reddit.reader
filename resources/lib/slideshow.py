@@ -9,15 +9,13 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, ControlTextBox,
 #autoSlideshow
 
 from default import addon, addon_path, addonID
-from utils import log, translation
-from reddit import reddit_request
-from domains import sitesBase, parse_reddit_link
-from actions import listAlbum
-
-from utils import unescape, remove_dict_duplicates
+from . utils import log, translation, unescape, remove_dict_duplicates
+from . reddit import reddit_request
+from . domains import sitesBase, parse_reddit_link
+from . actions import listAlbum
 
 import threading
-from Queue import Queue
+from queue import Queue
 
 ADDON_NAME = addonID      #addon.getAddonInfo('name')  <--changed to id
 ADDON_PATH = addon_path   #addon.getAddonInfo('path')
@@ -327,7 +325,7 @@ class ScreensaverBase(object):
 
     def init_cycle_controls(self):
         #self.log('  init_cycle_controls start')
-        for _ in xrange(self.IMAGE_CONTROL_COUNT):
+        for _ in range(self.IMAGE_CONTROL_COUNT):
             #img_control = ControlImage(0, 0, 0, 0, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
             img_control = ControlImage(0, 0, self.xbmc_window.getWidth(), self.xbmc_window.getHeight(), '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
 
@@ -377,7 +375,7 @@ class ScreensaverBase(object):
 
         #pops the first one
         #image_url = image_url_cycle.next()
-        desc_and_image=desc_and_images_cycle.next()
+        desc_and_image=next(desc_and_images_cycle)
         #self.log('  image_url_cycle.next %s' % image_url)
 
         #get the current screen saver value
@@ -394,7 +392,7 @@ class ScreensaverBase(object):
             if not self.pause_requested:
                 #pops an image control
                 #image_control = image_controls_cycle.next()
-                tni_control = tni_controls_cycle.next()
+                tni_control = next(tni_controls_cycle)
 
                 #process_image done by subclass( assign animation and stuff to image control )
                 #self.process_image(image_control, image_url)
@@ -402,7 +400,7 @@ class ScreensaverBase(object):
                 self.process_image(tni_control, desc_and_image)
 
                 #image_url = image_url_cycle.next()
-                desc_and_image=desc_and_images_cycle.next()
+                desc_and_image=next(desc_and_images_cycle)
 
 
             #self.wait()
@@ -550,7 +548,7 @@ class ScreensaverBase(object):
         #self.log('del_controls end')
 
     def log(self, msg):
-        log(u'slideshow: %s' % msg)
+        log('slideshow: %s' % msg)
 
 
 
@@ -613,7 +611,7 @@ class HorizontalSlide2(ScreensaverBase):
 
         #pops the first one
         #desc_and_image=desc_and_images_cycle.next()
-        self.next_desc_and_image=desc_and_images_cycle.next()
+        self.next_desc_and_image=next(desc_and_images_cycle)
         #self.log('  image_url_cycle.next %s' % image_url)
 
 
@@ -621,7 +619,7 @@ class HorizontalSlide2(ScreensaverBase):
             self.log('  using image: %s ' % ( repr(self.next_desc_and_image ) ) )
 
 
-            image_control_id = image_controls_cycle.next()
+            image_control_id = next(image_controls_cycle)
 
             #process_image done by subclass( assign animation and stuff to image control )
             self.toggle_info_display()
@@ -630,7 +628,7 @@ class HorizontalSlide2(ScreensaverBase):
 
             self.current_desc_and_image=self.next_desc_and_image
             #image_url = image_url_cycle.next()
-            self.next_desc_and_image=desc_and_images_cycle.next()
+            self.next_desc_and_image=next(desc_and_images_cycle)
 
             #self.wait()
             if self.image_count < self.FAST_IMAGE_COUNT:

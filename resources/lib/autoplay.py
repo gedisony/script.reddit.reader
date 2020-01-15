@@ -4,16 +4,16 @@ import xbmcgui
 import json
 import threading
 import time
-from Queue import Queue, Empty
-from utils import log
+from queue import Queue, Empty
+from .utils import log
 
 
 q = Queue()
 def autoPlay(url, name, type_):
-    from domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
-    from utils import unescape, post_is_filtered_out, strip_emoji,xbmc_busy, translation, xbmc_notify
-    from reddit import reddit_request, determine_if_video_media_from_reddit_json
-    from actions import setting_gif_repeat_count
+    from .domains import sitesBase, parse_reddit_link, ydtl_get_playable_url
+    from .utils import unescape, post_is_filtered_out, strip_emoji,xbmc_busy, translation, xbmc_notify
+    from .reddit import reddit_request, determine_if_video_media_from_reddit_json
+    from .actions import setting_gif_repeat_count
 
     #collect a list of title and urls as entries[] from the j_entries obtained from reddit
     #then create a playlist from those entries
@@ -208,7 +208,7 @@ class Worker(threading.Thread):
                 time.sleep(0.1)
 
     def do_work(self):
-        from domains import sitesBase, ydtl_get_playable_url
+        from .domains import sitesBase, ydtl_get_playable_url
         #log( ' wor-ker (%(threadName)-10s)')
 
         url_to_check=""

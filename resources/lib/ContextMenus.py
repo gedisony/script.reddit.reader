@@ -1,11 +1,11 @@
 import re
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 
-from main_listing import GCXM_hasmultipleauthor, GCXM_hasmultiplesubreddit, GCXM_hasmultipledomain, GCXM_actual_url_used_to_generate_these_posts, GCXM_reddit_query_of_this_gui
+from .main_listing import GCXM_hasmultipleauthor, GCXM_hasmultiplesubreddit, GCXM_hasmultipledomain, GCXM_actual_url_used_to_generate_these_posts, GCXM_reddit_query_of_this_gui
 from default import addon
-from reddit import assemble_reddit_filter_string, subreddit_in_favorites #, this_is_a_user_saved_list
-from utils import log,translation, colored_subreddit, build_script, truncate
+from .reddit import assemble_reddit_filter_string, subreddit_in_favorites #, this_is_a_user_saved_list
+from .utils import log,translation, colored_subreddit, build_script, truncate
 
 cxm_show_html_to_text     = addon.getSetting("cxm_show_html_to_text") == "true"
 cxm_show_open_browser     = addon.getSetting("cxm_show_open_browser") == "true"
@@ -99,7 +99,7 @@ def build_reddit_search_context_menu_entries(hasmultiplesubreddit,subreddit,link
     cxm_list=[]
     colored_subreddit_full=colored_subreddit( subreddit )
     label_search=translation(32520)
-    parts_of_link_url=urlparse.urlparse(link_url)
+    parts_of_link_url=urllib.parse.urlparse(link_url)
 
     if cxm_show_search:
         if GCXM_hasmultiplesubreddit:
@@ -125,7 +125,7 @@ def build_add_to_favourites_context_menu_entry(title, onClick_action, thumbnail=
     return cxm_list
 
 def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url,video_id=None,title=None,channel_id_from_previous_listing=None,channel_name=None):
-    from domains import ClassYoutube
+    from .domains import ClassYoutube
     cxm_list=[]
 
     try:
@@ -181,7 +181,7 @@ def build_youtube_context_menu_entries(previous_listing_was_of_type, youtube_url
 
 #called from reddit_comment_worker()
 def build_reddit_context_menu_entries(url):
-    from domains import ClassReddit
+    from .domains import ClassReddit
     cxm_list=[]
     match=re.compile( ClassReddit.regex, re.I).findall( url ) 
     if match:

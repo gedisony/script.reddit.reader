@@ -6,19 +6,22 @@ import sys
 import re
 import requests
 import json
-import urlparse
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality,hide_nsfw   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
-from utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
+from . utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
 use_addon_for_Liveleak    = addon.getSetting("use_addon_for_Liveleak") == "true"
 #resolve_undetermined = addon.getSetting("resolve_undetermined") == "true" #let youtube_dl addon get playable links if unknown url(slow)
 
-from CommonFunctions import parseDOM
+from . CommonFunctions import parseDOM
 
 keys=[ 'li_label'           #  the text that will show for the list
       ,'li_label2'          #
@@ -83,7 +86,13 @@ class sitesBase(object):
 
     @classmethod
     def requests_get(self, link_url, headers=None, timeout=REQUEST_TIMEOUT, allow_redirects=True):
+        #log('[['+link_url+']]')
         content = requests.get( link_url, headers=headers, timeout=timeout, allow_redirects=allow_redirects )
+        #there is an error here: get_thumb_url error:No module named 'requests.packages.urllib3.packages.ordered_dict'
+        #don't know what to do with this error. just leaving it alone if it just comes up when getting thumbnail for subreddits
+
+
+
         #if hasattr(content, "from_cache"): log( '  #cached:{0} {1}'.format( repr(content.from_cache),link_url) )
         #else:log( '  #cache disabled: {0}'.format( link_url) )  #if requests_cache is not installed, page will not have from_cache attribute
         if content.status_code==requests.codes.ok:
@@ -154,7 +163,7 @@ class sitesBase(object):
                             #log( "if parseDOM:" + link_url)
                             if i:
                                 try:
-                                    return urlparse.urljoin(link_url, i[0]) #handle relative or absolute
+                                    return urllib.parse.urljoin(link_url, i[0]) #handle relative or absolute
                                 except IndexError: pass
                                 else:
                                     log('      %s: cant find <meta property="og:image" '  %(self.__class__.__name__ ) )
@@ -219,7 +228,7 @@ class sitesBase(object):
 
         for item in images_list:
             #log('      type: %s' %( type(item)  ) )
-            if isinstance(item, (basestring,unicode) ):   #type(item) in [str,unicode]:  #if isinstance(item, basestring):
+            if isinstance(item, str ):   #for python3 isinstance(item, (basestring,unicode) ):   #type(item) in [str,unicode]:  #if isinstance(item, basestring):
                 #log( 'assemble_images_dictList STRING')
                 image_url=item
                 thumbnail=image_url
@@ -309,8 +318,8 @@ class ClassYoutube(sitesBase):
 
     @classmethod
     def remove_attribution_link_from_url_if_present(self, youtube_url):
-        o = urlparse.urlparse(youtube_url)
-        query = urlparse.parse_qs(o.query)
+        o = urlparse(youtube_url)
+        query = urllib.parse.parse_qs(o.query)
 
         if 'a' in query and 'u' in query:  #if 'attribution_link' in query:
             u=query['u'][0]
@@ -323,8 +332,8 @@ class ClassYoutube(sitesBase):
         if not media_url:
             media_url=self.media_url
 
-        o = urlparse.urlparse(media_url)
-        query = urlparse.parse_qs(o.query)
+        o = urlparse(media_url)
+        query = urllib.parse.parse_qs(o.query)
 
         self.media_url=self.remove_attribution_link_from_url_if_present(media_url)
 
@@ -401,8 +410,8 @@ class ClassYoutube(sitesBase):
         else:
             #log('    second parsing for video id:'+yt_url)
             #for parsing this: https://www.youtube.com/attribution_link?a=y08k0cdNBKw&u=%2Fwatch%3Fv%3DQOVrrL5KtsM%26feature%3Dshare%26list%3DPLVonsjaXkSpfuIv02l6IM1pN1Z3IfXWUW%26index%3D4
-            o = urlparse.urlparse(yt_url)
-            query = urlparse.parse_qs(o.query)
+            o = urlparse(yt_url)
+            query = urllib.parse.parse_qs(o.query)
             if 'a' in query and 'u' in query:   #if all (k in query for k in ("a","u")):
                 u=query['u'][0]
                 #log('   u  '+ repr(u)) #  <--  /watch?v=QOVrrL5KtsM&feature=share&list=PLVonsjaXkSpfuIv02l6IM1pN1Z3IfXWUW&index=4
@@ -433,8 +442,8 @@ class ClassYoutube(sitesBase):
         return channel_id
     @classmethod
     def get_playlist_id_from_url(self, youtube_url):
-        o = urlparse.urlparse(youtube_url)
-        query = urlparse.parse_qs(o.query)
+        o = urlparse(youtube_url)
+        query = urllib.parse.parse_qs(o.query)
 
         playlist_id=query.get('list',None)
         if playlist_id:
@@ -1023,7 +1032,7 @@ class ClassImgur(sitesBase):
             self.thumb_url, self.poster_url= self.get_album_thumb(link_url)
             return self.thumb_url
 
-        o=urlparse.urlparse(link_url)
+        o=urlparse(link_url)
         filename,ext=parse_filename_and_ext_from_url(link_url)
         #log("file&ext------"+filename+"--"+ext+"--"+o.netloc )
 
@@ -1127,7 +1136,6 @@ class ClassImgur(sitesBase):
     def get_playable_url(self, media_url, is_probably_a_video): #is_probably_a_video means put video extension on it if media_url has no ext
         webm_or_mp4='.mp4'  #6/18/2016  using ".webm" has stopped working
         media_url=media_url.split('?')[0] #get rid of the query string?
-
         is_album=self.is_an_album(media_url)
         if is_album:
             return media_url, sitesBase.TYPE_ALBUM
@@ -1781,7 +1789,7 @@ class ClassBlogspot(sitesBase):
         return '',''
 
     def ret_blog_post_request(self):
-        o=urlparse.urlparse(self.media_url)   #scheme, netloc, path, params, query, fragment
+        o=urlparse(self.media_url)   #scheme, netloc, path, params, query, fragment
         #log( '  blogpath=' + o.path )
         blog_path= o.path
 
@@ -2485,7 +2493,6 @@ class ClassGfycat(sitesBase):
     regex='(gfycat.com)'
 
     def get_playable_url(self, media_url, is_probably_a_video=True ):
-
         self.get_video_id()
 
         if self.video_id:
@@ -2546,8 +2553,11 @@ class ClassGfycat(sitesBase):
         self.video_id=''
         #https://thumbs.gfycat.com/DefenselessVillainousHapuku-size_restricted.gif
         #https://thumbs.gfycat.com/DefenselessVillainousHapuku
-        match = re.findall('gfycat.com/(.+?)(?:-|$)', self.media_url)
+        #python3 notes: for some reason the last  '   from   b'https://gfycat.com/weeklycelebratedfirebelliedtoad'    is included in match[0] i had to modify the regex to ignore the last  '
+        #atch = re.findall("gfycat.com/(.+?)(?:-|$)"  , self.media_url)
+        match = re.findall("gfycat.com/(.+?)(?:-|$|')", self.media_url)
         if match:
+            #log('  found video id['+match[0]+']')
             self.video_id=match[0]
 
 
@@ -2897,7 +2907,7 @@ class ClassReddit(sitesBase):
     regex='^\/r\/(.+)(?:\/|$)|(^\/u\/)(.+)(?:\/|$)|(reddit\.com)'
 
     def get_playable_url(self, link_url, is_probably_a_video):
-        from reddit import assemble_reddit_filter_string
+        from . reddit import assemble_reddit_filter_string
         subreddit=self.get_video_id(link_url)
         self.video_id=subreddit
         #log('    **get_playable_url subreddit=' + self.video_id )
@@ -2938,6 +2948,7 @@ class ClassReddit(sitesBase):
 
         #log('get thumb url from '+self.original_url)
         if '/comments/' in self.original_url:
+            log('grabbing comments')
             #this is mainly for r/bestof. we extract the text and add it on the description
             u=self.original_url
             if '?' in self.original_url:
@@ -3713,7 +3724,8 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
 
     album_dict_list=None
     hoster = sitesManager( link_url )
-    #log( '  %s %s => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
+    #this will show which handler will process the link
+    log( '  %s [%s] => %s' %(hoster.__class__.__name__, link_url, hoster.media_url if hoster else '[Not supported]' ) )
 
     try:
         if hoster:
@@ -3727,7 +3739,10 @@ def parse_reddit_link(link_url, assume_is_video=True, needs_preview=False, get_p
                 log("  %s Failed to parse %s" %(hoster.__class__.__name__, link_url) )
 
             if needs_preview:
-                hoster.get_thumb_url()
+                try:
+                    hoster.get_thumb_url()
+                except Exception as e:
+                    log('hoster get_thumb_url error:' + str(e))
 
             #override gif link_action from DI_ACTION_PLAYABLE to loopedPlayback()
             if media_type==sitesBase.TYPE_GIF:

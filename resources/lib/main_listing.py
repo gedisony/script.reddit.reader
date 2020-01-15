@@ -2,16 +2,17 @@
 import xbmc
 import xbmcgui
 import xbmcaddon
-import urllib, urlparse
+import urllib.request, urllib.parse, urllib.error, urllib.parse
 import json
 import threading
 import re
-from Queue import Queue
+from queue import Queue
 from collections import defaultdict
 import os,sys
+import pprint
 
 from default import addon, addon_path, itemsPerPage, urlMain, subredditsFile, subredditsPickle, int_CommentTreshold,addonUserDataFolder,CACHE_FILE
-from utils import xbmc_busy, log, translation, post_excluded_from
+from .utils import xbmc_busy, log, translation, post_excluded_from
 
 use_requests_cache   = addon.getSetting("use_requests_cache") == "true"
 default_frontpage    = addon.getSetting("default_frontpage")
@@ -32,8 +33,8 @@ domains_exempt_from_anti_dos_delay=['youtube','youtu.be','imgur.com','redd.it','
 
 def index(url,name,type_):
     ## this is where the __main screen is created
-    from guis import indexGui
-    from reddit import assemble_reddit_filter_string, create_default_subreddits, populate_subreddits_pickle
+    from .guis import indexGui
+    from .reddit import assemble_reddit_filter_string, create_default_subreddits, populate_subreddits_pickle
 
     if not os.path.exists(subredditsFile):
         create_default_subreddits()
@@ -67,9 +68,9 @@ GCXM_reddit_query_of_this_gui=''
 
 
 def listSubReddit(url, subreddit_key, type_):
-    from guis import progressBG
-    from utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query, set_query_field
-    from reddit import reddit_request, has_multiple, assemble_reddit_filter_string, subreddit_icoheader_banner
+    from .guis import progressBG
+    from .utils import post_is_filtered_out, build_script, compose_list_item, xbmc_notify,prettify_reddit_query, set_query_field
+    from .reddit import reddit_request, has_multiple, assemble_reddit_filter_string, subreddit_icoheader_banner
 
     global GCXM_hasmultiplesubreddit, GCXM_actual_url_used_to_generate_these_posts,GCXM_reddit_query_of_this_gui,GCXM_hasmultipledomain,GCXM_hasmultipleauthor
     #the +'s got removed by url conversion
@@ -88,7 +89,6 @@ def listSubReddit(url, subreddit_key, type_):
     loading_indicator.update(0,'Retrieving '+subreddit_key)
     content = reddit_request(url)
     loading_indicator.update(10,subreddit_key  )
-
     if not content:
         xbmc_busy(False)
         loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
@@ -126,7 +126,7 @@ def listSubReddit(url, subreddit_key, type_):
     GCXM_hasmultipleauthor=has_multiple('author', content['data']['children'])
     GCXM_actual_url_used_to_generate_these_posts=url
     GCXM_reddit_query_of_this_gui=currentUrl
-
+    #log(pprint.pformat(content['data']['children']))
     for idx, entry in enumerate(content['data']['children']):
         try:
             if post_is_filtered_out( entry.get('data') ):
@@ -191,8 +191,8 @@ def listSubReddit(url, subreddit_key, type_):
     try:
         #this part makes sure that you load the next page instead of just the first
         after=content['data']['after']
-        o = urlparse.urlparse(currentUrl)
-        current_url_query = urlparse.parse_qs(o.query)
+        o = urllib.parse.urlparse(currentUrl)
+        current_url_query = urllib.parse.parse_qs(o.query)
 
         count=current_url_query.get('count')
         if current_url_query.get('count')==None:
@@ -223,7 +223,7 @@ def listSubReddit(url, subreddit_key, type_):
 
     xbmc_busy(False)
 
-    title_bar_name=urllib.unquote_plus(title_bar_name)
+    title_bar_name=urllib.parse.unquote_plus(title_bar_name)
     ui=skin_launcher('listSubReddit',
                      title_bar_name=title_bar_name,
                      listing=li,
@@ -239,7 +239,7 @@ def listSubReddit(url, subreddit_key, type_):
 
 def skin_launcher(mode,**kwargs ):
     #launches the gui using .xml file defined in settings (incomplete)
-    from guis import listSubRedditGUI
+    from .guis import listSubRedditGUI
 
     #kodi_version = xbmcVersion()
     #log( ' kodi version:%f' % kodi_version )
@@ -268,7 +268,7 @@ def skin_launcher(mode,**kwargs ):
 
 def count_links_from_same_domain(entry):
     #the purpose of this function is to provide a number that will be used as a delay for the threads that will query the same domain
-    from utils import clean_str
+    from .utils import clean_str
     kind=entry.get('kind')  #t1 for comments  t3 for posts
     data=entry.get('data')
 
@@ -282,7 +282,7 @@ def count_links_from_same_domain(entry):
         return '',0
 
 def count_links_from_same_domain_comments(link_url): #this one is used in comments links
-    domain = '{uri.netloc}'.format( uri=urlparse.urlparse( link_url ) )
+    domain = '{uri.netloc}'.format( uri=urllib.parse.urlparse( link_url ) )
     if domain:
         domains_d[domain] += 1
         return domain,domains_d[domain]  #returns a count of how many domain in domains_d
@@ -301,9 +301,9 @@ def compute_anti_dos_delay(domain,domain_count):
 
 def reddit_post_worker(idx, entry, q_out, delay=0):
     import datetime
-    from utils import pretty_datediff, clean_str, get_int, format_description
-    from reddit import determine_if_video_media_from_reddit_json
-    from domains import sitesBase
+    from .utils import pretty_datediff, clean_str, get_int, format_description
+    from .reddit import determine_if_video_media_from_reddit_json
+    from .domains import sitesBase
 
     if delay>0:
         xbmc.Monitor().waitForAbort( float(delay)/1000 )         #xbmc.sleep(delay)
@@ -315,14 +315,15 @@ def reddit_post_worker(idx, entry, q_out, delay=0):
 
         t_on = translation(32071)  #"on"
         #t_pts = u"\U0001F4AC"  # translation(30072) #"cmnts"  comment bubble symbol. doesn't work
-        t_pts = u"\U00002709"  # translation(30072)   envelope symbol
-        t_up = u"\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
+        t_pts = "\U00002709"  # translation(30072)   envelope symbol
+        t_up = "\U000025B4"  #u"\U00009650"(up arrow)   #upvote symbol
 
         #on 3/21/2017 we're adding a new feature that lets users view their saved posts by entering /user/username/saved as their subreddit.
         #  in addition to saved posts, users can also save comments. we need to handle it by checking for "kind"
         kind=entry.get('kind')  #t1 for comments  t3 for posts
         data=entry.get('data')
         if data:
+            #log(pprint.pformat(data))
             if kind=='t3':
                 title = clean_str(data,['title'])
                 description=clean_str(data,['media','oembed','description'])
@@ -342,7 +343,7 @@ def reddit_post_worker(idx, entry, q_out, delay=0):
             title=format_description(title)
 
             is_a_video = determine_if_video_media_from_reddit_json(entry)
-            log("  POS%s%cTITLE%.2d=%s d=%d" %( kind, ("v" if is_a_video else " "), idx, title,delay ))
+            log("  POS%s%cTITLE%.2d=%s d=%d" %( kind, ("v" if is_a_video else " "), idx, title,delay )) #POSt3 TITLE
             #log("description%.2d=%s" %(idx,description))
             post_id = entry['kind'] + '_' + data.get('id')  #same as entry['data']['name']
             #log('  %s  %s ' % (post_id, entry['data']['name'] ))
@@ -368,8 +369,7 @@ def reddit_post_worker(idx, entry, q_out, delay=0):
                 first_link_in_description=sitesBase.get_first_url_from(description)
                 #override the domain so that bottom right of gui matches link
                 if first_link_in_description:
-                    domain = '({uri.netloc})'.format( uri=urlparse.urlparse( first_link_in_description ) )
-
+                    domain = '({uri.netloc})'.format( uri=urllib.parse.urlparse( first_link_in_description ) )
             ups = data.get('score',0)       #downs not used anymore
             num_comments = data.get('num_comments',0)
 
@@ -420,10 +420,9 @@ def reddit_post_worker(idx, entry, q_out, delay=0):
 
             title_line2=""
             title_line2 = "[I][COLOR dimgrey]%d%c %s %s [B][COLOR cadetblue]r/%s[/COLOR][/B] (%d) %s[/COLOR][/I]" %(ups,t_up,pretty_date,t_on, subreddit,num_comments, t_pts)
-
             liz=addLink(title=title,
                     title_line2=title_line2,
-                    iconimage=thumb,
+                    iconimage=str(thumb),
                     previewimage=preview,
                     preview_w=thumb_w,
                     preview_h=thumb_h,
@@ -446,10 +445,10 @@ def reddit_post_worker(idx, entry, q_out, delay=0):
         log( '  #reddit_post_worker EXCEPTION:' + repr(sys.exc_info()) +'--'+ str(e) )
 
 def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,domain, description, credate, reddit_says_is_video, commentsUrl, subreddit, link_url, over_18, posted_by="", num_comments=0,post_id=''):
-    from utils import ret_info_type_icon, build_script,colored_subreddit
+    from .utils import ret_info_type_icon, build_script,colored_subreddit
     #from reddit import assemble_reddit_filter_string
-    from domains import parse_reddit_link, sitesBase
-    from ContextMenus import build_context_menu_entries
+    from .domains import parse_reddit_link, sitesBase
+    from .ContextMenus import build_context_menu_entries
 
     preview_ar=0.0
     DirectoryItem_url=''
@@ -528,10 +527,10 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
             liz.setArt({"thumb": iconimage, "banner": ld.poster if ld else '' , })
     else:
         liz.setArt({"thumb": iconimage, "banner":previewimage,  })
-    #log( '        %s' %(domain))
-    #log( '          reddit thumb[%s] ' %(iconimage ))
-    #log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
-    #if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
+#    log( '        %s' %(domain))
+#    log( '          reddit thumb[%s] ' %(iconimage ))
+#    log( '          reddit preview[%s] ar=%f %dx%d' %(previewimage, preview_ar, preview_w,preview_h ))
+#    if ld: log( '          new-thumb[%s] poster[%s] ' %( ld.thumb, ld.poster ))
 
     if ld:
         #use clearart to indicate the type of link(video, album, image etc.)
@@ -595,9 +594,9 @@ def addLink(title, title_line2, iconimage, previewimage,preview_w,preview_h,doma
     return liz
 
 def listLinksInComment(url, name, type_):
-    from guis import progressBG
-    from reddit import reddit_request
-    from utils import clean_str,remove_duplicates, is_filtered
+    from .guis import progressBG
+    from .reddit import reddit_request
+    from .utils import clean_str,remove_duplicates, is_filtered
     from default import comments_link_filter
 
     log('listLinksInComment:%s:%s' %(type_,url) )
@@ -624,7 +623,7 @@ def listLinksInComment(url, name, type_):
     #                        to this: https://www.reddit.com/r/redditviewertesting/comments/4x8v1k/test_test_what_is_d%C3%A9j%C3%A0_vu/
     #
     #use safe='' argument in quoteplus to encode only the weird chars part
-    url=urllib.quote_plus(url,safe=':/?&')
+    url=urllib.parse.quote_plus(url,safe=':/?&')
 
     if '?' in url:
         url=url.split('?', 1)[0]+'.json?'+url.split('?', 1)[1]
@@ -741,7 +740,7 @@ def listLinksInComment(url, name, type_):
 
     loading_indicator.end() #it is important to close xbmcgui.DialogProgressBG
 # this portion is abandoned for now. initial plan was to textbox with auto-height in a grouplist to mimic the comment tree but cannot figure out how links can be followed.
-    from guis import comments_GUI2
+    from .guis import comments_GUI2
     ui = comments_GUI2('view_464_comments_grouplist.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     #ui = comments_GUI2('aaa.xml' , addon_path, defaultSkin='Default', defaultRes='1080i', listing=li, id=55)
     ui.title_bar_text=post_title
@@ -750,9 +749,9 @@ def listLinksInComment(url, name, type_):
     return
 
 def reddit_comment_worker(idx, h, q_out,submitter,delay=0):
-    from domains import parse_reddit_link, sitesBase
-    from utils import format_description, ret_info_type_icon, build_script, is_filtered
-    from ContextMenus import build_youtube_context_menu_entries, build_reddit_context_menu_entries, build_link_in_browser_context_menu_entries, build_open_browser_to_pair_context_menu_entries
+    from .domains import parse_reddit_link, sitesBase
+    from .utils import format_description, ret_info_type_icon, build_script, is_filtered
+    from .ContextMenus import build_youtube_context_menu_entries, build_reddit_context_menu_entries, build_link_in_browser_context_menu_entries, build_open_browser_to_pair_context_menu_entries
 
     if delay>0:
         xbmc.Monitor().waitForAbort( float(delay)/1000 )         #xbmc.sleep(delay)
@@ -785,7 +784,7 @@ def reddit_comment_worker(idx, h, q_out,submitter,delay=0):
         elif link_url.startswith('#'): #some sort of css flair
             link_url=''
         else:
-            domain = '{uri.netloc}'.format( uri=urlparse.urlparse( link_url ) )
+            domain = '{uri.netloc}'.format( uri=urllib.parse.urlparse( link_url ) )
 
         if link_url:
             log( '  comment %s TITLE:%s... link[%s]' % ( str(d).zfill(3), desc100.ljust(20)[:20],link_url ) )
@@ -887,7 +886,7 @@ def reddit_comment_worker(idx, h, q_out,submitter,delay=0):
 
 harvest=[]
 def r_linkHunter(json_node,d=0):
-    from utils import clean_str
+    from .utils import clean_str
     #recursive function to harvest stuff from the reddit comments json reply
     prog = re.compile('<a href=[\'"]?([^\'" >]+)[\'"]>(.*?)</a>')
     for e in json_node:

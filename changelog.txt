@@ -1,3 +1,5 @@
+2.0.0 (12/05/2018)
+  - convert to Python 3
 1.1.0 (12/05/2018)
   - fix right-side comments tree not scrolling under leia
 1.0.9 (11/30/2018)

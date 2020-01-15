@@ -5,8 +5,9 @@ import sys
 import os
 import xbmc
 import xbmcaddon
-import urlparse
+import urllib
 
+#import importlib
 
 from resources.lib.utils import log
 #this used to be a plugin. not that we're a script, we don't get free sys.argv's
@@ -19,8 +20,9 @@ from resources.lib.utils import log
 #    pass
 
 #YDStreamExtractor.disableDASHVideo(True) #Kodi (XBMC) only plays the video for DASH streams, so you don't want these normally. Of course these are the only 1080p streams on YouTube
-reload(sys)
-sys.setdefaultencoding("utf-8")
+
+#importlib.reload(sys)    #reload(sys)
+#sys.setdefaultencoding("utf-8")  #Also, the use of sys.setdefaultencoding() has always been discouraged, and it has become a no-op in py3k. The encoding of py3k is hard-wired to "utf-8" and changing it raises an error.
 
 addon         = xbmcaddon.Addon()
 addonID       = addon.getAddonInfo('id')  #script.reddit.reader
@@ -44,7 +46,7 @@ comments_link_filter = addon.getSetting("comments_link_filter")
 sitemsPerPage        = addon.getSetting("itemsPerPage")
 try: itemsPerPage    = ["10", "25", "50", "75", "100"][ int(sitemsPerPage) ]
 except ValueError: itemsPerPage = 50
-
+#itemsPerPage=1
 #--- settings related to context menu "Show Comments"
 CommentTreshold          = addon.getSetting("CommentTreshold")
 try: int_CommentTreshold = int(CommentTreshold)
@@ -74,8 +76,8 @@ if not os.path.isdir(addonUserDataFolder):
     os.mkdir(addonUserDataFolder)
 
 def parameters_string_to_dict(parameters):
-    #log('   ######' + str( urlparse.parse_qsl(parameters) )  )
-    return dict( urlparse.parse_qsl(parameters) )
+    #log('   ######' + str( urllib.parse.parse_qsl(parameters) )  )
+    return dict( urllib.parse.parse_qsl(parameters) )
 
 if __name__ == '__main__':
 

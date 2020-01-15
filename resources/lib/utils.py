@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-import urllib, urlparse
+import urllib.request, urllib.parse, urllib.error
 import xbmc, xbmcgui, xbmcaddon
-import re, htmlentitydefs
+import re
 import pickle
 import os
 addon         = xbmcaddon.Addon()
@@ -49,7 +49,8 @@ def log(message):
         xbmc.log("reddit_reader error:{0}".format(e), level=level)
 
 def translation(id_):
-    return addon.getLocalizedString(id_).encode('utf-8')
+    #return addon.getLocalizedString(id_).encode('utf-8').decode()
+    return addon.getLocalizedString(id_)
 
 def compose_list_item(label,label2,iconImage,property_item_type, onClick_action, infolabels=None  ):
     #build a listitem for use in our custom gui
@@ -80,20 +81,26 @@ def build_script( mode, url="", name="", type_="", script_to_call=''):
     else:
         #if name.startswith('In style'): log ('    namearg=' + name + ' ' + urllib.quote_plus(name.decode('unicode_escape').encode('ascii','ignore')) )
         #remove unicode characters in name.
-        name='' if name==None else name.decode('unicode_escape').encode('ascii','ignore')
-        url=''  if url==None else url.decode('unicode_escape').encode('ascii','ignore') #causes error in urllib.quote_plus() if None
+
+
+        #name='' if name==None else name.decode('unicode_escape').encode('ascii','ignore')
+        #url=''  if url==None else url.decode('unicode_escape').encode('ascii','ignore') #causes error in urllib.quote_plus() if None
+        #python3 no longer has decode. trying to figure out...
+        name='' if name==None else name.encode().decode("unicode-escape").encode('ascii','ignore')
+        url=''  if url==None else url.encode().decode("unicode-escape").encode('ascii','ignore') #causes error in urllib.quote_plus() if None
+
         script_to_call=addonID
         #log("&url="+repr(url)+"&name="+repr(name)+"&type="+repr(type_))
         #return "RunAddon(%s,%s)" %(script_to_call, "mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+urllib.quote_plus(name)+"&type="+str(type_) )
         return "RunScript({script_to_call},mode={mode}&url={url}&name={name}&type={type})".format( script_to_call=script_to_call,
                                                                                                   mode=mode,
-                                                                                                  url=urllib.quote_plus(url),
-                                                                                                  name=urllib.quote_plus(name),
+                                                                                                  url=urllib.parse.quote_plus(url),
+                                                                                                  name=urllib.parse.quote_plus(name),
                                                                                                   type=str(type_)  )
 
 def build_playable_param( mode, url, name="", type_="", script_to_call=addonID):
     #builds the  di_url for  pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO); pl.clear();  pl.add(di_url, item) ; xbmc.Player().play(pl, windowed=True)
-    return "plugin://" +script_to_call+"mode="+ mode+"&url="+urllib.quote_plus(url)+"&name="+str(name)+"&type="+str(type_)
+    return "plugin://" +script_to_call+"mode="+ mode+"&url="+urllib.parse.quote_plus(url)+"&name="+str(name)+"&type="+str(type_)
 
 def ret_info_type_icon(info_type, modecommand, domain=''):
     #returns icon for what kind of media the link is.
@@ -101,7 +108,7 @@ def ret_info_type_icon(info_type, modecommand, domain=''):
 
     #log( "  info_type=%s mode=%s"  %(info_type, modecommand) )
 
-    from domains import sitesBase
+    from .domains import sitesBase
     icon="type_unsupp.png"
     if info_type==sitesBase.TYPE_VIDEO:
         icon="type_video.png"
@@ -147,7 +154,7 @@ def pretty_datediff(dt1, dt2):
             if sec_diff < 7200:
                 return translation(32064)     #"an hour ago"
             if sec_diff < 86400:
-                return str(sec_diff / 3600) + translation(32065) #" hrs ago"
+                return str(int(sec_diff / 3600)) + translation(32065) #" hrs ago"
         if day_diff == 1:
             return translation(32066)         #"Yesterday"
         if day_diff < 7:
@@ -216,7 +223,7 @@ def add_to_csv_setting(setting_id, string_to_add):
     csv_list=[x.lower().strip() for x in csv_list]
     csv_list.append(string_to_add)
 
-    csv_list = filter(None, csv_list)                 #removes empty string
+    csv_list = [_f for _f in csv_list if _f]                 #removes empty string
     addon.setSetting(setting_id, ",".join(csv_list))
 
     if setting_id=='domain_filter':
@@ -266,7 +273,7 @@ def prettify_reddit_query(subreddit_entry):
     if subreddit_entry.startswith('?'):
         #log('************ prettify_reddit_query='+subreddit_entry)
         tbn=subreddit_entry.split('/')[-1]
-        tbn=urllib.unquote_plus(tbn)
+        tbn=urllib.parse.unquote_plus(tbn)
 
         tbn=tbn.replace('?q=','[LIGHT]search:[/LIGHT]' )
         tbn=tbn.replace('site:','' )
@@ -333,7 +340,7 @@ def calculate_zoom_slide(img_w, img_h):
 def parse_filename_and_ext_from_url(url=""):
     filename=""
     ext=""
-    path = urlparse.urlparse(url).path     #ext = os.path.splitext(path)[1]
+    path = urllib.parse.urlparse(url).path
     try:
         if '.' in path:
             #log( "        f&e=[%s]" %(url.split('/')[-1]).split('.')[0] )
@@ -406,43 +413,48 @@ def cleanTitle(title):
     return title.strip()
 
 def unescape(text):
+    import html
+    return html.unescape(text)
+    #DON"T USE THIS ANYMORE. NOT COMPATIBLE WITH Python3  (returns a byte object that causes issues later on)
+    #use html.unescape
+
     ## http://effbot.org/zone/re-sub.htm#unescape-html
     # Removes HTML or XML character references and entities from a text string.
     #
     # @param text The HTML (or XML) source text.
     # @return The plain text, as a Unicode string, if necessary.
-
-    def fixup(m):
-        text = m.group(0)
-        if text[:2] == "&#":
-            # character reference
-            try:
-                if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
-                else:
-                    return unichr(int(text[2:-1]))
-            except ValueError:
-                pass
-        else:
-            # named entity
-            try:
-                text = unichr(htmlentitydefs.name2codepoint[text[1:-1]])
-            except KeyError:
-                pass
-        return text # leave as is
-    text=re.sub("&#?\w+;", fixup, text)
-    text=text.replace('&nbsp;',' ')
-    text=text.replace('\n\n','\n')
-    return text
+#    text=str(text)
+#    def fixup(m):
+#        text = m.group(0)
+#        if text[:2] == "&#":
+#            # character reference
+#            try:
+#                if text[:3] == "&#x":
+#                    return chr(int(text[3:-1], 16))
+#                else:
+#                    return chr(int(text[2:-1]))
+#            except ValueError:
+#                pass
+#        else:
+#            # named entity
+#            try:
+#                text = chr(name2codepoint[text[1:-1]])   #name2codepoint is from html.entities
+#            except KeyError:
+#                pass
+#        return text # leave as is
+#    text=re.sub("&#?\w+;", fixup, text)
+#    text=text.replace('&nbsp;',' ')
+#    text=text.replace('\n\n','\n')
+#    return text
 
 def strip_emoji(text):
     #http://stackoverflow.com/questions/33404752/removing-emojis-from-a-string-in-python
     emoji_pattern = re.compile(
-        u"(\ud83d[\ude00-\ude4f])|"  # emoticons
-        u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
-        u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
-        u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
-        u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
+        "(\ud83d[\ude00-\ude4f])|"  # emoticons
+        "(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
+        "(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
+        "(\ud83d[\ude80-\udeff])|"  # transport & map symbols
+        "(\ud83c[\udde0-\uddff])"  # flags (iOS)
         "+", flags=re.UNICODE)
     return emoji_pattern.sub(r'', text) # no emoji
 
@@ -553,6 +565,7 @@ def xbmcVersion():
 
     return version
 
+#returns the value of the (keys_list) from dict_obj. already cleaned up
 def clean_str(dict_obj, keys_list, default=''):
     dd=dict_obj
     try:
@@ -561,13 +574,13 @@ def clean_str(dict_obj, keys_list, default=''):
                 dd=dd.get(k)
             elif isinstance(dd, list):
                 dd=dd[k]
-
             if dd is None:
                 return default
             else:
                 continue
         if hasattr(dd, 'encode'):#int does not have encode()
-            return unescape(dd.encode('utf-8'))
+            #return unescape(dd.encode('utf-8'))
+            return unescape(dd)
         else:
             return dd
     except (AttributeError,IndexError) as e:
@@ -606,11 +619,11 @@ def xstr(s):
 
 def samealphabetic(*args):
     #http://stackoverflow.com/questions/16474848/python-compare-strings-ignore-special-characters
-    return len(set(filter(lambda s: s.isalpha(), arg.lower()) for arg in args)) <= 1
+    return len(set([s for s in arg.lower() if s.isalpha()] for arg in args)) <= 1
 
 def hassamealphabetic(*args):
     #returns true if there is a same
-    return len(set(filter(lambda s: s.isalpha(), arg) for arg in args)) <= 2
+    return len(set([s for s in arg if s.isalpha()] for arg in args)) <= 2
 
 def colored_subreddit(subreddit,color='cadetblue', add_r=True):
     #return "[COLOR "+color+"]r/" + subreddit + "[/COLOR]"
@@ -633,7 +646,7 @@ def xbmc_notify(line1, line2, time=3000, icon=''):
     if icon and os.path.sep not in icon:
         icon=os.path.join(addon.getAddonInfo('path'), 'resources','skins','Default','media', icon)
 
-    xbmcgui.Dialog().notification( line1, line2, icon, time)  #<-- use this instead of  xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) )
+    xbmcgui.Dialog().notification( str(line1), line2, icon, time)  #<-- use this instead of  xbmc.executebuiltin('XBMC.Notification("%s", "%s", %d, %s )' %( Line1, line2, time, icon) )
     log("User notification: %s: %s" %(line1, line2) )
 
 def open_web_browser(url,name,type_):
@@ -673,7 +686,7 @@ def open_web_browser(url,name,type_):
 #addDir(subreddit, subreddit.lower(), next_mode, "")
 def addDir(name, url, mode, iconimage, type_="", listitem_infolabel=None, label2=""):
     #adds a list entry
-    u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type_)
+    u = sys.argv[0]+"?url="+urllib.parse.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type_)
     #log('addDir='+u)
     ok = True
     liz = xbmcgui.ListItem(label=name, label2=label2)
@@ -694,7 +707,7 @@ def addDirR(name, url, mode, icon_image='', type_="", listitem_infolabel=None, f
     #alias is the text for the listitem that is presented to the user
     #file_entryis the actual string(containing alias & viewid) that is saved in the "subreddit" file
 
-    u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type_)
+    u = sys.argv[0]+"?url="+urllib.parse.quote_plus(url)+"&mode="+str(mode)+"&type="+str(type_)
     #log('addDirR='+u)
     ok = True
     liz = xbmcgui.ListItem(name)
@@ -718,8 +731,8 @@ def addDirR(name, url, mode, icon_image='', type_="", listitem_infolabel=None, f
         liz.setProperty("file_entry", file_entry)
 
     #liz.addContextMenuItems([(translation(30002), 'RunPlugin(plugin://'+addonID+'/?mode=removeSubreddit&url='+urllib.quote_plus(url)+')',)])
-    liz.addContextMenuItems([(translation(30003), 'RunPlugin(plugin://'+addonID+'/?mode=editSubreddit&url='+urllib.quote_plus(file_entry)+')',)     ,
-                             (translation(30002), 'RunPlugin(plugin://'+addonID+'/?mode=removeSubreddit&url='+urllib.quote_plus(file_entry)+')',)
+    liz.addContextMenuItems([(translation(30003), 'RunPlugin(plugin://'+addonID+'/?mode=editSubreddit&url='+urllib.parse.quote_plus(file_entry)+')',)     ,
+                             (translation(30002), 'RunPlugin(plugin://'+addonID+'/?mode=removeSubreddit&url='+urllib.parse.quote_plus(file_entry)+')',)
                              ])
 
     #log("handle="+sys.argv[1]+" url="+u+" ")
@@ -766,7 +779,7 @@ def _nested_lookup(key, document):
                         yield result
 
 def dictlist_to_listItems(dictlist):
-    from domains import sitesBase
+    from .domains import sitesBase
     #from utils import build_script
     directory_items=[]
 
@@ -848,7 +861,7 @@ def setting_entry_is_domain(setting_entry):
 
 def get_domain_icon( entry_name, domain, check_this_url_instead_of_domain=None ):
     import requests
-    from CommonFunctions import parseDOM
+    from .CommonFunctions import parseDOM
     subs_dict={}
     #import pprint
     if check_this_url_instead_of_domain:
@@ -873,7 +886,7 @@ def get_domain_icon( entry_name, domain, check_this_url_instead_of_domain=None )
         if i:
             #log( "    icon candidates:" + repr(i))
             try:
-                icon=urlparse.urljoin(og_url, i[-1]) #handle relative or absolute
+                icon=urllib.parse.urljoin(og_url, i[-1]) #handle relative or absolute
                 #make structure same as that returned by get_subreddit_info()
                 subs_dict.update( {'entry_name':entry_name,
                                    'display_name':domain,
@@ -900,15 +913,15 @@ def get_domain_icon( entry_name, domain, check_this_url_instead_of_domain=None )
 def set_query_field(url, field, value, replace=False):
     # Parse out the different parts of the URL.
 
-    components = urlparse.urlparse(url)
+    components = urllib.parse.urlparse(url)
 
-    query_pairs = urlparse.parse_qsl(components.query)
+    query_pairs = urllib.parse.parse_qsl(components.query)
 
     if replace:
         query_pairs = [(f, v) for (f, v) in query_pairs if f != field]
     query_pairs.append((field, value))
 
-    new_query_str = urllib.urlencode(query_pairs)
+    new_query_str = urllib.parse.urlencode(query_pairs)
 
     # Finally, construct the new URL
     new_components = (
@@ -919,7 +932,7 @@ def set_query_field(url, field, value, replace=False):
         new_query_str,
         components.fragment
     )
-    return urlparse.urlunparse(new_components)
+    return urllib.parse.urlunparse(new_components)
 
 def ytDurationToSeconds(duration): #https://stackoverflow.com/questions/16742381/how-to-convert-youtube-api-duration-to-seconds
     week = 0
