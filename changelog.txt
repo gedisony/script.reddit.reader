@@ -1,4 +1,6 @@
-2.0.0 (12/05/2018)
+2.0.1 (01/15/2020)
+  - youtube context menu fixes (python3 conversion related)
+2.0.0 (01/14/2020)
   - convert to Python 3
 1.1.0 (12/05/2018)
   - fix right-side comments tree not scrolling under leia

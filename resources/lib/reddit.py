@@ -15,7 +15,6 @@ reddit_refresh_token =addon.getSetting("reddit_refresh_token")
 reddit_access_token  =addon.getSetting("reddit_access_token") #1hour token
 
 def reddit_request( url, data=None ):
-    #reddit_refresh_token=''
     #if there is a refresh_token, we use oauth.reddit.com instead of www.reddit.com
     if reddit_refresh_token:
         url=url.replace('www.reddit.com','oauth.reddit.com' )
@@ -189,10 +188,10 @@ def reddit_set_addon_setting_from_response(response):
     global reddit_access_token    #specify "global" if you want to change the value of a global variable
     global reddit_refresh_token
     try:
-        log( response )
+        #log( response )
         #response is a bytes-like object. Convert it to string so that we can use the replace() 
         response=str(response,'utf-8').replace('\\"', '\'')
-        
+
         #python3 Object of type bytes is not JSON serializable
         response = json.loads(response)
         log( json.dumps(response, indent=4) )

@@ -6,15 +6,12 @@ import sys
 import re
 import requests
 import json
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
+from urllib.parse import urlparse
 #sys.setdefaultencoding("utf-8")
 
 from default import addon, streamable_quality,hide_nsfw   #,addon_path,pluginhandle,addonID
 from default import reddit_userAgent, REQUEST_TIMEOUT
-from . utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
+from .utils import log, parse_filename_and_ext_from_url, image_exts, link_url_is_playable, ret_url_ext, remove_duplicates, safe_cast, clean_str,pretty_datediff_wrap, nested_lookup
 
 #use_ytdl_for_yt      = addon.getSetting("use_ytdl_for_yt") == "true"    #let youtube_dl addon handle youtube videos. this bypasses the age restriction prompt
 use_addon_for_youtube     = addon.getSetting("use_addon_for_youtube") == "true"
@@ -86,7 +83,6 @@ class sitesBase(object):
 
     @classmethod
     def requests_get(self, link_url, headers=None, timeout=REQUEST_TIMEOUT, allow_redirects=True):
-        #log('[['+link_url+']]')
         content = requests.get( link_url, headers=headers, timeout=timeout, allow_redirects=allow_redirects )
         #there is an error here: get_thumb_url error:No module named 'requests.packages.urllib3.packages.ordered_dict'
         #don't know what to do with this error. just leaving it alone if it just comes up when getting thumbnail for subreddits
@@ -493,7 +489,7 @@ class ClassYoutube(sitesBase):
                 'part': 'id,snippet',
             }
 
-            api_url='https://www.googleapis.com/youtube/v3/videos?'+urllib.urlencode(query_params)
+            api_url='https://www.googleapis.com/youtube/v3/videos?'+urllib.parse.urlencode(query_params)
             r = self.requests_get(api_url)
             #log(r.text)
             j=r.json()   #.loads(r.text)  #j=json.loads(r.text.replace('\\"', '\''))
@@ -610,7 +606,7 @@ class ClassYoutube(sitesBase):
             }
     @classmethod
     def build_query_params_for_search(self,youtube_api_key,search_string,type_='video'):
-        from utils import ret_bracketed_option
+        from .utils import ret_bracketed_option
         #specify different results by adding order_option in square brackets in the search string.
         stripped_string, order_option=ret_bracketed_option(search_string)  #developer feature: specify the order in search parameter "[date]" etc.
         if order_option:
@@ -673,7 +669,7 @@ class ClassYoutube(sitesBase):
             'part': 'snippet,contentDetails',
             'forUsername': user_id,
         }
-        api_url='https://www.googleapis.com/youtube/v3/channels?'+urllib.urlencode(query_params)
+        api_url='https://www.googleapis.com/youtube/v3/channels?'+urllib.parse.urlencode(query_params)
         r = self.requests_get(api_url)
         #log(r.text)
         j=r.json()   #.loads(r.text)  #j=json.loads(r.text.replace('\\"', '\''))
@@ -687,7 +683,7 @@ class ClassYoutube(sitesBase):
         #this is used to get the channel info/banner for the index page
         link_action, query_params=self.build_query_params_for_get_channel_info(self.ret_api_key(),channel_id)
 
-        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(link_action,urllib.urlencode(query_params))
+        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(link_action,urllib.parse.urlencode(query_params))
         #log(api_url)
         r = self.requests_get(api_url)
         j=r.json()
@@ -728,13 +724,13 @@ class ClassYoutube(sitesBase):
                 video_ids.append(videoId)
         return video_ids
     def get_video_durations(self,youtube_api_key,videoIds):
-        from utils import ytDurationToSeconds
+        from .utils import ytDurationToSeconds
         durations=[]
         query_params={'key': youtube_api_key,
                 'part': 'contentDetails',
                 'id': ",".join(videoIds),            #','.join(map(str, myList))#if the list contains numbers
             }
-        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format("videos",urllib.urlencode(query_params))
+        api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format("videos",urllib.parse.urlencode(query_params))
         r = self.requests_get(api_url)
         j=r.json()
         #log(repr(j))
@@ -755,13 +751,13 @@ class ClassYoutube(sitesBase):
         return vnd
 
     def get_video_list(self, request_action, query_params, direct_api_request_url=None, prev_page=1 ):
-        from utils import set_query_field, seconds_to_hms
+        from .utils import set_query_field, seconds_to_hms
         links=[]
         if direct_api_request_url:
             log('direct api request url provided:'+repr(direct_api_request_url))
             api_url=direct_api_request_url
         else:
-            api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(request_action,urllib.urlencode(query_params))
+            api_url='https://www.googleapis.com/youtube/v3/{0}?{1}'.format(request_action,urllib.parse.urlencode(query_params))
         #log(api_url)
         r = self.requests_get(api_url)
         j=r.json()

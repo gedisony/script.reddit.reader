@@ -150,7 +150,7 @@ def pretty_datediff(dt1, dt2):
             if sec_diff < 120:
                 return translation(32062)     #"a min ago"
             if sec_diff < 3600:
-                return str(sec_diff / 60) + translation(32063) #" mins ago"
+                return str(int(sec_diff / 60)) + translation(32063) #" mins ago"
             if sec_diff < 7200:
                 return translation(32064)     #"an hour ago"
             if sec_diff < 86400:
@@ -163,17 +163,17 @@ def pretty_datediff(dt1, dt2):
             if day_diff / 7 < 2:
                 return translation(32075)  #"a wk ago"
             else:
-                return str(day_diff / 7) + translation(32068)  #" wks ago"
+                return str(int(day_diff / 7)) + translation(32068)  #" wks ago"
         if day_diff < 365:
             if day_diff / 30 < 2:
                 return translation(32076) #"a month ago"
             else:
-                return str(day_diff / 30) + translation(32069) #" months ago"
+                return str(int(day_diff / 30)) + translation(32069) #" months ago"
         else:
             if (day_diff / 365) < 2:
                 return translation(32077)    #"a year ago"
             else:
-                return str(day_diff / 365) + translation(32070)    #" years ago"
+                return str(int(day_diff / 365)) + translation(32070)    #" years ago"
     except:
         pass
 def pretty_datediff_wrap( date_to_prettify, format_string="%Y-%m-%d %H:%M:%S", use_utc_as_base=True ):
