@@ -9,10 +9,10 @@ from xbmcgui import ControlImage, WindowDialog, WindowXMLDialog, ControlTextBox,
 #autoSlideshow
 
 from default import addon, addon_path, addonID
-from . utils import log, translation, unescape, remove_dict_duplicates
-from . reddit import reddit_request
-from . domains import sitesBase, parse_reddit_link
-from . actions import listAlbum
+from .utils import log, translation, unescape, remove_dict_duplicates, clean_str
+from .reddit import reddit_request
+from .domains import sitesBase, parse_reddit_link
+from .actions import listAlbum
 
 import threading
 from queue import Queue
@@ -116,7 +116,8 @@ def autoSlideshow(url, name, type_):
 
     for j_entry in data_children:
         try:
-            title = unescape(j_entry['data']['title'].encode('utf-8'))
+            #title = unescape(j_entry['data']['title'].encode('utf-8'))
+            title = clean_str(j_entry['data'],['title']) 
             log("  TITLE:%s [r/%s]"  %( title, j_entry.get('data').get('subreddit') )  )
 
             try:    description = unescape(j_entry['data']['media']['oembed']['description'].encode('utf-8'))
@@ -176,7 +177,8 @@ def autoSlideshow(url, name, type_):
                 #log('      (N)added preview:%s' % title )
 
         except Exception as e:
-            log( '  autoPlay exception:' + str(e) )
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            log( '  autoPlay exception:' + str(e) + str(exc_tb.tb_lineno) )
 
     #log( repr(entries))
 
@@ -200,8 +202,6 @@ def autoSlideshow(url, name, type_):
 
     #for title, url in entries:
     #    log("  added to playlist:"+ title + "  " + url )
-
-    log("**********playing slideshow*************")
 
     for e in entries:
         q.put(e)
@@ -310,8 +310,10 @@ class ScreensaverBase(object):
         #self.log('  init_global_controls start')
 
         loading_img = xbmc.validatePath('/'.join((ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+        xbmc_window_half_width = int(self.xbmc_window.getWidth()/2)
+        xbmc_window_half_height = int(self.xbmc_window.getHeight()/2)
 
-        self.loading_control = ControlImage((self.xbmc_window.getWidth()/2)-64, (self.xbmc_window.getHeight()/2)-64, 128, 128, loading_img)
+        self.loading_control = ControlImage(xbmc_window_half_width-64, xbmc_window_half_height-64, 128, 128, loading_img)
         self.preload_control = ControlImage(-1, -1, 1, 1, '')
         self.background_control = ControlImage(0, 0, self.xbmc_window.getWidth(), self.xbmc_window.getHeight(), '')
         self.global_controls = [
@@ -1004,6 +1006,7 @@ class ScreensaverManager(object):
 
     def __new__(cls, ev, q):
         mode = MODES[int(addon.getSetting('slideshow_mode'))]
+        log("**********playing slideshow {0}*************".format(mode)  )
         if mode == 'Random':
             subcls = random.choice(ScreensaverBase.__subclasses__( ))
             return subcls( ev, q)

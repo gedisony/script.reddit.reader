@@ -267,7 +267,7 @@ class YoutubeDLWrapper(youtube_dl.YoutubeDL):
 
     def to_stderr(self, message):
         """Print message to stderr."""
-        assert  isinstance(message, str)  #isinstance(message, basestring)
+        assert isinstance(message, basestring)
         if self.params.get('logger'):
             self.params['logger'].error(message)
         else:
@@ -365,7 +365,7 @@ def _getQualityLimits(quality):
         maxHeight = 720
     return minHeight, maxHeight
 
-from . utils import log
+from .utils import log
 import pprint
 
 def _selectVideoQuality(r, quality=1, disable_dash=True):
