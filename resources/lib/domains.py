@@ -309,7 +309,8 @@ class ClassYoutube(sitesBase):
     regex='(youtube.com/)|(youtu.be/)|(youtube-nocookie.com/)|(plugin.video.youtube/play)'
     video_id=''
     url_type=''
-
+    #manage youtube api here: 
+    #  https://console.developers.google.com/iam-admin/settings?project=script-reddit-reader&folder=&organizationId=&authuser=1
     api_key='AIzaSyCqvYW8NI-OpMPaWR1DuZYW_llpmFdHRBI'
 
     @classmethod
