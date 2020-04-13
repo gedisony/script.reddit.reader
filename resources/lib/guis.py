@@ -114,7 +114,7 @@ class cGUI(xbmcgui.WindowXML):
             if self.gui_listbox_SelectedPosition==0:
                 self.gui_listbox_SelectedPosition=1 #skip the ".." as the first selected item
             back_image='DefaultFolderBackSquare.png'
-            listitem = xbmcgui.ListItem(label='..', label2="", iconImage=back_image)
+            listitem = xbmcgui.ListItem(label='..', label2="")
             #listitem.setInfo( type="Video", infoLabels={ "Title": '..', "plot": "", "studio": '' } )
             listitem.setArt({"thumb": back_image, "clearart": "DefaultFolderBackSquare.png"}) #, "poster":back_image, "banner":back_image, "fanart":back_image, "landscape":back_image   })
 

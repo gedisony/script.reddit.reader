@@ -1,3 +1,6 @@
+2.0.3 (03/27/2020)
+  - for latest matrix alpha
+    removed iconImage parameter use from xbmcgui.ListItem
 2.0.1 (01/15/2020)
   - youtube context menu fixes (python3 conversion related)
 2.0.0 (01/14/2020)
