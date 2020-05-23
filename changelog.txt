@@ -1,3 +1,5 @@
+2.0.4 (05/23/2020)
+  - ytdl to handle redgifs
 2.0.3 (03/27/2020)
   - for latest matrix alpha
     removed iconImage parameter use from xbmcgui.ListItem

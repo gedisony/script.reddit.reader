@@ -2413,78 +2413,44 @@ class ClassFlickr(sitesBase):
         else:
             log('    NOT AN ALBUM: unexpected flickr media type ' + self.fmedia_type )
 
-class ClassGifsCom(sitesBase):
-    regex='(gifs\.com)'
-    #also vidmero.com
+class ClassRedgifs(sitesBase):
+    regex='(redgifs.com)'
 
-    api_key='gifs577da09e94ee1'   #gifs577da0485bf2a'
-    headers = { 'Gifs-API-Key': api_key, 'Content-Type': "application/json" }
-    #request_url="https://api.gifs.com"
+    def get_playable_url(self, media_url, is_probably_a_video=True ):
+        #the video id i get do not have capital letters
+        #ytdl seems to be able to get the correct video id
+        self.link_action=sitesBase.DI_ACTION_YTDL
+        self.media_type=sitesBase.TYPE_VIDEO
+        return media_url, self.media_type
 
-    def get_playable(self, media_url='', is_probably_a_video=False ):
-        media_type=self.TYPE_VIDEO
-        if not media_url:
-            media_url=self.media_url
+        #end here
+        self.get_video_id()
+        if self.video_id:
+            #redgifs use the same api as gfycat but they have not released an official api
+            #request_url="https://redgifs.com/cajax/get/" + self.video_id  #this endpoint has been deprecated
+            #request_url="https://api.redgifs.com/v1/redgifs/%s" % self.video_id
 
-        filename,ext=parse_filename_and_ext_from_url(media_url)
-        #log('    file:%s.%s' %(filename,ext)  )
-        if ext in ["mp4","webm","gif"]:
-            if ext=='gif':
-                media_type=self.TYPE_GIF
-                self.link_action=sitesBase.DI_ACTION_PLAYABLE
-                self.thumb_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.jpg' %(filename))
-                self.poster_url=self.thumb_url
-                self.media_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.mp4' %(filename))   #just replacing gif to mp4 works
-            return self.media_url, media_type
+            self.link_action=sitesBase.DI_ACTION_PLAYABLE
+            stream_url='https://thumbs1.redgifs.com/'+self.video_id+'.webm'
 
-        if ext in image_exts:  #excludes .gif
-            self.link_action='viewImage'
-            self.thumb_url=media_url
-            self.poster_url=self.thumb_url
-            return media_url,self.TYPE_IMAGE
+            #https://redgifs.com/watch/darlingmagnificentconey
+            #return 'https://thumbs1.redgifs.com/DarlingMagnificentConey.webm', self.TYPE_VIDEO
+            return stream_url, self.TYPE_VIDEO
+        else:
+            log("cannot get redgif id")
+        return '', ''
 
-        return self.get_playable_url(self.media_url, is_probably_a_video=False )
+    def get_video_id(self):
+        self.video_id=''
+        match = re.findall("redgifs.com/watch/(.+?)(?:-|$|')", self.media_url)
+        if match:
+            log('  found video id['+match[0]+']')
+            self.video_id=match[0]
 
 
     def get_thumb_url(self):
         #call this after calling get_playable_url
         return self.thumb_url
-
-    def get_video_id(self):
-        #looks like the filename is also the video id and some links have it at the "-"end od url
-        self.video_id=''
-
-        #https://j.gifs.com/zpOmn5.gif       <-- this is handled in get_playable -> .gif replaced with .mp4
-        #http://gifs.com/gif/qxBQMp                   <-- parsed here.
-        #https://gifs.com/gif/yes-nooo-whaaa-5yZ8rK   <-- parsed here.
-
-        match = re.compile('gifs\.com/(?:gif/)?(.+)(?:.gif|$)').findall(self.media_url)
-        #log('    matches' + repr(match) )
-
-        if match:
-            vid=match[0]
-            if '-' in vid:
-                vid= vid.split('-')[-1]
-
-            self.video_id=vid
-
-    def get_playable_url(self, media_url, is_probably_a_video=True ):
-        #api method abandoned. doesn't seem to be any way to get media info. api is just for upload and convert(?)
-
-        #can also parse the link...
-#               <div class="gif-display">
-#                   <video id="video" muted class="gifyt-player gifyt-embed" preload="auto"
-#                          poster="https://j.gifs.com/gJoYy9.jpg" loop="" autoplay="">
-#                       <source src="https://j.gifs.com/gJoYy9.mp4" type="video/mp4">
-#                   </video>
-#               </div>
-
-
-        self.get_video_id()
-        log('    gifs.com videoID:' + self.video_id )
-
-        self.link_action=sitesBase.DI_ACTION_PLAYABLE
-        return 'http://j.gifs.com/%s.mp4' %self.video_id , sitesBase.TYPE_VIDEO
 
 class ClassGfycat(sitesBase):
     regex='(gfycat.com)'
@@ -2561,6 +2527,79 @@ class ClassGfycat(sitesBase):
     def get_thumb_url(self):
         #call this after calling get_playable_url
         return self.thumb_url
+
+class ClassGifsCom(sitesBase):
+    regex='(gifs\.com)'
+    #also vidmero.com
+
+    api_key='gifs577da09e94ee1'   #gifs577da0485bf2a'
+    headers = { 'Gifs-API-Key': api_key, 'Content-Type': "application/json" }
+    #request_url="https://api.gifs.com"
+
+    def get_playable(self, media_url='', is_probably_a_video=False ):
+        media_type=self.TYPE_VIDEO
+        if not media_url:
+            media_url=self.media_url
+
+        filename,ext=parse_filename_and_ext_from_url(media_url)
+        #log('    file:%s.%s' %(filename,ext)  )
+        if ext in ["mp4","webm","gif"]:
+            if ext=='gif':
+                media_type=self.TYPE_GIF
+                self.link_action=sitesBase.DI_ACTION_PLAYABLE
+                self.thumb_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.jpg' %(filename))
+                self.poster_url=self.thumb_url
+                self.media_url=media_url.replace( '%s.%s'%(filename,ext) , '%s.mp4' %(filename))   #just replacing gif to mp4 works
+            return self.media_url, media_type
+
+        if ext in image_exts:  #excludes .gif
+            self.link_action='viewImage'
+            self.thumb_url=media_url
+            self.poster_url=self.thumb_url
+            return media_url,self.TYPE_IMAGE
+
+        return self.get_playable_url(self.media_url, is_probably_a_video=False )
+
+
+    def get_thumb_url(self):
+        #call this after calling get_playable_url
+        return self.thumb_url
+
+    def get_video_id(self):
+        #looks like the filename is also the video id and some links have it at the "-"end od url
+        self.video_id=''
+
+        #https://j.gifs.com/zpOmn5.gif       <-- this is handled in get_playable -> .gif replaced with .mp4
+        #http://gifs.com/gif/qxBQMp                   <-- parsed here.
+        #https://gifs.com/gif/yes-nooo-whaaa-5yZ8rK   <-- parsed here.
+
+        match = re.compile('gifs\.com/(?:gif/)?(.+)(?:.gif|$)').findall(self.media_url)
+        #log('    matches' + repr(match) )
+
+        if match:
+            vid=match[0]
+            if '-' in vid:
+                vid= vid.split('-')[-1]
+
+            self.video_id=vid
+
+    def get_playable_url(self, media_url, is_probably_a_video=True ):
+        #api method abandoned. doesn't seem to be any way to get media info. api is just for upload and convert(?)
+
+        #can also parse the link...
+#               <div class="gif-display">
+#                   <video id="video" muted class="gifyt-player gifyt-embed" preload="auto"
+#                          poster="https://j.gifs.com/gJoYy9.jpg" loop="" autoplay="">
+#                       <source src="https://j.gifs.com/gJoYy9.mp4" type="video/mp4">
+#                   </video>
+#               </div>
+
+        self.get_video_id()
+        log('    gifs.com videoID:' + self.video_id )
+
+        self.link_action=sitesBase.DI_ACTION_PLAYABLE
+        return 'http://j.gifs.com/%s.mp4' %self.video_id , sitesBase.TYPE_VIDEO
+
 
 class ClassEroshare(sitesBase):
     SITE='eroshare'
