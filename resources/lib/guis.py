@@ -149,7 +149,7 @@ class cGUI(xbmcgui.WindowXML):
 
     def process_clicked_item(self, clicked_item):
         if isinstance(clicked_item, xbmcgui.ListItem ):
-            di_url=clicked_item.getProperty('onClick_action') #this property is created when assembling the kwargs.get("listing") for this class
+            di_url=clicked_item.getProperty('onClick_action').replace('https:https','https') #this property is created when assembling the kwargs.get("listing") for this class
             item_type=clicked_item.getProperty('item_type').lower()
         elif isinstance(clicked_item, xbmcgui.ControlButton ):
             #buttons have no setProperty() hiding it in Label2 no good.
