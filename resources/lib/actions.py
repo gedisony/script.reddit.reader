@@ -528,7 +528,7 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     if manifest_url:
         use_input_stream_adaptive=True
         log('   using inputstream_adaptive')
-        url=manifest_url.strip('DASHPlaylist.mpd').strip('HLSPlaylist.m3u8')+'HLSPlaylist.m3u8'
+        url=manifest_url
         if manifest_url.endswith('.mpd'):
             input_stream_adaptive_manifest_type='mpd'
         elif manifest_url.endswith('.m3u8'):
