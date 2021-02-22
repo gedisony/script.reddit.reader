@@ -528,7 +528,21 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     if manifest_url:
         use_input_stream_adaptive=True
         log('   using inputstream_adaptive')
-        url=manifest_url
+        hls_url=manifest_url.rsplit('/', 1)[0]+'/HLSPlaylist.m3u8'
+        log(hls_url)
+        from urllib.request import Request, urlopen
+        from urllib.error import URLError, HTTPError
+        req = Request(hls_url)
+        try:
+            response = urlopen(req)
+        except HTTPError as e:
+            log('No HLSPlaylist '+'Error code: '+str(e.code))
+        except URLError as e:
+            log('We failed to reach a server.')
+            log('Reason: ', e.reason)
+        else:
+            url=hls_url
+            log('hls_url: '+hls_url)
         if manifest_url.endswith('.mpd'):
             input_stream_adaptive_manifest_type='mpd'
         elif manifest_url.endswith('.m3u8'):
