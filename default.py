@@ -155,3 +155,13 @@ if __name__ == '__main__':
                     ,'listRecentlyPlayed'   : listRecentlyPlayed
                     }
     plugin_modes[mode](url,name,type_)
+
+###############################################################################
+# FIX: xbmcout instance in sys.stderr does not have isatty(), so we add it  --- copied from script.module.youtube.dl/lib/YoutubeDLWrapper.py
+###############################################################################
+
+class replacement_stderr(sys.stderr.__class__):
+    def isatty(self):
+        return False
+
+sys.stderr.__class__ = replacement_stderr

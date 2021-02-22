@@ -6,6 +6,7 @@
  - Use xbmcvfs.translatePath instead of depricated xbmc.translatePath
  - Get debug working again by changing level to INFO
  - Use #KODIPROP in setproperty for inputstream addon
+ - Fix for xbmcout instance in sys.stderr does not have isatty()
 
 2.0.4 (05/23/2020)
   - ytdl to handle redgifs
