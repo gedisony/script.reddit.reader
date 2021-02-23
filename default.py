@@ -6,6 +6,7 @@ import os
 import xbmc
 import xbmcaddon
 import urllib
+import xbmcvfs
 
 #import importlib
 
@@ -58,13 +59,13 @@ streamable_quality  =["full", "mobile"][istreamable_quality]       #https://stre
 
 REQUEST_TIMEOUT=(5,10) #requests.get timeout in seconds (connect timeout, read timeout) tuple.
 
-addonUserDataFolder = xbmc.translatePath(profile_path)
-subredditsFile      = xbmc.translatePath(os.path.join(addonUserDataFolder, 'subreddits'))
-subredditsPickle    = xbmc.translatePath(os.path.join(addonUserDataFolder, 'subreddits.pickle'))
-CACHE_FILE          = xbmc.translatePath(os.path.join(addonUserDataFolder, 'requests_cache'))
+addonUserDataFolder = xbmcvfs.translatePath(profile_path)
+subredditsFile      = xbmcvfs.translatePath(os.path.join(addonUserDataFolder, 'subreddits'))
+subredditsPickle    = xbmcvfs.translatePath(os.path.join(addonUserDataFolder, 'subreddits.pickle'))
+CACHE_FILE          = xbmcvfs.translatePath(os.path.join(addonUserDataFolder, 'requests_cache'))
 
 #last slash at the end is important
-ytdl_core_path=xbmc.translatePath(os.path.join(addon_path,'resources','lib','youtube_dl' ))
+ytdl_core_path=xbmcvfs.translatePath(os.path.join(addon_path,'resources','lib','youtube_dl' ))
 
 #if xbmcvfs.exists(ytdl_core_path):
 #    xbmc.log('using ytdl core', level=xbmc.LOGNOTICE)
@@ -154,3 +155,13 @@ if __name__ == '__main__':
                     ,'listRecentlyPlayed'   : listRecentlyPlayed
                     }
     plugin_modes[mode](url,name,type_)
+
+###############################################################################
+# FIX: xbmcout instance in sys.stderr does not have isatty(), so we add it  --- copied from script.module.youtube.dl/lib/YoutubeDLWrapper.py
+###############################################################################
+
+class replacement_stderr(sys.stderr.__class__):
+    def isatty(self):
+        return False
+
+sys.stderr.__class__ = replacement_stderr

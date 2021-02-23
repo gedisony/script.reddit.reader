@@ -299,7 +299,7 @@ def create_default_subreddits():
         fh.write('woahdude+interestingasfuck+shittyrobots\n')
 
 def populate_subreddits_pickle():
-    from guis import progressBG
+    from .guis import progressBG
     loading_indicator=progressBG(translation(32023))   #Gathering icons..
 
     with open(subredditsFile, 'r') as fh:

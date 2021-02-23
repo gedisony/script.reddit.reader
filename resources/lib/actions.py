@@ -246,7 +246,7 @@ def viewImage(image_url, name, preview_url):
 
     #download_file=download_file.replace(r"\\",r"\\\\")
 
-    #addonUserDataFolder = xbmc.translatePath("special://profile/addon_data/"+addonID)
+    #addonUserDataFolder = xbmcvfs.translatePath("special://profile/addon_data/"+addonID)
     #i cannot get this to work reliably...
     #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(addonUserDataFolder) )
     #xbmc.executeJSONRPC('{"jsonrpc":"2.0","id":"1","method":"Player.Open","params":{"item":{"directory":"%s"}}}' %(r"d:\\aa\\") )
@@ -528,7 +528,21 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     if manifest_url:
         use_input_stream_adaptive=True
         log('   using inputstream_adaptive')
-        url=manifest_url
+        hls_url=manifest_url.rsplit('/', 1)[0]+'/HLSPlaylist.m3u8'
+        log(hls_url)
+        from urllib.request import Request, urlopen
+        from urllib.error import URLError, HTTPError
+        req = Request(hls_url)
+        try:
+            response = urlopen(req)
+        except HTTPError as e:
+            log('No HLSPlaylist '+'Error code: '+str(e.code))
+        except URLError as e:
+            log('We failed to reach a server.')
+            log('Reason: ', e.reason)
+        else:
+            url=hls_url
+            log('hls_url: '+hls_url)
         if manifest_url.endswith('.mpd'):
             input_stream_adaptive_manifest_type='mpd'
         elif manifest_url.endswith('.m3u8'):
@@ -558,7 +572,7 @@ def add_ytdl_video_info_to_playlist(video_info, pl, title=None):
     li.setProperty('StartOffset', str(start_time))
 
     if use_input_stream_adaptive:
-        li.setProperty('inputstreamaddon', 'inputstream.adaptive')
+        li.setProperty('#KODIPROP:inputstream=inputstream.adaptive', 'inputstream.adaptive')
         li.setProperty('inputstream.adaptive.manifest_type', input_stream_adaptive_manifest_type)
         #li.setProperty('inputstream.adaptive.stream_headers', url.split('|')[1])
         #li.setProperty('inputstream.adaptive.license_key', '|' + url.split('|')[1])
@@ -597,11 +611,11 @@ def update_youtube_dl_core(url,name,action_type):
         newVersion=note_ytdl_versions()
         LATEST_URL=YTDL_LATEST_URL_TEMPLATE.format(newVersion)
 
-        profile = xbmc.translatePath(profile_path)  #xbmc.translatePath(addon.getAddonInfo('profile')).decode('utf-8')
+        profile = xbmcvfs.translatePath(profile_path)  #xbmcvfs.translatePath(addon.getAddonInfo('profile')).decode('utf-8')
         archivePath = os.path.join(profile,'youtube_dl.tar.gz')
         extractedPath = os.path.join(profile,'youtube-dl')
         extracted_core_path=os.path.join(extractedPath,'youtube_dl')
-        #ytdl_core_path  xbmc.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
+        #ytdl_core_path  xbmcvfs.translatePath(  addon_path+"/resources/lib/youtube_dl/" )
 
         try:
             if os.path.exists(extractedPath):
@@ -846,7 +860,7 @@ def addtoKodiFavorites(command, name, thumbnail):
     if a.get('result','')=="OK":
         log('Favourite added')
         #now that we've created the favorite, we edit it to add parameters
-        favorites_xml       = xbmc.translatePath(os.path.join(addon.getAddonInfo('profile'), '..','..','favourites.xml'))
+        favorites_xml       = xbmcvfs.translatePath(os.path.join(addon.getAddonInfo('profile'), '..','..','favourites.xml'))
         if os.path.exists(favorites_xml):
             #log('{0} exists'.format(favorites_xml) )
             et = xml.etree.ElementTree.parse(favorites_xml)
@@ -906,7 +920,6 @@ def parse_web_url_from(recently_played_url):
         #log(link_components.path)
         if link_components.path.startswith('/videoplayback'): #youtube videos parsed by youtube_dl are unplayable from history, we exclude it here
             ret_url=None
-
     return ret_url
 
 def listRecentlyPlayed(url,name,type_):

@@ -1,3 +1,13 @@
+2.0.5 (02/22/2021)
+ - play HLSPlaylist.m3u8 for v.redd.it if avaible 
+ - play direct video url instead of DASHplaylist.mpd if HLSPlaylist.m3u8 is not avaible
+ - fix 'No module named guis' error
+ - replace https:https: by https: in streamable url
+ - Use xbmcvfs.translatePath instead of depricated xbmc.translatePath
+ - Get debug working again by changing level to INFO
+ - Use #KODIPROP in setproperty for inputstream addon
+ - Fix for xbmcout instance in sys.stderr does not have isatty()
+
 2.0.4 (05/23/2020)
   - ytdl to handle redgifs
 2.0.3 (03/27/2020)

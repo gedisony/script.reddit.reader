@@ -40,7 +40,7 @@ def log(message):
     t=threading.currentThread()
     show_debug_messages=addon.getSetting("show_debug_messages") == "true"
     if show_debug_messages:
-        level=xbmc.LOGNOTICE
+        level=xbmc.LOGINFO
     else:
         level=xbmc.LOGDEBUG
     try:
@@ -977,7 +977,7 @@ def seconds_to_hms(seconds):
         return ""
 
 def getDbPath():
-    path = xbmc.translatePath("special://userdata/Database")
+    path = xbmcvfs.translatePath("special://userdata/Database")
     files = os.listdir(path)
     latest = ""
     for file_ in files:
