@@ -309,7 +309,7 @@ class ScreensaverBase(object):
     def init_global_controls(self):
         #self.log('  init_global_controls start')
 
-        loading_img = xbmc.validatePath('/'.join((ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+        loading_img = xbmcvfs.validatePath('/'.join((ADDON_PATH, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
         xbmc_window_half_width = int(self.xbmc_window.getWidth()/2)
         xbmc_window_half_height = int(self.xbmc_window.getHeight()/2)
 
@@ -448,7 +448,7 @@ class ScreensaverBase(object):
         self.log('_get_folder_images started with path: %s' % repr(path))
         _, files = xbmcvfs.listdir(path)
         images = [
-            xbmc.validatePath(path + f) for f in files
+            xbmcvfs.validatePath(path + f) for f in files
             if f.lower()[-3:] in ('jpg', 'png')
         ]
         #if addon.getSetting('recursive') == 'true':
@@ -457,14 +457,14 @@ class ScreensaverBase(object):
         #            continue
         #        images.extend(
         #            self._get_folder_images(
-        #                xbmc.validatePath('/'.join((path, directory, '')))
+        #                xbmcvfs.validatePath('/'.join((path, directory, '')))
         #            )
         #        )
         self.log('_get_folder_images ends')
         return images
 
     def hide_loading_indicator(self):
-        bg_img = xbmc.validatePath('/'.join(( ADDON_PATH, 'resources', 'skins', 'Default', 'media', self.BACKGROUND_IMAGE )))
+        bg_img = xbmcvfs.validatePath('/'.join(( ADDON_PATH, 'resources', 'skins', 'Default', 'media', self.BACKGROUND_IMAGE )))
         #bg_img = self.BACKGROUND_IMAGE
         self.loading_control.setAnimations([(
             'conditional',

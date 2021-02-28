@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import xbmc
 import xbmcgui
-#import xbmcvfs
+import xbmcvfs
 import sys
 import shutil, os
 import re, urllib.request, urllib.parse, urllib.error
@@ -266,14 +266,12 @@ def viewTallImage(image_url, width, height):
     can_quit=True
     if can_quit==True:
         useWindow=xbmcgui.WindowDialog()
-        useWindow.setCoordinateResolution(0)
-
         try:
             w=int(float(width))
             h=int(float(height))
             optimal_h=int(h*1.5)
             #log( '    **' + repr(h))
-            loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+            loading_img = xbmcvfs.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
 
             img_control = xbmcgui.ControlImage(0, 800, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
             img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
@@ -305,7 +303,7 @@ def viewTallImage(image_url, width, height):
         h=int(float(height))
         optimal_h=int(h*1.5)
         #log( '    **' + repr(h))
-        loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+        loading_img = xbmcvfs.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
 
         img_control = xbmcgui.ControlImage(0, 1080, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
         img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
