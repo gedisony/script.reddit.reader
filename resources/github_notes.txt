@@ -416,3 +416,16 @@ it has to be green text ~"ok to merge"
 GIVE UP!!!
 
 USE SIMPLE METHOD
+
+----------------------------------------------------------------------------------------------------
+**starting from beginning
+git init
+
+git clone git@github.com:gedisony/plugin.video.reddit_viewer
+** copy/paste over the changes
+
+rt click > git gui here
+  stage changes
+  commit  (no warning about detached head anymore)
+  push
+-----------------------------------------------------------------------------------------------------

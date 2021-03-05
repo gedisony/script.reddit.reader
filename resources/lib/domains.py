@@ -1190,7 +1190,7 @@ class ClassVidme(sitesBase):
     def get_playable_url(self,media_url, is_probably_a_video=True):
         #https://docs.vid.me/#api-Video-DetailByURL
         #request_url="https://api.vid.me/videoByUrl/"+videoID
-        request_url="https://api.vid.me/videoByUrl?url="+ urllib.quote_plus( media_url )
+        request_url="https://api.vid.me/videoByUrl?url="+ urllib.parse.quote_plus( media_url )
         #log("vidme request_url---"+request_url )
         r = requests.get(request_url, headers=ClassVidme.request_header, timeout=REQUEST_TIMEOUT)
         #log(r.text)
@@ -1472,7 +1472,7 @@ class ClassLiveleak(sitesBase):
     def get_playable_url(self, media_url='', is_probably_a_video=False ):
         if use_addon_for_Liveleak:
             self.link_action=self.DI_ACTION_PLAYABLE
-            return "plugin://plugin.video.liveleak/?mode=view&url={0}".format(urllib.quote_plus( media_url )), self.TYPE_VIDEO
+            return "plugin://plugin.video.liveleak/?mode=view&url={0}".format(urllib.parse.quote_plus( media_url )), self.TYPE_VIDEO
         else:
             self.link_action=sitesBase.DI_ACTION_YTDL
             return self.media_url, self.TYPE_VIDEO
