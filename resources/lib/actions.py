@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import xbmc
 import xbmcgui
-#import xbmcvfs
+import xbmcvfs
 import sys
 import shutil, os
 import re, urllib.request, urllib.parse, urllib.error
@@ -266,26 +266,30 @@ def viewTallImage(image_url, width, height):
     can_quit=True
     if can_quit==True:
         useWindow=xbmcgui.WindowDialog()
-        useWindow.setCoordinateResolution(0)
-
+        WINID = xbmcgui.getCurrentWindowId()
+        win = xbmcgui.Window(WINID)
+        wwidth = win.getWidth()
+        wheight = win.getHeight()        
+        
         try:
-            w=int(float(width))
-            h=int(float(height))
-            optimal_h=int(h*1.5)
+            w=int(float(wwidth))
+            h=int(float(wheight))
+            optimal_h=int(h*2)
             #log( '    **' + repr(h))
-            loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+            log('width= %s ' %width + 'height = %s ' %height + 'wwidth= %s ' %wwidth + 'wheight = %s ' %wheight)
+            loading_img = xbmcvfs.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
 
-            img_control = xbmcgui.ControlImage(0, 800, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
-            img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
+            img_control = xbmcgui.ControlImage(-int(w/6), 100, w, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
+            img_loading = xbmcgui.ControlImage(int(w-w/2.5), 10, 100, 100, loading_img, aspectRatio=2)
 
             #the cached image is of lower resolution. we force nocache by using setImage() instead of defining the image in ControlImage()
             img_control.setImage(image_url, False)
-
+            log(image_url)
             useWindow.addControls( [ img_loading, img_control])
             #useWindow.addControl(  img_control )
 
-            scroll_time=(int(h)/int(w))*20000
-
+            scroll_time=30000
+            #log('scroll_time = %s' %scroll_time)
             img_control.setAnimations( [
                                         ('conditional', "condition=true effect=fade  delay=0    start=0   end=100   time=4000 "  ) ,
                                         ('conditional', "condition=true effect=slide delay=2000 start=0,-%d end=0,0 tween=sine easing=in time=%d pulse=true" %( (h*1.4), scroll_time) ),
@@ -305,7 +309,7 @@ def viewTallImage(image_url, width, height):
         h=int(float(height))
         optimal_h=int(h*1.5)
         #log( '    **' + repr(h))
-        loading_img = xbmc.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
+        loading_img = xbmcvfs.validatePath('/'.join((addon_path, 'resources', 'skins', 'Default', 'media', 'srr_busy.gif' )))
 
         img_control = xbmcgui.ControlImage(0, 1080, 1920, optimal_h, '', aspectRatio=2)  #(values 0 = stretch (default), 1 = scale up (crops), 2 = scale down (black bars)
         img_loading = xbmcgui.ControlImage(1820, 0, 100, 100, loading_img, aspectRatio=2)
