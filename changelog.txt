@@ -1,4 +1,4 @@
-pat test 6
+pat test 7
 2.0.6 (05/03/2021)
  - slideshow fixes - Chaotnix
 2.0.5 (02/22/2021)
