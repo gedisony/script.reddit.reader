@@ -1,6 +1,7 @@
 .pydevproject
 .project
 .settings/
+.gitcredentials
 *.py[co]
 *.pyo
 resources/lib/youtube_dl/**
