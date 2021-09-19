@@ -1,4 +1,6 @@
-pat test 7
+2.0.7
+ - add setting to use a custom user-agent for reddit query requests.
+   might help resolve a 429: Too Many Requests error
 2.0.6 (05/03/2021)
  - slideshow fixes - Chaotnix
 2.0.5 (02/22/2021)

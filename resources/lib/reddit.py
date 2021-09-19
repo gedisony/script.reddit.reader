@@ -25,6 +25,7 @@ def reddit_request( url, data=None ):
 
     #req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.14) Gecko/20080404 Firefox/2.0.0.14')
     req.add_header('User-Agent', reddit_userAgent)   #userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/gsonide)"
+    log( "user agent is " + reddit_userAgent )
 
     #if there is a refresh_token, add the access token to the header
     if reddit_refresh_token:

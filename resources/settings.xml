@@ -102,5 +102,7 @@
         <setting                              type="sep" />
         <setting                              type="action"      label="32406"  action="RunAddon(script.reddit.reader,mode=get_access_token)"/>
         <setting                              type="action"      label="32410"  action="RunAddon(script.reddit.reader,mode=revoke_refresh_token)"/>
+        <setting                              type="sep" />
+        <setting id="custom_user_agent"       type="text"        label="32416"  default=""   enable="true"  />
     </category>
 </settings>

@@ -35,6 +35,10 @@ reddit_userAgent = "XBMC:"+addonID+":v"+addon.getAddonInfo('version')+" (by /u/g
 reddit_clientID      ="ZEbDJ5DUrguDMA"
 reddit_redirect_uri  ='http://localhost:8090/'   #specified when registering for a clientID
 
+custom_user_agent = addon.getSetting("custom_user_agent")
+if custom_user_agent != "":
+    reddit_userAgent = custom_user_agent
+
 #opener.addheaders = [('User-Agent', reddit_userAgent)]
 #API requests with a bearer token should be made to https://oauth.reddit.com, NOT www.reddit.com.
 urlMain = "https://www.reddit.com"
