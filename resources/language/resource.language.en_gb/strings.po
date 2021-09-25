@@ -466,7 +466,7 @@ msgid "Are you sure you want to replace it?"
 msgstr ""
 
 msgctxt "#32415"
-msgid "* Make sure to hit [OK] after entering code"
+msgid "* Make sure to hit [OK] after entering code. Don't include #_"
 msgstr ""
 
 msgctxt "#32416"
