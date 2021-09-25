@@ -91,11 +91,14 @@ def reddit_get_refresh_token(url, name, type_):
         #http://stackoverflow.com/questions/6348499/making-a-post-call-instead-of-get-using-urllib2
         data = urllib.parse.urlencode({'grant_type'  : 'authorization_code'
                                 ,'code'        : code                     #'woX9CDSuw7XBg1MiDUnTXXQd0e4'
-                                ,'redirect_uri': reddit_redirect_uri})    #http://localhost:8090/
+                                ,'redirect_uri': reddit_redirect_uri}).encode("utf-8")    #http://localhost:8090/
 
         #http://stackoverflow.com/questions/2407126/python-urllib2-basic-auth-problem
-        import base64
-        base64string = base64.encodestring('%s:%s' % (reddit_clientID, '')).replace('\n', '')
+        bytes_like_object = bytes('%s:%s' % (reddit_clientID, ''), "utf-8")
+        import codecs
+        base64string=codecs.encode(bytes_like_object, 'base64') #base64string is now a bytes-like object
+        base64string=str(base64string,'utf-8').replace('\n', '')
+
         req.add_header('Authorization',"Basic %s" % base64string)
         req.add_header('User-Agent', reddit_userAgent)
 
